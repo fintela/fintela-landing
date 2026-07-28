@@ -184,18 +184,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
           <Box sx={{ display: 'flex', gap: { xs: 1, md: 1.5 }, alignItems: 'center' }}>
             <LanguageSwitcher />
             <Button
-              href="https://app.fintela.io"
-              variant="text"
-              sx={{
-                display: { xs: 'none', md: 'inline-flex' },
-                color: 'text.primary',
-                fontSize: '0.92rem',
-                '&:hover': { bgcolor: 'rgba(102,126,234,0.06)' },
-              }}
-            >
-              {t('actions.signIn')}
-            </Button>
-            <Button
               variant="contained"
               href="https://app.fintela.io"
               size="medium"
@@ -289,14 +277,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         <Divider sx={{ my: 2 }} />
 
         <Box sx={{ px: 3, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-          <Button
-            href="https://app.fintela.io"
-            fullWidth
-            variant="outlined"
-            sx={{ py: 1.25 }}
-          >
-            {t('actions.signIn')}
-          </Button>
           <Button
             href="https://app.fintela.io"
             fullWidth

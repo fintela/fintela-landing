@@ -1,11 +1,9 @@
 {
   "hero": {
-    "badge": "Now live · Fintelligent 2026",
     "titleLine1": "The Future of",
     "titleAccent": "Intelligent Investment",
-    "actionWords": ["Design", "Optimize", "Analyze", "Deploy"],
     "marketWords": ["US Stocks", "Crypto", "Forex", "Global Markets"],
-    "subtitlePrefix": "investment strategies across",
+    "subtitlePrefix": "Create investment strategies across",
     "subtitleSuffix": "in a single, AI-native, cloud, quant finance ecosystem",
     "ctaPrimary": "Start building free",
     "ctaSecondary": "See how it works",
@@ -106,87 +104,51 @@
     "eyebrow": "Capabilities",
     "title": "Built for",
     "titleAccent": "serious quant work.",
-    "description": "Stop assembling stacks. Fintela delivers institutional-grade infrastructure as a product — opinionated where it matters, flexible where it counts.",
+    "description": "Institutional-grade infrastructure as a product — opinionated where it matters, flexible where it counts.",
     "items": {
-      "crossMarket": {
-        "title": "Cross-market by design",
-        "description": "A single strategy engine works across crypto, U.S. equities, S&P indices, ETFs, forex and global markets. One mental model, every asset class."
-      },
-      "screener": {
-        "title": "Institutional-grade screener",
-        "description": "Build your investable universe with a Finviz-grade screener: descriptive, fundamental and technical filters as guided dropdowns with a live match count — no guessing units, scales or ranges. Themes and sub-themes classify every ticker into exotic sectors automatically."
+      "ai": {
+        "title": "AI that operates the platform",
+        "description": "Fintelligent generates strategy code, launches studies, builds reports, and explains results in plain English."
       },
       "laboratory": {
         "title": "One lab for your whole workflow",
-        "description": "Strategies, fitness functions, risk managers and data pipelines — authored side by side in a single workbench, with a live Python notebook on a per-session cloud kernel and curated in-app market data. Prototype in a cell, compile it straight into a shippable resource, and publish to or fork from a cross-organization catalog."
-      },
-      "dataPipelines": {
-        "title": "Data pipelines",
-        "description": "Wire any source — built-in feeds, your own external APIs, or your own database behind an HTTPS endpoint — into strategies, fitness and risk managers as reusable, versioned pipelines. Graph-aware validation runs your exact wiring before you save. No config files, no glue code."
-      },
-      "dataLab": {
-        "title": "Know the shape of every ingredient",
-        "description": "Every data source you can feed a strategy — prices, fundamentals, hierarchical groupings, default clusters, basket holdings — shows its exact shape (table, dictionary, membership set or record), how to index it in code, and a live sample. Configure and preview the non-price objects too, so nothing is a black box before you wire it in."
-      },
-      "metaStrategies": {
-        "title": "Meta-strategies on baskets",
-        "description": "Build portfolios of portfolios. A asset group can feed on your graduated baskets — each basket's equity curve scores exactly like a ticker — so you can optimize how capital is allocated across your own portfolios. Strategies can also read basket holdings over time as a signal. Meta-portfolios graduate and trade live like any other strategy."
-      },
-      "allocation": {
-        "title": "Advanced portfolio allocation",
-        "description": "Weight your basket's members with more than equal weight. A premium catalog — risk parity from the full covariance matrix, volatility targeting, and momentum or mean-reversion tilts by any metric — applies identically in backtest and live. Basic methods stay free; advanced ones unlock per basket with Fintela tokens."
-      },
-      "attribution": {
-        "title": "See what's driving your basket",
-        "description": "The Ideas panel attributes your basket's return to each name and sector from its own backtested trades — so you can see, for instance, that one ticker is dragging while the rest compounds. Every insight is one-click testable: re-simulate the basket without a name or sector and see the exact impact, a transient preview that's never traded."
-      },
-      "pipeline": {
-        "title": "One unified pipeline",
-        "description": "Data ingestion, strategy code, optimization, backtesting, analytics and live deployment — no exports, no scripts, no glue code."
-      },
-      "ai": {
-        "title": "AI that operates the platform",
-        "description": "Fintelligent doesn’t answer questions — it generates strategy code, launches studies, builds reports, and explains results in plain English."
-      },
-      "bayesian": {
-        "title": "Bayesian optimization, native",
-        "description": "Thousands of trials searched intelligently — the engine learns from every run, focusing compute where it matters. Train / validation / OOS by default."
-      },
-      "strategyClustering": {
-        "title": "See your distinct strategies",
-        "description": "An optimization's top trials are usually the same strategy in disguise. Fintela clusters every trial by the correlation of its equity curve and shows how many genuinely distinct strategies you found — a behavioral map, the representative curve per family, and which family holds your best trial — so you optimize for real diversity, not lucky duplicates."
-      },
-      "paramImportances": {
-        "title": "Know which knobs matter",
-        "description": "Fintela decomposes each optimization with fANOVA and mean-decrease-impurity to reveal the share of performance variance every hyperparameter actually drives — and in which direction. It contrasts train against validation importance to flag the parameters that overfit, with bootstrap confidence intervals on every estimate. Institutional-grade attribution, not a correlation heuristic."
-      },
-      "metrics": {
-        "title": "20+ performance metrics",
-        "description": "Full equity curves, parameter importance charts, trade- and scaling-level drill-down (per-scale MAE/MFE, scaling efficiency, partial-success ratio), and side-by-side portfolio comparisons. PDF export for stakeholders."
+        "description": "Strategies, fitness functions, and risk managers in a single workbench. Prototype, compile, and publish to a cross-org catalog."
       },
       "python": {
         "title": "Python-first, no setup",
-        "description": "Write strategies as plain Python functions in the in-app editor, with a curated scientific stack — NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY — ready to import. Named parameters, typed ranges, version history. Zero local environment."
+        "description": "Plain Python strategies in-app with NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY. Named parameters, typed ranges, version history. Zero local install."
+      },
+      "bayesian": {
+        "title": "Intelligent and fast optimization",
+        "description": "Intelligent search over thousands of trials with train/validation/OOS by default."
+      },
+      "strategyClustering": {
+        "title": "See your distinct strategies",
+        "description": "Cluster optimization trials by equity-curve correlation to reveal genuinely distinct strategies, their representative curves, and which family holds your best trial."
+      },
+      "paramImportances": {
+        "title": "Know which knobs matter",
+        "description": "fANOVA and mean-decrease-impurity reveal each hyperparameter's share of performance variance, with train vs. validation contrast to flag overfitting and bootstrap confidence intervals."
+      },
+      "metaStrategies": {
+        "title": "Meta-strategies on baskets",
+        "description": "Portfolios of portfolios: feed basket equity curves into higher-level strategies for capital allocation. Basket holdings can also be read as signals. Meta-portfolios trade live like any strategy."
+      },
+      "allocation": {
+        "title": "Advanced portfolio allocation",
+        "description": "Weight baskets with risk parity, volatility targeting, and momentum/mean-reversion tilts. Identical in backtest and live. Basic methods free; advanced unlock per basket with tokens."
+      },
+      "crossMarket": {
+        "title": "Cross-market by design",
+        "description": "One strategy engine across crypto, equities, indices, ETFs, forex and global markets. One mental model, every asset class."
       },
       "liveTrading": {
-        "title": "Live long/short trading through your brokerage",
-        "description": "Promote any backtested portfolio — long-only or long/short — to a live operation. Orders execute through your connected brokerage with real-time order logs and one-click pause."
-      },
-      "protectiveExecution": {
-        "title": "Smart execution with built-in protection",
-        "description": "Tune how live orders fill — market or marketable-limit, day or good-till-canceled — at the basket, strategy, or order level. Every position can arm an automatic protective exit (stop, stop-limit, or trailing stop) the moment a buy fills."
-      },
-      "cloud": {
-        "title": "Cloud-native, zero install",
-        "description": "Fully browser-based, enterprise-grade reliability. Your team, your data, your strategies — accessible securely from anywhere."
-      },
-      "provenance": {
-        "title": "Cryptographic provenance",
-        "description": "Strategies and configurations are hashed and time-stamped, ensuring authorship and tamper-proof auditability across the team."
+        "title": "Live long/short trading",
+        "description": "Promote any backtested portfolio to live execution through your connected brokerage with real-time order logs and one-click pause."
       },
       "privacy": {
         "title": "Private by default, shared on your terms",
-        "description": "Keep every strategy, study and portfolio private, then share exactly what you choose — with specific colleagues or your whole organization. Share a results-only dashboard that shows your performance while keeping your code and hyperparameters hidden."
+        "description": "Keep everything private, then share selectively with colleagues or your organization. Publish results-only dashboards that hide code and hyperparameters."
       }
     }
   },

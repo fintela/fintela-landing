@@ -6,9 +6,7 @@ import { HeroSection } from '../components/sections/HeroSection';
 import { TrustBar } from '../components/sections/TrustBar';
 import { WorkflowSection } from '../components/sections/WorkflowSection';
 import { FeaturesSection } from '../components/sections/FeaturesSection';
-import { QuantumSamplersSection } from '../components/sections/QuantumSamplersSection';
 import { FintelAgentSection } from '../components/sections/FintelAgentSection';
-import { DevExperienceSection } from '../components/sections/DevExperienceSection';
 import { AdvantageSection } from '../components/sections/AdvantageSection';
 import { UseCasesSection } from '../components/sections/UseCasesSection';
 import { FAQSection } from '../components/sections/FAQSection';
@@ -78,9 +76,9 @@ export const HomePage = () => {
       <TrustBar />
       <WorkflowSection />
       <FeaturesSection />
-      <QuantumSamplersSection />
+      {/* <QuantumSamplersSection /> */}
       <FintelAgentSection />
-      <DevExperienceSection />
+      {/* <DevExperienceSection /> */}
       <AdvantageSection />
       <UseCasesSection />
       <FAQSection />

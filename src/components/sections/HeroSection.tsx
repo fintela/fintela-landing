@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Button, Chip, Stack } from '@mui/material';
+import { Box, Container, Typography, Button, Stack } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -11,7 +11,6 @@ import { gradients } from '../../theme/tokens';
 
 export const HeroSection = () => {
   const { t } = useTranslation('home');
-  const actionWords = t('hero.actionWords', { returnObjects: true }) as string[];
   const marketWords = t('hero.marketWords', { returnObjects: true }) as string[];
   const audiencePills = t('hero.audiencePills', { returnObjects: true }) as string[];
 
@@ -74,23 +73,6 @@ export const HeroSection = () => {
 
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Box sx={{ textAlign: 'center', maxWidth: 920, mx: 'auto' }}>
-          <AnimateOnScroll>
-            <Chip
-              label={t('hero.badge')}
-              sx={{
-                mb: 3,
-                height: 28,
-                px: 0.5,
-                bgcolor: 'rgba(102,126,234,0.08)',
-                color: '#4a5de8',
-                fontWeight: 600,
-                fontSize: '0.75rem',
-                letterSpacing: '0.04em',
-                border: '1px solid rgba(102,126,234,0.18)',
-              }}
-            />
-          </AnimateOnScroll>
-
           <AnimateOnScroll delay={80}>
             <Typography
               variant="h1"
@@ -121,7 +103,7 @@ export const HeroSection = () => {
                 mb: 6,
               }}
             >
-              <RotatingWord words={actionWords} align="right" gradient /> {t('hero.subtitlePrefix')}{' '}
+              {t('hero.subtitlePrefix')}{' '}
               <RotatingWord words={marketWords} startDelay={1000} align="left" gradient />
               <br />
               {t('hero.subtitleSuffix')}

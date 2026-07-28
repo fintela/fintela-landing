@@ -7,7 +7,6 @@
     "blog": "Blog"
   },
   "actions": {
-    "signIn": "Iniciar sesión",
     "getStarted": "Comenzar"
   },
   "aria": {

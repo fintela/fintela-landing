@@ -2,12 +2,18 @@
 # Manual deploy. CI (.github/workflows/deploy.yml) does this automatically on
 # every push to main — this script is the local escape hatch.
 #
-# No AWS identifier is hardcoded: this is a public repository. Export these, or
-# put them in a gitignored .env.local and `set -a; . ./.env.local; set +a` first.
+# No AWS identifier is hardcoded: this is a public repository. Export these,
+# or put them in a gitignored .env.local (auto-loaded below if present).
 #
 #   S3_BUCKET                target bucket
 #   CLOUDFRONT_DISTRIBUTION  distribution to invalidate
 set -euo pipefail
+
+if [[ -f .env.local ]]; then
+  set -a
+  . ./.env.local
+  set +a
+fi
 
 : "${S3_BUCKET:?set S3_BUCKET (e.g. export S3_BUCKET=my-site-bucket)}"
 : "${CLOUDFRONT_DISTRIBUTION:?set CLOUDFRONT_DISTRIBUTION}"

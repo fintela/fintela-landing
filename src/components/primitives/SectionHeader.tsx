@@ -1,4 +1,4 @@
-import { Box, Chip, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { gradients } from '../../theme/tokens';
@@ -15,12 +15,10 @@ interface SectionHeaderProps {
 }
 
 export const SectionHeader = ({
-  eyebrow,
   title,
   titleAccent,
   description,
   align = 'center',
-  eyebrowTone = 'soft',
 }: SectionHeaderProps) => {
   return (
     <Box
@@ -31,27 +29,6 @@ export const SectionHeader = ({
         mx: align === 'center' ? 'auto' : 0,
       }}
     >
-      {eyebrow && (
-        <AnimateOnScroll>
-          <Chip
-            label={eyebrow}
-            sx={{
-              mb: 2.5,
-              height: 26,
-              fontSize: '0.7rem',
-              letterSpacing: '0.12em',
-              fontWeight: 700,
-              ...(eyebrowTone === 'gradient'
-                ? { background: gradients.brand, color: '#fff' }
-                : {
-                    bgcolor: 'rgba(102,126,234,0.08)',
-                    color: '#667eea',
-                    border: '1px solid rgba(102,126,234,0.18)',
-                  }),
-            }}
-          />
-        </AnimateOnScroll>
-      )}
       <AnimateOnScroll delay={80}>
         <Typography
           variant="h2"

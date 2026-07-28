@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Box, Chip, CircularProgress, Container, Typography } from '@mui/material';
+import { Box, CircularProgress, Container, Typography } from '@mui/material';
 import { AutoStories, WifiOff } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
@@ -57,16 +57,6 @@ export const BlogPage = () => {
 
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Chip
-              label={t('blog.hero.chip')}
-              sx={{
-                mb: 3,
-                bgcolor: 'rgba(102, 126, 234, 0.1)',
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-              }}
-            />
             <Typography
               variant="h2"
               sx={{
