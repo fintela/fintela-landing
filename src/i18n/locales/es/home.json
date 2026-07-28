@@ -1,0 +1,434 @@
+{
+  "hero": {
+    "badge": "Ya disponible · Fintelligent 2026",
+    "titleLine1": "El futuro de la",
+    "titleAccent": "inversión inteligente",
+    "actionWords": ["Diseña", "Optimiza", "Analiza", "Despliega"],
+    "marketWords": ["Acciones de EE. UU.", "Cripto", "Forex", "Mercados globales"],
+    "subtitlePrefix": "estrategias de inversión en",
+    "subtitleSuffix": "en un único ecosistema de quant finance, nativo de IA y en la nube",
+    "ctaPrimary": "Empieza a construir gratis",
+    "ctaSecondary": "Mira cómo funciona",
+    "audiencePills": ["Hedge funds", "Equipos quant", "Quants independientes", "Mesas de research"]
+  },
+  "heroMock": {
+    "url": "app.fintela.io / studies / sp500-momentum-142",
+    "sidebar": {
+      "dataClusters": "Asset Groups",
+      "strategies": "Estrategias",
+      "fitness": "Fitness",
+      "studies": "Estudios",
+      "portfolios": "Portafolios",
+      "markets": "Mercados",
+      "agents": "Trading en vivo"
+    },
+    "assistantLabel": "Fintelligent",
+    "assistantPrompt": "«Muéstrame los 3 mejores portafolios.»",
+    "studyEyebrow": "Estudio · #142",
+    "studyTitle": "SP500 Momentum · búsqueda bayesiana",
+    "statusRunning": "En ejecución",
+    "trialsChip": "500 trials",
+    "kpiBestSharpe": "Mejor Sharpe",
+    "kpiBestCagr": "Mejor CAGR",
+    "kpiMaxDd": "Máx. DD",
+    "kpiTrialsDone": "Trials completados",
+    "kpiTrialsDoneValue": "312 / 500",
+    "equityTitle": "Mejor portafolio · curva de equity",
+    "legendTrain": "Train",
+    "legendVal": "Val",
+    "legendOos": "OOS",
+    "equityFooter": "+312.4% en 6.5 años · Sharpe OOS 1.94",
+    "topPortfolios": "Mejores portafolios",
+    "columnRank": "#",
+    "columnSharpe": "Sharpe",
+    "columnCagr": "CAGR",
+    "columnMaxDd": "Máx. DD"
+  },
+  "trustBar": {
+    "title": "La confianza de asignadores de capital y fondos cuantitativos"
+  },
+  "workflow": {
+    "eyebrow": "La plataforma",
+    "title": "Un único pipeline.",
+    "titleAccent": "Cada paso conectado.",
+    "description": "Se acabaron las exportaciones de archivos, los scripts locales y las herramientas improvisadas. Cada etapa alimenta a la siguiente, todo en el navegador, todo reproducible.",
+    "diagramLabel": "Flujo de la plataforma Fintela: seis pasos conectados",
+    "centerName": "FINTELA",
+    "centerSub": "PLATAFORMA",
+    "nodes": {
+      "dataClusters": {
+        "label": "Asset Groups",
+        "sub": "Universo de mercado",
+        "desc": "Define tu universo invertible. Snapshots reutilizables de datos de mercado en acciones, cripto, ETFs, forex e índices globales — cada backtest reproducible."
+      },
+      "strategies": {
+        "label": "Estrategias",
+        "sub": "Lógica de trading",
+        "desc": "Escribe estrategias como funciones de Python en el editor integrado — o descríbelas en lenguaje natural y deja que Fintelligent genere el código, los parámetros y los rangos."
+      },
+      "fitness": {
+        "label": "Fitness",
+        "sub": "Define lo «bueno»",
+        "desc": "Compón funciones objetivo con más de 20 métricas — Sharpe, Sortino, Calmar, máximo drawdown — y reutilízalas en tus estudios."
+      },
+      "studies": {
+        "label": "Estudios",
+        "sub": "Búsqueda bayesiana",
+        "desc": "Lanza miles de trials en paralelo. La optimización bayesiana enfoca la búsqueda en las regiones prometedoras; los resultados se validan en ventanas de train, val y out-of-sample."
+      },
+      "portfolios": {
+        "label": "Portafolios",
+        "sub": "Analiza resultados",
+        "desc": "Explora portafolios rankeados, curvas de equity completas, importancia de parámetros y desglose a nivel de operación. Exporta informes en PDF cuando quieras."
+      },
+      "liveAgents": {
+        "label": "Trading en vivo",
+        "sub": "Despliega a tu bróker",
+        "desc": "Promueve portafolios validados a operaciones en vivo que negocian a través de tu bróker conectado. Monitorea posiciones y P&L. Un clic para pausar o detener."
+      }
+    },
+    "stats": {
+      "conceptToLive": {
+        "num": "3 días",
+        "label": "Del concepto a producción"
+      },
+      "experiments": {
+        "num": "100+",
+        "label": "Experimentos / semana"
+      },
+      "faster": {
+        "num": "10×",
+        "label": "Más rápido que el stack tradicional"
+      }
+    }
+  },
+  "features": {
+    "eyebrow": "Capacidades",
+    "title": "Hecho para",
+    "titleAccent": "trabajo quant serio.",
+    "description": "Deja de ensamblar stacks. Fintela ofrece infraestructura de nivel institucional como producto — con criterio donde importa, flexible donde cuenta.",
+    "items": {
+      "crossMarket": {
+        "title": "Multi-mercado por diseño",
+        "description": "Un único motor de estrategias funciona en cripto, acciones de EE. UU., índices S&P, ETFs, forex y mercados globales. Un solo modelo mental, todas las clases de activos."
+      },
+      "screener": {
+        "title": "Screener de grado institucional",
+        "description": "Construye tu universo invertible con un screener de nivel Finviz: filtros descriptivos, fundamentales y técnicos como menús guiados con contador de coincidencias en vivo — sin adivinar unidades, escalas ni rangos. Los temas y subtemas clasifican cada activo en sectores exóticos automáticamente."
+      },
+      "laboratory": {
+        "title": "Un laboratorio para todo tu flujo",
+        "description": "Estrategias, funciones de fitness, gestores de riesgo y pipelines de datos — creados lado a lado en un solo espacio de trabajo, con un notebook de Python en vivo sobre un kernel en la nube por sesión y datos de mercado curados dentro de la app. Prototipa en una celda, compílala directo en un recurso listo para usar, y publica en (o haz fork de) un catálogo entre organizaciones."
+      },
+      "dataPipelines": {
+        "title": "Pipelines de datos",
+        "description": "Conecta cualquier fuente —feeds integrados, tus propias APIs externas o tu propia base de datos detrás de un endpoint HTTPS— a estrategias, fitness y risk managers como pipelines reutilizables y versionados. La validación graph-aware ejecuta tu cableado exacto antes de guardar. Sin archivos de configuración, sin código de pegamento."
+      },
+      "dataLab": {
+        "title": "Conoce la forma de cada ingrediente",
+        "description": "Cada fuente de datos que puedes alimentar a una estrategia —precios, fundamentales, agrupaciones jerárquicas, clusters por defecto, composición de baskets— muestra su forma exacta (tabla, diccionario, conjunto de membresía o registro), cómo indexarla en código y una muestra en vivo. Configura y previsualiza también los objetos que no son de precio, para que nada sea una caja negra antes de cablearlo."
+      },
+      "metaStrategies": {
+        "title": "Meta-estrategias sobre baskets",
+        "description": "Construye portafolios de portafolios. Un asset group puede alimentarse de tus baskets graduados —la curva de equity de cada basket puntúa igual que un ticker— para que optimices cómo se asigna el capital entre tus propios portafolios. Las estrategias también pueden leer la composición de los baskets a lo largo del tiempo como señal. Los meta-portafolios se gradúan y operan en vivo como cualquier otra estrategia."
+      },
+      "allocation": {
+        "title": "Asignación avanzada de portafolio",
+        "description": "Pondera los miembros de tu basket más allá del peso igual. Un catálogo premium —paridad de riesgo con la matriz de covarianzas completa, volatilidad objetivo, y sesgos de momentum o reversión a la media por cualquier métrica— se aplica idéntico en backtest y en vivo. Los métodos básicos siguen gratis; los avanzados se desbloquean por basket con tokens Fintela."
+      },
+      "attribution": {
+        "title": "Descubre qué mueve tu basket",
+        "description": "El panel de Ideas atribuye el rendimiento de tu basket a cada nombre y sector a partir de sus propias operaciones de backtest — para que veas, por ejemplo, que un ticker está restando mientras el resto compone. Cada hallazgo se prueba en un clic: re-simula el basket sin ese nombre o sector y observa el impacto exacto, una vista previa que nunca se opera."
+      },
+      "pipeline": {
+        "title": "Un pipeline unificado",
+        "description": "Ingesta de datos, código de estrategia, optimización, backtesting, analítica y despliegue en vivo — sin exportaciones, sin scripts, sin código de pegamento."
+      },
+      "ai": {
+        "title": "IA que opera la plataforma",
+        "description": "Fintelligent no responde preguntas — genera código de estrategias, lanza estudios, crea informes y explica los resultados en lenguaje natural."
+      },
+      "bayesian": {
+        "title": "Optimización bayesiana, nativa",
+        "description": "Miles de trials buscados de forma inteligente — el motor aprende de cada ejecución y enfoca el cómputo donde importa. Train / validación / OOS por defecto."
+      },
+      "strategyClustering": {
+        "title": "Descubre tus estrategias distintas",
+        "description": "Las mejores pruebas de una optimización suelen ser la misma estrategia disfrazada. Fintela agrupa cada prueba por la correlación de su curva de equity y te muestra cuántas estrategias verdaderamente distintas encontraste — un mapa de comportamiento, la curva representativa de cada familia y cuál contiene tu mejor prueba — para que optimices buscando diversidad real, no duplicados con suerte."
+      },
+      "paramImportances": {
+        "title": "Sabe qué perillas importan",
+        "description": "Fintela descompone cada optimización con fANOVA y mean-decrease-impurity para revelar qué fracción de la varianza del desempeño mueve realmente cada hiperparámetro — y en qué dirección. Contrasta la importancia en entrenamiento contra validación para señalar los parámetros que sobreajustan, con intervalos de confianza bootstrap en cada estimación. Atribución de grado institucional, no una heurística de correlación."
+      },
+      "metrics": {
+        "title": "Más de 20 métricas de desempeño",
+        "description": "Curvas de equity completas, gráficos de importancia de parámetros, desglose a nivel de operación y de escalado (MAE/MFE por escala, eficiencia de escalado, ratio de éxito parcial) y comparativas de portafolios lado a lado. Exportación a PDF para stakeholders."
+      },
+      "python": {
+        "title": "Python primero, sin configuración",
+        "description": "Escribe estrategias como funciones de Python en el editor integrado, con un stack científico curado —NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY— listo para importar. Parámetros nombrados, rangos tipados, historial de versiones. Cero entorno local."
+      },
+      "liveTrading": {
+        "title": "Trading long/short en vivo a través de tu bróker",
+        "description": "Promueve cualquier portafolio backtesteado —solo en largo o long/short— a una operación en vivo. Las órdenes se ejecutan a través de tu bróker conectado con logs en tiempo real y pausa con un clic."
+      },
+      "protectiveExecution": {
+        "title": "Ejecución inteligente con protección integrada",
+        "description": "Ajusta cómo se llenan las órdenes en vivo —market o limit ejecutable, day o good-till-canceled— a nivel de canasta, estrategia u orden. Cada posición puede armar una salida protectora automática (stop, stop-limit o trailing stop) en cuanto se ejecuta una compra."
+      },
+      "cloud": {
+        "title": "Nativo en la nube, sin instalación",
+        "description": "Totalmente basado en navegador, con fiabilidad de nivel empresarial. Tu equipo, tus datos, tus estrategias — accesibles de forma segura desde cualquier lugar."
+      },
+      "provenance": {
+        "title": "Procedencia criptográfica",
+        "description": "Las estrategias y configuraciones se hashean y marcan con fecha, garantizando la autoría y una auditabilidad a prueba de manipulaciones en todo el equipo."
+      },
+      "privacy": {
+        "title": "Privado por defecto, compartido a tu manera",
+        "description": "Mantén cada estrategia, estudio y portafolio en privado, y comparte exactamente lo que tú decidas — con colegas específicos o con toda tu organización. Comparte un dashboard de solo resultados que muestra tu rendimiento sin revelar tu código ni tus hiperparámetros."
+      }
+    }
+  },
+  "quantum": {
+    "eyebrow": "Nuevo · Optimización cuántica",
+    "title": "Optimiza con un",
+    "titleAccent": "núcleo cuántico.",
+    "description": "Envuelve tu búsqueda de hiperparámetros en un algoritmo de optimización cuántica, ejecutado en una computadora cuántica emulada. Tus simulaciones y tu fitness siguen siendo clásicos e intactos — solo la búsqueda se vuelve cuántica.",
+    "capabilities": {
+      "qaoa": {
+        "title": "Optimización QAOA",
+        "desc": "Reformulamos tu espacio de búsqueda como un QUBO y dejamos que el Algoritmo de Optimización Aproximada Cuántica — sobre un simulador de circuitos cuánticos — decida dónde buscar a continuación."
+      },
+      "qkernel": {
+        "title": "Búsqueda bayesiana con kernel cuántico",
+        "desc": "Una búsqueda por proceso gaussiano cuyo kernel se mide con un mapa de características cuántico, comparando configuraciones dentro de un espacio de estados cuántico."
+      },
+      "hardwareReady": {
+        "title": "Emulado hoy, listo para hardware mañana",
+        "desc": "Construido sobre PennyLane: el mismo estudio puede apuntar a procesadores cuánticos reales — AWS Braket, IBM Quantum — el día que lo decidas."
+      }
+    },
+    "panel": {
+      "badge": "Emulado en un simulador cuántico",
+      "codeHint": "sampler = \"QAOA\"",
+      "captionBefore": "Tu espacio de búsqueda,",
+      "captionHighlight": "explorado en un circuito cuántico."
+    },
+    "note": "Experimental. Un emulador es una ventaja de investigación y un puente hacia hardware cuántico real — reimagina cómo explora la búsqueda, no qué tan rápido corre."
+  },
+  "fintelAgent": {
+    "eyebrow": "Fintelligent",
+    "title": "Una IA que de verdad",
+    "titleAccent": "opera la plataforma.",
+    "description": "No es un chatbot pegado por encima. Fintelligent está conectado a cada fuente de datos y cada acción — diseñado para hacer el trabajo, no solo describirlo.",
+    "capabilities": {
+      "readsData": {
+        "title": "Lee tus datos",
+        "desc": "Cualquier métrica, cualquier curva de equity, cualquier operación, cualquier estudio — respondido en lenguaje natural y con fuentes."
+      },
+      "generatesStrategies": {
+        "title": "Genera estrategias",
+        "desc": "Describe una idea — Fintelligent escribe el Python, configura los parámetros y prepara el formulario para tu revisión."
+      },
+      "operatesUi": {
+        "title": "Opera la interfaz",
+        "desc": "«Abre el estudio 8 y clónalo.» «Llévame a Mercados.» Cada página y acción accesible por intención."
+      },
+      "transparent": {
+        "title": "Siempre transparente",
+        "desc": "Cada llamada a herramienta es visible. Cada acción irreversible espera tu confirmación explícita."
+      }
+    },
+    "chat": {
+      "assistantName": "Fintelligent",
+      "statusLine": "Conectado · Sonnet 4.6 · 12.4k tokens",
+      "online": "en línea",
+      "userMessage1": "Ejecuta 500 trials de optimización en mi estrategia de momentum. Usa la función de fitness Sharpe y el cluster SP500.",
+      "planTitle": "Plan",
+      "planBody": "Lanzar estudio con: estrategia = MomentumV3, fitness = Sharpe, cluster = SP500 (2019–2025), 500 trials, división train/val/OOS 70/15/15.",
+      "awaitingConfirmation": "Esperando confirmación — acción irreversible",
+      "userMessage2": "Confirmar.",
+      "launchedTitle": "Estudio #142 lanzado",
+      "launchedBody": "312 / 500 trials completados. Mejor Sharpe 2.41 (train) → 1.94 (OOS). Progreso en vivo en la página de Estudios.",
+      "inputPlaceholder": "Pregunta lo que quieras — «explica el estudio 142 vs 138»"
+    }
+  },
+  "devExperience": {
+    "eyebrow": "Experiencia de desarrollador",
+    "title": "Construido como un producto.",
+    "titleAccent": "Documentado como una API.",
+    "description": "Cada endpoint, cada payload, cada estado de un trial — totalmente documentado. Auth con JWT, JSON entra, JSON sale. Sin instalar SDK, sin contratos ocultos.",
+    "codeFilename": "launch-study.http",
+    "docLinks": {
+      "quickstart": {
+        "title": "Inicio rápido",
+        "description": "Tu primer estudio en 10 minutos"
+      },
+      "api": {
+        "title": "Referencia de la API",
+        "description": "Cada endpoint, cada payload"
+      },
+      "guides": {
+        "title": "Guías de integración",
+        "description": "FastAPI, Express, listas para producción"
+      },
+      "optimizer": {
+        "title": "Motor del optimizador",
+        "description": "Samplers, paralelismo, ciclo de vida"
+      }
+    }
+  },
+  "advantage": {
+    "eyebrow": "La ventaja",
+    "title": "Deja de construir infra.",
+    "titleAccent": "Empieza a componer alpha.",
+    "description": "Una comparación lado a lado de lo que cambia cuando tu stack es unificado, nativo de IA y entregado en la nube.",
+    "legacyHeader": "Stack tradicional",
+    "withFintelaHeader": "Con Fintela",
+    "rows": {
+      "ideaToLive": {
+        "without": "30 días de la idea a producción",
+        "with": "3 días",
+        "badge": "10× más rápido"
+      },
+      "firstProfitable": {
+        "without": "12–24 meses hasta la primera estrategia rentable",
+        "with": "1–3 meses",
+        "badge": ""
+      },
+      "infraCost": {
+        "without": "$600K+/año en infraestructura y herramientas",
+        "with": "Eliminado",
+        "badge": ""
+      },
+      "onboarding": {
+        "without": "6–12 meses de onboarding para nuevos quants",
+        "with": "2–3 semanas",
+        "badge": ""
+      },
+      "experiments": {
+        "without": "2–3 experimentos de estrategia / semana",
+        "with": "100+ / semana",
+        "badge": "33× más"
+      },
+      "successRate": {
+        "without": "5% de tasa de éxito de estrategias",
+        "with": "30–40%",
+        "badge": "4–8× de mejora"
+      }
+    },
+    "impactEyebrow": "Impacto cuantificado",
+    "impactBefore": "Un hedge fund en Fintela lanza",
+    "impactHighlight": "10× más estrategias al año",
+    "impactAfter": "que uno con un stack tradicional.",
+    "stats": {
+      "strategiesPerYear": {
+        "value": "60–120",
+        "label": "estrategias / año",
+        "sub": "vs. 12 con infra tradicional"
+      },
+      "infraCost": {
+        "value": "$0",
+        "label": "costo de infraestructura",
+        "sub": "vs. $600K+/año del stack tradicional"
+      },
+      "edge": {
+        "value": "10×",
+        "label": "ventaja competitiva",
+        "sub": "medida frente a fondos de referencia"
+      }
+    }
+  },
+  "useCases": {
+    "eyebrow": "Para quién es",
+    "title": "Hecho para cada capa",
+    "titleAccent": "del stack quant.",
+    "description": "Ya sea que gestiones capital, trabajes en solitario o lideres una mesa de research — los mismos primitivos, el mismo motor, la misma ventaja compuesta.",
+    "audiences": {
+      "institutions": {
+        "badge": "Para instituciones",
+        "title": "Hedge funds y traders institucionales",
+        "description": "Elimina la fragmentación entre research, backtesting y ejecución. Escala el research de estrategias a cientos de experimentos concurrentes sin hacer crecer el equipo de infra.",
+        "outcomes": [
+          "Recorta $600K+/año en herramientas tradicionales",
+          "Despliega 60–120 estrategias/año frente a 12",
+          "Incorpora quants en 2–3 semanas"
+        ]
+      },
+      "independents": {
+        "badge": "Para quants independientes",
+        "title": "Quants independientes y traders sistemáticos",
+        "description": "Optimización, backtesting y despliegue en vivo de nivel institucional sin construir ni mantener una sola línea de infraestructura. Del notebook al capital en vivo, el mismo día.",
+        "outcomes": [
+          "Sin entorno local, sin devops",
+          "La misma búsqueda bayesiana que usan los fondos",
+          "Despliegue en vivo conectado a tu bróker"
+        ]
+      },
+      "researchDesks": {
+        "badge": "Para mesas de research",
+        "title": "Equipos de research quant",
+        "description": "Biblioteca de estrategias compartida, Asset Groups compartidos, resultados de optimización compartidos — todo dentro de un único espacio de trabajo organizacional con procedencia criptográfica integrada.",
+        "outcomes": [
+          "Una única fuente de verdad para todo el equipo",
+          "Historial de estrategias hasheado y a prueba de manipulaciones",
+          "Informes en PDF para el comité de inversión"
+        ]
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "Preguntas frecuentes",
+    "title": "Preguntas,",
+    "titleAccent": "respondidas.",
+    "description": "La lectura rápida sobre cómo funciona Fintela, cuánto cuesta y dónde encaja.",
+    "items": {
+      "assetClasses": {
+        "q": "¿Qué clases de activos soporta Fintela?",
+        "a": "Cripto y divisas, acciones de EE. UU., índices S&P, ETFs, forex y mercados globales — todo a través del mismo motor de estrategias unificado. Construye una estrategia una vez y pruébala en cualquier cluster que definas."
+      },
+      "vsBacktesting": {
+        "q": "¿En qué se diferencia Fintela de una librería de backtesting estándar?",
+        "a": "Fintela va más allá del backtesting — unifica Asset Groups, código de estrategia, optimización bayesiana de parámetros, evaluación train/validación/OOS, analítica de portafolios y despliegue en vivo vía tu bróker conectado en un único pipeline. Sin exportaciones, sin scripts, sin código de pegamento entre herramientas."
+      },
+      "python": {
+        "q": "¿Necesito saber Python?",
+        "a": "Sí, las estrategias son funciones de Python — pero Fintelligent puede generarlas por ti. Describe lo que quieres en lenguaje natural y el agente escribe el código, configura los parámetros y prepara el formulario para tu revisión."
+      },
+      "optimization": {
+        "q": "¿Cómo funciona la optimización?",
+        "a": "Fintela usa optimización bayesiana, que aprende de cada trial para enfocar la búsqueda en las regiones de parámetros más prometedoras. Cada estudio se evalúa en tres ventanas temporales — train (in-sample), validación (held-out) y out-of-sample — para que la robustez esté integrada en el flujo de trabajo."
+      },
+      "seedExport": {
+        "q": "¿Puedo exportar la señal de mi estrategia?",
+        "a": "Sí. Cada trial, basket y ejecución de sandbox expone su seed — la señal diaria de rebalanceo (fecha → ticker → posición/asignación) que el engine usó para construir el backtest. Puedes inspeccionarla fecha por fecha y descargarla como JSON (la entrada exacta del engine) o CSV, directamente desde la app."
+      },
+      "liveTrading": {
+        "q": "¿Cómo funciona el trading en vivo?",
+        "a": "Los portafolios validados pueden promoverse a operaciones en vivo que ejecutan a través de tu bróker conectado. Ves logs de órdenes en tiempo real, P&L y una pausa con un clic. Varias operaciones pueden ejecutarse en paralelo sobre distintos baskets."
+      },
+      "security": {
+        "q": "¿Es seguro el código de mi estrategia?",
+        "a": "Sí. Las estrategias y configuraciones se hashean y marcan con fecha de forma criptográfica, garantizando la verificación de autoría y una auditabilidad a prueba de manipulaciones. La plataforma está totalmente alojada en la nube con fiabilidad de nivel empresarial."
+      },
+      "poweredBy": {
+        "q": "¿En qué se basa Fintelligent y es seguro?",
+        "a": "Fintelligent funciona sobre DeepSeek V4 (con enrutamiento automático entre Pro y Flash) con acceso gestionado por Fintela — sin claves de API que aportar. Cada llamada a herramienta es visible en el chat, y cada acción irreversible (crear/detener un estudio, desplegar una operación) requiere tu confirmación explícita antes de ejecutarse."
+      },
+      "speed": {
+        "q": "¿Qué tan rápido puedo pasar de la idea al capital en vivo?",
+        "a": "La mayoría de los equipos alcanzan una estrategia totalmente validada y desplegable en 3 días — unas 10× más rápido que la infraestructura tradicional. El cuello de botella es la calidad de la idea, no las herramientas."
+      }
+    }
+  },
+  "finalCta": {
+    "eyebrow": "Listo cuando tú lo estés",
+    "titleLine1": "Empieza tu primer estudio hoy.",
+    "titleAccent": "Sal en vivo esta semana.",
+    "description": "Sin pagos grandes, sin términos legales complicados. El mismo motor que usan los hedge funds — disponible para ti en minutos.",
+    "ctaPrimary": "Empieza gratis",
+    "ctaSecondary": "Habla con el equipo",
+    "footnote": "Nativo en la nube · Conectado a tu bróker · Fintelligent incluido"
+  }
+}

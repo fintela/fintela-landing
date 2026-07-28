@@ -1,0 +1,17 @@
+{
+  "language": {
+    "label": "Idioma",
+    "change": "Cambiar idioma"
+  },
+  "actions": {
+    "getStarted": "Comenzar",
+    "signIn": "Iniciar sesión",
+    "learnMore": "Saber más"
+  },
+  "footer": {
+    "legal": {
+      "terms": "Términos y Condiciones",
+      "privacy": "Política de privacidad"
+    }
+  }
+}

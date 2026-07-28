@@ -1,0 +1,59 @@
+{
+  "contact": {
+    "hero": {
+      "chip": "We're Here to Help",
+      "title": "Get in Touch",
+      "subtitle": "Request a demo or get support from our team. We'll get back to you within 24 hours."
+    },
+    "toggle": {
+      "heading": "How can we help you?",
+      "demo": "Request a Demo",
+      "support": "Contact Support"
+    },
+    "form": {
+      "name": "Full Name",
+      "company": "Company",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "messageLabelDemo": "Tell us about your needs",
+      "messageLabelSupport": "Describe your issue or question",
+      "messagePlaceholderDemo": "What features are you most interested in? What are your use cases?",
+      "messagePlaceholderSupport": "Please provide as much detail as possible about your issue..."
+    },
+    "submit": {
+      "sending": "Sending...",
+      "demo": "Request Demo",
+      "support": "Submit Support Request"
+    },
+    "alert": {
+      "successDemo": "Thank you for your demo request! We'll contact you within 24 hours.",
+      "successSupport": "Thank you for your support request! We'll contact you within 24 hours.",
+      "error": "Failed to send message. Please try again or contact us directly."
+    },
+    "assistance": {
+      "heading": "Need immediate assistance?"
+    }
+  },
+  "blog": {
+    "hero": {
+      "chip": "Insights & Tutorials",
+      "title": "Fintela Blog",
+      "subtitle": "Insights, tutorials, and best practices for quantitative finance and algorithmic trading."
+    },
+    "readMore": "Read More",
+    "readTime": "{{minutes}} min read",
+    "backToBlog": "Back to Blog",
+    "empty": {
+      "title": "No posts yet",
+      "body": "We're working on the first articles. Check back soon for insights on quantitative finance and algorithmic trading."
+    },
+    "error": {
+      "title": "Posts couldn't be loaded",
+      "body": "Something went wrong while fetching the articles. Refresh the page or try again in a few minutes."
+    },
+    "notFound": {
+      "title": "Post not found",
+      "body": "This article may have been moved or unpublished. Head back to the blog to see everything that's live."
+    }
+  }
+}

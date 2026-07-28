@@ -1,0 +1,59 @@
+{
+  "contact": {
+    "hero": {
+      "chip": "Estamos aquí para ayudarte",
+      "title": "Ponte en contacto",
+      "subtitle": "Solicita una demo u obtén soporte de nuestro equipo. Te responderemos en un plazo de 24 horas."
+    },
+    "toggle": {
+      "heading": "¿Cómo podemos ayudarte?",
+      "demo": "Solicitar una demo",
+      "support": "Contactar a soporte"
+    },
+    "form": {
+      "name": "Nombre completo",
+      "company": "Empresa",
+      "email": "Correo electrónico",
+      "phone": "Número de teléfono",
+      "messageLabelDemo": "Cuéntanos sobre tus necesidades",
+      "messageLabelSupport": "Describe tu problema o pregunta",
+      "messagePlaceholderDemo": "¿Qué funciones te interesan más? ¿Cuáles son tus casos de uso?",
+      "messagePlaceholderSupport": "Por favor, proporciona todos los detalles posibles sobre tu problema..."
+    },
+    "submit": {
+      "sending": "Enviando...",
+      "demo": "Solicitar demo",
+      "support": "Enviar solicitud de soporte"
+    },
+    "alert": {
+      "successDemo": "¡Gracias por tu solicitud de demo! Te contactaremos en un plazo de 24 horas.",
+      "successSupport": "¡Gracias por tu solicitud de soporte! Te contactaremos en un plazo de 24 horas.",
+      "error": "No se pudo enviar el mensaje. Inténtalo de nuevo o contáctanos directamente."
+    },
+    "assistance": {
+      "heading": "¿Necesitas ayuda inmediata?"
+    }
+  },
+  "blog": {
+    "hero": {
+      "chip": "Análisis y tutoriales",
+      "title": "Blog de Fintela",
+      "subtitle": "Análisis, tutoriales y mejores prácticas para las finanzas cuantitativas y el trading algorítmico."
+    },
+    "readMore": "Leer más",
+    "readTime": "{{minutes}} min de lectura",
+    "backToBlog": "Volver al blog",
+    "empty": {
+      "title": "Aún no hay artículos",
+      "body": "Estamos preparando los primeros artículos. Vuelve pronto para leer análisis sobre finanzas cuantitativas y trading algorítmico."
+    },
+    "error": {
+      "title": "No se pudieron cargar los artículos",
+      "body": "Algo falló al obtener los artículos. Actualiza la página o inténtalo de nuevo en unos minutos."
+    },
+    "notFound": {
+      "title": "Artículo no encontrado",
+      "body": "Puede que este artículo se haya movido o despublicado. Vuelve al blog para ver todo lo que está disponible."
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "tagline": "Design, optimize, and deploy investment strategies across global markets — in a single, AI-native, cloud, quant finance ecosystem.",
+  "columns": {
+    "product": {
+      "title": "Product",
+      "links": {
+        "platform": "Platform",
+        "fintelagent": "Fintelligent",
+        "useCases": "Use cases",
+        "pricing": "Pricing"
+      }
+    },
+    "resources": {
+      "title": "Resources",
+      "links": {
+        "documentation": "Documentation",
+        "engine": "Engine reference",
+        "datacluster": "Asset groups",
+        "blog": "Blog"
+      }
+    },
+    "company": {
+      "title": "Company",
+      "links": {
+        "contact": "Contact",
+        "faq": "FAQ"
+      }
+    }
+  }
+}

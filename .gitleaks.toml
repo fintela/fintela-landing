@@ -1,0 +1,28 @@
+# gitleaks config for Fintela — extends the default ruleset with an allowlist
+# for values that are public-by-design or intentional placeholders.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public-by-design values, templates, and redacted placeholders"
+paths = [
+  '''.*\.example$''',
+  '''frontend/\.env$''',            # only VITE_* client config + Stripe pk_live (publishable)
+  '''infra/keycloak/realm-fintela\.json$''',  # local-dev realm with 'local-dev-secret' placeholder
+]
+regexes = [
+  '''pk_live_[A-Za-z0-9]+''',       # Stripe PUBLISHABLE key — meant to ship to the browser
+  '''pk_test_[A-Za-z0-9]+''',
+  '''sk_live_REDACTED_ROTATED''',   # our redaction placeholder
+  '''REDACTED_DB_PASSWORD''',
+  # Doc/UI format hints — a trailing literal "..." is the tell, and no real key
+  # carries one. Covers both the bare `sk_live_...` and the truncated-looking
+  # `sk_live_abc123...` in the developer docs' "unsafe usage" sample.
+  '''sk_live_[A-Za-z0-9]*\.\.\.''',
+  '''sk_test_[A-Za-z0-9]*\.\.\.''',
+  '''(Bearer )?YOUR_API_KEY''',     # docs placeholder in API curl examples (DeveloperApiTab)
+  # AWS resource IDENTIFIERS — not credentials. Reading them grants nothing
+  # without IAM perms; they already appear throughout the tracked infra/terraform/.
+  '''prod/fintela/[A-Za-z0-9._/-]+''',          # Secrets Manager secret NAMES (e.g. prod/fintela/db)
+  '''arn:aws:[a-z0-9-]+:[a-z0-9-]*:[0-9]{12}:[^\s"'`]+''',  # any AWS ARN
+]

@@ -1,0 +1,19 @@
+{
+  "strategy": "Strategy",
+  "strategies": "Strategies",
+  "study": "Study",
+  "studies": "Studies",
+  "trial": "Trial",
+  "trials": "Trials",
+  "portfolio": "Portfolio",
+  "portfolios": "Portfolios",
+  "basket": "Basket",
+  "baskets": "Baskets",
+  "operation": "Operation",
+  "fitnessFunction": "Fitness Function",
+  "fitnessFunctions": "Fitness Functions",
+  "dataCluster": "Asset Group",
+  "dataClusters": "Asset Groups",
+  "riskManager": "Risk Manager",
+  "riskManagers": "Risk Managers"
+}

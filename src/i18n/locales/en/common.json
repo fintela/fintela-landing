@@ -1,0 +1,17 @@
+{
+  "language": {
+    "label": "Language",
+    "change": "Change language"
+  },
+  "actions": {
+    "getStarted": "Get started",
+    "signIn": "Sign in",
+    "learnMore": "Learn more"
+  },
+  "footer": {
+    "legal": {
+      "terms": "Terms and Conditions",
+      "privacy": "Privacy Policy"
+    }
+  }
+}

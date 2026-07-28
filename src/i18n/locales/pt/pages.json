@@ -1,0 +1,59 @@
+{
+  "contact": {
+    "hero": {
+      "chip": "Estamos aqui para ajudar",
+      "title": "Entre em contato",
+      "subtitle": "Solicite uma demonstração ou obtenha suporte da nossa equipe. Responderemos em até 24 horas."
+    },
+    "toggle": {
+      "heading": "Como podemos ajudar?",
+      "demo": "Solicitar uma demonstração",
+      "support": "Falar com o suporte"
+    },
+    "form": {
+      "name": "Nome completo",
+      "company": "Empresa",
+      "email": "Endereço de e-mail",
+      "phone": "Número de telefone",
+      "messageLabelDemo": "Conte-nos sobre suas necessidades",
+      "messageLabelSupport": "Descreva seu problema ou dúvida",
+      "messagePlaceholderDemo": "Quais recursos mais interessam a você? Quais são seus casos de uso?",
+      "messagePlaceholderSupport": "Por favor, forneça o máximo de detalhes possível sobre seu problema..."
+    },
+    "submit": {
+      "sending": "Enviando...",
+      "demo": "Solicitar demonstração",
+      "support": "Enviar solicitação de suporte"
+    },
+    "alert": {
+      "successDemo": "Obrigado pela sua solicitação de demonstração! Entraremos em contato em até 24 horas.",
+      "successSupport": "Obrigado pela sua solicitação de suporte! Entraremos em contato em até 24 horas.",
+      "error": "Falha ao enviar a mensagem. Tente novamente ou entre em contato conosco diretamente."
+    },
+    "assistance": {
+      "heading": "Precisa de ajuda imediata?"
+    }
+  },
+  "blog": {
+    "hero": {
+      "chip": "Análises e tutoriais",
+      "title": "Blog da Fintela",
+      "subtitle": "Análises, tutoriais e melhores práticas para finanças quantitativas e trading algorítmico."
+    },
+    "readMore": "Leia mais",
+    "readTime": "{{minutes}} min de leitura",
+    "backToBlog": "Voltar ao blog",
+    "empty": {
+      "title": "Ainda não há artigos",
+      "body": "Estamos preparando os primeiros artigos. Volte em breve para ler análises sobre finanças quantitativas e trading algorítmico."
+    },
+    "error": {
+      "title": "Não foi possível carregar os artigos",
+      "body": "Algo falhou ao buscar os artigos. Atualize a página ou tente novamente em alguns minutos."
+    },
+    "notFound": {
+      "title": "Artigo não encontrado",
+      "body": "Este artigo pode ter sido movido ou despublicado. Volte ao blog para ver tudo o que está disponível."
+    }
+  }
+}

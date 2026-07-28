@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "platform": "Plataforma",
+    "fintelagent": "Fintelligent",
+    "useCases": "Casos de uso",
+    "documentation": "Documentação",
+    "blog": "Blog"
+  },
+  "actions": {
+    "signIn": "Entrar",
+    "getStarted": "Começar"
+  },
+  "aria": {
+    "home": "Fintela — Início",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu"
+  }
+}

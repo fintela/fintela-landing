@@ -1,0 +1,30 @@
+{
+  "tagline": "Projete, otimize e implante estratégias de investimento nos mercados globais — em um único ecossistema de finanças quantitativas na nuvem, AI-native.",
+  "columns": {
+    "product": {
+      "title": "Produto",
+      "links": {
+        "platform": "Plataforma",
+        "fintelagent": "Fintelligent",
+        "useCases": "Casos de uso",
+        "pricing": "Preços"
+      }
+    },
+    "resources": {
+      "title": "Recursos",
+      "links": {
+        "documentation": "Documentação",
+        "engine": "Referência do motor",
+        "datacluster": "Asset Groups",
+        "blog": "Blog"
+      }
+    },
+    "company": {
+      "title": "Empresa",
+      "links": {
+        "contact": "Contato",
+        "faq": "FAQ"
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+name: CI
+
+# Gates every pull request. Ports the checks that lived in the monorepo's
+# landing-check.yml, minus the two that only made sense there (the cross-app
+# docs-content drift guard, and frontend/ i18n parity — this repo is the only
+# consumer of both now).
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc -b
+
+      - name: Build
+        run: npm run build
+
+      # The page a user (or an Alpaca marketplace reviewer) reads IS the contract,
+      # so a placeholder must never reach /terms or /privacy. Also asserts counsel
+      # has signed the text off — see content/legal/STATUS.json.
+      - name: Legal documents are counsel-final
+        run: node scripts/check-legal-final.mjs
+
+      - name: i18n key parity (en/es/pt)
+        run: node scripts/i18n-keysync.mjs
+
+      # These hosts do not serve the site and have each spread through the codebase
+      # once already: "api." never existed, and "home." resolved to a distribution
+      # with no certificate for it. Needles are assembled at runtime so this file is
+      # not itself a match.
+      - name: No references to non-existent hosts
+        run: |
+          DOMAIN="fintela.io"
+          FAILED=0
+          for SUB in api home; do
+            NEEDLE="$SUB.$DOMAIN"
+            if grep -rn --fixed-strings "$NEEDLE" . \
+                 --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git; then
+              echo "::error::Found '$NEEDLE' — that host does not serve the site. Use $DOMAIN."
+              FAILED=1
+            fi
+          done
+          [ "$FAILED" -eq 0 ] || exit 1
+          echo "No stale references to non-existent hosts."
+
+  # NOTE: `npm run lint` is deliberately NOT gated yet. It is red with 3
+  # pre-existing errors inherited from the monorepo — AnimateOnScroll.tsx
+  # (refs-during-render), DocsSearch.tsx (set-state-in-effect), Prose.tsx
+  # (fast-refresh-export). Gating on it now would make CI permanently red; fixing
+  # those three is a good first contribution.

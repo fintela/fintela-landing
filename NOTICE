@@ -1,0 +1,47 @@
+NOTICE — licensing exclusions
+=============================
+
+The MIT License in LICENSE applies to the source code of this repository. The
+following material is included because the site cannot be built or served
+without it, but is NOT licensed under MIT and may NOT be copied, modified,
+redistributed, or sublicensed under those terms.
+
+1. Legal documents — ALL RIGHTS RESERVED
+   content/legal/terms-of-use.md
+   content/legal/terms-of-use.es.md
+   content/legal/privacy-notice.md
+   content/legal/privacy-notice.es.md
+
+   These are the operative Terms and Conditions and Privacy Notice of
+   Momento Capital, S.A.P.I. de C.V., drafted by outside counsel. They are
+   published here solely because this repository builds the pages that serve
+   them at https://fintela.io/terms and https://fintela.io/privacy.
+
+   The Spanish version prevails; the English is a courtesy translation.
+
+   They are contractual instruments, not documentation. Do not reuse them as
+   a template, and do not modify them in a fork and present the result as
+   Fintela's or Momento Capital's terms. Changes to these files require
+   counsel review — see CODEOWNERS.
+
+2. Fintela and Momento Capital brand assets — ALL RIGHTS RESERVED
+   src/assets/logos/**
+   public/favicon.png
+   The Fintela and Momento Capital names, logos, and wordmarks.
+
+   No trademark license is granted. The MIT permission to "use, copy, modify"
+   the software does not extend to these marks.
+
+3. Third-party marks — property of their respective owners
+   src/assets/clients/momento_capital_logo.png
+   src/assets/clients/edgebridge_capital_logo.jpeg
+
+   Customer logos displayed with permission for identification purposes only.
+   Their inclusion here is not a license to redistribute them. If you fork this
+   repository for your own use, remove them.
+
+4. Third-party dependencies
+   Bundled npm dependencies retain their own licenses; see the individual
+   packages under node_modules after installation, or `npm ls --long`.
+
+Questions about any exclusion above: hello@fintela.io

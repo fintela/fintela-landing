@@ -1,0 +1,31 @@
+{
+  "entity": "Momento Capital, S.A.P.I. de C.V.",
+  "documents": {
+    "terms": {
+      "file": "terms-of-use.md",
+      "spanish_file": "terms-of-use.es.md",
+      "title": "Terms and Conditions",
+      "public_url": "https://fintela.io/terms",
+      "last_updated": "2026-07-15",
+      "counsel_final": true
+    },
+    "privacy": {
+      "file": "privacy-notice.md",
+      "spanish_file": "privacy-notice.es.md",
+      "title": "Privacy Notice",
+      "public_url": "https://fintela.io/privacy",
+      "last_updated": "2026-07-15",
+      "counsel_final": true
+    }
+  },
+  "spanish_originals": {
+    "status": "delivered",
+    "note": "Counsel delivered the Spanish originals (the prevailing version, per the Governing Law clause) alongside the English courtesy translation on 2026-07-15. Both hosts serve the matching language through the @legal alias: es-* UIs get *.es.md, everyone else gets the English *.md."
+  },
+  "$comment": [
+    "Publication gate for the legal documents served at /terms and /privacy,",
+    "read by scripts/check-legal-final.mjs. `counsel_final` records a legal fact —",
+    "that outside counsel delivered the complete, signed-off text. Only a human",
+    "flips it. While any document is false here, CI refuses to ship those pages."
+  ]
+}

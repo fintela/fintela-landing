@@ -1,0 +1,81 @@
+name: Deploy
+
+# Deploys the site to S3 + CloudFront.
+#
+# Every AWS identifier is a repository VARIABLE, not a literal, so this public
+# workflow discloses no account id, bucket name or distribution id:
+#
+#   Settings → Secrets and variables → Actions → Variables
+#     AWS_REGION               e.g. us-east-2
+#     AWS_DEPLOY_ROLE_ARN      the OIDC role this repo may assume
+#     S3_BUCKET                target bucket
+#     CLOUDFRONT_DISTRIBUTION  distribution to invalidate
+#
+# The role's trust policy must allow this repository's OIDC subject. A role scoped
+# to the old monorepo will NOT work here — see CUTOVER notes in the PR that added
+# this file.
+#
+# Forks cannot deploy: `environment: prod` gates on approval and the variables are
+# not shared with forks.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    # Until the repository variables are set (and the OIDC role trusts this repo),
+    # skip rather than fail. This keeps the very first push green and makes the
+    # cutover a deliberate act: setting S3_BUCKET is what arms deployment.
+    if: vars.S3_BUCKET != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # Never deploy a placeholder legal document, even if CI was bypassed.
+      - name: Legal documents are counsel-final
+        run: node scripts/check-legal-final.mjs
+
+      - run: npm run build
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # The app: content-hashed assets + index.html. The blog prefix is excluded
+      # because its objects need different cache headers, applied next.
+      - name: Sync the site
+        run: |
+          aws s3 sync dist/ "s3://${{ vars.S3_BUCKET }}" --delete --exclude 'blog/*'
+
+      # Blog JSON URLs are not content-hashed, hence the short TTLs.
+      - name: Sync the blog prefix
+        run: |
+          aws s3 sync dist/blog/ "s3://${{ vars.S3_BUCKET }}/blog/" --delete \
+            --content-type application/json \
+            --cache-control "public, max-age=60, s-maxage=900"
+
+      # The bundle is hashed but index.html is not, so skipping this leaves
+      # CloudFront serving HTML that points at deleted asset hashes.
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION }}" \
+            --paths '/*'
