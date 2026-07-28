@@ -15,6 +15,11 @@ const BlogPostPage = lazy(() =>
   import('./pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage })),
 );
 
+// Catch-all for unmatched paths. Cold by definition, so it is code-split too.
+const NotFoundPage = lazy(() =>
+  import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+);
+
 // Legal pages — footer-only cold paths, code-split off the main bundle.
 const TermsPage = lazy(() =>
   import('./pages/TermsPage').then((m) => ({ default: m.TermsPage })),
@@ -185,6 +190,11 @@ function App() {
 
             {/* Unknown docs paths → docs home */}
             <Route path="/documentation/*" element={<Navigate to="/documentation" replace />} />
+
+            {/* Everything else. CloudFront rewrites S3 404s to /index.html with a
+                200 so the SPA can route; without this route that rewrite rendered
+                a blank page for every typo'd URL and every removed static file. */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </Router>

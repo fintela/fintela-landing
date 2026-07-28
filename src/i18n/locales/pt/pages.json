@@ -55,5 +55,12 @@
       "title": "Artigo não encontrado",
       "body": "Este artigo pode ter sido movido ou despublicado. Volte ao blog para ver tudo o que está disponível."
     }
+  },
+  "notFound": {
+    "code": "Erro 404",
+    "title": "Esta página não existe",
+    "body": "O link pode estar desatualizado ou o endereço pode ter um erro de digitação. Não há nenhuma falha do nosso lado: a página simplesmente não está aqui.",
+    "home": "Voltar ao início",
+    "docs": "Ver a documentação"
   }
 }
