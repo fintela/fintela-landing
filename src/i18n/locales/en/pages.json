@@ -55,5 +55,12 @@
       "title": "Post not found",
       "body": "This article may have been moved or unpublished. Head back to the blog to see everything that's live."
     }
+  },
+  "notFound": {
+    "code": "Error 404",
+    "title": "This page does not exist",
+    "body": "The link may be out of date, or the address may have a typo. Nothing is broken on our side — the page simply isn't here.",
+    "home": "Back to home",
+    "docs": "Browse the docs"
   }
 }
