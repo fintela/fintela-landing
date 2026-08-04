@@ -27,9 +27,7 @@
 
     /* Path aliases — must match vite.config.ts resolve.alias */
     "paths": {
-      "@legal/*": ["./content/legal/*"],
-      "@docs-content": ["./src/docs-content"],
-      "@docs-content/*": ["./src/docs-content/*"]
+      "@legal/*": ["./content/legal/*"]
     }
   },
   "include": ["src"]

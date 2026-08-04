@@ -6,10 +6,10 @@ import { theme } from './theme/theme';
 import { HomePage } from './pages/HomePage';
 import { ContactPage } from './pages/ContactPage';
 
-// Both blog routes are code-split. Post bodies are inlined into the bundle at
-// build time (see src/blog/posts.ts), and the post page also pulls in the markdown
-// renderer + syntax highlighter — none of which belongs on the home page's
-// critical path. Lazy loading keeps all of it in a chunk only /blog visitors fetch.
+// Both blog routes are code-split. Post bodies are fetched from the CDN at runtime
+// (see BLOG.md), and the post page also pulls in the markdown renderer + syntax
+// highlighter — none of which belongs on the home page's critical path. Lazy
+// loading keeps all of it in a chunk only /blog visitors fetch.
 const BlogPage = lazy(() => import('./pages/BlogPage').then((m) => ({ default: m.BlogPage })));
 const BlogPostPage = lazy(() =>
   import('./pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage })),
@@ -28,88 +28,73 @@ const PrivacyPage = lazy(() =>
   import('./pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })),
 );
 
-// Docs is heavy — code-split it off the main bundle.
-const DocsHomePage = lazy(() =>
-  import('./docs/pages/DocsHomePage').then((m) => ({ default: m.DocsHomePage })),
+// Documentation. Twenty-five hand-written page components used to be listed here,
+// one lazy import each; the pages are Markdown files in `content/docs/` now, so
+// there are exactly two routes and adding a page touches neither this file nor any
+// other (see DOCS.md).
+const DocsIndexPage = lazy(() =>
+  import('./pages/DocsIndexPage').then((m) => ({ default: m.DocsIndexPage })),
 );
-const QuickstartPage = lazy(() =>
-  import('./docs/pages/QuickstartPage').then((m) => ({ default: m.QuickstartPage })),
-);
-const ConceptsPage = lazy(() =>
-  import('./docs/pages/ConceptsPage').then((m) => ({ default: m.ConceptsPage })),
-);
-const ModesOverviewPage = lazy(() =>
-  import('./docs/pages/ModesOverviewPage').then((m) => ({ default: m.ModesOverviewPage })),
-);
-const ExternalStrategiesPage = lazy(() =>
-  import('./docs/pages/ExternalStrategiesPage').then((m) => ({ default: m.ExternalStrategiesPage })),
-);
-const ExternalFitnessPage = lazy(() =>
-  import('./docs/pages/ExternalFitnessPage').then((m) => ({ default: m.ExternalFitnessPage })),
-);
-const OptimizerArchitecturePage = lazy(() =>
-  import('./docs/pages/OptimizerArchitecturePage').then((m) => ({
-    default: m.OptimizerArchitecturePage,
-  })),
-);
-const SamplersPage = lazy(() =>
-  import('./docs/pages/SamplersPage').then((m) => ({ default: m.SamplersPage })),
-);
-const LifecyclePage = lazy(() =>
-  import('./docs/pages/LifecyclePage').then((m) => ({ default: m.LifecyclePage })),
-);
-const ApiOverviewPage = lazy(() =>
-  import('./docs/pages/ApiOverviewPage').then((m) => ({ default: m.ApiOverviewPage })),
-);
-const ApiStrategiesPage = lazy(() =>
-  import('./docs/pages/ApiStrategiesPage').then((m) => ({ default: m.ApiStrategiesPage })),
-);
-const ApiStudiesPage = lazy(() =>
-  import('./docs/pages/ApiStudiesPage').then((m) => ({ default: m.ApiStudiesPage })),
-);
-const ApiTrialsPortfoliosPage = lazy(() =>
-  import('./docs/pages/ApiTrialsPortfoliosPage').then((m) => ({
-    default: m.ApiTrialsPortfoliosPage,
-  })),
-);
-const ApiBasketsPage = lazy(() =>
-  import('./docs/pages/ApiBasketsPage').then((m) => ({ default: m.ApiBasketsPage })),
-);
-const ApiFitnessDataPage = lazy(() =>
-  import('./docs/pages/ApiFitnessDataPage').then((m) => ({ default: m.ApiFitnessDataPage })),
-);
-const ApiErrorsPage = lazy(() =>
-  import('./docs/pages/ApiErrorsPage').then((m) => ({ default: m.ApiErrorsPage })),
-);
-const PythonGuidePage = lazy(() =>
-  import('./docs/pages/PythonGuidePage').then((m) => ({ default: m.PythonGuidePage })),
-);
-const NodeGuidePage = lazy(() =>
-  import('./docs/pages/NodeGuidePage').then((m) => ({ default: m.NodeGuidePage })),
-);
-const PlatformTourPage = lazy(() =>
-  import('./docs/pages/PlatformTourPage').then((m) => ({ default: m.PlatformTourPage })),
-);
-const WorkflowStrategiesPage = lazy(() =>
-  import('./docs/pages/WorkflowStrategiesPage').then((m) => ({ default: m.WorkflowStrategiesPage })),
-);
-const WorkflowRiskManagersPage = lazy(() =>
-  import('./docs/pages/WorkflowRiskManagersPage').then((m) => ({
-    default: m.WorkflowRiskManagersPage,
-  })),
-);
-const AdditionalDataPage = lazy(() =>
-  import('./docs/pages/AdditionalDataPage').then((m) => ({ default: m.AdditionalDataPage })),
-);
-const WorkflowStudiesPage = lazy(() =>
-  import('./docs/pages/WorkflowStudiesPage').then((m) => ({ default: m.WorkflowStudiesPage })),
-);
-const WorkflowResultsPage = lazy(() =>
-  import('./docs/pages/WorkflowResultsPage').then((m) => ({ default: m.WorkflowResultsPage })),
-);
-const WorkflowLiveTradingPage = lazy(() =>
-  import('./docs/pages/WorkflowLiveTradingPage').then((m) => ({ default: m.WorkflowLiveTradingPage })),
-);
+const DocPage = lazy(() => import('./pages/DocPage').then((m) => ({ default: m.DocPage })));
+
+/**
+ * Where `/documentation/*` went.
+ *
+ * These URLs were public, are linked from the app and from outside it, and are
+ * indexed — so every one of them keeps working. Nested paths flatten to a slug
+ * because a doc's URL is now its filename, wherever the file is filed.
+ */
+const LEGACY_DOC_PATHS: Record<string, string> = {
+  '': 'overview',
+  platform: 'platform-tour',
+  quickstart: 'quickstart',
+  concepts: 'core-concepts',
+
+  'workflows/strategies': 'managing-strategies',
+  'workflows/risk-managers': 'managing-risk-managers',
+  'workflows/studies': 'running-optimizations',
+  'workflows/results': 'analyzing-results',
+  'workflows/live-trading': 'live-trading',
+
+  modes: 'execution-modes',
+  'optimizer/samplers': 'sampler-selection',
+  'configuration/additional-data': 'data-pipelines',
+  'optimizer/lifecycle': 'study-lifecycle',
+
+  'modes/external-strategies': 'external-strategies',
+  'modes/external-fitness': 'external-fitness',
+  'optimizer/architecture': 'optimizer-architecture',
+
+  'guides/python': 'python-fastapi',
+  'guides/node': 'node-express',
+
+  api: 'api-overview',
+  'api/strategies': 'api-strategies',
+  'api/studies': 'api-studies',
+  'api/trials-portfolios': 'api-trials-portfolios',
+  'api/baskets': 'api-baskets',
+  'api/fitness-data': 'api-fitness-and-asset-groups',
+  'api/errors': 'api-errors',
+
+  // Routes that were already redirects before the migration, kept pointing at the
+  // page that replaced them rather than chaining through a second hop.
+  datacluster: 'core-concepts',
+  engine: 'optimizer-architecture',
+  roles: 'api-overview',
+};
+
+/**
+ * `/documentation/...` → `/docs/...`, or the docs index for anything unrecognised.
+ *
+ * A reader who mistypes a doc URL wants the docs, not a 404 — the same reason the
+ * old `/documentation/*` catch-all redirected to the docs home.
+ */
+function LegacyDocsRedirect() {
+  const { pathname, hash } = useLocation();
+  const tail = pathname.replace(/^\/documentation\/?/, '').replace(/\/+$/, '');
+  const slug = LEGACY_DOC_PATHS[tail];
+  return <Navigate to={slug ? `/docs/${slug}${hash}` : '/docs'} replace />;
+}
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -151,45 +136,12 @@ function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
 
             {/* Documentation */}
-            <Route path="/documentation" element={<DocsHomePage />} />
-            <Route path="/documentation/quickstart" element={<QuickstartPage />} />
-            <Route path="/documentation/concepts" element={<ConceptsPage />} />
+            <Route path="/docs" element={<DocsIndexPage />} />
+            <Route path="/docs/:slug" element={<DocPage />} />
 
-            <Route path="/documentation/modes" element={<ModesOverviewPage />} />
-            <Route path="/documentation/modes/external-strategies" element={<ExternalStrategiesPage />} />
-            <Route path="/documentation/modes/external-fitness" element={<ExternalFitnessPage />} />
-
-            <Route path="/documentation/optimizer/architecture" element={<OptimizerArchitecturePage />} />
-            <Route path="/documentation/optimizer/samplers" element={<SamplersPage />} />
-            <Route path="/documentation/configuration/additional-data" element={<AdditionalDataPage />} />
-            <Route path="/documentation/optimizer/lifecycle" element={<LifecyclePage />} />
-
-            <Route path="/documentation/api" element={<ApiOverviewPage />} />
-            <Route path="/documentation/api/strategies" element={<ApiStrategiesPage />} />
-            <Route path="/documentation/api/studies" element={<ApiStudiesPage />} />
-            <Route path="/documentation/api/trials-portfolios" element={<ApiTrialsPortfoliosPage />} />
-            <Route path="/documentation/api/baskets" element={<ApiBasketsPage />} />
-            <Route path="/documentation/api/fitness-data" element={<ApiFitnessDataPage />} />
-            <Route path="/documentation/api/errors" element={<ApiErrorsPage />} />
-
-            <Route path="/documentation/platform" element={<PlatformTourPage />} />
-
-            <Route path="/documentation/workflows/strategies" element={<WorkflowStrategiesPage />} />
-            <Route path="/documentation/workflows/risk-managers" element={<WorkflowRiskManagersPage />} />
-            <Route path="/documentation/workflows/studies" element={<WorkflowStudiesPage />} />
-            <Route path="/documentation/workflows/results" element={<WorkflowResultsPage />} />
-            <Route path="/documentation/workflows/live-trading" element={<WorkflowLiveTradingPage />} />
-
-            <Route path="/documentation/guides/python" element={<PythonGuidePage />} />
-            <Route path="/documentation/guides/node" element={<NodeGuidePage />} />
-
-            {/* Legacy doc routes — redirect into the new system */}
-            <Route path="/documentation/datacluster" element={<Navigate to="/documentation/concepts" replace />} />
-            <Route path="/documentation/engine" element={<Navigate to="/documentation/optimizer/architecture" replace />} />
-            <Route path="/documentation/roles" element={<Navigate to="/documentation/api" replace />} />
-
-            {/* Unknown docs paths → docs home */}
-            <Route path="/documentation/*" element={<Navigate to="/documentation" replace />} />
+            {/* Every pre-migration doc URL still resolves. */}
+            <Route path="/documentation" element={<LegacyDocsRedirect />} />
+            <Route path="/documentation/*" element={<LegacyDocsRedirect />} />
 
             {/* Everything else. CloudFront rewrites S3 404s to /index.html with a
                 200 so the SPA can route; without this route that rewrite rendered

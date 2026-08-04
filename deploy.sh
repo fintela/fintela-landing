@@ -20,14 +20,16 @@ fi
 
 npm run build
 
-# The app: content-hashed assets + index.html. The blog prefix is excluded because
-# its objects need different cache headers, applied in the second sync.
-aws s3 sync dist/ "s3://${S3_BUCKET}" --delete --exclude 'blog/*'
+# The app: content-hashed assets + index.html. The content prefixes are excluded
+# because their objects need different cache headers, applied in the second sync.
+aws s3 sync dist/ "s3://${S3_BUCKET}" --delete --exclude 'blog/*' --exclude 'docs/*'
 
-# Blog JSON URLs are not content-hashed, hence the short TTLs.
-aws s3 sync dist/blog/ "s3://${S3_BUCKET}/blog/" --delete \
-  --content-type application/json \
-  --cache-control "public, max-age=60, s-maxage=900"
+# Blog and docs JSON URLs are not content-hashed, hence the short TTLs.
+for prefix in blog docs; do
+  aws s3 sync "dist/${prefix}/" "s3://${S3_BUCKET}/${prefix}/" --delete \
+    --content-type application/json \
+    --cache-control "public, max-age=60, s-maxage=900"
+done
 
 # The bundle is hashed but index.html is not, so skipping this leaves CloudFront
 # serving HTML that points at deleted asset hashes.

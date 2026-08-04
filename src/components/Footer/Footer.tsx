@@ -27,9 +27,9 @@ const columns: FooterColumn[] = [
     id: 'resources',
     titleKey: 'footer:columns.resources.title',
     links: [
-      { id: 'documentation', labelKey: 'footer:columns.resources.links.documentation', href: '/documentation' },
-      { id: 'engine', labelKey: 'footer:columns.resources.links.engine', href: '/documentation/engine' },
-      { id: 'datacluster', labelKey: 'footer:columns.resources.links.datacluster', href: '/documentation/datacluster' },
+      { id: 'documentation', labelKey: 'footer:columns.resources.links.documentation', href: '/docs' },
+      { id: 'engine', labelKey: 'footer:columns.resources.links.engine', href: '/docs/optimizer-architecture' },
+      { id: 'datacluster', labelKey: 'footer:columns.resources.links.datacluster', href: '/docs/core-concepts' },
       { id: 'blog', labelKey: 'footer:columns.resources.links.blog', href: '/blog' },
     ],
   },

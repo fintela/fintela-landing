@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
-
-export interface TocItem {
-  id: string;
-  title: string;
-  level?: 2 | 3;
-}
+import type { TocItem } from './toc';
 
 interface DocsTOCProps {
   items: TocItem[];

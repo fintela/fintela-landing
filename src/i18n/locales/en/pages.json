@@ -56,6 +56,42 @@
       "body": "This article may have been moved or unpublished. Head back to the blog to see everything that's live."
     }
   },
+  "docs": {
+    "hero": {
+      "chip": "Guides & Reference",
+      "title": "Fintela Documentation",
+      "subtitle": "Guides, workflows and API reference for the Fintela optimization platform. Every page is a Markdown file in our public repository."
+    },
+    "readDoc": "Read Page",
+    "readTime": "{{minutes}} min read",
+    "updated": "Updated {{date}}",
+    "backToIndex": "Browse all documentation",
+    "editThisPage": "Edit this page on GitHub",
+    "editHint": "Opens {{path}} in GitHub's editor — saving proposes a pull request.",
+    "search": {
+      "label": "Search documentation",
+      "placeholder": "Search the docs — strategies, samplers, endpoints…",
+      "clear": "Clear search",
+      "results_one": "{{count}} page matches",
+      "results_other": "{{count}} pages match",
+      "empty": {
+        "title": "Nothing matches that search",
+        "body": "No documentation page mentions “{{query}}”. Try a broader term, or clear the search to browse every section."
+      }
+    },
+    "empty": {
+      "title": "No documentation yet",
+      "body": "The documentation is being written. Check back soon, or open a pull request to add the first page."
+    },
+    "error": {
+      "title": "Documentation couldn't be loaded",
+      "body": "Something went wrong while fetching the pages. Refresh the page or try again in a few minutes."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "body": "This documentation page may have been renamed or unpublished. Head back to the index to see everything that's live."
+    }
+  },
   "notFound": {
     "code": "Error 404",
     "title": "This page does not exist",

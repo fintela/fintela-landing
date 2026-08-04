@@ -2,7 +2,8 @@ import { Box, Card, Chip, Typography } from '@mui/material';
 import { ArrowForward, CalendarToday, PersonOutline } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { accentFor, formatPostDate, truncate } from './format';
+import { formatContentDate, truncate } from '../content/format';
+import { accentFor } from './format';
 import type { BlogPostSummary } from './types';
 
 /** How many tag chips fit on a card before the rest collapse into "+N". */
@@ -76,7 +77,7 @@ export const BlogCard = ({ post }: { post: BlogPostSummary }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <CalendarToday sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              {formatPostDate(post.date, i18n.language)}
+              {formatContentDate(post.date, i18n.language)}
             </Typography>
           </Box>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>

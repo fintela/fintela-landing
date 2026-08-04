@@ -1,32 +1,8 @@
-/** Card + post-header formatting shared by the two blog pages. */
-
 /**
- * `YYYY-MM-DD` in the reader's locale. Parsed as UTC noon so a negative timezone
- * offset cannot roll the displayed date back a day.
+ * Blog-specific card formatting. The date formatter and the excerpt truncator
+ * moved to `src/content/format.ts` when the docs collection started needing the
+ * same two functions; what is left here is the one thing only the blog has.
  */
-export function formatPostDate(date: string, locale: string): string {
-  const parsed = new Date(`${date}T12:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString(locale, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-/**
- * Trim to `max` characters on a word boundary, per the brief's ~150-char cards.
- * The generator already derives excerpts, but an author-written one has no length
- * cap, so the card enforces its own.
- */
-export function truncate(text: string, max = 150): string {
-  const clean = text.trim();
-  if (clean.length <= max) return clean;
-
-  const cut = clean.slice(0, max);
-  const lastSpace = cut.lastIndexOf(' ');
-  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[,;:.!?-]+$/, '')}…`;
-}
 
 /**
  * Deterministic brand accent per post, so a card keeps its colour across renders

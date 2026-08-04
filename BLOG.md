@@ -4,6 +4,9 @@ Blog posts are Markdown files in [`content/blog/`](content/blog/). There is
 no CMS, no database, no API and no credential of any kind. A post is a file in the
 repo, and merging it to `main` publishes it — **without deploying the site**.
 
+The documentation under `content/docs/` works exactly the same way and shares this
+machinery — see [DOCS.md](DOCS.md).
+
 ## Publish a post
 
 ```bash
@@ -14,7 +17,7 @@ cd landing && npm run dev          # preview at localhost:5173/blog
 
 Commit and merge to `main`. That's it — **no site deploy is needed.** Pushing a
 change under `content/blog/` triggers
-[`deploy.yml`](../.github/workflows/deploy.yml), which regenerates the
+[`deploy.yml`](.github/workflows/deploy.yml), which regenerates the
 blog JSON and syncs only the `blog/` prefix of the bucket. The post is live in about
 a minute.
 
@@ -104,7 +107,7 @@ An empty content directory (or one where every post is a draft) renders the
 content/blog/*.md          the only place content lives
    │
    ▼
-vite-plugin-blog.ts                parse frontmatter, drop drafts, sort newest-first
+vite-plugin-content.ts             parse frontmatter, drop drafts, sort newest-first
    │   dev:   serves /blog/*.json from disk, per request
    │   build: emits dist/blog/index.json + dist/blog/<slug>.json
    ▼
@@ -160,19 +163,26 @@ come from the repo:
   control-character evasions like `java&#9;script:`.
 - **No `dangerouslySetInnerHTML`** anywhere in the blog tree.
 
+`MarkdownContent` also renders the documentation. Two behaviours are opt-in via
+props — heading anchors and cross-page link resolution — and the blog passes
+neither, so posts render exactly as they always have.
+
 ## Files
 
 | Path | Role |
 |---|---|
 | `content/blog/*.md` | the posts — the only place content lives |
 | `content/blog/_template.md` | copy-to-start template (a draft, never published) |
-| `vite-plugin-blog.ts` | emits `blog/*.json`; serves the same paths in dev |
+| `vite-plugin-content.ts` | emits `blog/*.json` (and `docs/*.json`); serves the same paths in dev |
 | `.github/workflows/deploy.yml` | builds and publishes on every push to main |
+| `src/content/frontmatter.ts` | the YAML subset, slug/excerpt/read-time derivation — shared with docs |
+| `src/content/json.ts` | fetch, memo, "missing vs. broken" classification — shared with docs |
+| `src/content/format.ts` | date formatting and excerpt truncation — shared with docs |
 | `src/blog/api.ts` | fetches the JSON; 404 / empty-state handling |
 | `src/blog/useBlog.ts` | `useBlogIndex` / `useBlogPost` hooks |
-| `src/blog/parsePost.ts` | frontmatter parser, slug/excerpt/read-time derivation |
-| `src/blog/MarkdownContent.tsx` | sanitized Markdown renderer |
+| `src/blog/parsePost.ts` | which frontmatter fields a *post* requires |
+| `src/blog/MarkdownContent.tsx` | sanitized Markdown renderer, shared with docs |
 | `src/blog/BlogCard.tsx` | preview card |
-| `src/blog/format.ts` | date / truncation / accent helpers |
+| `src/blog/format.ts` | per-post accent colour |
 | `src/pages/BlogPage.tsx` | `/blog` grid |
 | `src/pages/BlogPostPage.tsx` | `/blog/:slug` |

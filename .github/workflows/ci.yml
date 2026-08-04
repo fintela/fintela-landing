@@ -41,6 +41,13 @@ jobs:
       - name: i18n key parity (en/es/pt)
         run: node scripts/i18n-keysync.mjs
 
+      # Documentation is Markdown anyone can send a pull request against, and a PR
+      # touching only content/ is gated by nothing else. A dead cross-reference
+      # degrades to plain text in the browser (see DOCS.md), so it is invisible
+      # without this. Runs on dist/, so it validates what actually publishes.
+      - name: Documentation links resolve
+        run: node scripts/check-docs-links.mjs
+
       # These hosts do not serve the site and have each spread through the codebase
       # once already: "api." never existed, and "home." resolved to a distribution
       # with no certificate for it. Needles are assembled at runtime so this file is

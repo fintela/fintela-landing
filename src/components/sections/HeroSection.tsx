@@ -133,7 +133,7 @@ export const HeroSection = () => {
               </Button>
               <Button
                 component={RouterLink}
-                to="/documentation"
+                to="/docs"
                 variant="outlined"
                 size="large"
                 startIcon={<PlayCircleOutlineIcon />}

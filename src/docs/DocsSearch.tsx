@@ -1,101 +1,31 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Box, Modal, Typography, Fade, Backdrop, Chip } from '@mui/material';
+import { Box, Modal, Typography, Fade, Backdrop } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { allDocPages, fullPath } from './nav';
 import { KbdKey } from './components/KbdKey';
-import { docRegistry } from './registry';
-import { docUrl } from './utils/anchors';
-import './blocks'; // ensure block registry is populated
+import { searchDocs } from './search';
+import { truncate } from '../content/format';
+import type { DocsIndex } from './types';
 
 interface DocsSearchProps {
   open: boolean;
   onClose: () => void;
+  /** The published set — the palette searches nothing else. */
+  index: DocsIndex;
 }
 
-interface PageHit {
-  kind: 'page';
-  id: string;
-  title: string;
-  groupTitle: string;
-  summary: string;
-  href: string;
-  score: number;
-}
+/** How many results the palette shows before it stops being a list. */
+const MAX_HITS = 10;
 
-interface BlockHit {
-  kind: 'block';
-  id: string;
-  title: string;
-  groupTitle: string;
-  summary: string;
-  href: string;
-  score: number;
-}
-
-type SearchHit = PageHit | BlockHit;
-
-const scorePage = (
-  query: string,
-  page: (typeof allDocPages)[number],
-): PageHit | null => {
-  const q = query.toLowerCase().trim();
-  if (!q) return null;
-  const fields = [
-    page.title.toLowerCase(),
-    page.summary.toLowerCase(),
-    ...(page.keywords ?? []).map((k) => k.toLowerCase()),
-    page.groupTitle.toLowerCase(),
-  ];
-  let best = -1;
-  fields.forEach((h, idx) => {
-    const i = h.indexOf(q);
-    if (i === -1) return;
-    const s = (idx === 0 ? 100 : idx === 1 ? 50 : 30) - i + (h.startsWith(q) ? 10 : 0);
-    if (s > best) best = s;
-  });
-  if (best < 0) return null;
-  return {
-    kind: 'page',
-    id: page.id,
-    title: page.title,
-    groupTitle: page.groupTitle,
-    summary: page.summary,
-    href: fullPath(page),
-    score: best,
-  };
-};
-
-const scoreBlock = (
-  query: string,
-  block: ReturnType<typeof docRegistry.getBlock>,
-): BlockHit | null => {
-  if (!block) return null;
-  const q = query.toLowerCase().trim();
-  if (!q) return null;
-
-  const titleMatch = block.meta.title.toLowerCase().includes(q);
-  const summaryMatch = block.meta.summary.toLowerCase().includes(q);
-  const keywordMatch = [...block.meta.tags, ...block.meta.keywords].some((k) =>
-    k.toLowerCase().includes(q),
-  );
-
-  const s = (titleMatch ? 80 : 0) + (summaryMatch ? 40 : 0) + (keywordMatch ? 20 : 0);
-  if (s === 0) return null;
-
-  return {
-    kind: 'block',
-    id: block.meta.id,
-    title: block.meta.title,
-    groupTitle: block.meta.category.replace(/-/g, ' '),
-    summary: block.meta.summary,
-    href: docUrl(block.meta.docPath),
-    score: s,
-  };
-};
-
-export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
+/**
+ * ⌘K search inside a documentation page.
+ *
+ * Scores through the same `searchDocs` the `/docs` search bar uses, so a query
+ * that finds a page in one place finds it in the other. With no query it shows the
+ * first pages in reading order, which makes the palette usable as a jump list.
+ */
+export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -109,43 +39,16 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
     }
   }, [open]);
 
-  const hits = useMemo<SearchHit[]>(() => {
-    if (!query.trim()) {
-      return allDocPages.slice(0, 8).map((page) => ({
-        kind: 'page' as const,
-        id: page.id,
-        title: page.title,
-        groupTitle: page.groupTitle,
-        summary: page.summary,
-        href: fullPath(page),
-        score: 0,
-      }));
-    }
-
-    const pageHits = allDocPages
-      .map((p) => scorePage(query, p))
-      .filter((h): h is PageHit => h !== null);
-
-    const blockHits = docRegistry
-      .getAll()
-      .map((b) => scoreBlock(query, b))
-      .filter((h): h is BlockHit => h !== null);
-
-    // Merge, deduplicate by href, sort by score
-    const seen = new Set<string>();
-    return [...pageHits, ...blockHits]
-      .sort((a, b) => b.score - a.score)
-      .filter((h) => {
-        if (seen.has(h.href)) return false;
-        seen.add(h.href);
-        return true;
-      })
-      .slice(0, 10);
-  }, [query]);
+  const hits = useMemo(() => {
+    if (!query.trim()) return index.pages.slice(0, 8);
+    return searchDocs(index.pages, query)
+      .slice(0, MAX_HITS)
+      .map((hit) => hit.page);
+  }, [index.pages, query]);
 
   const go = useCallback(
-    (hit: SearchHit) => {
-      navigate(hit.href);
+    (slug: string) => {
+      navigate(`/docs/${slug}`);
       onClose();
     },
     [navigate, onClose],
@@ -160,7 +63,7 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
       setSelected((s) => Math.max(s - 1, 0));
     } else if (e.key === 'Enter' && hits[selected]) {
       e.preventDefault();
-      go(hits[selected]);
+      go(hits[selected].slug);
     }
   };
 
@@ -170,11 +73,14 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
       onClose={onClose}
       slots={{ backdrop: Backdrop }}
       slotProps={{
-        backdrop: {
-          sx: { bgcolor: 'rgba(11,16,32,0.55)', backdropFilter: 'blur(6px)' },
-        },
+        backdrop: { sx: { bgcolor: 'rgba(11,16,32,0.55)', backdropFilter: 'blur(6px)' } },
       }}
-      sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', pt: { xs: 6, md: 12 } }}
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        pt: { xs: 6, md: 12 },
+      }}
     >
       <Fade in={open} timeout={160}>
         <Box
@@ -194,8 +100,17 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
           }}
           onKeyDown={handleKey}
         >
-          {/* Input */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              px: 2,
+              py: 1.5,
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
             <SearchIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
             <Box
               component="input"
@@ -239,18 +154,25 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
             </Box>
           </Box>
 
-          {/* Results */}
           <Box sx={{ maxHeight: 420, overflowY: 'auto', py: 0.5 }}>
             {hits.length === 0 ? (
-              <Box sx={{ px: 2, py: 4, textAlign: 'center', color: 'text.disabled', fontSize: '0.9rem' }}>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 4,
+                  textAlign: 'center',
+                  color: 'text.disabled',
+                  fontSize: '0.9rem',
+                }}
+              >
                 No results for "{query}". Try "study", "fitness", or "endpoint".
               </Box>
             ) : (
-              hits.map((hit, idx) => (
+              hits.map((page, idx) => (
                 <Box
-                  key={`${hit.kind}-${hit.id}`}
+                  key={page.slug}
                   onMouseEnter={() => setSelected(idx)}
-                  onClick={() => go(hit)}
+                  onClick={() => go(page.slug)}
                   sx={{
                     px: 2,
                     py: 1.25,
@@ -264,35 +186,22 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
                   }}
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
-                      <Typography
-                        sx={{
-                          fontSize: '0.62rem',
-                          fontWeight: 700,
-                          color: 'text.disabled',
-                          letterSpacing: '0.08em',
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        {hit.groupTitle}
-                      </Typography>
-                      {hit.kind === 'block' && (
-                        <Chip
-                          label="section"
-                          size="small"
-                          sx={{
-                            height: 14,
-                            fontSize: '0.55rem',
-                            fontWeight: 700,
-                            bgcolor: 'rgba(102,126,234,0.08)',
-                            color: '#667eea',
-                            border: 'none',
-                          }}
-                        />
-                      )}
-                    </Box>
-                    <Typography sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.92rem' }}>
-                      {hit.title}
+                    <Typography
+                      sx={{
+                        fontSize: '0.62rem',
+                        fontWeight: 700,
+                        color: 'text.disabled',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        mb: 0.25,
+                      }}
+                    >
+                      {page.section}
+                    </Typography>
+                    <Typography
+                      sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.92rem' }}
+                    >
+                      {page.title}
                     </Typography>
                     <Typography
                       sx={{
@@ -304,7 +213,7 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
                         mt: 0.25,
                       }}
                     >
-                      {hit.summary}
+                      {truncate(page.excerpt, 110)}
                     </Typography>
                   </Box>
                   <ArrowForwardIcon
@@ -319,7 +228,6 @@ export const DocsSearch = ({ open, onClose }: DocsSearchProps) => {
             )}
           </Box>
 
-          {/* Footer hints */}
           <Box
             sx={{
               display: 'flex',

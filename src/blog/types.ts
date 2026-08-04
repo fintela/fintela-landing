@@ -1,5 +1,5 @@
 /**
- * Shapes emitted by `vite-plugin-blog.ts` into `blog/` and read back by
+ * Shapes emitted by `vite-plugin-content.ts` into `blog/` and read back by
  * `src/blog/api.ts`.
  *
  * A contract between the generator and the app rather than a live API: the plugin

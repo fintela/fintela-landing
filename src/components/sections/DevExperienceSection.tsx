@@ -68,10 +68,10 @@ const codeLines: { tokens: { text: string; color: string }[] }[] = [
 ];
 
 const docLinks = [
-  { key: 'quickstart', icon: <BoltOutlinedIcon />, href: '/documentation/quickstart' },
-  { key: 'api', icon: <TerminalOutlinedIcon />, href: '/documentation/api' },
-  { key: 'guides', icon: <IntegrationInstructionsOutlinedIcon />, href: '/documentation/guides/python' },
-  { key: 'optimizer', icon: <MenuBookOutlinedIcon />, href: '/documentation/optimizer/architecture' },
+  { key: 'quickstart', icon: <BoltOutlinedIcon />, href: '/docs/quickstart' },
+  { key: 'api', icon: <TerminalOutlinedIcon />, href: '/docs/api-overview' },
+  { key: 'guides', icon: <IntegrationInstructionsOutlinedIcon />, href: '/docs/python-fastapi' },
+  { key: 'optimizer', icon: <MenuBookOutlinedIcon />, href: '/docs/optimizer-architecture' },
 ] as const;
 
 export const DevExperienceSection = () => {

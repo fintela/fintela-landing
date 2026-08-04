@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { MarkdownContent } from '../blog/MarkdownContent';
-import { accentFor, formatPostDate } from '../blog/format';
+import { formatContentDate } from '../content/format';
+import { accentFor } from '../blog/format';
 import { useBlogPost } from '../blog/useBlog';
 
 /**
@@ -135,7 +136,7 @@ export const BlogPostPage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <CalendarToday sx={{ fontSize: '0.95rem' }} />
                     <Typography variant="body2">
-                      {formatPostDate(post.date, i18n.language)}
+                      {formatContentDate(post.date, i18n.language)}
                     </Typography>
                   </Box>
                   <Typography variant="body2">

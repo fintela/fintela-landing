@@ -44,26 +44,33 @@ npx tsc -b           # typecheck
 ```
 content/
   blog/            blog posts — Markdown, see BLOG.md
+  docs/            documentation pages — Markdown, see DOCS.md
   legal/           the published Terms and Privacy Notice (see NOTICE)
 src/
   pages/           top-level routes
   components/      sections, header, footer, shared UI
+  content/         the Markdown pipeline both collections share
   blog/            blog rendering + the sanitized Markdown renderer
-  docs/            the /documentation tree
-  docs-content/    documentation prose and code samples, as data
+  docs/            docs rendering — index, sidebar, search, table of contents
   theme/           design tokens and the MUI theme
   i18n/locales/    en / es / pt catalogs
 scripts/
   check-legal-final.mjs   refuses to ship placeholder legal documents
   i18n-keysync.mjs        enforces en/es/pt key parity
-vite-plugin-blog.ts       turns content/blog/*.md into the JSON the app fetches
+vite-plugin-content.ts    turns content/{blog,docs}/**.md into the JSON the app fetches
 ```
 
-## Writing a blog post
+## Writing a blog post or a documentation page
 
-Copy `content/blog/_template.md`, fill in the frontmatter, set `published: true`,
-and merge to `main`. The post goes live in about a minute **without a site
-deploy** — see [BLOG.md](BLOG.md) for the guide and the publishing mechanics.
+Both collections are Markdown in this repository, published the same way. Copy the
+relevant `_template.md`, fill in the frontmatter, set `published: true`, and merge to
+`main`. It goes live in about a minute **without a site deploy**.
+
+- Blog posts — `content/blog/`, guide in [BLOG.md](BLOG.md)
+- Documentation — `content/docs/`, guide in [DOCS.md](DOCS.md)
+
+Documentation is a genuine contribution path: every page carries an **Edit this page
+on GitHub** link that opens its source file, and saving proposes a pull request.
 
 ## Contributing
 

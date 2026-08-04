@@ -15,9 +15,9 @@ import { Footer } from '../components/Footer/Footer';
  * removed static file rendered blank markup with no header, no footer and no way
  * back. This page is what that rewrite lands on instead.
  *
- * Note `/documentation/*` is handled separately in App.tsx: unknown doc paths
- * redirect to the docs home rather than reaching here, because a reader who
- * mistypes a doc URL wants the docs, not a dead end.
+ * Note `/docs/*` and the legacy `/documentation/*` are handled separately in
+ * App.tsx: an unknown doc path redirects to the docs index rather than reaching
+ * here, because a reader who mistypes a doc URL wants the docs, not a dead end.
  */
 export const NotFoundPage = () => {
   const { t } = useTranslation('pages');
@@ -117,7 +117,7 @@ export const NotFoundPage = () => {
               </Button>
               <Button
                 component={RouterLink}
-                to="/documentation"
+                to="/docs"
                 variant="outlined"
                 size="large"
                 sx={{ px: 3.5, py: 1.4, fontWeight: 600 }}

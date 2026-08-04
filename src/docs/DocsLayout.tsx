@@ -10,16 +10,19 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { DocsSidebar } from './DocsSidebar';
-import { DocsTOC, type TocItem } from './DocsTOC';
+import { DocsTOC } from './DocsTOC';
+import type { TocItem } from './toc';
 import { DocsSearch } from './DocsSearch';
-import { adjacentPages, fullPath } from './nav';
 import { KbdKey } from './components/KbdKey';
+import { bySection } from './format';
+import type { DocSummary, DocsIndex } from './types';
 
 interface DocsLayoutProps {
-  pageId: string;
-  /** Breadcrumb chain (excluding "Docs" root). */
-  breadcrumbs: { label: string; href?: string }[];
-  /** Right-rail table of contents items. */
+  /** The published set — sidebar, palette and prev/next all read from it. */
+  index: DocsIndex;
+  /** The page being read, once its summary is known. */
+  current?: DocSummary | null;
+  /** Right-rail table of contents, extracted from the page's Markdown. */
   toc?: TocItem[];
   children: ReactNode;
 }
@@ -27,10 +30,19 @@ interface DocsLayoutProps {
 const SIDEBAR_WIDTH = 268;
 const TOC_WIDTH = 240;
 
-export const DocsLayout = ({ pageId, breadcrumbs, toc = [], children }: DocsLayoutProps) => {
+/**
+ * Chrome around a single documentation page: sidebar, breadcrumbs, ⌘K search,
+ * table-of-contents rail and prev/next footer.
+ *
+ * Everything it renders comes from `docs/index.json`. Before the migration this
+ * component took a `pageId` and looked it up in a hand-written `nav.ts`; now the
+ * ordering the sidebar shows, the breadcrumb section and the prev/next pair are
+ * all consequences of the frontmatter in `content/docs/`.
+ */
+export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutProps) => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { prev, next } = adjacentPages(pageId);
+  const { prev, next } = adjacent(index, current?.slug);
 
   // Cmd+K / Ctrl+K opens search globally inside docs.
   useEffect(() => {
@@ -46,6 +58,10 @@ export const DocsLayout = ({ pageId, breadcrumbs, toc = [], children }: DocsLayo
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  const breadcrumbs = current
+    ? [{ label: current.section }, { label: current.title }]
+    : [];
 
   return (
     <Box sx={{ bgcolor: '#fff', minHeight: '100vh' }}>
@@ -166,23 +182,14 @@ export const DocsLayout = ({ pageId, breadcrumbs, toc = [], children }: DocsLayo
             scrollbarWidth: 'thin',
             scrollbarColor: 'transparent transparent',
             transition: 'scrollbar-color 0.2s',
-            '&:hover': {
-              scrollbarColor: 'rgba(11,16,32,0.18) transparent',
-            },
+            '&:hover': { scrollbarColor: 'rgba(11,16,32,0.18) transparent' },
           }}
         >
-          <DocsSidebar />
+          <DocsSidebar index={index} currentSlug={current?.slug} />
         </Box>
 
         {/* Main */}
-        <Box
-          component="main"
-          sx={{
-            minWidth: 0,
-            px: { xs: 2.5, md: 0 },
-            py: { xs: 3, md: 5 },
-          }}
-        >
+        <Box component="main" sx={{ minWidth: 0, px: { xs: 2.5, md: 0 }, py: { xs: 3, md: 5 } }}>
           <Box sx={{ maxWidth: 780, mx: { xs: 'auto', md: 0 } }}>
             {children}
 
@@ -200,12 +207,20 @@ export const DocsLayout = ({ pageId, breadcrumbs, toc = [], children }: DocsLayo
                 }}
               >
                 {prev ? (
-                  <PrevNextCard direction="prev" title={prev.title} href={fullPath(prev)} />
+                  <PrevNextCard
+                    direction="prev"
+                    title={prev.title}
+                    href={`/docs/${prev.slug}`}
+                  />
                 ) : (
                   <Box />
                 )}
                 {next && (
-                  <PrevNextCard direction="next" title={next.title} href={fullPath(next)} />
+                  <PrevNextCard
+                    direction="next"
+                    title={next.title}
+                    href={`/docs/${next.slug}`}
+                  />
                 )}
               </Box>
             )}
@@ -225,28 +240,55 @@ export const DocsLayout = ({ pageId, breadcrumbs, toc = [], children }: DocsLayo
         onClose={() => setMobileNavOpen(false)}
         sx={{
           display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': {
-            width: 300,
-            bgcolor: '#fff',
-            backgroundImage: 'none',
-          },
+          '& .MuiDrawer-paper': { width: 300, bgcolor: '#fff', backgroundImage: 'none' },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
           <Typography sx={{ fontWeight: 700 }}>Documentation</Typography>
           <IconButton aria-label="Close menu" onClick={() => setMobileNavOpen(false)}>
             <CloseIcon />
           </IconButton>
         </Box>
-        <DocsSidebar onNavigate={() => setMobileNavOpen(false)} />
+        <DocsSidebar
+          index={index}
+          currentSlug={current?.slug}
+          onNavigate={() => setMobileNavOpen(false)}
+        />
       </Drawer>
 
-      <DocsSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <DocsSearch open={searchOpen} onClose={() => setSearchOpen(false)} index={index} />
 
       <Footer />
     </Box>
   );
 };
+
+/**
+ * Neighbours in reading order — the order the sidebar shows, which is section
+ * order then page order. Walking the grouped list rather than `index.pages`
+ * keeps prev/next in step with the sidebar even if the generator's flat order
+ * ever changes.
+ */
+function adjacent(index: DocsIndex, slug: string | undefined) {
+  if (!slug) return { prev: null, next: null };
+  const flat = bySection(index.sections, index.pages).flatMap((g) => g.pages);
+  const at = flat.findIndex((p) => p.slug === slug);
+  if (at === -1) return { prev: null, next: null };
+  return {
+    prev: at > 0 ? flat[at - 1] : null,
+    next: at < flat.length - 1 ? flat[at + 1] : null,
+  };
+}
 
 const Breadcrumbs = ({ items }: { items: { label: string; href?: string }[] }) => (
   <Box
@@ -259,10 +301,7 @@ const Breadcrumbs = ({ items }: { items: { label: string; href?: string }[] }) =
       overflow: 'hidden',
     }}
   >
-    <RouterLink
-      to="/documentation"
-      style={{ textDecoration: 'none', color: 'inherit' }}
-    >
+    <RouterLink to="/docs" style={{ textDecoration: 'none', color: 'inherit' }}>
       <Box component="span" sx={{ color: 'text.disabled', '&:hover': { color: 'text.primary' } }}>
         Docs
       </Box>
@@ -272,7 +311,10 @@ const Breadcrumbs = ({ items }: { items: { label: string; href?: string }[] }) =
         <ChevronRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
         {item.href ? (
           <RouterLink to={item.href} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <Box component="span" sx={{ color: 'text.disabled', '&:hover': { color: 'text.primary' } }}>
+            <Box
+              component="span"
+              sx={{ color: 'text.disabled', '&:hover': { color: 'text.primary' } }}
+            >
               {item.label}
             </Box>
           </RouterLink>
@@ -321,10 +363,7 @@ const PrevNextCard = ({
       gridColumn: direction === 'next' ? { xs: 'auto', sm: 2 } : undefined,
       flexDirection: direction === 'next' ? 'row-reverse' : 'row',
       textAlign: direction === 'next' ? 'right' : 'left',
-      '&:hover': {
-        borderColor: 'rgba(102,126,234,0.4)',
-        transform: 'translateY(-1px)',
-      },
+      '&:hover': { borderColor: 'rgba(102,126,234,0.4)', transform: 'translateY(-1px)' },
     }}
   >
     {direction === 'next' ? (

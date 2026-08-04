@@ -21,9 +21,9 @@ work behind the platform, in more depth than a product page allows.
 
 ## Where to start meanwhile
 
-The [documentation](/documentation) is the fastest way in: the
-[quickstart](/documentation/quickstart) takes you from an empty workspace to a
-first simulated portfolio, and [core concepts](/documentation/concepts) explains
+The [documentation](/docs) is the fastest way in: the
+[quickstart](/docs/quickstart) takes you from an empty workspace to a
+first simulated portfolio, and [core concepts](/docs/core-concepts) explains
 the vocabulary the rest of the platform assumes.
 
 More soon.
