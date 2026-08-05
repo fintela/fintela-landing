@@ -73,12 +73,12 @@ const AudienceCard = ({
       p: { xs: 3, md: 3.5 },
       borderRadius: 4,
       border: '1px solid',
-      borderColor: highlighted ? 'rgba(102,126,234,0.3)' : 'divider',
+      borderColor: highlighted ? 'rgba(47,99,149,0.3)' : 'divider',
       background: highlighted
-        ? 'linear-gradient(180deg, #ffffff 0%, rgba(102,126,234,0.04) 100%)'
+        ? 'linear-gradient(180deg, #ffffff 0%, rgba(47,99,149,0.04) 100%)'
         : '#fff',
       boxShadow: highlighted
-        ? '0 18px 40px rgba(102,126,234,0.12)'
+        ? '0 18px 40px rgba(47,99,149,0.12)'
         : '0 4px 14px rgba(11,16,32,0.04)',
       transition: 'transform 0.22s, box-shadow 0.22s, border-color 0.22s',
       display: 'flex',
@@ -86,8 +86,8 @@ const AudienceCard = ({
       height: '100%',
       '&:hover': {
         transform: 'translateY(-4px)',
-        borderColor: 'rgba(102,126,234,0.4)',
-        boxShadow: '0 24px 50px rgba(102,126,234,0.16)',
+        borderColor: 'rgba(47,99,149,0.4)',
+        boxShadow: '0 24px 50px rgba(47,99,149,0.16)',
       },
     }}
   >
@@ -102,7 +102,7 @@ const AudienceCard = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 18px rgba(102,126,234,0.25)',
+          boxShadow: '0 8px 18px rgba(47,99,149,0.25)',
           '& svg': { fontSize: 22 },
         }}
       >

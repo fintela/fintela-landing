@@ -256,10 +256,10 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                 sx={{
                   py: 1.5,
                   px: 3,
-                  color: isActive(item) ? '#667eea' : 'text.primary',
+                  color: isActive(item) ? '#2f6395' : 'text.primary',
                   borderLeft: '3px solid',
-                  borderLeftColor: isActive(item) ? '#667eea' : 'transparent',
-                  bgcolor: isActive(item) ? 'rgba(102,126,234,0.04)' : 'transparent',
+                  borderLeftColor: isActive(item) ? '#2f6395' : 'transparent',
+                  bgcolor: isActive(item) ? 'rgba(47,99,149,0.04)' : 'transparent',
                 }}
               >
                 <ListItemText

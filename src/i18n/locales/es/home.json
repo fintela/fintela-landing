@@ -5,7 +5,6 @@
     "marketWords": ["Acciones de EE. UU.", "Cripto", "Forex", "Mercados globales"],
     "subtitlePrefix": "estrategias de inversión en",
     "subtitleSuffix": "en un único ecosistema de quant finance, nativo de IA y en la nube",
-    "ctaPrimary": "Empieza a construir gratis",
     "ctaSecondary": "Mira cómo funciona",
     "audiencePills": ["Hedge funds", "Equipos quant", "Quants independientes", "Mesas de research"]
   },
@@ -383,14 +382,5 @@
         "a": "La mayoría de los equipos alcanzan una estrategia totalmente validada y desplegable en 3 días — unas 10× más rápido que la infraestructura tradicional. El cuello de botella es la calidad de la idea, no las herramientas."
       }
     }
-  },
-  "finalCta": {
-    "eyebrow": "Listo cuando tú lo estés",
-    "titleLine1": "Empieza tu primer estudio hoy.",
-    "titleAccent": "Sal en vivo esta semana.",
-    "description": "Sin pagos grandes, sin términos legales complicados. El mismo motor que usan los hedge funds — disponible para ti en minutos.",
-    "ctaPrimary": "Empieza gratis",
-    "ctaSecondary": "Habla con el equipo",
-    "footnote": "Nativo en la nube · Conectado a tu bróker · Fintelligent incluido"
   }
 }

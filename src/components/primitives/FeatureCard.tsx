@@ -12,7 +12,7 @@ export const FeatureCard = ({
   icon,
   title,
   description,
-  accent = '#667eea',
+  accent = '#2f6395',
 }: FeatureCardProps) => {
   return (
     <Box

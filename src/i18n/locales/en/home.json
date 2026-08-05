@@ -5,7 +5,6 @@
     "marketWords": ["US Stocks", "Crypto", "Forex", "Global Markets"],
     "subtitlePrefix": "Create investment strategies across",
     "subtitleSuffix": "in a single, AI-native, cloud, quant finance ecosystem",
-    "ctaPrimary": "Start building free",
     "ctaSecondary": "See how it works",
     "audiencePills": ["Hedge funds", "Quant teams", "Independent quants", "Research desks"]
   },
@@ -383,14 +382,5 @@
         "a": "Most teams reach a fully validated, deployable strategy in 3 days — about 10× faster than traditional infrastructure. The bottleneck is the quality of the idea, not the tooling."
       }
     }
-  },
-  "finalCta": {
-    "eyebrow": "Ready when you are",
-    "titleLine1": "Start your first study today.",
-    "titleAccent": "Go live this week.",
-    "description": "No big payments, no complicated legal terms. The same engine hedge funds use — open to you in minutes.",
-    "ctaPrimary": "Get started free",
-    "ctaSecondary": "Talk to the team",
-    "footnote": "Cloud-native · Brokerage-connected · Fintelligent included"
   }
 }

@@ -5,7 +5,6 @@
     "marketWords": ["Ações dos EUA", "Cripto", "Forex", "Mercados globais"],
     "subtitlePrefix": "estratégias de investimento em",
     "subtitleSuffix": "num único ecossistema de quant finance, nativo de IA e na nuvem",
-    "ctaPrimary": "Comece a construir grátis",
     "ctaSecondary": "Veja como funciona",
     "audiencePills": ["Hedge funds", "Times quant", "Quants independentes", "Mesas de research"]
   },
@@ -383,14 +382,5 @@
         "a": "A maioria dos times alcança uma estratégia totalmente validada e pronta para implantação em 3 dias — cerca de 10× mais rápido que a infraestrutura tradicional. O gargalo é a qualidade da ideia, não as ferramentas."
       }
     }
-  },
-  "finalCta": {
-    "eyebrow": "Pronto quando você estiver",
-    "titleLine1": "Comece seu primeiro estudo hoje.",
-    "titleAccent": "Vá ao ar esta semana.",
-    "description": "Sem grandes pagamentos, sem termos legais complicados. O mesmo motor que os hedge funds usam — disponível para você em minutos.",
-    "ctaPrimary": "Comece grátis",
-    "ctaSecondary": "Fale com o time",
-    "footnote": "Nativo na nuvem · Conectado à corretora · Fintelligent incluído"
   }
 }

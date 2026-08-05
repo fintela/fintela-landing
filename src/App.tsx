@@ -114,7 +114,7 @@ const DocsLoader = () => (
       justifyContent: 'center',
     }}
   >
-    <CircularProgress size={28} sx={{ color: '#667eea' }} />
+    <CircularProgress size={28} sx={{ color: '#2f6395' }} />
   </Box>
 );
 

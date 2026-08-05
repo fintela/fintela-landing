@@ -87,15 +87,15 @@ export const WorkflowSection = () => {
             >
               <defs>
                 <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#667eea" />
-                  <stop offset="50%" stopColor="#f093fb" />
-                  <stop offset="100%" stopColor="#fbbf24" />
+                  <stop offset="0%" stopColor="#2f6395" />
+                  <stop offset="50%" stopColor="#e53540" />
+                  <stop offset="100%" stopColor="#efc03c" />
                 </linearGradient>
                 <filter id="nodeShadow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#667eea" floodOpacity="0.22" />
+                  <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#2f6395" floodOpacity="0.22" />
                 </filter>
                 <filter id="nodeShadowActive" x="-40%" y="-40%" width="180%" height="180%">
-                  <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#667eea" floodOpacity="0.5" />
+                  <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#2f6395" floodOpacity="0.5" />
                 </filter>
               </defs>
 
@@ -110,8 +110,8 @@ export const WorkflowSection = () => {
                 style={{ transition: 'stroke-opacity 0.25s' }}
               />
 
-              <circle cx="330" cy="260" r="52" fill="rgba(102,126,234,0.06)" stroke="rgba(102,126,234,0.18)" strokeWidth="1.5" />
-              <text x="330" y="255" textAnchor="middle" fontSize="11" fontWeight="800" fill="#667eea" fontFamily="Inter, sans-serif" letterSpacing="1.8">
+              <circle cx="330" cy="260" r="52" fill="rgba(47,99,149,0.06)" stroke="rgba(47,99,149,0.18)" strokeWidth="1.5" />
+              <text x="330" y="255" textAnchor="middle" fontSize="11" fontWeight="800" fill="#2f6395" fontFamily="Inter, sans-serif" letterSpacing="1.8">
                 {t('workflow.centerName')}
               </text>
               <text x="330" y="271" textAnchor="middle" fontSize="8" fill="#9ca3af" fontFamily="Inter, sans-serif" letterSpacing="0.5">
@@ -157,7 +157,7 @@ export const WorkflowSection = () => {
                       textAnchor={node.la}
                       fontSize="12"
                       fontWeight={isActive ? '800' : '700'}
-                      fill={isDimmed ? '#c8ccd8' : isActive ? '#667eea' : '#1a1a1f'}
+                      fill={isDimmed ? '#c8ccd8' : isActive ? '#2f6395' : '#1a1a1f'}
                       fontFamily="Inter, sans-serif"
                       style={{ transition: 'fill 0.2s ease' }}
                     >
@@ -168,7 +168,7 @@ export const WorkflowSection = () => {
                       y={node.ly + 15}
                       textAnchor={node.la}
                       fontSize="10"
-                      fill={isDimmed ? '#d1d5db' : isActive ? '#8b9fef' : '#8a93a6'}
+                      fill={isDimmed ? '#d1d5db' : isActive ? '#789aba' : '#8a93a6'}
                       fontFamily="Inter, sans-serif"
                       style={{ transition: 'fill 0.2s ease' }}
                     >
@@ -193,10 +193,10 @@ export const WorkflowSection = () => {
                       transform: tooltipTransform(dir),
                       width: { xs: 200, md: 240 },
                       bgcolor: '#fff',
-                      border: '1px solid rgba(102,126,234,0.22)',
+                      border: '1px solid rgba(47,99,149,0.22)',
                       borderRadius: 2,
                       p: 2,
-                      boxShadow: '0 14px 36px rgba(102,126,234,0.18)',
+                      boxShadow: '0 14px 36px rgba(47,99,149,0.18)',
                       zIndex: 20,
                       pointerEvents: 'none',
                       animation: 'tooltipIn 0.18s ease',
@@ -215,7 +215,7 @@ export const WorkflowSection = () => {
                       }}
                     />
                     <Typography
-                      sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#667eea', mb: 0.75, letterSpacing: '0.04em' }}
+                      sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#2f6395', mb: 0.75, letterSpacing: '0.04em' }}
                     >
                       {activeNode.num}. {t(`workflow.nodes.${activeNode.key}.label`)}
                     </Typography>

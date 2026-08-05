@@ -34,11 +34,11 @@ export const ScrollTop = () => {
           height: 44,
           background: gradients.brand,
           color: '#fff',
-          boxShadow: '0 14px 30px rgba(102,126,234,0.32)',
+          boxShadow: '0 14px 30px rgba(47,99,149,0.32)',
           '&:hover': {
             background: gradients.brand,
             transform: 'translateY(-2px)',
-            boxShadow: '0 18px 40px rgba(102,126,234,0.42)',
+            boxShadow: '0 18px 40px rgba(47,99,149,0.42)',
           },
         }}
       >

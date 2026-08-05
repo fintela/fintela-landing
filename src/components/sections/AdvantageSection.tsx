@@ -92,9 +92,9 @@ export const AdvantageSection = () => {
                 <CheckCircleOutlineIcon
                   sx={{
                     fontSize: 14,
-                    color: '#667eea',
+                    color: '#2f6395',
                     background: 'none',
-                    WebkitTextFillColor: '#667eea',
+                    WebkitTextFillColor: '#2f6395',
                   }}
                 />{' '}
                 {t('advantage.withFintelaHeader')}
@@ -110,7 +110,7 @@ export const AdvantageSection = () => {
                   borderBottom: idx < rowKeys.length - 1 ? '1px solid' : 'none',
                   borderColor: 'divider',
                   transition: 'background 0.18s',
-                  '&:hover': { bgcolor: 'rgba(102,126,234,0.025)' },
+                  '&:hover': { bgcolor: 'rgba(47,99,149,0.025)' },
                 }}
               >
                 <Typography
@@ -152,7 +152,7 @@ export const AdvantageSection = () => {
                         fontSize: '0.7rem',
                         color: 'text.disabled',
                         fontWeight: 600,
-                        bgcolor: 'rgba(102,126,234,0.08)',
+                        bgcolor: 'rgba(47,99,149,0.08)',
                         px: 1,
                         py: 0.25,
                         borderRadius: '999px',
@@ -192,7 +192,7 @@ export const AdvantageSection = () => {
                 width: 320,
                 height: 320,
                 background:
-                  'radial-gradient(circle, rgba(102,126,234,0.32) 0%, transparent 70%)',
+                  'radial-gradient(circle, rgba(47,99,149,0.32) 0%, transparent 70%)',
                 filter: 'blur(40px)',
                 pointerEvents: 'none',
               }}

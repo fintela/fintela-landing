@@ -1,15 +1,26 @@
+import type { MouseEvent } from 'react';
 import { Box, Container, Typography, Link, Divider } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import fintelaLargeLogo from '../../assets/logos/fintela_large_logo.png';
 import { gradients } from '../../theme/tokens';
+import { scrollToSection } from '../../lib/scrollToSection';
 import { useTranslation } from 'react-i18next';
+
+type FooterLink = {
+  id: string;
+  labelKey: string;
+  href: string;
+  /** 'scroll' targets an in-page section id (href is "/#<id>"); 'route' is a normal
+   * SPA route; 'external' leaves the app entirely. */
+  type: 'scroll' | 'route' | 'external';
+};
 
 type FooterColumn = {
   id: string;
   /** i18n key (within the `footer` namespace) for the column title. */
   titleKey: string;
-  links: { id: string; labelKey: string; href: string; external?: boolean }[];
+  links: FooterLink[];
 };
 
 const columns: FooterColumn[] = [
@@ -17,28 +28,27 @@ const columns: FooterColumn[] = [
     id: 'product',
     titleKey: 'footer:columns.product.title',
     links: [
-      { id: 'platform', labelKey: 'footer:columns.product.links.platform', href: '/#platform' },
-      { id: 'fintelagent', labelKey: 'footer:columns.product.links.fintelagent', href: '/#fintelagent' },
-      { id: 'useCases', labelKey: 'footer:columns.product.links.useCases', href: '/#use-cases' },
-      { id: 'pricing', labelKey: 'footer:columns.product.links.pricing', href: 'https://app.fintela.io', external: true },
+      { id: 'platform', labelKey: 'footer:columns.product.links.platform', href: '/#platform', type: 'scroll' },
+      { id: 'fintelagent', labelKey: 'footer:columns.product.links.fintelagent', href: '/#fintelagent', type: 'scroll' },
+      { id: 'useCases', labelKey: 'footer:columns.product.links.useCases', href: '/#use-cases', type: 'scroll' },
     ],
   },
   {
     id: 'resources',
     titleKey: 'footer:columns.resources.title',
     links: [
-      { id: 'documentation', labelKey: 'footer:columns.resources.links.documentation', href: '/docs' },
-      { id: 'engine', labelKey: 'footer:columns.resources.links.engine', href: '/docs/optimizer-architecture' },
-      { id: 'datacluster', labelKey: 'footer:columns.resources.links.datacluster', href: '/docs/core-concepts' },
-      { id: 'blog', labelKey: 'footer:columns.resources.links.blog', href: '/blog' },
+      { id: 'documentation', labelKey: 'footer:columns.resources.links.documentation', href: '/docs', type: 'route' },
+      { id: 'engine', labelKey: 'footer:columns.resources.links.engine', href: '/docs/optimizer-architecture', type: 'route' },
+      { id: 'datacluster', labelKey: 'footer:columns.resources.links.datacluster', href: '/docs/core-concepts', type: 'route' },
+      { id: 'blog', labelKey: 'footer:columns.resources.links.blog', href: '/blog', type: 'route' },
     ],
   },
   {
     id: 'company',
     titleKey: 'footer:columns.company.title',
     links: [
-      { id: 'contact', labelKey: 'footer:columns.company.links.contact', href: '/contact' },
-      { id: 'faq', labelKey: 'footer:columns.company.links.faq', href: '/#faq' },
+      { id: 'contact', labelKey: 'footer:columns.company.links.contact', href: '/contact', type: 'route' },
+      { id: 'faq', labelKey: 'footer:columns.company.links.faq', href: '/#faq', type: 'scroll' },
     ],
   },
 ];
@@ -50,6 +60,25 @@ const legalLinks = [
 
 export const Footer = () => {
   const { t } = useTranslation(['common', 'footer']);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Scroll-type links point at a section on the home page ("/#platform", etc).
+  // A plain RouterLink only ever changes the URL — it never scrolls — so on the
+  // home page we scroll in place, and from anywhere else we navigate home and
+  // hand off the target id via location.state for HomePage to pick up.
+  const handleScrollLinkClick = (e: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return;
+    }
+    e.preventDefault();
+    if (location.pathname === '/') {
+      scrollToSection(sectionId);
+    } else {
+      navigate('/', { state: { scrollTo: sectionId } });
+    }
+  };
+
   return (
     <Box
       component="footer"
@@ -97,7 +126,7 @@ export const Footer = () => {
                   gap: 1,
                   color: 'text.secondary',
                   fontSize: '0.88rem',
-                  '&:hover': { color: '#667eea' },
+                  '&:hover': { color: '#2f6395' },
                 }}
               >
                 <EmailOutlinedIcon sx={{ fontSize: 16 }} />
@@ -124,14 +153,17 @@ export const Footer = () => {
                 {col.links.map((l) => (
                   <Link
                     key={l.id}
-                    {...(l.external
+                    {...(l.type === 'external'
                       ? { href: l.href }
                       : { component: RouterLink, to: l.href })}
+                    {...(l.type === 'scroll'
+                      ? { onClick: (e: MouseEvent<HTMLAnchorElement>) => handleScrollLinkClick(e, l.href.replace(/^\/#/, '')) }
+                      : {})}
                     sx={{
                       color: 'text.primary',
                       fontSize: '0.92rem',
                       fontWeight: 500,
-                      '&:hover': { color: '#667eea' },
+                      '&:hover': { color: '#2f6395' },
                     }}
                   >
                     {t(l.labelKey)}
@@ -176,7 +208,7 @@ export const Footer = () => {
                 sx={{
                   fontSize: '0.82rem',
                   color: 'text.disabled',
-                  '&:hover': { color: '#667eea' },
+                  '&:hover': { color: '#2f6395' },
                 }}
               >
                 {t(`footer.legal.${l.key}`)}

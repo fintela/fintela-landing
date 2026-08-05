@@ -26,7 +26,7 @@ export const HeroProductMock = () => {
           position: 'absolute',
           inset: -20,
           background:
-            'radial-gradient(60% 80% at 50% 0%, rgba(102,126,234,0.18) 0%, transparent 70%)',
+            'radial-gradient(60% 80% at 50% 0%, rgba(47,99,149,0.18) 0%, transparent 70%)',
           filter: 'blur(40px)',
           pointerEvents: 'none',
           zIndex: 0,
@@ -119,11 +119,11 @@ export const HeroProductMock = () => {
                   p: 1.25,
                   borderRadius: 2,
                   background: gradients.brandSoft,
-                  border: '1px solid rgba(102,126,234,0.15)',
+                  border: '1px solid rgba(47,99,149,0.15)',
                 }}
               >
                 <Typography
-                  sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#667eea', letterSpacing: '0.08em', textTransform: 'uppercase' }}
+                  sx={{ fontSize: '0.65rem', fontWeight: 700, color: '#2f6395', letterSpacing: '0.08em', textTransform: 'uppercase' }}
                 >
                   {t('heroMock.assistantLabel')}
                 </Typography>
@@ -230,9 +230,9 @@ const SidebarItem = ({ label, active }: { label: string; active?: boolean }) => 
       fontSize: '0.82rem',
       fontWeight: active ? 600 : 500,
       color: active ? 'text.primary' : 'text.secondary',
-      bgcolor: active ? 'rgba(102,126,234,0.08)' : 'transparent',
+      bgcolor: active ? 'rgba(47,99,149,0.08)' : 'transparent',
       borderLeft: '2px solid',
-      borderLeftColor: active ? '#667eea' : 'transparent',
+      borderLeftColor: active ? '#2f6395' : 'transparent',
       transition: 'all 0.2s',
     }}
   >
@@ -309,9 +309,9 @@ const EquityChart = () => {
           {t('heroMock.equityTitle')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1.25, alignItems: 'center' }}>
-          <LegendItem color="#667eea" label={t('heroMock.legendTrain')} />
-          <LegendItem color="#f093fb" label={t('heroMock.legendVal')} />
-          <LegendItem color="#fbbf24" label={t('heroMock.legendOos')} />
+          <LegendItem color="#2f6395" label={t('heroMock.legendTrain')} />
+          <LegendItem color="#e53540" label={t('heroMock.legendVal')} />
+          <LegendItem color="#efc03c" label={t('heroMock.legendOos')} />
         </Box>
       </Box>
       <Box
@@ -322,8 +322,8 @@ const EquityChart = () => {
       >
         <defs>
           <linearGradient id="trainFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#667eea" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#667eea" stopOpacity="0" />
+            <stop offset="0%" stopColor="#2f6395" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#2f6395" stopOpacity="0" />
           </linearGradient>
         </defs>
         {/* Grid */}
@@ -340,14 +340,14 @@ const EquityChart = () => {
         ))}
         {/* Train area fill */}
         <path d={`${train} L460,170 L0,170 Z`} fill="url(#trainFill)" />
-        <path d={train} fill="none" stroke="#667eea" strokeWidth="2" />
-        <path d={validation} fill="none" stroke="#f093fb" strokeWidth="2" />
-        <path d={oos} fill="none" stroke="#fbbf24" strokeWidth="2" />
+        <path d={train} fill="none" stroke="#2f6395" strokeWidth="2" />
+        <path d={validation} fill="none" stroke="#e53540" strokeWidth="2" />
+        <path d={oos} fill="none" stroke="#efc03c" strokeWidth="2" />
 
         {/* End points */}
-        <circle cx="460" cy="28" r="3.5" fill="#667eea" />
-        <circle cx="460" cy="38" r="3.5" fill="#f093fb" />
-        <circle cx="460" cy="60" r="3.5" fill="#fbbf24" />
+        <circle cx="460" cy="28" r="3.5" fill="#2f6395" />
+        <circle cx="460" cy="38" r="3.5" fill="#e53540" />
+        <circle cx="460" cy="60" r="3.5" fill="#efc03c" />
       </Box>
       <Box
         sx={{
@@ -437,7 +437,7 @@ const PortfolioList = () => {
               '&:last-child': { borderBottom: 'none' },
               ...(r.best && {
                 background:
-                  'linear-gradient(90deg, rgba(102,126,234,0.06) 0%, rgba(240,147,251,0.04) 100%)',
+                  'linear-gradient(90deg, rgba(47,99,149,0.06) 0%, rgba(229,53,64,0.04) 100%)',
                 borderRadius: 1,
               }),
             }}
@@ -445,7 +445,7 @@ const PortfolioList = () => {
             <Box
               sx={{
                 fontWeight: 700,
-                color: r.best ? '#667eea' : 'text.secondary',
+                color: r.best ? '#2f6395' : 'text.secondary',
               }}
             >
               {r.rank}
