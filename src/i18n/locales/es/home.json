@@ -1,9 +1,7 @@
 {
   "hero": {
-    "badge": "Ya disponible · Fintelligent 2026",
     "titleLine1": "El futuro de la",
     "titleAccent": "inversión inteligente",
-    "actionWords": ["Diseña", "Optimiza", "Analiza", "Despliega"],
     "marketWords": ["Acciones de EE. UU.", "Cripto", "Forex", "Mercados globales"],
     "subtitlePrefix": "estrategias de inversión en",
     "subtitleSuffix": "en un único ecosistema de quant finance, nativo de IA y en la nube",
@@ -112,21 +110,9 @@
         "title": "Multi-mercado por diseño",
         "description": "Un único motor de estrategias funciona en cripto, acciones de EE. UU., índices S&P, ETFs, forex y mercados globales. Un solo modelo mental, todas las clases de activos."
       },
-      "screener": {
-        "title": "Screener de grado institucional",
-        "description": "Construye tu universo invertible con un screener de nivel Finviz: filtros descriptivos, fundamentales y técnicos como menús guiados con contador de coincidencias en vivo — sin adivinar unidades, escalas ni rangos. Los temas y subtemas clasifican cada activo en sectores exóticos automáticamente."
-      },
       "laboratory": {
         "title": "Un laboratorio para todo tu flujo",
         "description": "Estrategias, funciones de fitness, gestores de riesgo y pipelines de datos — creados lado a lado en un solo espacio de trabajo, con un notebook de Python en vivo sobre un kernel en la nube por sesión y datos de mercado curados dentro de la app. Prototipa en una celda, compílala directo en un recurso listo para usar, y publica en (o haz fork de) un catálogo entre organizaciones."
-      },
-      "dataPipelines": {
-        "title": "Pipelines de datos",
-        "description": "Conecta cualquier fuente —feeds integrados, tus propias APIs externas o tu propia base de datos detrás de un endpoint HTTPS— a estrategias, fitness y risk managers como pipelines reutilizables y versionados. La validación graph-aware ejecuta tu cableado exacto antes de guardar. Sin archivos de configuración, sin código de pegamento."
-      },
-      "dataLab": {
-        "title": "Conoce la forma de cada ingrediente",
-        "description": "Cada fuente de datos que puedes alimentar a una estrategia —precios, fundamentales, agrupaciones jerárquicas, clusters por defecto, composición de baskets— muestra su forma exacta (tabla, diccionario, conjunto de membresía o registro), cómo indexarla en código y una muestra en vivo. Configura y previsualiza también los objetos que no son de precio, para que nada sea una caja negra antes de cablearlo."
       },
       "metaStrategies": {
         "title": "Meta-estrategias sobre baskets",
@@ -135,14 +121,6 @@
       "allocation": {
         "title": "Asignación avanzada de portafolio",
         "description": "Pondera los miembros de tu basket más allá del peso igual. Un catálogo premium —paridad de riesgo con la matriz de covarianzas completa, volatilidad objetivo, y sesgos de momentum o reversión a la media por cualquier métrica— se aplica idéntico en backtest y en vivo. Los métodos básicos siguen gratis; los avanzados se desbloquean por basket con tokens Fintela."
-      },
-      "attribution": {
-        "title": "Descubre qué mueve tu basket",
-        "description": "El panel de Ideas atribuye el rendimiento de tu basket a cada nombre y sector a partir de sus propias operaciones de backtest — para que veas, por ejemplo, que un ticker está restando mientras el resto compone. Cada hallazgo se prueba en un clic: re-simula el basket sin ese nombre o sector y observa el impacto exacto, una vista previa que nunca se opera."
-      },
-      "pipeline": {
-        "title": "Un pipeline unificado",
-        "description": "Ingesta de datos, código de estrategia, optimización, backtesting, analítica y despliegue en vivo — sin exportaciones, sin scripts, sin código de pegamento."
       },
       "ai": {
         "title": "IA que opera la plataforma",
@@ -160,10 +138,6 @@
         "title": "Sabe qué perillas importan",
         "description": "Fintela descompone cada optimización con fANOVA y mean-decrease-impurity para revelar qué fracción de la varianza del desempeño mueve realmente cada hiperparámetro — y en qué dirección. Contrasta la importancia en entrenamiento contra validación para señalar los parámetros que sobreajustan, con intervalos de confianza bootstrap en cada estimación. Atribución de grado institucional, no una heurística de correlación."
       },
-      "metrics": {
-        "title": "Más de 20 métricas de desempeño",
-        "description": "Curvas de equity completas, gráficos de importancia de parámetros, desglose a nivel de operación y de escalado (MAE/MFE por escala, eficiencia de escalado, ratio de éxito parcial) y comparativas de portafolios lado a lado. Exportación a PDF para stakeholders."
-      },
       "python": {
         "title": "Python primero, sin configuración",
         "description": "Escribe estrategias como funciones de Python en el editor integrado, con un stack científico curado —NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY— listo para importar. Parámetros nombrados, rangos tipados, historial de versiones. Cero entorno local."
@@ -171,18 +145,6 @@
       "liveTrading": {
         "title": "Trading long/short en vivo a través de tu bróker",
         "description": "Promueve cualquier portafolio backtesteado —solo en largo o long/short— a una operación en vivo. Las órdenes se ejecutan a través de tu bróker conectado con logs en tiempo real y pausa con un clic."
-      },
-      "protectiveExecution": {
-        "title": "Ejecución inteligente con protección integrada",
-        "description": "Ajusta cómo se llenan las órdenes en vivo —market o limit ejecutable, day o good-till-canceled— a nivel de canasta, estrategia u orden. Cada posición puede armar una salida protectora automática (stop, stop-limit o trailing stop) en cuanto se ejecuta una compra."
-      },
-      "cloud": {
-        "title": "Nativo en la nube, sin instalación",
-        "description": "Totalmente basado en navegador, con fiabilidad de nivel empresarial. Tu equipo, tus datos, tus estrategias — accesibles de forma segura desde cualquier lugar."
-      },
-      "provenance": {
-        "title": "Procedencia criptográfica",
-        "description": "Las estrategias y configuraciones se hashean y marcan con fecha, garantizando la autoría y una auditabilidad a prueba de manipulaciones en todo el equipo."
       },
       "privacy": {
         "title": "Privado por defecto, compartido a tu manera",
