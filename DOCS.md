@@ -1,4 +1,4 @@
-# Fintela documentation — authoring guide
+# Fintela Docs — authoring guide
 
 Documentation pages are Markdown files in [`content/docs/`](content/docs/). There is
 no CMS, no database, no API and no credential of any kind. A page is a file in the

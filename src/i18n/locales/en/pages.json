@@ -59,7 +59,7 @@
   "docs": {
     "hero": {
       "chip": "Guides & Reference",
-      "title": "Fintela Documentation",
+      "title": "Fintela Docs",
       "subtitle": "Guides, workflows and API reference for the Fintela optimization platform. Every page is a Markdown file in our public repository."
     },
     "readDoc": "Read Page",

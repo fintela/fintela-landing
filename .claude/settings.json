@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo check:*)",
+      "Bash(grep -r \"portfolios\\\\|trades\\\\|study\" /home/baula/new_fintela/migrations/*.sql)",
+      "Bash(find /home/baula/new_fintela -name *.sql -type f)",
+      "Read(//home/baula/optimizer/python/**)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(grep -E \"\\\\.\\(tsx?|css\\)$\")",
+      "Bash(xargs ls:*)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(grep -r \"mode.*dark\\\\|createTheme\\\\|ThemeProvider\\\\|ColorMode\\\\|useColorMode\\\\|paletteMode\" /home/baula/new_fintela/frontend/src --include=*.ts --include=*.tsx -l)",
+      "Bash(sqlx migrate:*)",
+      "Bash(cargo build:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(conda run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(chmod +x /home/baula/new_fintela/infra/scripts/deploy-stripe.sh)"
+    ]
+  }
+}
