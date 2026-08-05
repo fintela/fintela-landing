@@ -15,31 +15,14 @@ combined freely, giving four ways to wire up an optimization study.
 
 ## The 2×2 matrix
 
-### Internal × Internal — complexity: Low
+| Mode | What it is | Complexity | Use for |
+|---|---|---|---|
+| **Internal × Internal** | Both strategy and fitness are Python stored in Fintela. Fastest to ship, no infra to run. | Low | Quick prototyping, classic technical signals, standard scoring. |
+| **Internal × External** | Strategy lives in Fintela; fitness scoring lives behind your endpoint. | Medium | Custom or regulator-aware scoring that must stay on your infra. |
+| **External × Internal** | Proprietary signal logic stays on your servers; Fintela handles scoring. | Medium | When your alpha is the strategy and you don't want to share the code. |
+| **External × External** | Fully self-hosted strategy + fitness. Fintela is pure orchestration. | High | Fully air-gapped research stacks. Maximum control. |
 
-Both strategy and fitness are Python stored in Fintela. Fastest to ship, no infra to run.
-
-**Use for:** quick prototyping, classic technical signals, standard scoring.
-
-### Internal × External — complexity: Medium
-
-Strategy lives in Fintela; fitness scoring lives behind your endpoint.
-
-**Use for:** custom or regulator-aware scoring that must stay on your infra.
-
-### External × Internal — complexity: Medium
-
-Proprietary signal logic stays on your servers; Fintela handles scoring.
-
-**Use for:** when your alpha is the strategy and you don't want to share the code.
-
-### External × External — complexity: High
-
-Fully self-hosted strategy + fitness. Fintela is pure orchestration.
-
-**Use for:** fully air-gapped research stacks. Maximum control.
-
-## When to use each mode
+## What each mode requires
 
 | Mode | Strategy execution | Fitness execution | Hosting required |
 |---|---|---|---|
