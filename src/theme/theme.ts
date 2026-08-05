@@ -5,15 +5,15 @@ export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: palette.indigo,
-      light: palette.indigoSoft,
-      dark: palette.indigoDark,
+      main: palette.blue,
+      light: palette.blueSoft,
+      dark: palette.blueDark,
       contrastText: '#ffffff',
     },
     secondary: {
-      main: palette.magenta,
-      light: '#f5b8fd',
-      dark: palette.magentaDark,
+      main: palette.crimson,
+      light: palette.crimsonSoft,
+      dark: palette.crimsonDark,
       contrastText: '#ffffff',
     },
     text: {
@@ -129,9 +129,9 @@ export const theme = createTheme({
           borderColor: palette.border,
           color: palette.text,
           '&:hover': {
-            borderColor: palette.indigo,
-            color: palette.indigo,
-            background: 'rgba(102,126,234,0.04)',
+            borderColor: palette.blue,
+            color: palette.blue,
+            background: 'rgba(47,99,149,0.04)',
           },
         },
       },

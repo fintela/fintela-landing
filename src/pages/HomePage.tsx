@@ -10,9 +10,9 @@ import { FintelAgentSection } from '../components/sections/FintelAgentSection';
 import { AdvantageSection } from '../components/sections/AdvantageSection';
 import { UseCasesSection } from '../components/sections/UseCasesSection';
 import { FAQSection } from '../components/sections/FAQSection';
-import { FinalCTASection } from '../components/sections/FinalCTASection';
 import { Footer } from '../components/Footer/Footer';
 import { ScrollTop } from '../components/common/ScrollTop';
+import { scrollToSection as scrollToId } from '../lib/scrollToSection';
 
 const SCROLL_SECTIONS = [
   'platform',
@@ -29,20 +29,18 @@ export const HomePage = () => {
   const location = useLocation();
 
   const scrollToSection = useCallback((section: string) => {
-    const el = document.getElementById(section);
-    if (el) {
-      const headerOffset = 72;
-      const y = el.getBoundingClientRect().top + window.scrollY - headerOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-      setActiveSection(section);
-    }
+    scrollToId(section);
+    setActiveSection(section);
   }, []);
 
-  // Handle navigation state from cross-page links
+  // Handle cross-page links: state.scrollTo (Header/Footer nav, set via
+  // navigate('/', { state })) and a bare URL hash (direct links, new tabs,
+  // hard refreshes — anything that lands here with e.g. "/#platform").
   useEffect(() => {
     const state = location.state as { scrollTo?: string } | null;
-    if (state?.scrollTo) {
-      setTimeout(() => scrollToSection(state.scrollTo as string), 60);
+    const target = state?.scrollTo ?? (location.hash ? location.hash.slice(1) : undefined);
+    if (target) {
+      setTimeout(() => scrollToSection(target), 60);
     }
   }, [location, scrollToSection]);
 
@@ -82,7 +80,6 @@ export const HomePage = () => {
       <AdvantageSection />
       <UseCasesSection />
       <FAQSection />
-      <FinalCTASection />
       <Footer />
       <ScrollTop />
     </Box>

@@ -1,13 +1,11 @@
 import { Box, Container, Typography, Button, Stack } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { GradientText } from '../primitives/GradientText';
 import { RotatingWord } from '../primitives/RotatingWord';
 import { HeroProductMock } from './hero/HeroProductMock';
-import { gradients } from '../../theme/tokens';
 
 export const HeroSection = () => {
   const { t } = useTranslation('home');
@@ -34,7 +32,7 @@ export const HeroSection = () => {
           width: 520,
           height: 520,
           background:
-            'radial-gradient(circle, rgba(102,126,234,0.14) 0%, transparent 65%)',
+            'radial-gradient(circle, rgba(47,99,149,0.14) 0%, transparent 65%)',
           borderRadius: '50%',
           filter: 'blur(60px)',
           pointerEvents: 'none',
@@ -49,7 +47,7 @@ export const HeroSection = () => {
           width: 520,
           height: 520,
           background:
-            'radial-gradient(circle, rgba(240,147,251,0.12) 0%, transparent 65%)',
+            'radial-gradient(circle, rgba(229,53,64,0.12) 0%, transparent 65%)',
           borderRadius: '50%',
           filter: 'blur(60px)',
           pointerEvents: 'none',
@@ -117,20 +115,6 @@ export const HeroSection = () => {
               justifyContent="center"
               sx={{ mb: 3.5 }}
             >
-              <Button
-                href="https://app.fintela.io"
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForwardIcon />}
-                sx={{
-                  background: gradients.brand,
-                  color: '#fff',
-                  px: 3.5,
-                  fontSize: '1rem',
-                }}
-              >
-                {t('hero.ctaPrimary')}
-              </Button>
               <Button
                 component={RouterLink}
                 to="/docs"

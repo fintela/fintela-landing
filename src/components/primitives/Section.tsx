@@ -24,7 +24,7 @@ const backgrounds = {
   default: '#ffffff',
   muted: '#fafbfc',
   gradient:
-    'linear-gradient(180deg, rgba(102,126,234,0.04) 0%, rgba(240,147,251,0.03) 50%, rgba(251,191,36,0.02) 100%)',
+    'linear-gradient(180deg, rgba(239,192,60,0.03) 0%, rgba(229,53,64,0.03) 50%, rgba(47,99,149,0.04) 100%)',
   ink: 'linear-gradient(180deg, #0b1020 0%, #131835 100%)',
 } as const;
 

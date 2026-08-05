@@ -48,7 +48,7 @@ export const FAQSection = () => {
                   px: 1,
                   py: 1.5,
                   '& .MuiAccordionSummary-content': { my: 1.25 },
-                  '&:hover': { bgcolor: 'rgba(102,126,234,0.025)' },
+                  '&:hover': { bgcolor: 'rgba(47,99,149,0.025)' },
                   transition: 'background 0.18s',
                 }}
               >

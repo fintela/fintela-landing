@@ -80,9 +80,9 @@ const CapabilityRow = ({
       bgcolor: '#fff',
       transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
       '&:hover': {
-        borderColor: 'rgba(102,126,234,0.4)',
+        borderColor: 'rgba(47,99,149,0.4)',
         transform: 'translateX(4px)',
-        boxShadow: '0 12px 28px rgba(102,126,234,0.12)',
+        boxShadow: '0 12px 28px rgba(47,99,149,0.12)',
       },
     }}
   >
@@ -97,7 +97,7 @@ const CapabilityRow = ({
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        boxShadow: '0 6px 14px rgba(102,126,234,0.32)',
+        boxShadow: '0 6px 14px rgba(47,99,149,0.32)',
         '& svg': { fontSize: 20 },
       }}
     >
@@ -205,8 +205,8 @@ const ChatPreview = () => {
               p: 1,
               borderRadius: 2,
               border: '1px dashed',
-              borderColor: 'rgba(102,126,234,0.4)',
-              bgcolor: 'rgba(102,126,234,0.04)',
+              borderColor: 'rgba(47,99,149,0.4)',
+              bgcolor: 'rgba(47,99,149,0.04)',
               fontSize: '0.75rem',
               color: 'text.secondary',
               display: 'flex',
@@ -286,7 +286,7 @@ const UserBubble = ({ text }: { text: string }) => (
         borderRadius: '14px 14px 4px 14px',
         fontSize: '0.85rem',
         lineHeight: 1.5,
-        boxShadow: '0 8px 18px rgba(102,126,234,0.22)',
+        boxShadow: '0 8px 18px rgba(47,99,149,0.22)',
       }}
     >
       {text}

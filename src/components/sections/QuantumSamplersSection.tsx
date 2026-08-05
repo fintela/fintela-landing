@@ -59,7 +59,7 @@ export const QuantumSamplersSection = () => {
                 lineHeight: 1.5,
               }}
             >
-              <ScienceOutlinedIcon sx={{ fontSize: 15, color: '#8b9fef' }} />
+              <ScienceOutlinedIcon sx={{ fontSize: 15, color: '#789aba' }} />
               {t('quantum.note')}
             </Box>
           </AnimateOnScroll>
@@ -94,9 +94,9 @@ const CapabilityRow = ({
       bgcolor: '#fff',
       transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
       '&:hover': {
-        borderColor: 'rgba(102,126,234,0.4)',
+        borderColor: 'rgba(47,99,149,0.4)',
         transform: 'translateX(4px)',
-        boxShadow: '0 12px 28px rgba(102,126,234,0.12)',
+        boxShadow: '0 12px 28px rgba(47,99,149,0.12)',
       },
     }}
   >
@@ -111,7 +111,7 @@ const CapabilityRow = ({
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        boxShadow: '0 6px 14px rgba(102,126,234,0.32)',
+        boxShadow: '0 6px 14px rgba(47,99,149,0.32)',
         '& svg': { fontSize: 20 },
       }}
     >
@@ -159,7 +159,7 @@ const QuantumVisual = () => {
           width: 340,
           height: 340,
           background:
-            'radial-gradient(circle, rgba(102,126,234,0.4) 0%, rgba(240,147,251,0.14) 45%, transparent 72%)',
+            'radial-gradient(circle, rgba(47,99,149,0.4) 0%, rgba(229,53,64,0.14) 45%, transparent 72%)',
           filter: 'blur(46px)',
           pointerEvents: 'none',
           animation: 'quantumGlow 6s ease-in-out infinite',
@@ -181,8 +181,8 @@ const QuantumVisual = () => {
             py: 0.4,
             mb: 2,
             borderRadius: 999,
-            border: '1px solid rgba(139,159,239,0.35)',
-            bgcolor: 'rgba(102,126,234,0.12)',
+            border: '1px solid rgba(120,154,186,0.35)',
+            bgcolor: 'rgba(47,99,149,0.12)',
             fontSize: '0.66rem',
             fontWeight: 700,
             letterSpacing: '0.1em',
@@ -252,9 +252,9 @@ const QuantumCircuit = () => (
   >
     <defs>
       <linearGradient id="qGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#667eea" />
-        <stop offset="50%" stopColor="#f093fb" />
-        <stop offset="100%" stopColor="#fbbf24" />
+        <stop offset="0%" stopColor="#2f6395" />
+        <stop offset="50%" stopColor="#e53540" />
+        <stop offset="100%" stopColor="#efc03c" />
       </linearGradient>
       <filter id="qGlow" x="-40%" y="-40%" width="180%" height="180%">
         <feGaussianBlur stdDeviation="3.5" result="b" />
@@ -301,7 +301,7 @@ const QuantumCircuit = () => (
           width="30"
           height="30"
           rx="7"
-          fill="rgba(102,126,234,0.18)"
+          fill="rgba(47,99,149,0.18)"
           stroke="url(#qGrad)"
           strokeWidth="1.5"
         />
@@ -334,7 +334,7 @@ const QuantumCircuit = () => (
           width="42"
           height="30"
           rx="7"
-          fill="rgba(240,147,251,0.14)"
+          fill="rgba(229,53,64,0.14)"
           stroke="url(#qGrad)"
           strokeWidth="1.5"
         />
@@ -360,7 +360,7 @@ const QuantumCircuit = () => (
           width="30"
           height="30"
           rx="7"
-          fill="rgba(251,191,36,0.16)"
+          fill="rgba(239,192,60,0.16)"
           stroke="url(#qGrad)"
           strokeWidth="1.5"
         />

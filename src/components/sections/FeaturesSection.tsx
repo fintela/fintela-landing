@@ -12,11 +12,11 @@ import LayersIcon from '@mui/icons-material/Layers';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 
 const features = [
-  { key: 'ai', icon: <AutoAwesomeIcon />, accent: '#fbbf24' },
+  { key: 'ai', icon: <AutoAwesomeIcon />, accent: '#efc03c' },
   { key: 'laboratory', icon: <ScienceOutlinedIcon />, accent: '#7c3aed' },
   { key: 'bayesian', icon: <RocketLaunchIcon />, accent: '#10b981' },
   { key: 'allocation', icon: <BalanceIcon />, accent: '#ec4899' },
-  { key: 'crossMarket', icon: <LayersIcon />, accent: '#667eea' },
+  { key: 'crossMarket', icon: <LayersIcon />, accent: '#2f6395' },
   { key: 'liveTrading', icon: <CompareArrowsIcon />, accent: '#ef4444' },
 ] as const;
 
