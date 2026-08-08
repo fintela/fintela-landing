@@ -2,7 +2,7 @@
 title: Why Quantitative Finance Teams Are Moving Away from Legacy Tools
 author: Myrna Ortiz
 date: 2026-08-07
-excerpt: How fragmented infrastructure is costing funds thousands of hours (and money) — and why a unified platform is becoming the competitive advantage.
+excerpt: How fragmented infrastructure is costing funds thousands and thousands of hours (and money) — and why a unified platform is becoming the competitive advantage.
 tags: Finance, Infrastructure, Trading
 published: true
 ---
