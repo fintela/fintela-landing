@@ -1,0 +1,97 @@
+name: Publish content
+
+# Publishes `content/` — the blog and the documentation — WITHOUT deploying the
+# site.
+#
+# This is the whole point of the JSON-at-a-URL design (see BLOG.md): a post is
+# fetched at runtime, not bundled, so adding one changes `blog/index.json` and
+# `blog/<slug>.json` and nothing else in `dist/`. index.html and every hashed
+# asset are byte-identical. So publishing is a two-file S3 sync, and syncing the
+# `blog/` and `docs/` prefixes alone is a complete publish.
+#
+# `deploy.yml` still owns the site itself (bundle + index.html) and runs on every
+# push. This workflow exists so a content-only change doesn't drag the whole
+# bundle and a `/*` invalidation along with it.
+#
+# Both read the same repository VARIABLES — see the header of deploy.yml. The
+# role must trust `repo:fintela/fintela-landing:environment:prod`, which is why
+# the job below declares `environment: prod`.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/**'
+      # The generator and the frontmatter parser decide what publishes, so a
+      # change to either can alter the JSON without any content file changing.
+      - 'vite-plugin-content.ts'
+      - 'src/content/**'
+      - 'src/blog/parsePost.ts'
+      - 'src/docs/parseDoc.ts'
+      - '.github/workflows/publish-content.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+# Serialized against itself, but deliberately NOT against `deploy`: the two write
+# disjoint prefixes of the bucket, so they cannot clobber each other.
+concurrency:
+  group: publish-content
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: prod
+    # Same guard as deploy.yml: skip rather than fail until the variables are set.
+    if: vars.S3_BUCKET != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # A malformed post is skipped with a warning rather than failing the build,
+      # so a silent publish-nothing is the failure mode this step exists to catch
+      # — surfacing the reason in the run log instead of leaving it to be noticed
+      # on the live site. See "Why a post doesn't appear" in BLOG.md.
+      - name: Build the content JSON
+        run: npm run build 2>&1 | tee build.log
+
+      - name: Report skipped content
+        run: |
+          if grep -q 'content: skipped' build.log; then
+            echo "::group::Files that did NOT publish"
+            grep 'content: skipped' build.log
+            echo "::endgroup::"
+          fi
+          grep -E '^\s*(blog|docs): emitted' build.log || true
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # --delete is scoped to the prefix, so removing a post's .md removes its
+      # JSON. The bundle lives outside these prefixes and is never touched.
+      - name: Sync the content prefixes
+        run: |
+          for prefix in blog docs; do
+            aws s3 sync "dist/$prefix/" "s3://${{ vars.S3_BUCKET }}/$prefix/" --delete \
+              --content-type application/json \
+              --cache-control "public, max-age=60, s-maxage=900"
+          done
+
+      # Two paths, not `/*`: the app is untouched, so invalidating it would only
+      # cost a needless cache refill. s-maxage=900 means this is an accelerator —
+      # content would still go live within 15 minutes without it.
+      - name: Invalidate the content paths
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION }}" \
+            --paths '/blog/*' '/docs/*'

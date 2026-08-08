@@ -17,9 +17,18 @@ name: Deploy
 #
 # Forks cannot deploy: `environment: prod` gates on approval and the variables are
 # not shared with forks.
+#
+# A content-only push does NOT come here: `publish-content.yml` handles it by
+# syncing the `blog/` and `docs/` prefixes alone, which is a complete publish
+# because content is fetched at runtime rather than bundled. Sending it through
+# this workflow instead would rebuild and re-invalidate the entire app to change
+# two JSON files. A push touching both content and the site still lands here, and
+# the sync below covers both.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'content/**'
   workflow_dispatch:
 
 permissions:

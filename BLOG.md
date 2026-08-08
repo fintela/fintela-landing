@@ -17,9 +17,10 @@ cd landing && npm run dev          # preview at localhost:5173/blog
 
 Commit and merge to `main`. That's it — **no site deploy is needed.** Pushing a
 change under `content/blog/` triggers
-[`deploy.yml`](.github/workflows/deploy.yml), which regenerates the
-blog JSON and syncs only the `blog/` prefix of the bucket. The post is live in about
-a minute.
+[`publish-content.yml`](.github/workflows/publish-content.yml), which regenerates
+the blog JSON and syncs only the `blog/` prefix of the bucket. The post is live in
+about a minute. A content-only push never reaches `deploy.yml`, so the bundle is
+neither rebuilt nor invalidated.
 
 The filename becomes the URL: `my-post.md` → `/blog/my-post`.
 
@@ -86,7 +87,8 @@ See [Security](#security). HTML in a post renders as inert text, not markup.
 ## Why a post doesn't appear
 
 Bad files are skipped rather than breaking the build. The reason is logged by the
-build (and shown in the `blog-publish` run log). A post is skipped when:
+build, and surfaced in the `Publish content` run under "Files that did NOT
+publish". A post is skipped when:
 
 - there's no leading `---` frontmatter fence;
 - `title`, `author` or `date` is missing;
@@ -111,9 +113,9 @@ vite-plugin-content.ts             parse frontmatter, drop drafts, sort newest-f
    │   dev:   serves /blog/*.json from disk, per request
    │   build: emits dist/blog/index.json + dist/blog/<slug>.json
    ▼
-deploy.yml  (push to main touching content/blog/**)
+publish-content.yml  (push to main touching content/blog/**)
    │   aws s3 sync dist/blog/ s3://$S3_BUCKET/blog/ --delete
-   │   cloudfront create-invalidation --paths /blog/*
+   │   cloudfront create-invalidation --paths /blog/* /docs/*
    ▼
 src/blog/api.ts fetches /blog/index.json → BlogPage / BlogPostPage
 ```
@@ -142,10 +144,14 @@ both the generator and the dev middleware.
 
 ### Who owns the `blog/` prefix
 
-`deploy.yml` and `deploy.sh` both emit it from the same generator, so their
-output is byte-identical and neither can clobber the other. `deploy.sh` syncs the
-blog prefix as a second step purely to apply the short cache TTLs those
-non-hashed URLs need.
+`publish-content.yml`, `deploy.yml` and `deploy.sh` all emit it from the same
+generator, so their output is byte-identical and none can clobber the others.
+`deploy.sh` syncs the blog prefix as a second step purely to apply the short cache
+TTLs those non-hashed URLs need.
+
+Routine publishing is `publish-content.yml` alone. `deploy.yml` still writes the
+prefix so that a deploy into an empty bucket is self-sufficient, and `deploy.sh`
+remains the local escape hatch for when CI is unavailable.
 
 ### Security
 
@@ -174,7 +180,8 @@ neither, so posts render exactly as they always have.
 | `content/blog/*.md` | the posts — the only place content lives |
 | `content/blog/_template.md` | copy-to-start template (a draft, never published) |
 | `vite-plugin-content.ts` | emits `blog/*.json` (and `docs/*.json`); serves the same paths in dev |
-| `.github/workflows/deploy.yml` | builds and publishes on every push to main |
+| `.github/workflows/publish-content.yml` | publishes `content/**` — syncs the `blog/`+`docs/` prefixes, no site deploy |
+| `.github/workflows/deploy.yml` | deploys the site itself; skips content-only pushes |
 | `src/content/frontmatter.ts` | the YAML subset, slug/excerpt/read-time derivation — shared with docs |
 | `src/content/json.ts` | fetch, memo, "missing vs. broken" classification — shared with docs |
 | `src/content/format.ts` | date formatting and excerpt truncation — shared with docs |

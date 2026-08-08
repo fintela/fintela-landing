@@ -17,8 +17,10 @@ npm run dev                        # preview at localhost:5173/docs
 
 Commit and merge to `main`. That's it — **no site deploy is needed.** Pushing a
 change under `content/docs/` triggers
-[`deploy.yml`](.github/workflows/deploy.yml), which regenerates the docs JSON and
-syncs only the `docs/` prefix of the bucket. The page is live in about a minute.
+[`publish-content.yml`](.github/workflows/publish-content.yml), which regenerates
+the docs JSON and syncs only the `docs/` prefix of the bucket. The page is live in
+about a minute — a content-only push never reaches `deploy.yml`, so the bundle is
+neither rebuilt nor invalidated.
 
 **The filename becomes the URL, not the folder.** `content/docs/api/rate-limits.md`
 publishes at `/docs/rate-limits`. Folders exist so the tree is readable in the repo;
@@ -180,9 +182,9 @@ vite-plugin-content.ts             parse frontmatter, drop drafts, order section
    │   dev:   serves /docs/*.json from disk, per request
    │   build: emits dist/docs/index.json + dist/docs/<slug>.json
    ▼
-deploy.yml  (push to main touching content/docs/**)
+publish-content.yml  (push to main touching content/docs/**)
    │   aws s3 sync dist/docs/ s3://$S3_BUCKET/docs/ --delete
-   │   cloudfront create-invalidation
+   │   cloudfront create-invalidation --paths /blog/* /docs/*
    ▼
 src/docs/api.ts fetches /docs/index.json → DocsIndexPage / DocPage
 ```
