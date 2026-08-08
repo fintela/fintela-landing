@@ -65,12 +65,19 @@ jobs:
 
       - name: Report skipped content
         run: |
-          if grep -q 'content: skipped' build.log; then
+          # No anchor: the generator prefixes every line with "[plugin ...]".
+          grep -E '(blog|docs): emitted' build.log || true
+
+          # Drafts are routine — `_template.md` is always one, so alerting on
+          # them would make this warning fire on every single run and train
+          # everyone to scroll past it. Only a file that was *meant* to publish
+          # and didn't is worth a warning.
+          if grep 'content: skipped' build.log | grep -v 'published: false (draft)' > unpublished.log; then
             echo "::group::Files that did NOT publish"
-            grep 'content: skipped' build.log
+            cat unpublished.log
             echo "::endgroup::"
+            echo "::warning::Content did not publish — see \"Files that did NOT publish\" in this step."
           fi
-          grep -E '^\s*(blog|docs): emitted' build.log || true
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
