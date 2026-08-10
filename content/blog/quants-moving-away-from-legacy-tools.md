@@ -7,6 +7,10 @@ tags: Finance, Infrastructure, Trading
 published: true
 ---
 
+
+![Alt text](https://images.unsplash.com/photo-1621264448270-9ef00e88a935?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8dHJhZGluZ3xlbnwwfHwwfHx8Mg%3D%3D
+)
+
 A quant engineer at a mid-sized hedge fund is staring at her screen at 8 PM on a Friday. Her job title is "Quantitative Engineer." Her actual task right now? Debugging a data sync issue between the firm's ETL pipeline, backtesting engine, and risk management system.
 
 This shouldn't be her job.
