@@ -2,7 +2,7 @@
 
 ## Why This Matters
 
-The asset management industry is undergoing rapid transformation, driven by growing data complexity, tighter margins, and rising client expectations for transparency and performance. Solutions that can turn that complexity into clear, actionable insight are becoming essential rather than optional.
+The asset management industry is undergoing rapid transformation driven by growing data complexity, tighter margins, and rising client expectations for transparency and performance. Solutions that can turn that complexity into clear, actionable insight are becoming essential rather than optional.
 
 Being shortlisted by Hedgeweek — a leading voice in hedge fund industry coverage — is an acknowledgment from the industry itself that Fintela is building in the right direction: solutions that don't just add features, but meaningfully improve how investment decisions are made.
 
