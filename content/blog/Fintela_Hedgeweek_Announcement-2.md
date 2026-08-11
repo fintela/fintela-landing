@@ -1,4 +1,11 @@
-# Fintela Shortlisted for New Solution Product of the Year — Hedgeweek US Awards 2026
+---
+title: Fintela Shortlisted for New Solution Product of the Year — Hedgeweek US Awards 2026
+author: Fintela
+date: 2026-08-11
+excerpt: Hedgeweek US Awards 2026
+tags: Awards
+published: true
+---
 
 ## Why This Matters
 
