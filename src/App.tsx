@@ -30,11 +30,8 @@ const PrivacyPage = lazy(() =>
 
 // Documentation. Twenty-five hand-written page components used to be listed here,
 // one lazy import each; the pages are Markdown files in `content/docs/` now, so
-// there are exactly two routes and adding a page touches neither this file nor any
+// there is exactly one route and adding a page touches neither this file nor any
 // other (see DOCS.md).
-const DocsIndexPage = lazy(() =>
-  import('./pages/DocsIndexPage').then((m) => ({ default: m.DocsIndexPage })),
-);
 const DocPage = lazy(() => import('./pages/DocPage').then((m) => ({ default: m.DocPage })));
 
 /**
@@ -93,7 +90,7 @@ function LegacyDocsRedirect() {
   const { pathname, hash } = useLocation();
   const tail = pathname.replace(/^\/documentation\/?/, '').replace(/\/+$/, '');
   const slug = LEGACY_DOC_PATHS[tail];
-  return <Navigate to={slug ? `/docs/${slug}${hash}` : '/docs'} replace />;
+  return <Navigate to={`/docs/${slug ?? 'overview'}${hash}`} replace />;
 }
 
 function ScrollToTop() {
@@ -135,8 +132,10 @@ function App() {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
 
-            {/* Documentation */}
-            <Route path="/docs" element={<DocsIndexPage />} />
+            {/* Documentation — `/docs` has no page of its own; it lands readers on
+                the overview doc, with the full sidebar/search chrome, instead of
+                an intermediate index of cards. */}
+            <Route path="/docs" element={<Navigate to="/docs/overview" replace />} />
             <Route path="/docs/:slug" element={<DocPage />} />
 
             {/* Every pre-migration doc URL still resolves. */}

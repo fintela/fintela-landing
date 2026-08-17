@@ -95,8 +95,8 @@ const CapabilityRow = ({
       transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
       '&:hover': {
         borderColor: 'rgba(47,99,149,0.4)',
-        transform: 'translateX(4px)',
-        boxShadow: '0 12px 28px rgba(47,99,149,0.12)',
+        transform: 'translateX(2px)',
+        boxShadow: '0 4px 12px rgba(47,99,149,0.08)',
       },
     }}
   >
@@ -111,7 +111,7 @@ const CapabilityRow = ({
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        boxShadow: '0 6px 14px rgba(47,99,149,0.32)',
+        boxShadow: '0 2px 6px rgba(47,99,149,0.18)',
         '& svg': { fontSize: 20 },
       }}
     >
@@ -146,7 +146,7 @@ const QuantumVisual = () => {
         background:
           'linear-gradient(160deg, #0b1020 0%, #131835 60%, #1c1f4a 100%)',
         color: '#fff',
-        boxShadow: '0 24px 60px rgba(11,16,32,0.28)',
+        boxShadow: '0 8px 24px rgba(11,16,32,0.16)',
       }}
     >
       {/* Brand glow */}

@@ -7,7 +7,6 @@ import { TrustBar } from '../components/sections/TrustBar';
 import { WorkflowSection } from '../components/sections/WorkflowSection';
 import { FeaturesSection } from '../components/sections/FeaturesSection';
 import { FintelAgentSection } from '../components/sections/FintelAgentSection';
-import { AdvantageSection } from '../components/sections/AdvantageSection';
 import { UseCasesSection } from '../components/sections/UseCasesSection';
 import { FAQSection } from '../components/sections/FAQSection';
 import { Footer } from '../components/Footer/Footer';
@@ -19,7 +18,6 @@ const SCROLL_SECTIONS = [
   'features',
   'fintelagent',
   'developers',
-  'advantage',
   'use-cases',
   'faq',
 ] as const;
@@ -77,7 +75,7 @@ export const HomePage = () => {
       {/* <QuantumSamplersSection /> */}
       <FintelAgentSection />
       {/* <DevExperienceSection /> */}
-      <AdvantageSection />
+      {/* <AdvantageSection /> */}
       <UseCasesSection />
       <FAQSection />
       <Footer />

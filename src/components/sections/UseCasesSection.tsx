@@ -78,16 +78,16 @@ const AudienceCard = ({
         ? 'linear-gradient(180deg, #ffffff 0%, rgba(47,99,149,0.04) 100%)'
         : '#fff',
       boxShadow: highlighted
-        ? '0 18px 40px rgba(47,99,149,0.12)'
-        : '0 4px 14px rgba(11,16,32,0.04)',
+        ? '0 4px 14px rgba(47,99,149,0.08)'
+        : '0 1px 3px rgba(11,16,32,0.04)',
       transition: 'transform 0.22s, box-shadow 0.22s, border-color 0.22s',
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
       '&:hover': {
-        transform: 'translateY(-4px)',
+        transform: 'translateY(-2px)',
         borderColor: 'rgba(47,99,149,0.4)',
-        boxShadow: '0 24px 50px rgba(47,99,149,0.16)',
+        boxShadow: '0 8px 20px rgba(47,99,149,0.10)',
       },
     }}
   >
@@ -102,7 +102,7 @@ const AudienceCard = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 18px rgba(47,99,149,0.25)',
+          boxShadow: '0 2px 8px rgba(47,99,149,0.14)',
           '& svg': { fontSize: 22 },
         }}
       >

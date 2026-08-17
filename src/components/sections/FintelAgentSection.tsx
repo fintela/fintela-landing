@@ -81,8 +81,8 @@ const CapabilityRow = ({
       transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
       '&:hover': {
         borderColor: 'rgba(47,99,149,0.4)',
-        transform: 'translateX(4px)',
-        boxShadow: '0 12px 28px rgba(47,99,149,0.12)',
+        transform: 'translateX(2px)',
+        boxShadow: '0 4px 12px rgba(47,99,149,0.08)',
       },
     }}
   >
@@ -97,7 +97,7 @@ const CapabilityRow = ({
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        boxShadow: '0 6px 14px rgba(47,99,149,0.32)',
+        boxShadow: '0 2px 6px rgba(47,99,149,0.18)',
         '& svg': { fontSize: 20 },
       }}
     >
@@ -124,7 +124,7 @@ const ChatPreview = () => {
         borderColor: 'divider',
         borderRadius: 4,
         overflow: 'hidden',
-        boxShadow: '0 24px 60px rgba(11,16,32,0.08)',
+        boxShadow: '0 4px 16px rgba(11,16,32,0.06)',
         display: 'flex',
         flexDirection: 'column',
         minHeight: 460,
@@ -283,10 +283,10 @@ const UserBubble = ({ text }: { text: string }) => (
         p: 1.5,
         background: gradients.brand,
         color: '#fff',
-        borderRadius: '14px 14px 4px 14px',
+        borderRadius: '10px 10px 3px 10px',
         fontSize: '0.85rem',
         lineHeight: 1.5,
-        boxShadow: '0 8px 18px rgba(47,99,149,0.22)',
+        boxShadow: '0 2px 6px rgba(47,99,149,0.14)',
       }}
     >
       {text}
@@ -352,7 +352,7 @@ const AgentMessage = ({
           bgcolor: '#fff',
           border: '1px solid',
           borderColor: 'divider',
-          borderRadius: '4px 14px 14px 14px',
+          borderRadius: '3px 10px 10px 10px',
           fontSize: '0.85rem',
           color: 'text.primary',
           lineHeight: 1.55,

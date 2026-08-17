@@ -4,20 +4,14 @@ import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { FeatureCard } from '../primitives/FeatureCard';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import BalanceIcon from '@mui/icons-material/Balance';
-import LayersIcon from '@mui/icons-material/Layers';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 
 const features = [
-  { key: 'ai', icon: <AutoAwesomeIcon />, accent: '#efc03c' },
-  { key: 'laboratory', icon: <ScienceOutlinedIcon />, accent: '#7c3aed' },
-  { key: 'bayesian', icon: <RocketLaunchIcon />, accent: '#10b981' },
-  { key: 'allocation', icon: <BalanceIcon />, accent: '#ec4899' },
-  { key: 'crossMarket', icon: <LayersIcon />, accent: '#2f6395' },
-  { key: 'liveTrading', icon: <CompareArrowsIcon />, accent: '#ef4444' },
+  { key: 'ai', accent: '#efc03c' },
+  { key: 'laboratory', accent: '#7c3aed' },
+  { key: 'bayesian', accent: '#10b981' },
+  { key: 'allocation', accent: '#ec4899' },
+  { key: 'crossMarket', accent: '#2f6395' },
+  { key: 'liveTrading', accent: '#ef4444' },
 ] as const;
 
 export const FeaturesSection = () => {
@@ -45,7 +39,6 @@ export const FeaturesSection = () => {
         {features.map((f, idx) => (
           <AnimateOnScroll key={f.key} delay={(idx % 3) * 80}>
             <FeatureCard
-              icon={f.icon}
               accent={f.accent}
               title={t(`features.items.${f.key}.title`)}
               description={t(`features.items.${f.key}.description`)}

@@ -2,44 +2,10 @@
   "hero": {
     "titleLine1": "El futuro de la",
     "titleAccent": "inversión inteligente",
-    "marketWords": ["Acciones de EE. UU.", "Cripto", "Forex", "Mercados globales"],
+    "marketWords": ["Acciones de EE. UU.", "Forex", "Mercados globales"],
     "subtitlePrefix": "estrategias de inversión en",
     "subtitleSuffix": "en un único ecosistema de quant finance, nativo de IA y en la nube",
-    "ctaSecondary": "Mira cómo funciona",
-    "audiencePills": ["Hedge funds", "Equipos quant", "Quants independientes", "Mesas de research"]
-  },
-  "heroMock": {
-    "url": "app.fintela.io / studies / sp500-momentum-142",
-    "sidebar": {
-      "dataClusters": "Asset Groups",
-      "strategies": "Estrategias",
-      "fitness": "Fitness",
-      "studies": "Estudios",
-      "portfolios": "Portafolios",
-      "markets": "Mercados",
-      "agents": "Trading en vivo"
-    },
-    "assistantLabel": "Fintelligent",
-    "assistantPrompt": "«Muéstrame los 3 mejores portafolios.»",
-    "studyEyebrow": "Estudio · #142",
-    "studyTitle": "SP500 Momentum · búsqueda bayesiana",
-    "statusRunning": "En ejecución",
-    "trialsChip": "500 trials",
-    "kpiBestSharpe": "Mejor Sharpe",
-    "kpiBestCagr": "Mejor CAGR",
-    "kpiMaxDd": "Máx. DD",
-    "kpiTrialsDone": "Trials completados",
-    "kpiTrialsDoneValue": "312 / 500",
-    "equityTitle": "Mejor portafolio · curva de equity",
-    "legendTrain": "Train",
-    "legendVal": "Val",
-    "legendOos": "OOS",
-    "equityFooter": "+312.4% en 6.5 años · Sharpe OOS 1.94",
-    "topPortfolios": "Mejores portafolios",
-    "columnRank": "#",
-    "columnSharpe": "Sharpe",
-    "columnCagr": "CAGR",
-    "columnMaxDd": "Máx. DD"
+    "ctaSecondary": "Mira cómo funciona"
   },
   "trustBar": {
     "title": "La confianza de asignadores de capital y fondos cuantitativos"
@@ -56,7 +22,7 @@
       "dataClusters": {
         "label": "Asset Groups",
         "sub": "Universo de mercado",
-        "desc": "Define tu universo invertible. Snapshots reutilizables de datos de mercado en acciones, cripto, ETFs, forex e índices globales — cada backtest reproducible."
+        "desc": "Define tu universo invertible. Snapshots reutilizables de datos de mercado en acciones, ETFs, forex e índices globales — cada backtest reproducible."
       },
       "strategies": {
         "label": "Estrategias",
@@ -107,7 +73,7 @@
     "items": {
       "crossMarket": {
         "title": "Multi-mercado por diseño",
-        "description": "Un único motor de estrategias funciona en cripto, acciones de EE. UU., índices S&P, ETFs, forex y mercados globales. Un solo modelo mental, todas las clases de activos."
+        "description": "Un único motor de estrategias funciona en acciones de EE. UU., índices S&P, ETFs, forex y mercados globales. Un solo modelo mental, todas las clases de activos."
       },
       "laboratory": {
         "title": "Un laboratorio para todo tu flujo",
@@ -347,7 +313,7 @@
     "items": {
       "assetClasses": {
         "q": "¿Qué clases de activos soporta Fintela?",
-        "a": "Cripto y divisas, acciones de EE. UU., índices S&P, ETFs, forex y mercados globales — todo a través del mismo motor de estrategias unificado. Construye una estrategia una vez y pruébala en cualquier cluster que definas."
+        "a": "Divisas, acciones de EE. UU., índices S&P, ETFs, forex y mercados globales — todo a través del mismo motor de estrategias unificado. Construye una estrategia una vez y pruébala en cualquier cluster que definas."
       },
       "vsBacktesting": {
         "q": "¿En qué se diferencia Fintela de una librería de backtesting estándar?",
