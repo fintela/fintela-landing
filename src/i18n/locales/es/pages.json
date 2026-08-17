@@ -57,32 +57,11 @@
     }
   },
   "docs": {
-    "hero": {
-      "chip": "Guías y referencia",
-      "title": "Documentación de Fintela",
-      "subtitle": "Guías, flujos de trabajo y referencia de la API de la plataforma de optimización de Fintela. Cada página es un archivo Markdown en nuestro repositorio público."
-    },
-    "readDoc": "Leer página",
     "readTime": "{{minutes}} min de lectura",
     "updated": "Actualizado el {{date}}",
     "backToIndex": "Ver toda la documentación",
     "editThisPage": "Editar esta página en GitHub",
     "editHint": "Abre {{path}} en el editor de GitHub — al guardar se propone un pull request.",
-    "search": {
-      "label": "Buscar en la documentación",
-      "placeholder": "Busca en la documentación — estrategias, samplers, endpoints…",
-      "clear": "Borrar la búsqueda",
-      "results_one": "{{count}} página coincide",
-      "results_other": "{{count}} páginas coinciden",
-      "empty": {
-        "title": "No hay resultados para esa búsqueda",
-        "body": "Ninguna página de la documentación menciona “{{query}}”. Prueba con un término más general o borra la búsqueda para ver todas las secciones."
-      }
-    },
-    "empty": {
-      "title": "Aún no hay documentación",
-      "body": "Estamos escribiendo la documentación. Vuelve pronto o abre un pull request para añadir la primera página."
-    },
     "error": {
       "title": "No se pudo cargar la documentación",
       "body": "Algo falló al obtener las páginas. Actualiza la página o inténtalo de nuevo en unos minutos."

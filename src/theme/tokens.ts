@@ -47,21 +47,21 @@ export const gradients = {
 } as const;
 
 export const radii = {
-  xs: 6,
-  sm: 10,
-  md: 14,
-  lg: 18,
-  xl: 24,
+  xs: 4,
+  sm: 8,
+  md: 6,
+  lg: 10,
+  xl: 14,
   pill: 999,
 } as const;
 
 export const shadows = {
   xs: '0 1px 2px rgba(11, 16, 32, 0.04)',
-  sm: '0 2px 6px rgba(11, 16, 32, 0.05), 0 1px 2px rgba(11, 16, 32, 0.04)',
-  md: '0 6px 18px rgba(11, 16, 32, 0.06), 0 2px 4px rgba(11, 16, 32, 0.04)',
-  lg: '0 18px 40px rgba(11, 16, 32, 0.08), 0 4px 12px rgba(11, 16, 32, 0.04)',
-  brand: '0 14px 30px rgba(47, 99, 149, 0.22)',
-  brandStrong: '0 18px 40px rgba(47, 99, 149, 0.32)',
+  sm: '0 1px 3px rgba(11, 16, 32, 0.05)',
+  md: '0 2px 8px rgba(11, 16, 32, 0.06)',
+  lg: '0 4px 16px rgba(11, 16, 32, 0.07)',
+  brand: '0 6px 16px rgba(47, 99, 149, 0.18)',
+  brandStrong: '0 8px 20px rgba(47, 99, 149, 0.26)',
 } as const;
 
 export const motion = {

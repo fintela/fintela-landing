@@ -39,39 +39,6 @@ export const BlogCard = ({ post }: { post: BlogPostSummary }) => {
         },
       }}
     >
-      {/* Accent band — posts carry no cover image, so the brand wordmark stands in. */}
-      <Box
-        sx={{
-          height: 160,
-          background: `linear-gradient(135deg, ${accent}40 0%, ${accent}10 100%)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-          flexShrink: 0,
-        }}
-      >
-        {visibleTags[0] && (
-          <Chip
-            label={visibleTags[0]}
-            size="small"
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              maxWidth: 'calc(100% - 32px)',
-              bgcolor: accent,
-              color: '#fff',
-              fontWeight: 600,
-            }}
-          />
-        )}
-        <Typography variant="h4" sx={{ color: accent, opacity: 0.2, fontWeight: 800 }}>
-          FINTELA
-        </Typography>
-      </Box>
-
       <Box sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, mb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

@@ -1,15 +1,12 @@
 import { Box, Typography } from '@mui/material';
-import type { ReactNode } from 'react';
 
 interface FeatureCardProps {
-  icon: ReactNode;
   title: string;
   description: string;
   accent?: string;
 }
 
 export const FeatureCard = ({
-  icon,
   title,
   description,
   accent = '#2f6395',
@@ -37,29 +34,12 @@ export const FeatureCard = ({
         },
         '&:hover': {
           borderColor: `${accent}66`,
-          boxShadow: `0 14px 32px ${accent}22`,
-          transform: 'translateY(-3px)',
+          boxShadow: `0 4px 14px ${accent}1a`,
+          transform: 'translateY(-2px)',
           '&::before': { opacity: 1 },
         },
       }}
     >
-      <Box
-        sx={{
-          width: 44,
-          height: 44,
-          borderRadius: 2,
-          background: `linear-gradient(135deg, ${accent}1f 0%, ${accent}0d 100%)`,
-          color: accent,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mb: 2.25,
-          border: `1px solid ${accent}24`,
-          '& svg': { fontSize: 22 },
-        }}
-      >
-        {icon}
-      </Box>
       <Typography
         sx={{
           fontWeight: 700,

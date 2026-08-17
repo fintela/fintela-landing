@@ -5,12 +5,10 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { GradientText } from '../primitives/GradientText';
 import { RotatingWord } from '../primitives/RotatingWord';
-import { HeroProductMock } from './hero/HeroProductMock';
 
 export const HeroSection = () => {
   const { t } = useTranslation('home');
   const marketWords = t('hero.marketWords', { returnObjects: true }) as string[];
-  const audiencePills = t('hero.audiencePills', { returnObjects: true }) as string[];
 
   return (
     <Box
@@ -127,45 +125,7 @@ export const HeroSection = () => {
               </Button>
             </Stack>
           </AnimateOnScroll>
-
-          <AnimateOnScroll delay={280}>
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 1,
-                justifyContent: 'center',
-                mb: { xs: 5, md: 7 },
-              }}
-            >
-              {audiencePills.map((pill) => (
-                <Box
-                  key={pill}
-                  sx={{
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    color: 'text.disabled',
-                    px: 1.5,
-                    py: 0.5,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: '999px',
-                    bgcolor: '#fff',
-                  }}
-                >
-                  {pill}
-                </Box>
-              ))}
-            </Box>
-          </AnimateOnScroll>
         </Box>
-
-        {/* Product mock */}
-        <AnimateOnScroll delay={320}>
-          <HeroProductMock />
-        </AnimateOnScroll>
       </Container>
     </Box>
   );
