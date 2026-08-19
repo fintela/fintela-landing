@@ -34,6 +34,111 @@
       "heading": "Need immediate assistance?"
     }
   },
+  "pricing": {
+    "hero": {
+      "chip": "Pricing",
+      "title": "Pay for the compute you",
+      "titleAccent": "actually use",
+      "subtitle": "Fintela runs on two prepaid balances: Fintela tokens meter the compute the platform runs for you, and Fintela AI tokens meter your work with Fintelligent. Both are bought in packs — the bigger the pack, the lower the rate.",
+      "ctaPrimary": "Buy tokens",
+      "ctaSecondary": "Talk to us"
+    },
+    "balances": {
+      "title": "Two balances,",
+      "titleAccent": "one platform",
+      "description": "Every organization holds both. Each meters a different kind of work, so a heavy optimization week never eats into your agent budget — and vice versa.",
+      "compute": {
+        "name": "Fintela tokens",
+        "tagline": "Compute",
+        "description": "Spent whenever the platform runs work on your behalf — the optimizer sampling parameters, the compiler validating your code. Metered per action, at a fixed rate you can budget against before you launch anything.",
+        "meters": {
+          "trial": "{{amount}} tokens per optimization trial",
+          "bugTest": "{{amount}} token per bug test"
+        }
+      },
+      "ai": {
+        "name": "Fintela AI tokens",
+        "tagline": "Fintelligent",
+        "description": "Spent when you work with the agent. Every message you send and every answer it returns is metered, so you only pay for the reasoning you actually ask for.",
+        "meters": {
+          "messages": "Charged on both input and output tokens",
+          "factor": "Model usage is converted into AI tokens by a conversion factor"
+        }
+      }
+    },
+    "packs": {
+      "title": "Token",
+      "titleAccent": "packs",
+      "description": "Packs are bought in the app and credited to your organization's balance. Prices are in US dollars.",
+      "bestRate": "Best rate",
+      "buy": "Buy in the app",
+      "rate": "{{price}} per {{amount}} tokens",
+      "save": "Save {{percent}}%",
+      "compute": {
+        "heading": "Fintela tokens",
+        "subheading": "For optimization trials, bug tests, and every other compute-backed action in the platform.",
+        "unit": "Fintela tokens",
+        "equivalent": "≈ {{trials}} trials, or {{bugTests}} bug tests"
+      },
+      "ai": {
+        "heading": "Fintela AI tokens",
+        "subheading": "For working with Fintelligent — questions, analysis, and everything you ask the agent to do.",
+        "unit": "AI tokens"
+      }
+    },
+    "meter": {
+      "title": "What consumes",
+      "titleAccent": "tokens",
+      "description": "Only work that costs compute costs you tokens. These are the published rates; anything else the platform runs for you draws on the same balances.",
+      "columns": {
+        "action": "Action",
+        "cost": "Cost"
+      },
+      "rows": {
+        "trial": {
+          "action": "Optimization trial",
+          "detail": "One parameter sample. The optimizer picks a vector of values, runs your strategy across the backtest window and scores its fitness. A 200-trial study spends 200 of them.",
+          "cost": "{{amount}} Fintela tokens"
+        },
+        "bugTest": {
+          "action": "Bug test",
+          "detail": "The validation run that compiles and executes your strategy or risk manager against real data before it is saved — so errors surface up front, not halfway through a study.",
+          "cost": "{{amount}} Fintela token"
+        },
+        "chat": {
+          "action": "Fintelligent message",
+          "detail": "Each exchange with the agent. Its input and output tokens are multiplied by a conversion factor and drawn from your AI token balance.",
+          "cost": "Fintela AI tokens"
+        }
+      }
+    },
+    "notes": {
+      "items": {
+        "balance": {
+          "title": "Balances belong to the organization",
+          "description": "Both balances sit with your organization rather than an individual seat, so everyone on the team draws from the same pool and you can see exactly where it went."
+        },
+        "volume": {
+          "title": "Bigger packs, lower rate",
+          "description": "The effective rate drops at every tier: the largest Fintela token pack costs {{computeSave}}% less per token than the entry pack, and the largest AI token pack {{aiSave}}% less."
+        },
+        "reads": {
+          "title": "Reading your results is free",
+          "description": "The developer API is read-only and returns work you have already paid for, so exporting portfolios, trials and baskets into your own notebooks costs nothing."
+        },
+        "help": {
+          "title": "Not sure what you need?",
+          "description": "Tell us the size of your search space and how your team plans to use the agent, and we will size a pack against a realistic workload with you."
+        }
+      }
+    },
+    "cta": {
+      "title": "Start with the pack that fits",
+      "description": "Top up in the app whenever you need to, or talk to us first if you would rather size it against a real workload.",
+      "primary": "Buy tokens",
+      "secondary": "Contact us"
+    }
+  },
   "blog": {
     "hero": {
       "chip": "Insights & Tutorials",
