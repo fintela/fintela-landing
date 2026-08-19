@@ -28,6 +28,12 @@ const PrivacyPage = lazy(() =>
   import('./pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })),
 );
 
+// Pricing — a cold, self-contained page reached from the header, so it is split
+// off the home page's bundle like every other route below the fold.
+const PricingPage = lazy(() =>
+  import('./pages/PricingPage').then((m) => ({ default: m.PricingPage })),
+);
+
 // Documentation. Twenty-five hand-written page components used to be listed here,
 // one lazy import each; the pages are Markdown files in `content/docs/` now, so
 // there is exactly one route and adding a page touches neither this file nor any
@@ -127,6 +133,7 @@ function App() {
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
 
             {/* Legal */}
             <Route path="/terms" element={<TermsPage />} />

@@ -38,6 +38,7 @@ const navItems: NavItem[] = [
   { id: 'platform', labelKey: 'nav.platform', href: 'platform', type: 'scroll' },
   { id: 'fintelagent', labelKey: 'nav.fintelagent', href: 'fintelagent', type: 'scroll' },
   { id: 'use-cases', labelKey: 'nav.useCases', href: 'use-cases', type: 'scroll' },
+  { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
   { id: 'documentation', labelKey: 'nav.documentation', href: '/docs', type: 'route' },
   { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
 ];
