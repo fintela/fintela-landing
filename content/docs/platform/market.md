@@ -57,7 +57,7 @@ surface.
 | Page | Renders behind a blurred, `inert aria-hidden` layer — no pointer events, no focus, no accessibility tree |
 | Requests | The subtree runs against a frozen query client, so **zero requests fire** |
 | Panel copy | `Feature locked` / `Buy tokens to unlock this feature.` / button `Buy tokens` → `/account?section=tokens` / note `This is a preview — your real data appears once unlocked.` |
-| Sidebar | The entry still navigates; it is dimmed with a lock glyph and the tooltip `Locked — buy tokens to unlock` |
+| Sidebar | The entry still navigates; it carries a lock glyph and the tooltip `Locked — buy tokens to unlock` |
 | Backend | `gate_market_data` runs on every `/market/*` route except `/market/last_date`, and on both `/news` routes. Failure is HTTP 402 `{ "error": "feature_locked", "feature": "markets", "upgrade": "purchase_tokens" }` |
 
 Locked is not hidden — see [navigation](/docs/navigation) for how locked features behave in the
@@ -97,8 +97,8 @@ Each tab also publishes a context layer to [Fintelligent](/docs/fintelligent): `
 
 ### Retired tab keys
 
-Three tab keys shipped before the consolidation and now redirect before first paint, with
-`replace: true`. They are not live tabs.
+Three tab keys shipped before the consolidation and are now rewritten to their current key on
+arrival, with `replace: true`. They are not live tabs.
 
 | Old `?tab=` | Redirects to | Why |
 |---|---|---|
@@ -281,7 +281,7 @@ row of chips:
 |---|---|
 | `No price history` or `{{count}} bars · {{from}} → {{to}}` | Always, once the banner shows |
 | `Delisted` | The ticker is delisted |
-| `{{days}} days behind the exchange` | The last bar lags the watermark |
+| `{{days}} days behind the exchange` | The last bar lags the watermark and the ticker is not delisted |
 | `{{available}} of {{total}} data sources available` | Counted over seven flags |
 
 The seven counted flags are `has_fundamentals`, `has_financials`, `has_analyst`, `has_insider`,
@@ -324,7 +324,9 @@ Below the columns sits the company description, clamped to three lines. States:
 ### Detail panels
 
 One segmented control labelled `Detail`, with a fixed-height body and internal scroll. **Only the
-active panel is mounted**, so only its query runs.
+active panel is mounted**, so only its query runs — the two exceptions are the financials and
+crypto-fundamentals queries, which the strip itself issues because they also decide whether their
+tabs are offered at all.
 
 | Panel | Availability flag | Applies to |
 |---|---|---|
@@ -402,7 +404,7 @@ Five tiles, shown once the data has loaded and is non-empty.
 | Label | Value |
 |---|---|
 | `Groups` | Row count after filtering |
-| `Adv / Dec` | Advancers / decliners by the 1-day return; green when advancers win |
+| `Adv / Dec` | Advancers / decliners by the 1-day return; green unless decliners outnumber advancers |
 | `Avg Today` | Mean 1-day return over rows that have one |
 | `Leader` | Best group name, with its return underneath |
 | `Laggard` | Worst group name, with its return underneath |
@@ -564,7 +566,7 @@ summary (`Current member of {{index}}`, `Ever a member of {{index}}`,
 > [!WARNING] Crypto fundamental screening does not exist
 > The filter component still carries state and chip templates for 14 crypto-fundamental fields
 > (diluted market cap, dominance, circulating/total/max supply, ATH and ATL). The inputs were
-> removed and the backend query struct rejects those parameters outright with a 422. Do not expect
+> removed and the backend query struct rejects those parameters outright with a 400. Do not expect
 > to screen on them.
 
 ### Summary tiles
@@ -754,7 +756,8 @@ labelled as a daily return. 90-day volatility is the coefficient of variation of
 ## Backend endpoints
 
 Every Markets endpoint is a `GET`, and every response is wrapped as `{ "data": … }`. All of them
-require a JWT; all except `/market/last_date` additionally require the `markets` entitlement. See
+require a JWT; in the `/market/*` family, all except `/market/last_date` additionally require the
+`markets` entitlement — the supporting endpoints below are authenticated only. See
 [API authentication](/docs/api-authentication) and the [API overview](/docs/api-overview).
 
 ### Market data endpoints
@@ -846,7 +849,7 @@ caption and the disabled grouping options are built from — nothing is dropped 
 ### Indicator ranking parameters
 
 `GET /market/indicators/top` and its `/summary` sibling share one query struct, and that struct
-**rejects unknown fields with a 422**. That is deliberate: it used to swallow parameters the UI was
+**rejects unknown fields with a 400**. That is deliberate: it used to swallow parameters the UI was
 sending, so the popover offered filters that had no effect.
 
 | Parameter | Required | Notes |

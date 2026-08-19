@@ -65,9 +65,10 @@ The 402 body is:
 }
 ```
 
-> [!WARNING] Two older internal docs are stale
-> `docs/BILLING_README.md` and `docs/TOKEN_BILLING.md` describe the Data Explorer as free. The
-> shipped entitlement policy locks it. See [tokens and billing](/docs/tokens-and-billing).
+> [!NOTE] Locked is not the same as metered
+> Browsing the Data Explorer deducts no tokens — none of its handlers touch the token ledger. The
+> only barrier is the `data_explorer` entitlement. See
+> [tokens and billing](/docs/tokens-and-billing).
 
 One adjacent lock matters: the Technical Indicators indicator picker reads
 `GET /market/indicators/metadata`, which sits behind the separate `markets` lock. With
@@ -412,7 +413,7 @@ The eighteen fields, in fixed order: `code` (`Ticker Code`), `name` (`Name`), `t
 "Used in strategies" is resolved at request time from the live injectable-source registry, not from
 a hard-coded list. `code` is always exposed because it is the index of the `meta` DataFrame rather
 than a column of it. The exposed tooltip reads
-`This field is exposed as a column of the meta DataFrame injected into strategies.`; the other reads
+``This field is exposed as a column of the `meta` DataFrame injected into strategies.``; the other reads
 `Not injected into user strategies — for reference only.`
 
 Availability counts a value as present only when it is non-null **and** not an empty string.
@@ -493,10 +494,10 @@ monospace chip with the keyword argument the source is injected as.
 | `market_cap` | `market_cap` | Market cap | no |
 | `dividends` | `dividends` | Dividends | no |
 | `splits` | `splits` | Splits | no |
-| `fundamentals_crypto` | `fundamentals` | Fundamentals (crypto) | no |
-| `fundamentals_equity` | `fundamentals` | Fundamentals (US equity) | no |
 | `insider_transactions` | `insider_flow` | Insider transactions | no |
 | `analyst_trends` | `analyst_revisions` | Analyst estimate revisions | no |
+| `fundamentals_crypto` | `fundamentals` | Fundamentals (crypto) | no |
+| `fundamentals_equity` | `fundamentals` | Fundamentals (US equity) | no |
 | `fund_fundamentals` | `expense_ratio` | Fund expense ratio | no |
 | `earnings_calendar` | `next_earnings_days` | Days to next earnings | no |
 | `ipo_calendar` | `ipo_activity` | IPO activity | no |
@@ -514,10 +515,11 @@ monospace chip with the keyword argument the source is injected as.
 > marked deprecated and filtered out in favour of the two typed keys above.
 
 Several of these carry coverage limits that decide whether a strategy can run over a given
-[asset group](/docs/asset-groups): `sentiment` and `market_cap` are collected only for the tracked
-S&P 500 universe, so a crypto or FX group is unavailable to a strategy that uses them, while
-`dividends` and `splits` cover the whole equity universe (a non-payer is a legitimate all-zero
-column, not missing data).
+[asset group](/docs/asset-groups). `sentiment` and `market_cap` are collected only for the tracked
+S&P 500 universe; `dividends` and `splits` are equity corporate actions. In all four cases a crypto
+or forex group is unavailable to a strategy that uses them. Within the equity universe a never-payer
+is a legitimate all-zero `dividends` column (and a never-split ticker an all-1.0 `splits` column),
+not missing data.
 
 ### What a shape card shows
 
@@ -535,7 +537,7 @@ snippet.
 ## Data Pipelines is retired
 
 There is no Data Pipelines page. `/data-pipelines/*` — including its old `/edit/:id` deep links —
-redirects permanently to `/analysis/data-explorer`.
+redirects to `/analysis/data-explorer`, replacing the history entry.
 
 | Old surface | Where the capability lives now |
 |---|---|
@@ -552,8 +554,9 @@ The Data Explorer is the browse half of that split — read-only, no wiring, no 
 
 ## Deep links
 
-Every piece of page state is written to the URL with `replace: true`, so any view can be
-bookmarked or shared.
+Five parameters are written to the URL with `replace: true`, so a dataset view can be bookmarked or
+shared. Everything else — table search, sort, paging, the coverage date window and the panel-local
+selections (calendar window, tenor, country, timeframe) — is component state and is not in the URL.
 
 | Parameter | Value | Meaning |
 |---|---|---|
@@ -578,10 +581,11 @@ feature.
 | Inspection drawer, Table tab | `Export CSV` | `{dataset_id}_{ticker}_raw.csv` | the API's raw column keys |
 | Metadata Records tab | `CSV` | `ticker_meta.csv` | the currently visible columns, raw keys |
 
-> [!WARNING] Exports cover the current page only
-> Every button writes the rows currently loaded — 25, 50 or 100 depending on the page size — never
-> the full result set. Files are comma-separated with `\n` line endings, quoting cells that contain
-> a comma, a quote or a newline; there is no byte-order mark.
+> [!WARNING] Exports cover what is loaded, never the full result set
+> The coverage and metadata buttons write the current page — 25, 50 or 100 rows depending on the
+> page size. In the drawer, the Table tab writes its fixed 50-row page and the Chart tab writes the
+> loaded series, at most 500 points. Files are comma-separated with `\n` line endings, quoting cells
+> that contain a comma, a quote or a newline; there is no byte-order mark.
 
 ## What the Data Explorer does not do
 

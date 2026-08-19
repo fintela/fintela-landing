@@ -29,7 +29,7 @@ There is no multi-objective or Pareto mode anywhere in the product. A study writ
 | 2 | `NOT_SET` (the default) with a `builtin` objective | Inferred from `execution_details.direction`: `lower_is_better` ⇒ minimize, otherwise maximize. |
 | 3 | `NOT_SET` with an `internal` or `external` objective | Maximize. |
 
-The builder states the rule as `Whether the search maximizes or minimizes the objective. It follows the objective's own natural direction until you change it, and it is frozen once the study launches.`
+The builder states the rule as `Whether the search maximizes or minimizes the objective. It follows the objective’s own natural direction until you change it, and it is frozen once the study launches.`
 
 > [!WARNING]
 > Do not assume the optimizer always maximizes. A custom objective maximizes **by default**, a `lower_is_better` built-in minimizes at the default setting, and any study can be pinned to `MINIMIZE`. Inside your own code, the safe framing is "return a bigger number for a better outcome, then set the study's direction to match."
@@ -58,7 +58,7 @@ A study carries three fitness-related fields:
 At launch the study also pins `fitness_version_id` to the newest version in the function's history. Editing the function afterwards appends a new version and never changes a launched study's results.
 
 > [!NOTE]
-> Fitness parameters are constants, not a search space. The study builder says so directly: `Objective parameters are constants: the same value is used in every trial, and the search never explores them.` If the declared parameter names and the study's `fitness_params` keys disagree, the study fails once at startup with `Fitness function parameters do not match study fitness parameters`.
+> Fitness parameters are constants, not a search space. The study builder says so directly: `Objective parameters are constants: the same value is used in every trial, and the search never explores them.` For an internal objective, if the declared parameter names and the study's `fitness_params` keys disagree, the study fails once at startup with `Fitness function parameters do not match study fitness parameters`.
 
 ## Registry table view
 
@@ -93,7 +93,7 @@ The table opens sorted by `Created At`, descending.
 | `description` | `Description` | Yes | Yes | One line, ellipsized, with the full text in a hover tooltip; an em dash when empty |
 | `execution_type` | `Execution Type` | Yes | Yes | An outlined chip carrying the **raw wire value** — `internal`, `external`, `builtin`, `declarative` |
 | `author` | `Author` | Yes | Yes (by `created_by_username`) | The creator's username; `platform` for built-ins |
-| `created_at` | `Created At` | Yes | Yes | Formatted date; not filterable |
+| `created_at` | `Created At` | Yes | Yes | Formatted date; no per-column filter menu |
 | `parameters` | `Parameters` | No (column chooser) | No | Comma-joined parameter names, or an em dash |
 | `studies` | `Associated Studies` | No (column chooser) | Yes | Count of studies referencing the row |
 
@@ -117,7 +117,7 @@ Free-text search matches against the name, the stored description, the author's 
 
 ### Insights band
 
-The band above the table is the shared registry insights panel, with sections labelled `Insights`, `Overview`, `Graduated portfolios`, `Quality`, `Dependent studies`, `By type`, and `No insights for this view.` when nothing applies. It groups by `execution_type` and counts usage by dependent studies — the same accessor the `Associated Studies` column uses, so the two can never disagree.
+The band above the table is the shared registry insights panel, carrying the labels `Insights`, `Overview`, `Graduated portfolios`, `Quality`, `Dependent studies` and `By type`, and `No insights for this view.` when nothing applies. It groups by `execution_type` and counts usage by dependent studies — the same accessor the `Associated Studies` column uses, so the two can never disagree.
 
 ### Row action menu
 
@@ -215,7 +215,7 @@ Creation is quota-limited. `fitness` is a quota resource with a free-tier defaul
 
 ### The creation flow is a single editor screen
 
-There is no multi-step wizard. `New Fitness` opens `/fitness?mode=create`, which renders one editor screen: a center zone for the implementation, a right rail of collapsible sections, and an actions row. Pressing `Create fitness` opens a naming confirm dialog, and **that dialog is the only path that persists anything**.
+There is no multi-step wizard. `New Fitness` swaps the list for one editor screen in place — `/fitness?mode=create` is the equivalent deep link — with a center zone for the implementation, a right rail of collapsible sections, and an actions row. Pressing `Create fitness` opens a naming confirm dialog, and **that dialog is the only path that persists anything**.
 
 | Mode | Header title | Header subtitle |
 |---|---|---|
@@ -323,7 +323,7 @@ Nothing is saved until this dialog is confirmed.
 | Message on edit | `Review the name and description before saving.` |
 | Name field | `Name`, helper `Lowercase identifier — also the Python function name.` |
 | Description field | `Description` |
-| Collision helper | `Already in use — it will be saved as "{{name}}"` |
+| Collision helper | `Already in use — it will be saved as “{{name}}”` |
 | Client-side name collision | `A fitness with this name already exists` |
 | Server name conflict | `A fitness function named "<name>" already exists in your organization.` |
 
@@ -392,7 +392,7 @@ Semantics worth knowing before you promote:
 
 ### Internal — the Python signature
 
-Internal is Python you write, stored on the platform, executed by Fintela inside a credential-scrubbed subprocess. The contract is fixed:
+Internal is Python you write, stored on the platform and executed by Fintela — inside the optimizer for a study, and inside a credential-scrubbed subprocess for a sandbox run. The contract is fixed:
 
 ```python
 def my_fitness(simulation, data, **params) -> float:
@@ -471,7 +471,7 @@ At validation time, two rejections are possible:
 | Condition | Message (`error_type: invalid_output`) |
 |---|---|
 | Not `int` or `float`, or a `bool` | `Fitness must return a number, got <type>. The optimizer maximizes this value, so it has to be a plain float — booleans, strings, lists and dicts are not scores.` |
-| `NaN` or `±inf` | `Fitness returned <v>, which is not a finite number. The optimizer maximizes this value: a NaN makes every trial incomparable and an infinity makes one trial unbeatable, so the study reports a winner that means nothing. Guard the degenerate cases explicitly — an empty simulation['trades'], a zero-volatility denominator — and return a large negative number instead.` |
+| `NaN` or `±inf` | ``Fitness returned <v>, which is not a finite number. The optimizer maximizes this value: a NaN makes every trial incomparable and an infinity makes one trial unbeatable, so the study reports a winner that means nothing. Guard the degenerate cases explicitly — an empty `simulation['trades']`, a zero-volatility denominator — and return a large negative number instead.`` |
 
 `bool` is rejected explicitly because it subclasses `int`.
 

@@ -80,13 +80,13 @@ Live routes are:
                               │
                               ├─► Study: strategy universe   (required)
                               ├─► Study: fitness universe    (optional)
-                              ├─► Strategy sandbox universe picker
+                              ├─► Strategy / fitness sandbox universe picker
                               ├─► Study builder date presets (via /date_coverage)
                               └─► Developer API: GET /v1/data_clusters
 ```
 
 - **Studies** are the primary consumer. `strategy_data_cluster_id` is required on a study; `fitness_data_cluster_id` is optional. A study that references a group makes it read-only and undeletable, as described under the row action menu below.
-- **The strategy sandbox** picks an asset group as the universe it explores against.
+- **The strategy and fitness sandboxes** pick an asset group as the universe they explore against.
 - **The study builder** reads the group's date coverage to offer date presets and to bound the date pickers.
 - **Markets** can create a group straight from a ranking result through the **"Create Asset Group from Ranking"** dialog.
 - **A launched study** can hand its frozen runnable universe back as a new group — the **"Save as asset group"** button on the study's "Runnable universe (frozen at launch)" panel.
@@ -94,7 +94,7 @@ Live routes are:
 
 ### Date coverage and metadata quality
 
-An asset group does not store dates, but the platform will tell you what calendar its members actually have. Three read endpoints report this, and their consumer is the [study builder](/docs/studies), not this registry — there is **no coverage panel on the asset-group detail page**.
+An asset group does not store dates, but the platform will tell you what calendar its members actually have. Three read endpoints report this, and none of them is rendered by this registry — there is **no coverage panel on the asset-group detail page**. `date_coverage` is the only one with a screen: the [study builder](/docs/studies) reads it for its date presets and pickers, and so do the strategy and fitness sandboxes. `last_date` and `meta-quality` have no UI consumer at all — they are reachable through the API and as [Fintelligent](/docs/fintelligent) tools.
 
 | Endpoint | Returns | Meaning |
 |---|---|---|
@@ -624,7 +624,7 @@ Validation across the whole flow:
 | Name is non-empty | the dialog; Confirm stays disabled | — |
 | Description is non-empty | the dialog; Confirm stays disabled | — |
 | Name is not already taken | the dialog, **create mode only**, case-insensitive against the groups already loaded in your list | **This name already exists** |
-| No ticker code on two exchanges within one group | the server, on create and update | **Ticker codes appear in multiple exchanges: {code} ({EX1, EX2}); …** — HTTP 400 |
+| No ticker code on two exchanges within one group | the server, on create and update | **Ticker codes appear in multiple exchanges: {code} (EX1, EX2); …** — HTTP 406 |
 | Group is not referenced by a live study | the server, on update | **This asset group is currently used in a study and cannot be edited.** — HTTP 409 |
 
 > [!NOTE]
@@ -661,11 +661,11 @@ Edit issues `PUT /data_clusters` with the same fields plus `data_cluster_id`. Bo
 
 ### Derived creation paths
 
-Three server-side paths create a group without going through the builder.
+Three endpoints create a group without going through the builder.
 
 | Path | Trigger | Behaviour |
 |---|---|---|
-| `POST /data_clusters/from_study` | **Save as asset group** on a study's frozen universe panel | Requires a launched study with a frozen runnable universe; otherwise **"Study {id} has no frozen runnable universe yet — launch it first, then save the universe it ran on."** (400). Default name is `<study name> · runnable universe`. Rows created this way **do** appear in the registry, with no lineage badge |
+| `POST /data_clusters/from_study` | **Save as asset group** on a study's frozen universe panel | Requires a launched study with a frozen runnable universe; otherwise **"Study {id} has no frozen runnable universe yet — launch it first, then save the universe it ran on."** (406). Default name is `<study name> · runnable universe`. Rows created this way **do** appear in the registry, with no lineage badge |
 | `POST /data_clusters/from_grouping` | the study builder, when you pick a platform grouping as a universe | Resolves the grouping's **current** membership. Deduplicated per organization and grouping: an existing derived row has its membership refreshed but **never its name**. These rows are **hidden from this registry** |
 | `POST /data_clusters/{id}/duplicate` | the **Duplicate** row action | Copies description, tickers and members; allocates `"<name> (copy)"` with numeric suffixes on collision; responds `201 Created` |
 
@@ -723,7 +723,7 @@ Two choices in the builder can look like a mode and are not:
 | `GET` | `/data_clusters/{id}/date_coverage` | `data_cluster:read` | — |
 | `GET` | `/data_clusters/{id}/meta-quality` | `data_cluster:read` | — |
 
-`GET /data_clusters` accepts one query parameter, `created_by`, and **only the literal value `me`**; anything else is rejected with 400 and the message `` `created_by` only accepts the value `me` ``. `GET /data_clusters/metadata` takes `data_cluster_ids` as a comma-separated list.
+`GET /data_clusters` accepts one query parameter, `created_by`, and **only the value `me`** (matched case-insensitively); anything else is rejected with 400 and the message `` `created_by` only accepts the value `me` ``. `GET /data_clusters/metadata` takes `data_cluster_ids` as a comma-separated list.
 
 The public Developer API exposes exactly one read-only endpoint:
 

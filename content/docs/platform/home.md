@@ -450,7 +450,7 @@ The `Status` column says **where** the group trades, not how it is doing:
 
 | Condition | Label | Dot |
 |---|---|---|
-| The group is paused | `Paused` | neutral |
+| Every one of the group's operations is paused | `Paused` | neutral |
 | Paper only | `Paper Trading` | neutral |
 | Live only | `Live Trading` | amber |
 | Both | `Paper + Live` | amber |
@@ -497,7 +497,7 @@ Server-side definitions worth knowing:
 
 | Figure | How it is computed |
 |---|---|
-| Group AUM | sum of target capital across the group's live operations |
+| Group AUM | sum of target capital across the group's `ACTIVE` and `PAUSED` operations |
 | `ytd_revenue` | sum of realized P&L on trades closed since 1 January UTC, excluding corporate-action-affected trades |
 | `Return %` | year-to-date P&L divided by AUM; zero when AUM is zero or negative |
 | `Win Rate` | winning closed round-trips over closed round-trips, year to date |
@@ -524,7 +524,7 @@ outage renders a dashboard of empty states rather than an error page.
 | Deployed Portfolios per Strategy | 6 skeleton rows | caption distinguishing "no strategies" from "nothing deployed" |
 | Active Portfolio Group Performance | filled pane with a rounded skeleton | `No active portfolio groups yet.` |
 | Most Traded Assets | 8 skeleton rows | caption distinguishing "nothing deployed" from "nothing traded" |
-| Financial headline tiles | label renders, value becomes a skeleton, change chip and subtitle are not rendered | value is `—` |
+| Financial headline tiles | label renders, value becomes a skeleton, change chip and subtitle are not rendered | the value is `—` wherever the figure is unavailable (`AUM Change` with no baseline, `Avg Sharpe Ratio` with no measurable history) |
 | Catalog | per-row skeleton values | rows read `0` |
 | Hero KPI tiles | skeleton value, secondary reads `—` | `No healthy studies` where applicable |
 | Usage tiles | skeleton value | `—` |
@@ -545,7 +545,7 @@ Two deliberate distinctions:
 | Data | Cache lifetime | Polling |
 |---|---|---|
 | Financial overview | 5 minutes | none, and no refetch on window focus |
-| Study status | 5 seconds | while any study is running, queued or pending — stops once everything is terminal |
+| Study status | 5 seconds | every 5 s while any study is running, queued or pending — widened to 30 s while the realtime stream is connected, and stopped once everything is terminal |
 | Usage summary | 30 seconds | every 60 seconds |
 | Broker trackings | none | every 5 seconds |
 | Broker connections | none | every 10 seconds |
@@ -564,14 +564,14 @@ served from one cache entry and cost one request.
 |---|---|---|---|
 | `GET /financials/overview` | — | every financial tile, the results table, the performance chart's group set, the exposure ring's group set and capital weights | `portfolios:read` |
 | `GET /studies` | `created_by=me` in **My** workspace mode only | study counts and every study-derived figure | `study:read` |
-| `GET /studies/status` | `study_ids` | Catalog `in progress` count | `study:read` |
+| `GET /studies/status` | `study_ids` | an `in progress` study count the Catalog list layout does not render | `study:read` |
 | `GET /studies/metadata` | `study_ids` | strategy, fitness and asset-group "used" counts; the studies and portfolios rings | `study:read` |
 | `GET /studies/deployed` | `study_ids` | the Studies donut's `{{count}} deployed` caption | `study:read` |
 | `GET /studies/overfitting` | `study_ids`, `summary=true` | `Healthy Portfolios`, and the healthy filter behind `Best OOS Sharpe` | `study:read` |
 | `GET /portfolios` | `study_ids` | portfolio counts, per-strategy portfolio ring | `portfolios:read` |
 | `GET /portfolios/global/n_top` | `stage=out_of_sample`, `metric_name=sharpe_ratio`, `n_top=500`, `asc=false` | `Best OOS Sharpe` | `portfolios:read` |
 | `GET /strategies` | — | Catalog `Strategies`, the Strategies donut, the deployment census | `strategy:read` |
-| `GET /strategies/metadata` | `strategy_ids` | strategy execution types | `strategy:read` |
+| `GET /strategies/metadata` | `strategy_ids` | strategy execution types, for the donut breakdown that is no longer rendered | `strategy:read` |
 | `GET /fitness` | — | Catalog `Fitness Functions` | `fitness:read` |
 | `GET /data_clusters` | — | Catalog `Asset Groups`, the Asset Groups donut | `data_cluster:read` |
 | `GET /risk-managers` | — | Catalog `Risk Managers` | `risk_manager:read` |
@@ -584,7 +584,7 @@ served from one cache entry and cost one request.
 | `GET /broker/trackings` | — | `Live Portfolios` total | `broker_tracking:read` |
 | `GET /broker/connections` | — | the `live / paper` split on `Live Portfolios` | `broker_connection:manage` |
 | `POST /tickers/metadata/by-codes` | body: `{ codes }` | asset names in the exposure legend and the traded list | authenticated only |
-| `GET /tickers/asset_counts` | — | asset-type counts | authenticated only |
+| `GET /tickers/asset_counts` | — | asset-type counts, for the donut breakdown that is no longer rendered | authenticated only |
 | `GET /portfolios/tmp` | `portfolio_ids`, chunked at 200 | issued but not read by any card | `portfolios:read` |
 | `GET /portfolios/strategies` | `portfolio_ids`, chunked at 200 | issued but not read by any card | `portfolios:read` |
 
@@ -659,7 +659,8 @@ empty path rather than an explicit access message.
 ## Onboarding tour
 
 The **welcome** tour runs on this page and never navigates — all six steps live on `/analysis`.
-Three of them anchor into the Strategy Creation Workflow card: the strip as a whole, then its
-first tile. The remaining steps point at the sidebar's Registry and Analysis sections and at the
-help control in the header. The tour is skipped entirely on mobile, where the information
-architecture is different. See [navigation](/docs/navigation) for the mobile bottom bar.
+Two of them anchor into the Strategy Creation Workflow card: the strip as a whole, then its
+first tile. The opening step is unanchored and centred; the remaining three point at the
+sidebar's Registry and Analysis sections and at the help control in the header. The tour is
+skipped entirely on mobile, where the information architecture is different. See
+[navigation](/docs/navigation) for the mobile bottom bar.

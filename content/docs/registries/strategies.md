@@ -55,7 +55,7 @@ For how the pieces combine end to end, see [core concepts](/docs/core-concepts),
 | `/strategy/sandbox/:id` | Sandbox with strategy `:id` preselected |
 
 > [!NOTE]
-> Public sharing and forking of strategies are **not** on `/strategy`. They live in the Laboratory (`/laboratory/public`), which is entitlement-locked on the free tier. See [Laboratory](/docs/laboratory).
+> Public sharing and forking of strategies are **not** on `/strategy`. They live in the Laboratory (`/laboratory`), whose public-catalog dialog is where a shared resource is forked into your organization. The route is entitlement-locked on the free tier. See [Laboratory](/docs/laboratory).
 
 ## Registry table view
 
@@ -168,7 +168,9 @@ A segmented control in the header offers three options:
 
 A Monaco Python editor, 320px tall, word wrap on, minimap off. `Ctrl`/`Cmd`+`S` saves. While the code is still the untouched scaffold a banner reads *"Using template code. Edit the code below to switch to custom mode."*
 
-Toolbar controls: reset to template, a live validation chip with **Go to error** and **Validate now**, import/export code, fullscreen (dialog **"Edit Code - {{name}}"**), **Format** (`POST /compiler/format`), **Reference** (opens the Strategy Reference dialog), and a gear icon (aria-label `validation settings`).
+Toolbar controls: a **Reset** to template button, a live validation chip, import/export code (tooltips *"Import a .py file"* / *"Download as .py"*), fullscreen (dialog **"Edit Code - {{name}}"**), a format action (tooltip *"Format code (black)"*, `POST /compiler/format`), **Reference** (opens the Strategy Reference dialog), and a gear icon (aria-label `validation settings`).
+
+The chip's label is its status — **Unvalidated changes**, **Validating…**, **Valid** / **Valid · N warning(s)**, **Validation error** / **Error on line N**, **Paused**, **Timed out**, **Validator unavailable**. Clicking it jumps to the failing line; while auto-validation is paused it reads **Validate now** and clicking it runs one validation on demand.
 
 The editor also fetches `GET /compiler/contracts/strategy` and uses it to drive Monaco completion, hover help, and inline import-lint markers against the allowed-import list.
 
@@ -200,7 +202,7 @@ Parameters are the knobs a study optimizes. The panel header is **Parameters**, 
 Parameters are also **derived from your code**: editing the Python signature adds, removes and renames parameter rows automatically. Argument names that match an injected data source's runtime kwarg are filtered out, so a data source never becomes an optimizable parameter.
 
 > [!NOTE]
-> The sub-caption under the header reads *"Supported types: integer, float — free-form strings and booleans are not allowed; use a categorical parameter for named options."* It hard-codes only two names while the dropdown offers three. **Categorical is fully supported.** The Parameters tab of the in-app Strategy Reference dialog is also out of date: it claims strings are unsupported and tells you to encode choices as integers, and it describes a "Window Size" flag the parameter form no longer has. Ignore both.
+> The sub-caption under the header reads *"Supported types: integer & float — free-form strings and booleans are not allowed; use a categorical parameter for named options."* It hard-codes only two names while the dropdown offers three. **Categorical is fully supported.** The Parameters tab of the in-app Strategy Reference dialog is also out of date: it claims strings are unsupported and tells you to encode choices as integers, and it describes a "Window Size" flag the parameter form no longer has. Ignore both.
 
 #### Parameter validation rules
 
@@ -209,12 +211,12 @@ The backend normalizes `int`/`integer` → `integer` and `float`/`double` → `f
 | Rule | Message |
 |---|---|
 | Known dtype | `Parameter <n>: unsupported datatype "<x>" (expected integer, float, or categorical).` |
-| Categorical needs choices | `Categorical parameter <n> must declare a non-empty choices list.` |
+| Categorical needs choices | ``Categorical parameter <n> must declare a non-empty `choices` list.`` |
 | At most 100 choices | `Categorical parameter <n> declares <k> choices (maximum is 100).` |
 | No blank choice | `Categorical parameter <n> has a blank choice.` |
 | No duplicate choice | `Categorical parameter <n> has duplicate choice "<c>".` |
 | Categorical test value is a declared choice | `Test value for categorical parameter <n> must be a string, got <v>.` / `Test value "<s>" for parameter <n> is not one of the declared choices [...].` |
-| Numeric params carry no choices | `choices is only valid for categorical parameters; <n> has datatype "<x>".` |
+| Numeric params carry no choices | `` `choices` is only valid for categorical parameters; <n> has datatype "<x>". `` |
 | Numeric test value is a finite number | `Test value for parameter <n> must be a number, got <v>.` / `Test value for parameter <n> must be a finite number.` |
 | Integer test value is integral | `Test value <v> for integer parameter <n> must be integral.` |
 
@@ -244,9 +246,9 @@ The rail sections, in order:
 | **Parameters** | Expanded | Count of declared parameters | The parameter editor above |
 | **Data sources** | Expanded — **internal only** | Count of selected sources; error state when a source is missing required config | The built-in data injected as kwargs on top of the price panel |
 | **Advanced options** | Collapsed | Derived from its children | Container for the three below |
-| ↳ **Variables** | Collapsed, lazy | Sources + parameters count | Live inspector of the exact runtime surface your function receives |
+| ↳ **Variables** | Collapsed, lazy | Number of selected sources, plus one if any parameters are declared | Live inspector of the exact runtime surface your function receives |
 | ↳ **Lookback** | Collapsed | **Custom function** or **Auto-synced** | The `required_lookback` declaration |
-| ↳ **Validation** | Force-opened on a validation error | — | Classified error, traceback, warnings, and the internal-only Output sample panel |
+| ↳ **Validation** | Expanded once Advanced is open; a validation error force-opens the whole Advanced group | — | Classified error, traceback, warnings, and the internal-only Output sample panel |
 | **Version History** | Collapsed, lazy — **edit mode only** | Number of versions | The append-only version list |
 
 Every section carries a "why" popover. The Validation one is worth reading in full: *"Saving needs a passing run — we execute your code in the compiler sandbox, not just parse it."* … *"The backend won't accept a save without a recent passing run for this exact code. Edit it and it has to pass again."* … *"It also proves there's no look-ahead bias: we run a short window and a long one and reject the save if appending future data changes a past signal."*
@@ -335,8 +337,8 @@ Editing an internal strategy that studies already reference, when the code or th
 
 | Status | Meaning | Where it shows |
 |---|---|---|
-| **409** | `A strategy named "foo" already exists in your organization.` | On the Name field |
-| **409** | Optimistic-concurrency conflict — the row moved since the editor loaded it | Inline in the dialog |
+| **409** | `A strategy named "foo" already exists in your organization.` — only a race backstop: create and rename otherwise take the next free ordinal instead of failing | On the Name field |
+| **409** | `This strategy was changed by someone else while you were editing it. Reload it to see their version before saving yours.` | Also on the Name field — the editor routes every 409 there |
 | **406** | `This code has not been validated as a strategy. Validate it (POST /validate/internal/…) before saving.` | Inline; the pin is cleared |
 | **406** | `This code was validated, but not at the parameter values being saved (...). Causality and warmup are proven at the values the validation ran with, so validate again with these ones before saving.` | Inline |
 | **406** | `This code was validated over a custom date window. The causality checks only cover the period they ran on, so a receipt minted that way cannot authorize a save. Validate over the default window (a custom ticker list is fine) and save again.` | Inline |
@@ -349,9 +351,11 @@ Versions are produced by a database trigger, append-only, newest first, and read
 
 | Change | Mints a version? |
 |---|---|
-| Execution type, execution details (code or endpoint config), parameters, lookback mode, lookback function code, soft delete | Yes |
+| Execution type, execution details (code or endpoint config), parameters, lookback mode, lookback function code, data-source graph, soft delete | Yes |
 | Name only, description only | **No** |
-| Data-source graph, memory profile, universe binding (asset group or named tickers) | **No** |
+| Memory profile, universe binding (asset group or named tickers) | **No** |
+
+One save is one version even though the row and its data-source graph are written as two statements: a second capture inside the same transaction updates the version it already minted instead of appending another.
 
 **Restore** is available for internal strategies only. It loads the snapshot into the editor as an unsaved change — *"it never writes to the server, so you review it and save normally, which appends yet another version."*
 
