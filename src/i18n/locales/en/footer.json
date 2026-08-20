@@ -6,7 +6,8 @@
       "links": {
         "platform": "Platform",
         "fintelagent": "Fintelligent",
-        "useCases": "Use cases"
+        "useCases": "Use cases",
+        "pricing": "Pricing"
       }
     },
     "resources": {
