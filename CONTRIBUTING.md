@@ -21,6 +21,9 @@ node scripts/check-legal-final.mjs
 node scripts/i18n-keysync.mjs     # en/es/pt key parity
 ```
 
+Any collaborator may open a pull request and merge it once the `check` job is
+green. No approval is required.
+
 CI runs all four. `npm run lint` is **not** gated yet — it is red with three
 pre-existing errors (`AnimateOnScroll.tsx`, `DocsSearch.tsx`, `Prose.tsx`).
 Fixing those and turning the gate on is a genuinely useful first contribution.
@@ -54,10 +57,9 @@ file's frontmatter and headings.
 Colors, gradients, radii, shadows, and motion come from `src/theme/tokens.ts`.
 Import from there rather than writing raw hex values.
 
-## Areas that need a maintainer
+## Areas that need care
 
-Some paths are owned (see [CODEOWNERS](CODEOWNERS)) and cannot merge on an
-ordinary review:
+No path is gated on a specific reviewer, so these are on you to respect:
 
 - **`content/legal/`** — the operative Terms and Privacy Notice. These are
   contractual instruments drafted by counsel, not documentation, and they are
