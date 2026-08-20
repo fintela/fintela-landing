@@ -7,7 +7,6 @@ tags: Research
 published: true
 ---
 
-
 Ten tickers, eight countries, one climate index adapted from an actuarial standard that was originally built to price insurance risk rather than to trade equities. That's the starting point for climate_pok, a strategy we backtested that combines price momentum with a monthly climate anomaly score across a small universe of agriculture-linked stocks.
 
 The headline number depends entirely on which universe you look at. Run it across all ten tickers and the strategy loses 95.9%. Run it across the four tickers whose price data actually holds up and it gains 44.5%. Neither figure means much on its own, and working out why is really the subject of this post.
@@ -22,31 +21,31 @@ It's worth being upfront that climate_pok is not a replication of the paper, mor
 
 At each monthly rebalance, every ticker gets two scores, each normalized between zero and one against that day's universe, then combined with a fixed weight of sixty percent momentum and forty percent climate:
 
-$$
-\text{score}_i = 0.6 \cdot \text{momentum}_{i,\text{norm}} + 0.4 \cdot \text{climate}_{i,\text{norm}}
-$$
+```
+score(i) = 0.6 × momentum_norm(i) + 0.4 × climate_norm(i)
+```
 
 Momentum is a straightforward twenty-one trading day rate of change,
 
-$$
-\text{momentum}_i = \frac{P_{i,t} - P_{i,t-21}}{P_{i,t-21}}
-$$
+```
+momentum(i) = (P(i,t) − P(i,t−21)) / P(i,t−21)
+```
 
 normalized against the rest of the universe on the same day. The climate score is where the actuarial index comes in. For the calendar month before each rebalance, lagged by a month because climate data reporting takes time to catch up, we compute the standardized anomaly of temperature, precipitation, drought (used as an aridity proxy), and wind, each measured against the historical climatology for that same calendar month:
 
-$$
-\text{anomaly}_{i,v} = \frac{x_{i,v} - \mu_{v}}{\sigma_{v}}
-$$
+```
+anomaly(i, v) = (x(i,v) − mean(v)) / stdev(v)
+```
 
-where $x_{i,v}$ is ticker $i$'s reading for climate variable $v$ that month, and $\mu_v$, $\sigma_v$ are the historical mean and standard deviation for that variable in that calendar month. Every ticker carries its own sensitivity profile, a coefficient $s_{i,v} \in \{-1, 0, +1\}$ for each variable, so the climate score is a weighted sum of signed anomalies before it gets normalized into the zero-to-one range.
+where `x(i,v)` is ticker `i`'s reading for climate variable `v` that month, and `mean(v)`, `stdev(v)` are the historical mean and standard deviation for that variable in that calendar month. Every ticker carries its own sensitivity profile, a coefficient of −1, 0, or +1 for each variable, so the climate score is a weighted sum of signed anomalies before it gets normalized into the zero-to-one range.
 
 Position selection isn't a fixed top group of names. It's a z-score cut: we standardize each day's combined scores against that day's mean and spread,
 
-$$
-z_i = \frac{\text{score}_i - \overline{\text{score}}}{\sigma_{\text{score}}}
-$$
+```
+z(i) = (score(i) − mean(score)) / stdev(score)
+```
 
-then keep anything at $z_i \geq 0.75$, with a floor of two positions and a ceiling on how many we'll ever hold at once. That follows the paper's logic of ranking relative outliers rather than using a fixed threshold, though our version does it with a per-day z-score rather than fixed terciles computed over the whole sample period.
+then keep anything with z(i) ≥ 0.75, with a floor of two positions and a ceiling on how many we'll ever hold at once. That follows the paper's logic of ranking relative outliers rather than using a fixed threshold, though our version does it with a per-day z-score rather than fixed terciles computed over the whole sample period.
 
 ## A map of sensitivities, not a list of tickers
 
@@ -59,8 +58,6 @@ Before we even got to evaluating the strategy, we ran into a more basic problem:
 ## What the filtered backtest actually shows
 
 Restricting to the four tickers with reliable data, none of which had a daily move over fifteen percent, produces a result that's at least evaluable on its own terms: a total return of plus 44.5 percent, a maximum drawdown of minus 29.1 percent, over a two year window with zero large single-day jumps. The equity curve runs from July 2024 to July 2026, climbing from 1.0 to roughly 1.445, with most of the gain built through 2025 and into early 2026, punctuated by a sharp drawdown around April 2026.
-
-![Equity curve of climate_pok on the filtered four-ticker universe, July 2024 to July 2026](/assets/equity-curve-filtered.png)
 
 ## What the source research actually found, and why it changes how to read our number
 
