@@ -1,6 +1,6 @@
 ---
 title: What we found when we backtested climate risk against agricultural stocks
-author: Fintela
+author: Fintela Team
 date: 2026-07-28
 excerpt: We built a strategy that scores agricultural tickers on climate anomalies and price momentum, then checked our results against the academic research it's based on, including the parts of that research that should make us skeptical of our own numbers.
 tags: Research
