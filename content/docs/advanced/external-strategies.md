@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 4
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Host your signal generator on your own infrastructure, in any language, behind an HTTP endpoint Fintela calls for every trial.
 keywords: external strategy, simulate endpoint, http, signal, self-hosted, max_concurrency, timeout, ssrf, private data
 ---

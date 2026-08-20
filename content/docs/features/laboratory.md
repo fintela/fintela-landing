@@ -4,7 +4,7 @@ section: Features
 sectionOrder: 7
 order: 1
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: A notebook workspace for authoring and testing strategies, fitness functions and risk managers.
 keywords: laboratory, notebook, kernel, session, workspace, editor, sdk, files, catalog, lab
 ---

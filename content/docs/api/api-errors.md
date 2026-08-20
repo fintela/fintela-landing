@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 9
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The error envelope, every status code the API actually emits, and what each means.
 keywords: errors, status codes, message, kind, 400, 401, 404, 406, 429, 500, retry-after, deprecation
 ---

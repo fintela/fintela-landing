@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 7
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Read fitness functions, their metadata and version history.
 keywords: /fitness, GET, fitness function, metadata, versions, direction
 ---

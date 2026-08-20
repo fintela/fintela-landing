@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 5
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: How a trial is scored — the objective the optimizer maximizes, built-in or your own.
 keywords: fitness, objective, score, sharpe, sortino, calmar, multi-objective, direction, evaluate, nan_fitness, external
 ---

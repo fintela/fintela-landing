@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 4
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Read study metadata, progress, health, status, errors, and optimization history.
 keywords: /studies, /v1/studies, GET, progress, health, status, errors, opt history, param importances, avg_opt
 ---

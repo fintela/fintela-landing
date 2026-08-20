@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 4
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: An optimization campaign over a strategy, asset group, fitness function and risk manager — and the trials it produces.
 keywords: study, optimization, trials, sampler, n_trials, backtest, walk-forward, progress, health, status, autostop, seed
 ---

@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 6
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: How the optimization engine, simulation engine and storage actually fit together.
 keywords: architecture, optimizer, simulation engine, dispatcher, workers, ecs, parallelism, persistence, optuna, internals
 ---

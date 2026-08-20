@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 8
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The durable portfolio a promoted trial becomes — the only thing a portfolio group can be built from.
 keywords: promoted portfolio, managed portfolio, promotion, trial, snapshot, immutable, lineage, registry
 ---

@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 3
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Live market data — instruments, screener, fundamentals, news, and the coverage behind them.
 keywords: market, markets, screener, tickers, fundamentals, news, quotes, coverage, asset classes, crypto, equities
 ---

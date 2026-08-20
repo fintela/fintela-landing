@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 1
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The seven registries that hold every building block of a Fintela study, and the patterns they share.
 keywords: registry, registries, building blocks, table view, wizard, versions, execution modes, internal, external
 ---

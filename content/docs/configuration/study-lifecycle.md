@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 3
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Every state a study and a trial can be in, and what moves them between states.
 keywords: lifecycle, state machine, queued, running, completed, failed, paused, stopped, pruned, resume, heartbeat, soft delete
 ---

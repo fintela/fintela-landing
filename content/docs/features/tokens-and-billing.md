@@ -4,7 +4,7 @@ section: Features
 sectionOrder: 7
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: What consumes tokens, how usage is metered, and how plans and entitlements gate features.
 keywords: tokens, billing, ai tokens, usage, quota, entitlements, plan, locked features, stripe, usage dashboard, 402
 ---

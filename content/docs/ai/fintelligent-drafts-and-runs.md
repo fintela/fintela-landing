@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 3
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: How Fintelligent proposes work as a draft, and what happens when you approve it.
 keywords: draft, agent draft, run, agent run, approve, apply, review, confirmation, safety, monitoring
 ---

@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 5
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Every chart Fintela renders — what it plots, where it appears, and how to read it.
 keywords: charts, plots, equity curve, drawdown, heatmap, distribution, correlation, pareto, sensitivity, parameter importance, export
 ---

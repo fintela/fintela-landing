@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 5
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Score trials with a fitness function you own and host.
 keywords: external fitness, evaluate endpoint, scoring, self-hosted, fitness_params, nan_fitness, timeout, ssrf
 ---

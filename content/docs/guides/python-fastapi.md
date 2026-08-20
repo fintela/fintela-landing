@@ -4,7 +4,7 @@ section: Integration Guides
 sectionOrder: 9
 order: 1
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Host external strategy and fitness endpoints with FastAPI.
 keywords: fastapi, python, uvicorn, guide, external, simulate, evaluate, docker, deploy, production
 ---

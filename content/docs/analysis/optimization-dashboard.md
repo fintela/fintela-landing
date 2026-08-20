@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 3
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Explore the top-performing candidate portfolios a study produced, and promote the ones worth keeping.
 keywords: optimization, candidates, trials, ranking, pareto, parameter importance, pivot table, sensitivity, compare, promote
 ---

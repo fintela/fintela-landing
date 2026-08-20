@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Which optimization sampler to choose, and when each one is the right call.
 keywords: sampler, tpe, cmaes, nsga, qmc, random, grid, bayesian, multi-objective, distributed, seed
 ---

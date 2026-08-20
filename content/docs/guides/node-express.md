@@ -4,7 +4,7 @@ section: Integration Guides
 sectionOrder: 9
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The same external endpoints in the JavaScript ecosystem.
 keywords: express, node, javascript, guide, external, simulate, evaluate, body limit, production checklist
 ---

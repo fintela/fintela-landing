@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 7
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Group promoted portfolios into a book you can analyze, allocate across, and trade.
 keywords: portfolio group, basket, allocation, weights, members, operation, orders, trading, paper, live, deploy, eod report
 ---

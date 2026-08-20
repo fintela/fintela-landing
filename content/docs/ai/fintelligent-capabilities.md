@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Every action Fintelligent can take against the platform, and the limits on each.
 keywords: capabilities, tools, actions, agent tools, create strategy, launch study, read results, permissions, limits
 ---

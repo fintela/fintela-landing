@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 6
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The governance layer that acts during a simulation — stops, caps, and halts, and when each one fires.
 keywords: risk manager, stop loss, trailing stop, drawdown, exposure cap, position cap, halt, rules, precedence, execution log
 ---

@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 1
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Monitor and manage every active portfolio — the ranked table, its filters, and what each column means.
 keywords: portfolios, dashboard, monitoring, ranked table, filters, sharpe, drawdown, active portfolios, real-time
 ---

@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 3
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The Python signal logic a study optimizes — its deterministic function signature, parameters, and internal vs external execution.
 keywords: strategy, python, signal, parameters, editor, sandbox, internal, external, simulate, execution type, versions
 ---

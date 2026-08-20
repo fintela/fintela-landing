@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The Home dashboard — what each card and metric shows, and where each number comes from.
 keywords: home, overview, dashboard, cards, widgets, metrics, analysis
 ---

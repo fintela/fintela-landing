@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: How to get a key, how to send it, and the rate limits that actually apply.
 keywords: authentication, api key, bearer, sk_live, rate limit, 429, retry-after, 401, scopes, entitlement, developer_api
 ---

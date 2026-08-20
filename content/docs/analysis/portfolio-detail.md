@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The six tabs of a single portfolio — performance, holdings, transactions, risk, overfitting and profile.
 keywords: portfolio detail, performance, holdings, transactions, trades, orders, risk analytics, overfitting, tearsheet, profile
 ---

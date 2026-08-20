@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 4
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Browse what every built-in data source contains before you wire it into a strategy.
 keywords: data explorer, data sources, series, fields, coverage, inspect, data pipelines
 ---

@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 6
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Every portfolio metric Fintela computes, with its exact key, definition and where it appears.
 keywords: metrics, sharpe, sortino, calmar, cagr, max drawdown, win rate, volatility, definitions, reference, keys
 ---

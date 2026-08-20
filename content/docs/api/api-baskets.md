@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 6
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Read baskets, their freshness, operations, allocations, orders and EOD reports.
 keywords: /v2/baskets, GET, basket, portfolio group, operation, allocation, order, state log, eod report, freshness
 ---

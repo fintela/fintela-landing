@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 1
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The Fintela UI map — sidebar sections, every route, the command palette, notifications, and how access gating actually works.
 keywords: navigation, sidebar, ui, routes, more options, command palette, shortcuts, notifications, entitlements, locked, mobile
 ---

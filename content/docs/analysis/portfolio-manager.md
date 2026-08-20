@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 4
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Comparative analysis across your whole book of portfolio groups — equity, metrics, holdings and trades.
 keywords: portfolio manager, book, comparative, equity, metrics, holdings, trades, groups, toolbar, filters
 ---

@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 2
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Define the tradeable universe a study runs on — tickers, index membership, and date coverage.
 keywords: asset group, data cluster, universe, tickers, index members, groupings, coverage, registry
 ---

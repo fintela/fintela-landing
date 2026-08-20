@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 1
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: The AI assistant built into Fintela — what it is, how to talk to it, and what it can reach.
 keywords: fintelligent, ai, assistant, chat, conversation, agent, prompts, streaming, fintela-ai
 ---

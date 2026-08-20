@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 1
 published: true
-updated: 2026-08-18
+updated: 2026-08-20
 summary: Internal vs external execution for strategies, fitness functions and risk managers.
 keywords: internal, external, execution_type, modes, matrix, simulate, evaluate, self-hosted, immutable
 ---
