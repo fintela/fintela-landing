@@ -11,9 +11,9 @@ published: true
 ![Alt text](https://images.unsplash.com/photo-1621264448270-9ef00e88a935?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8dHJhZGluZ3xlbnwwfHwwfHx8Mg%3D%3D
 )
 
-A quant engineer at a mid-sized hedge fund is staring at her screen at 8 PM on a Friday. Her job title is "Quantitative Engineer." Her actual task right now? Debugging a data sync issue between the firm's ETL pipeline, backtesting engine, and risk management system.
+A quant engineer at a mid-sized hedge fund is staring at her screen at 8 PM on a Friday. His job title is "Quantitative Engineer." His actual task right now? Debugging a data sync issue between the firm's ETL pipeline, backtesting engine, and risk management system.
 
-This shouldn't be her job.
+This shouldn't be his job.
 
 In the next room, a portfolio manager is waiting for the analysis that was promised this morning. It's still not ready, not because the analysis is complex, but because the data infrastructure took six hours to produce a clean dataset.
 
