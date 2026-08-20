@@ -22,7 +22,7 @@ redistributed, or sublicensed under those terms.
    They are contractual instruments, not documentation. Do not reuse them as
    a template, and do not modify them in a fork and present the result as
    Fintela's or Momento Capital's terms. Changes to these files require
-   counsel review — see CODEOWNERS.
+   counsel review; open an issue rather than a pull request.
 
 2. Fintela and Momento Capital brand assets — ALL RIGHTS RESERVED
    src/assets/logos/**
