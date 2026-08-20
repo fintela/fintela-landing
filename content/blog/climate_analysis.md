@@ -6,6 +6,9 @@ excerpt: We built a strategy that scores agricultural tickers on climate anomali
 tags: Research
 published: true
 ---
+
+
+
 Ten tickers, eight countries, one climate index adapted from an actuarial standard that was originally built to price insurance risk rather than to trade equities. That's the starting point for climate_pok, a strategy we backtested that combines price momentum with a monthly climate anomaly score across a small universe of agriculture-linked stocks.
 
 The headline number depends entirely on which universe you look at. Run it across all ten tickers and the strategy loses 95.9%. Run it across the four tickers whose price data actually holds up and it gains 44.5%. Neither figure means much on its own, and working out why is really the subject of this post.
