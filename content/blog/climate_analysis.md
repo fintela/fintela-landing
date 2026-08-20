@@ -1,12 +1,11 @@
 ---
-title: What we found when we backtested climate risk against agricultural stocks
+title: Climate risk against agricultural stocks
 author: Fintela Team
 date: 2026-07-28
 excerpt: We built a strategy that scores agricultural tickers on climate anomalies and price momentum, then checked our results against the academic research it's based on, including the parts of that research that should make us skeptical of our own numbers.
 tags: Research
 published: true
 ---
-
 
 
 Ten tickers, eight countries, one climate index adapted from an actuarial standard that was originally built to price insurance risk rather than to trade equities. That's the starting point for climate_pok, a strategy we backtested that combines price momentum with a monthly climate anomaly score across a small universe of agriculture-linked stocks.
