@@ -2,44 +2,10 @@
   "hero": {
     "titleLine1": "The Future of",
     "titleAccent": "Intelligent Investment",
-    "marketWords": ["US Stocks", "Crypto", "Forex", "Global Markets"],
+    "marketWords": ["US Stocks", "Forex", "Global Markets"],
     "subtitlePrefix": "Create investment strategies across",
     "subtitleSuffix": "in a single, AI-native, cloud, quant finance ecosystem",
-    "ctaSecondary": "See how it works",
-    "audiencePills": ["Hedge funds", "Quant teams", "Independent quants", "Research desks"]
-  },
-  "heroMock": {
-    "url": "app.fintela.io / studies / sp500-momentum-142",
-    "sidebar": {
-      "dataClusters": "Asset Groups",
-      "strategies": "Strategies",
-      "fitness": "Fitness",
-      "studies": "Studies",
-      "portfolios": "Portfolios",
-      "markets": "Markets",
-      "agents": "Live Trading"
-    },
-    "assistantLabel": "Fintelligent",
-    "assistantPrompt": "\"Show me the top 3 portfolios.\"",
-    "studyEyebrow": "Study · #142",
-    "studyTitle": "SP500 Momentum · Bayesian search",
-    "statusRunning": "Running",
-    "trialsChip": "500 trials",
-    "kpiBestSharpe": "Best Sharpe",
-    "kpiBestCagr": "Best CAGR",
-    "kpiMaxDd": "Max DD",
-    "kpiTrialsDone": "Trials done",
-    "kpiTrialsDoneValue": "312 / 500",
-    "equityTitle": "Best portfolio · equity curve",
-    "legendTrain": "Train",
-    "legendVal": "Val",
-    "legendOos": "OOS",
-    "equityFooter": "+312.4% across 6.5y · OOS Sharpe 1.94",
-    "topPortfolios": "Top portfolios",
-    "columnRank": "#",
-    "columnSharpe": "Sharpe",
-    "columnCagr": "CAGR",
-    "columnMaxDd": "Max DD"
+    "ctaSecondary": "See how it works"
   },
   "trustBar": {
     "title": "Trusted by capital allocators and quantitative funds"
@@ -56,7 +22,7 @@
       "dataClusters": {
         "label": "Asset Groups",
         "sub": "Market universe",
-        "desc": "Define your investable universe. Reusable snapshots of market data across equities, crypto, ETFs, forex and global indices — every backtest reproducible."
+        "desc": "Define your investable universe. Reusable snapshots of market data across equities, ETFs, forex and global indices — every backtest reproducible."
       },
       "strategies": {
         "label": "Strategies",
@@ -139,7 +105,7 @@
       },
       "crossMarket": {
         "title": "Cross-market by design",
-        "description": "One strategy engine across crypto, equities, indices, ETFs, forex and global markets. One mental model, every asset class."
+        "description": "One strategy engine across equities, indices, ETFs, forex and global markets. One mental model, every asset class."
       },
       "liveTrading": {
         "title": "Live long/short trading",
@@ -347,7 +313,7 @@
     "items": {
       "assetClasses": {
         "q": "What asset classes does Fintela support?",
-        "a": "Crypto and currencies, U.S. equities, S&P indices, ETFs, forex, and global markets — all through the same unified strategy engine. Build a strategy once, test it across any cluster you define."
+        "a": "Currencies, U.S. equities, S&P indices, ETFs, forex, and global markets — all through the same unified strategy engine. Build a strategy once, test it across any cluster you define."
       },
       "vsBacktesting": {
         "q": "How is Fintela different from a standard backtesting library?",

@@ -31,6 +31,7 @@ const columns: FooterColumn[] = [
       { id: 'platform', labelKey: 'footer:columns.product.links.platform', href: '/#platform', type: 'scroll' },
       { id: 'fintelagent', labelKey: 'footer:columns.product.links.fintelagent', href: '/#fintelagent', type: 'scroll' },
       { id: 'useCases', labelKey: 'footer:columns.product.links.useCases', href: '/#use-cases', type: 'scroll' },
+      { id: 'pricing', labelKey: 'footer:columns.product.links.pricing', href: '/pricing', type: 'route' },
     ],
   },
   {

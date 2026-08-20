@@ -34,6 +34,111 @@
       "heading": "¿Necesitas ayuda inmediata?"
     }
   },
+  "pricing": {
+    "hero": {
+      "chip": "Precios",
+      "title": "Paga por el cómputo que",
+      "titleAccent": "realmente usas",
+      "subtitle": "Fintela funciona con dos saldos de prepago: los tokens de Fintela miden el cómputo que la plataforma ejecuta por ti, y los tokens de IA de Fintela miden tu trabajo con Fintelligent. Ambos se compran en paquetes: cuanto más grande el paquete, menor la tarifa.",
+      "ctaPrimary": "Comprar tokens",
+      "ctaSecondary": "Habla con nosotros"
+    },
+    "balances": {
+      "title": "Dos saldos,",
+      "titleAccent": "una plataforma",
+      "description": "Cada organización tiene los dos. Cada uno mide un tipo de trabajo distinto, así que una semana intensa de optimización nunca se come tu presupuesto del agente — ni al revés.",
+      "compute": {
+        "name": "Tokens de Fintela",
+        "tagline": "Cómputo",
+        "description": "Se consumen cada vez que la plataforma ejecuta trabajo por ti: el optimizador muestreando parámetros, el compilador validando tu código. Se miden por acción, con una tarifa fija que puedes presupuestar antes de lanzar nada.",
+        "meters": {
+          "trial": "{{amount}} tokens por trial de optimización",
+          "bugTest": "{{amount}} token por bug test"
+        }
+      },
+      "ai": {
+        "name": "Tokens de IA de Fintela",
+        "tagline": "Fintelligent",
+        "description": "Se consumen cuando trabajas con el agente. Cada mensaje que envías y cada respuesta que devuelve se miden, así que solo pagas por el razonamiento que realmente pides.",
+        "meters": {
+          "messages": "Se cobran los tokens de entrada y de salida",
+          "factor": "El uso del modelo se convierte en tokens de IA mediante un factor de conversión"
+        }
+      }
+    },
+    "packs": {
+      "title": "Paquetes de",
+      "titleAccent": "tokens",
+      "description": "Los paquetes se compran en la app y se acreditan al saldo de tu organización. Los precios están en dólares estadounidenses.",
+      "bestRate": "Mejor tarifa",
+      "buy": "Comprar en la app",
+      "rate": "{{price}} por cada {{amount}} tokens",
+      "save": "Ahorra {{percent}}%",
+      "compute": {
+        "heading": "Tokens de Fintela",
+        "subheading": "Para trials de optimización, bug tests y cualquier otra acción de la plataforma que consuma cómputo.",
+        "unit": "Tokens de Fintela",
+        "equivalent": "≈ {{trials}} trials, o {{bugTests}} bug tests"
+      },
+      "ai": {
+        "heading": "Tokens de IA de Fintela",
+        "subheading": "Para trabajar con Fintelligent: preguntas, análisis y todo lo que le pidas al agente.",
+        "unit": "Tokens de IA"
+      }
+    },
+    "meter": {
+      "title": "Qué consume",
+      "titleAccent": "tokens",
+      "description": "Solo el trabajo que cuesta cómputo te cuesta tokens. Estas son las tarifas publicadas; cualquier otra cosa que la plataforma ejecute por ti se descuenta de los mismos saldos.",
+      "columns": {
+        "action": "Acción",
+        "cost": "Coste"
+      },
+      "rows": {
+        "trial": {
+          "action": "Trial de optimización",
+          "detail": "Una muestra de parámetros. El optimizador elige un vector de valores, ejecuta tu estrategia sobre la ventana de backtest y puntúa su fitness. Un estudio de 200 trials consume 200 de ellos.",
+          "cost": "{{amount}} tokens de Fintela"
+        },
+        "bugTest": {
+          "action": "Bug test",
+          "detail": "La ejecución de validación que compila y ejecuta tu estrategia o gestor de riesgo contra datos reales antes de guardarla, para que los errores aparezcan al principio y no a mitad de un estudio.",
+          "cost": "{{amount}} token de Fintela"
+        },
+        "chat": {
+          "action": "Mensaje a Fintelligent",
+          "detail": "Cada intercambio con el agente. Sus tokens de entrada y de salida se multiplican por un factor de conversión y se descuentan de tu saldo de tokens de IA.",
+          "cost": "Tokens de IA de Fintela"
+        }
+      }
+    },
+    "notes": {
+      "items": {
+        "balance": {
+          "title": "Los saldos son de la organización",
+          "description": "Los dos saldos pertenecen a tu organización y no a un asiento individual, así que todo el equipo consume del mismo bote y puedes ver exactamente en qué se fue."
+        },
+        "volume": {
+          "title": "Paquetes más grandes, mejor tarifa",
+          "description": "La tarifa efectiva baja en cada nivel: el paquete más grande de tokens de Fintela cuesta un {{computeSave}}% menos por token que el de entrada, y el mayor de tokens de IA un {{aiSave}}% menos."
+        },
+        "reads": {
+          "title": "Leer tus resultados es gratis",
+          "description": "La API para desarrolladores es de solo lectura y devuelve trabajo que ya pagaste, así que exportar portafolios, trials y baskets a tus propios notebooks no cuesta nada."
+        },
+        "help": {
+          "title": "¿No sabes cuánto necesitas?",
+          "description": "Cuéntanos el tamaño de tu espacio de búsqueda y cómo piensa usar el agente tu equipo, y dimensionamos contigo un paquete sobre una carga de trabajo realista."
+        }
+      }
+    },
+    "cta": {
+      "title": "Empieza con el paquete que te encaje",
+      "description": "Recarga en la app cuando lo necesites, o habla antes con nosotros si prefieres dimensionarlo sobre una carga de trabajo real.",
+      "primary": "Comprar tokens",
+      "secondary": "Contactar"
+    }
+  },
   "blog": {
     "hero": {
       "chip": "Análisis y tutoriales",
@@ -57,32 +162,11 @@
     }
   },
   "docs": {
-    "hero": {
-      "chip": "Guías y referencia",
-      "title": "Documentación de Fintela",
-      "subtitle": "Guías, flujos de trabajo y referencia de la API de la plataforma de optimización de Fintela. Cada página es un archivo Markdown en nuestro repositorio público."
-    },
-    "readDoc": "Leer página",
     "readTime": "{{minutes}} min de lectura",
     "updated": "Actualizado el {{date}}",
     "backToIndex": "Ver toda la documentación",
     "editThisPage": "Editar esta página en GitHub",
     "editHint": "Abre {{path}} en el editor de GitHub — al guardar se propone un pull request.",
-    "search": {
-      "label": "Buscar en la documentación",
-      "placeholder": "Busca en la documentación — estrategias, samplers, endpoints…",
-      "clear": "Borrar la búsqueda",
-      "results_one": "{{count}} página coincide",
-      "results_other": "{{count}} páginas coinciden",
-      "empty": {
-        "title": "No hay resultados para esa búsqueda",
-        "body": "Ninguna página de la documentación menciona “{{query}}”. Prueba con un término más general o borra la búsqueda para ver todas las secciones."
-      }
-    },
-    "empty": {
-      "title": "Aún no hay documentación",
-      "body": "Estamos escribiendo la documentación. Vuelve pronto o abre un pull request para añadir la primera página."
-    },
     "error": {
       "title": "No se pudo cargar la documentación",
       "body": "Algo falló al obtener las páginas. Actualiza la página o inténtalo de nuevo en unos minutos."

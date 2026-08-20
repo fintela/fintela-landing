@@ -101,7 +101,7 @@ export const DevExperienceSection = () => {
               overflow: 'hidden',
               border: '1px solid rgba(47,99,149,0.2)',
               background: 'linear-gradient(180deg, #14182b 0%, #0f1325 100%)',
-              boxShadow: '0 20px 50px rgba(11,16,32,0.12)',
+              boxShadow: '0 4px 16px rgba(11,16,32,0.10)',
               height: '100%',
             }}
           >
@@ -183,8 +183,8 @@ export const DevExperienceSection = () => {
                   transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
                   '&:hover': {
                     borderColor: 'rgba(47,99,149,0.4)',
-                    transform: 'translateX(4px)',
-                    boxShadow: '0 12px 28px rgba(47,99,149,0.1)',
+                    transform: 'translateX(2px)',
+                    boxShadow: '0 4px 12px rgba(47,99,149,0.08)',
                     '& .dev-arrow': { color: '#2f6395', transform: 'translateX(3px)' },
                   },
                 }}
@@ -200,7 +200,7 @@ export const DevExperienceSection = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    boxShadow: '0 6px 14px rgba(47,99,149,0.28)',
+                    boxShadow: '0 2px 6px rgba(47,99,149,0.16)',
                     '& svg': { fontSize: 20 },
                   }}
                 >

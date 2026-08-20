@@ -57,7 +57,7 @@ export const WorkflowSection = () => {
             bgcolor: '#fff',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: '0 20px 50px rgba(11,16,32,0.06)',
+            boxShadow: '0 4px 16px rgba(11,16,32,0.05)',
           }}
         >
           <Box
@@ -196,7 +196,7 @@ export const WorkflowSection = () => {
                       border: '1px solid rgba(47,99,149,0.22)',
                       borderRadius: 2,
                       p: 2,
-                      boxShadow: '0 14px 36px rgba(47,99,149,0.18)',
+                      boxShadow: '0 6px 20px rgba(47,99,149,0.14)',
                       zIndex: 20,
                       pointerEvents: 'none',
                       animation: 'tooltipIn 0.18s ease',
