@@ -30,13 +30,16 @@ optimization-dispatcher and the status-updater.
 | `FAILED` | A core stage failed, or a task failed with no evidence that `optimize` succeeded. | `Failed` | `Failed` |
 | `STOPPED` | Every task finished after a user-requested stop. | `Stopped` | `Stopped` |
 
-The registry badge (`StudyStatusIconBadge`) also accepts three legacy aliases when it meets them
-on the wire: `PENDING` renders as `Queued`, and `COMPLETE` / `FINISHED` render as `Completed`. An
-unrecognised value renders verbatim; a `null` status renders as an em dash.
+The registry badge (`StudyStatusIconBadge`) matches case-insensitively and also accepts three
+legacy aliases when it meets them on the wire: `PENDING` renders as `Queued`, and `COMPLETE` /
+`FINISHED` render as `Completed`. An unrecognised value renders verbatim; a `null` status renders
+as an em dash.
 
-> [!WARNING] There is no `PAUSED` state
-> No layer of the platform has one — no enum value, no column, no endpoint, no button. Any
-> reference to pausing a study, including the in-app help drawer, is stale.
+> [!WARNING] A study is never `PAUSED`
+> `PAUSED` is not one of the six values, is not in any study enum, column or endpoint, and no
+> button writes it. (A *basket operation* in Portfolio Manager does have a `PAUSED` status — a
+> different domain entirely.) The in-app help drawer's lifecycle block still lists `PAUSED` as a
+> study state; that copy is stale.
 
 ### Desired status
 
@@ -60,13 +63,14 @@ still `RUNNING` or `QUEUED`. `STOPPING` is never persisted.
 
 The SPA renders a derived verdict (`studyVerdict`), never `execution_status` directly, because a
 completed study whose post-run analysis failed must not paint red next to a 100% health badge.
+`stopping` is tested first and wins over everything below it.
 
 | Verdict | Condition | Label shown |
 |---|---|---|
+| `stopping` | `display_status = STOPPING` | `Stopping` |
 | `draft` | `execution_status = SAVED` | `Draft` |
 | `queued` | `execution_status = QUEUED` | `Queued` |
 | `running` | `execution_status = RUNNING` | `Running` |
-| `stopping` | `display_status = STOPPING` | `Stopping` |
 | `completed` | `COMPLETED`, no secondary stage failed or pending | `Completed` |
 | `completed_with_warnings` | `COMPLETED`, at least one secondary stage `FAILED` | `Completed` |
 | `completed_pending` | `COMPLETED`, at least one secondary stage still unproduced | `Completed` |
@@ -75,6 +79,8 @@ completed study whose post-run analysis failed must not paint red next to a 100%
 
 `results_usable` on the lifecycle payload is independent of any warning: it is true when the
 `optimize` stage succeeded, so a `completed_with_warnings` study still has trustworthy portfolios.
+For a legacy run that has no stage rows at all, it falls back to "terminal, with at least one
+completed trial".
 
 ## Study state machine
 
@@ -87,31 +93,32 @@ completed study whose post-run analysis failed must not paint red next to a 100%
                           │         (CAS on last_status)    │
                           │                                 ▼
    POST /studies/risk-manager-optimization ───────────►  QUEUED
+                                                           │    ▲
+                                    dispatcher launches    │    │ OOM retry:
+                                    the first ECS task     │    │ next memory tier,
+                                                           ▼    │ ≤ 3×, automatic
+                                                        RUNNING ┘
                                                            │
-                                    dispatcher launches    │
-                                    the first ECS task     │
-                                                           ▼
-                                                        RUNNING
-                                                           │
-              ┌────────────────────────────┬───────────────┼───────────────┐
-              │ all tasks terminal,        │ all tasks     │ all tasks     │
-              │ optimize SUCCEEDED         │ terminal,     │ terminal,     │
-              │                            │ core stage    │ stop_requested│
-              ▼                            ▼ FAILED        ▼               │
-          COMPLETED                     FAILED          STOPPED            │
-              │                            │                │              │
-              │  POST /studies/resume      │ OOM: memory-   │  POST        │
-              └────────────┬───────────────┤ tier escalation└──/studies/   │
-                           │               │ (automatic,     resume        │
-                           │               │  ≤ 3 times)      │            │
-                           ▼               ▼                  ▼            │
-                        QUEUED  ◄──────────┴──────────────────┘            │
-                                                                           │
-   DELETE /studies  ──►  deleted_at set (from ANY state) ──► purged ◄───────┘
+              ┌────────────────────────────┬───────────────┴───────────────┐
+              │                            │                               │
+   all tasks terminal,          all tasks terminal,             all tasks terminal,
+   optimize SUCCEEDED           a core stage FAILED             stop_requested_at set
+              │                            │                               │
+              ▼                            ▼                               ▼
+          COMPLETED                     FAILED                          STOPPED
+              │                                                            │
+              │              POST /studies/resume                          │
+              └──────────────────────────┬─────────────────────────────────┘
+                                         ▼
+                                      QUEUED
+
+   DELETE /studies  ──►  deleted_at set (from ANY state) ──► purged
 ```
 
-`FAILED` is **not** resumable by hand. The only automatic `FAILED → QUEUED` edge is the
-out-of-memory escalation described below.
+`FAILED` is terminal: it is not resumable by hand, and nothing re-queues a study out of it. The
+out-of-memory retry described below is **not** a `FAILED → QUEUED` edge — it runs earlier in the
+same status-updater tick and re-queues the study *before* the aggregation that would have written
+`FAILED`, so no failure event or notification is ever emitted for it.
 
 ## Transition triggers
 
@@ -123,12 +130,12 @@ out-of-memory escalation described below.
 | — | `POST /studies/risk-manager-optimization` | `QUEUED` / desired `RUNNING` | Backend; these studies skip `SAVED` entirely |
 | `SAVED` | `POST /studies/:study_id/launch` | `QUEUED` / desired `RUNNING` | Backend, compare-and-set on `last_status = 'SAVED'` |
 | `QUEUED` | Dispatcher launches the run's first ECS task | `RUNNING`, `started_at` set | optimization-dispatcher |
-| `QUEUED` | Dispatcher self-heal: tasks already dispatched but the promotion was missed | `RUNNING` | optimization-dispatcher |
-| `QUEUED` | Every launch failed — task rows exist, all carry a `failure_message` | `FAILED` | status-updater |
+| `QUEUED` | Self-heal: a task row already carries an `ecs_task_arn` but the promotion write was lost | `RUNNING`, `started_at` set | status-updater (Phase 1.5) |
+| `QUEUED` | Every launch failed — task rows exist, all terminal, at least one carries a `failure_message` | `FAILED` | status-updater |
 | `RUNNING` | Every task of the run is terminal, `optimize` reached `SUCCEEDED` | `COMPLETED` | status-updater |
 | `RUNNING` | Every task terminal, a core stage is `FAILED` (or no stage evidence and a task failed) | `FAILED` | status-updater |
 | `RUNNING` | Every task terminal and `stop_requested_at` is set | `STOPPED` | status-updater |
-| `FAILED` | An out-of-memory kill with a larger memory tier still available | `QUEUED`, `run_seq + 1` | status-updater |
+| `RUNNING` | Every task terminal after an out-of-memory kill, with a larger memory tier still available | `QUEUED`, `run_seq + 1` | status-updater (Phase 1.6, before the aggregation) |
 | `COMPLETED` \| `STOPPED` | `POST /studies/resume` | `QUEUED`, `run_seq + 1` | Backend |
 | any | `DELETE /studies` | `deleted_at` set; row leaves every read | Backend |
 
@@ -146,7 +153,10 @@ them for their own action. The test is `stop_requested_at`, which only `POST /st
 
 While a study is `RUNNING`, the finer-grained state lives in `developers.study_stages`, one row per
 `(study_id, run_seq, stage)`. `GET /studies/lifecycle` always returns the full ordered pipeline,
-synthesizing `PENDING` for stages not yet reached.
+synthesizing a status for any stage with no row: `PENDING` while the study is still live, and once
+it is terminal, `PENDING` for a missing *secondary* stage (still owed, and often produced out of
+band) but `SKIPPED` for a missing *core* stage (a legacy run that was never instrumented — nothing
+is coming).
 
 | Stage key | Label | Kind |
 |---|---|---|
@@ -166,9 +176,10 @@ came from rather than occupy wall clock: `validation` (`Before launch`), `runtim
 (`While running`) and `unknown`.
 
 Each stage row carries a `status` of `PENDING`, `RUNNING`, `SUCCEEDED`, `FAILED` or `SKIPPED`, plus
-`attempts`, a `diagnostic`, and an `origin` of `inline`, `out_of_band`, `recovered` or `backfill`.
-Only `inline` rows have a trustworthy duration; the others were measured off-run and the UI renders
-their duration as unknown rather than zero.
+`attempts`, `failures`, a `diagnostic`, and an `origin` of `inline`, `out_of_band`, `recovered` or
+`backfill`. `out_of_band` and `backfill` rows have no honest duration — the work happened on
+another machine, or the boundary was inferred from an artifact timestamp — so the payload sends
+`duration_seconds: null` rather than a misleading number. `inline` and `recovered` rows keep theirs.
 
 > [!NOTE] A secondary-stage failure is not a failed study
 > `robustness`, `families` and `importances` run after the study's deliverable already exists. A
@@ -185,19 +196,23 @@ their duration as unknown rather than zero.
 | Field | Rule |
 |---|---|
 | `last_heartbeat` | Written by the dispatcher when it launches a task, and by the status-updater every time the task's ECS status changes. |
-| `heartbeat_stale` | `true` when `execution_status = 'RUNNING'` and `now − max(last_heartbeat, started_at) > 300 s` (`HEARTBEAT_STALE_SECS = 5 * 60`). |
+| `heartbeat_stale` | `true` when `execution_status = 'RUNNING'` and more than 300 s have passed since `last_heartbeat` — or since `started_at` when there is no heartbeat at all (`HEARTBEAT_STALE_SECS = 5 * 60`). With neither timestamp it stays `false`. |
 
-`heartbeat_stale` is computed by the backend and served on `GET /studies/lifecycle`. No surface in
-the app renders a stalled badge today — treat it as an API signal, not a UI state.
+`heartbeat_stale` is computed by the backend and served on `GET /studies/lifecycle`. Nothing in the
+app reads the flag — the study Overview prints the raw **Last heartbeat** timestamp, but no surface
+renders a stalled badge. Treat it as an API signal, not a UI state.
 
 Three separate mechanisms clean up after a dead run:
 
-- **Stuck at `QUEUED`.** If a prior dispatcher tick launched the tasks but the promotion write was
-  lost, a later tick promotes the study to `RUNNING`, guarded on at least one task row carrying an
-  `ecs_task_arn`. A study whose launches all failed is deliberately left `QUEUED` for the
-  status-updater to resolve to `FAILED`, which is also what makes its tokens refundable.
+- **Stuck at `QUEUED`.** If a dispatcher tick launched the tasks but the `RUNNING` promotion write
+  was lost, the status-updater's next sweep promotes the study itself, guarded on at least one task
+  row carrying an `ecs_task_arn`. A study whose launches all failed never gets an ARN, so it is
+  deliberately left for the aggregation to resolve to `FAILED` — which is also what makes its
+  tokens visible to the refund sweep.
 - **Task no longer known to ECS.** The status-updater marks the task `STOPPED`, nulls its
-  `ecs_task_arn`, and classifies the stop into a diagnostic.
+  `ecs_task_arn`, and — if the task had started — records a `RUN_LOST` diagnostic, unless the task
+  already wrote a more specific one. A task that never started is closed without inventing a
+  failure.
 - **Orphaned trials.** Trials still in `RUNNING` on a study that finished more than 10 minutes ago
   are stamped with the `TRIAL_ABANDONED` diagnostic — *This trial was still running when the study
   stopped, so it never produced a result.* — and moved to `FAIL`. The 10-minute grace exists so a
@@ -218,26 +233,33 @@ failing.
 
 Autostop does **not** set `stop_requested_at`, which is exactly why the study lands on `FAILED`
 rather than `STOPPED`, and why it never displays as `STOPPING`. The user-facing copy is *Stopped
-automatically* / *Stopped early: low health*, and its suggested actions are **See trial errors**,
-**Resume study** and **Edit strategy code**.
+automatically* (title) / *Stopped early: low health* (label), it carries `severity: "warning"` rather
+than `error`, and its suggested-action codes are `view_trials`, `resume` and `edit_code` — of which
+only **See trial errors** and **Edit strategy code** actually render (see
+[trial failure reasons](#trial-failure-reasons)).
 
 ## Automatic retry after an out-of-memory kill
 
-An OOM kill is the one failure the platform retries by itself. When every task of the run is
-terminal, an OOM was observed, the study is not stopped, unfinished trials remain, and completed +
-pruned trials are still below `n_trials`, the status-updater moves the study to the next memory
-tier and re-queues it.
+An OOM kill is the one failure the platform retries by itself. Every condition below has to hold:
+every task of the run is terminal, an OOM was observed, `desired_status` is not `STOPPED`, at least
+one trial is not yet `COMPLETE`/`PRUNED`, and completed + pruned trials are still below `n_trials`.
+That last one is what stops a study that OOM'd *after* its trial loop already finished from paying
+for a full re-run that cannot change the outcome.
 
 | Property | Value |
 |---|---|
 | Memory tiers, in order (MiB) | `49152` → `73728` → `98304` → `122880` |
 | Maximum escalations per study | 3 (`chk_studies_task_size_escalations` allows 0–3) |
-| Status transition | `FAILED` → `QUEUED`, `run_seq + 1`, `failure_message` and `failure_diagnostic` cleared |
-| Cost to you | None — the under-estimate was the platform's |
+| Status written | `QUEUED` / desired `RUNNING`, `run_seq + 1`, `finished_at`, `failure_message` and `failure_diagnostic` cleared |
+| Trials | The dead task's still-`RUNNING` trials are reaped to `FAIL`, scoped to that task's ARN so siblings are untouched |
+| Cost to you | None — no ledger row is written; the under-estimate was the platform's |
 
-A study that OOMs at the largest available shape is left `FAILED`, with the diagnostic kind
-`OUT_OF_MEMORY`. See [optimizer architecture](/docs/optimizer-architecture) for how task shape is
-chosen in the first place.
+The escalation runs *before* the tick's aggregation step, so the study goes straight from its dead
+run back to `QUEUED` and never surfaces as `FAILED` in between — no `StudyFailed` event, no failure
+notification. A study that OOMs at the largest available shape is skipped by this sweep and settles
+on `FAILED`, with the diagnostic kind `OUT_OF_MEMORY`. See
+[optimizer architecture](/docs/optimizer-architecture) for how task shape is chosen in the first
+place.
 
 ## Stopping a study
 
@@ -311,9 +333,11 @@ Every trial and portfolio from earlier runs is kept; the new trials accumulate o
 `n_trials` grows, reported progress drops back below 100% the moment the resume commits.
 
 > [!NOTE] Resume has no UI and does not wake the dispatcher
-> Nothing in the app calls `POST /studies/resume` in this build — it is API-only. And unlike
-> launch, resume does not issue `NOTIFY optimization_dispatch`, so a resumed study waits for the
-> dispatcher's next poll rather than starting within milliseconds.
+> The SPA ships the mutation (`useResumeStudy`) and a success toast, but no component calls it —
+> there is no Resume control in the registry row menu, on the study results page, or in the
+> Fintelligent action bus. In practice resume is API-only. And unlike launch, resume does not issue
+> `NOTIFY optimization_dispatch`, so a resumed study waits for the dispatcher's next poll rather
+> than starting within milliseconds.
 
 ## Deleting a study
 
@@ -351,7 +375,7 @@ The Postgres enum `developers.trialstate`, unchanged from Optuna's own schema:
 | `WAITING` | Row allocated, not yet dispatched |
 | `RUNNING` | In flight — the optimizer writes every row of a batch up front via `ask()`, so a row's existence means "requested", not "started work" |
 | `COMPLETE` | Succeeded; the fitness value was reported back to the sampler |
-| `PRUNED` | Settled without a value — the most common terminal state for a trial that did not produce a result |
+| `PRUNED` | Settled without a value — a duplicate grid point, a `NaN` fitness, or an explicit prune raised during signal generation or fitness evaluation |
 | `FAIL` | Hard failure: a batched simulation error, a per-payload engine error, or a trial reaped after its task died |
 
 `COMPLETE`, `PRUNED` and `FAIL` are the three terminal states. Both study meters count only those:
@@ -367,8 +391,9 @@ grid is exhausted before `n_trials` is reached, the run ends early. **Completion
 status, never by progress reaching 1.0.**
 
 The registry's Health tooltip reads **Share of trials that produced a usable result.** and its
-Progress tooltip **Completed trials over the total requested.** Neither column is sortable — both
-refetch every 5 s and would reorder rows under the cursor.
+Progress tooltip **Completed trials over the total requested.** followed by ` · <completed>/<n_trials>`.
+Neither column is sortable — both refetch every 5 s and would reorder rows under the cursor. (A
+`?sort=` pasted into the URL still orders them; the columns simply have no clickable header.)
 
 ## Trial failure reasons
 
@@ -392,7 +417,7 @@ These reason strings are a documented contract and are written verbatim:
 | `engine_artifact: the engine stopped this trial before it could be evaluated (watchdog timeout in a risk manager)` | `PRUNED` | The engine preempted the batch twice and the trial was never evaluated |
 | `nan_fitness` | `PRUNED` | Train, validation or overall fitness came back `NaN` |
 | `period_metrics_out_of_bounds: [...]` | `PRUNED` | The engine returned no metrics for the train, validation or overall period |
-| `pruned_during_fitness` | `PRUNED` | The fitness evaluator raised a prune with no message — an external fitness endpoint's transport failures surface here |
+| `pruned_during_fitness` | `PRUNED` | The fitness evaluator raised a prune carrying no message. An external fitness endpoint's transport failures come through the same branch, but keep their own reason text |
 | `signal_generation_pruned` | `PRUNED` | Signal generation raised a prune with no message |
 | `runtime_terminated_before_trial_completed: {error}` | `FAIL` | The task exited through its error path and reaped its own still-running trials |
 | `This trial was still running when the study stopped, so it never produced a result.` | `FAIL` | The status-updater reaped an orphan 10 minutes after the study finished |
@@ -402,6 +427,10 @@ These reason strings are a documented contract and are written verbatim:
 > denominator of every health ratio, from the autostop check, and from every error surface. A grid
 > study prunes duplicates by design, and a trial the engine could not evaluate is an absence rather
 > than a failure. Every other prune counts as a failure.
+>
+> They still count toward **progress**, and that divergence is deliberate: health asks "of the
+> trials that produced an outcome, how many failed?", while progress asks "how much of the trial
+> budget is spent?" — and both of these spent one `ask()` against `n_trials` and are never retried.
 
 Everything else is classified into a diagnostic kind. The run-level kinds the platform itself
 produces — as opposed to the ones the optimizer derives from a strategy or fitness error — are:
@@ -419,11 +448,18 @@ produces — as opposed to the ones the optimizer derives from a strategy or fit
 | `AUTOSTOPPED_LOW_HEALTH` | Stopped automatically |
 | `TRIAL_ABANDONED` | Trial didn't finish |
 
-Each diagnostic carries suggested actions, rendered as buttons: **Duplicate & relaunch**,
-**Duplicate & change Asset Group**, **Edit strategy code**, **Edit risk manager**, **Edit fitness
-function**, **Duplicate & reduce scope**, **Contact support**, **See trial errors**, **Buy
-tokens**, **Duplicate & change dates**, **Edit endpoint settings**, **Resume study**, **Run
-again**.
+Each diagnostic carries a list of suggested action *codes*. Fourteen labels exist: **Duplicate &
+relaunch**, **Duplicate & change Asset Group**, **Duplicate & reduce scope**, **Duplicate & change
+dates**, **Edit strategy code**, **Edit data pipelines**, **Edit risk manager**, **Edit fitness
+function**, **Edit endpoint settings**, **See trial errors**, **Resume study**, **Run again**,
+**Contact support**, **Buy tokens**.
+
+A code only becomes a button where the surface wired a handler for it, and where the target id
+exists — otherwise it is silently dropped rather than rendered dead. On a failed study's notice
+that means the edit links, **See trial errors**, and exactly one duplicate button: the four
+duplicate actions all open the same flow, so only the most specific one the diagnostic asked for is
+kept. **Resume study**, **Contact support** and **Buy tokens** have no handler wired anywhere in
+this build, and **Run again** is wired only in the strategy and fitness sandboxes.
 
 For trials that fail inside a user-hosted endpoint, see
 [external strategies](/docs/external-strategies) and
@@ -443,13 +479,18 @@ All five require `study:read`. Polling adapts to state: 5 s while any study is `
 or `PENDING`, widened to 30 s while the realtime stream is connected, and stopped entirely once
 everything is terminal. `GET /studies/metadata` and `GET /studies` cache for 60 s and never poll.
 
-The public developer API exposes read-only copies of `/studies/metadata`, `/studies/progress`,
-`/studies/health`, `/studies/status` and `/studies/errors`. It does **not** expose
-`/studies/lifecycle`, and it exposes no mutation at all — launching, stopping, resuming and
-deleting all move optimizer workload, so they stay on the authenticated app backend. See
+The public developer API carries read-only copies of the study reads — among them
+`/studies/metadata`, `/studies/progress`, `/studies/health`, `/studies/status` and
+`/studies/errors`. It does **not** expose `/studies/lifecycle`, and it exposes no mutation at all:
+every route on that service is a `GET`, because launching, stopping, resuming and deleting all move
+optimizer workload and the app backend is the only place with the token ledger in the path. See
 [studies API](/docs/api-studies) and [API errors](/docs/api-errors).
 
-Errors on the stop and resume routes use `406 Not Acceptable`, not `400`. Attempting to launch or
-edit an already-launched study returns `409 Conflict` with the message `Invalid study status
-transition: This study has already been launched, so it can't be launched again. Duplicate it to
-run a new one. (study {id})`.
+Errors on the stop and resume routes use `406 Not Acceptable`, not `400`. A state-transition
+rejection is `409 Conflict`, and its message is prefixed `Invalid study status transition:`:
+
+| Attempt | Message |
+|---|---|
+| Launch an already-launched study | `This study has already been launched, so it can't be launched again. Duplicate it to run a new one. (study {id})` |
+| Edit an already-launched study | `This study has already been launched, so it can't be edited. Duplicate it to change anything. (study {id})` |
+| Change the risk managers of an already-launched study | `This study has already been launched, so its risk managers can't be changed. Duplicate it to attach different ones. (study {id})` |

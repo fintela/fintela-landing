@@ -302,17 +302,18 @@ worker-count setting anywhere in the study payload or the UI. What the sampler c
 ceiling.
 
 - **`supports_distributed: true`** (`TPE`, `CMAES`, `RANDOM`, `QMC`, `NSGA2`) — no override; the
-  study gets the dispatcher's default task count for its size.
+  study gets the dispatcher's configured default task count.
 - **`supports_distributed: false`** (`QAOA`, `QKERNEL`) — the create call stores
   `max_tasks_override = 1`, so the study always runs in **exactly one task**. Both keep an
   in-process surrogate that cannot be shared across tasks.
 
 Two things narrow parallelism regardless of sampler:
 
-- A study with **any external component** — an external strategy or an external fitness function —
-  runs in exactly one task so the user's endpoint sees exactly its declared `max_concurrency`
-  in-flight requests and the sampler stays coordinated in one process. See
-  [execution modes](/docs/execution-modes).
+- A study whose **external strategy or external fitness function declares a positive
+  `max_concurrency`** runs in exactly one task, and that task's worker pool is that concurrency —
+  the smaller of the two when both components are external, halved when both point at the same
+  endpoint. A missing or non-positive `max_concurrency` is logged as unbounded and the study keeps
+  the default task count. See [execution modes](/docs/execution-modes).
 - The grid enumerator is itself distributed-safe: sibling tasks build the identical sorted search
   space with the same fixed seed and partition the grid disjointly by globally-unique trial number.
 

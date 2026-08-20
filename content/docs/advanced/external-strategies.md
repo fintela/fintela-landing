@@ -5,11 +5,11 @@ sectionOrder: 8
 order: 4
 published: true
 updated: 2026-08-18
-summary: Host your signal generator on your own infrastructure, in any language, behind an HTTPS endpoint.
+summary: Host your signal generator on your own infrastructure, in any language, behind an HTTP endpoint Fintela calls for every trial.
 keywords: external strategy, simulate endpoint, http, signal, self-hosted, max_concurrency, timeout, ssrf, private data
 ---
 
-An external strategy is an HTTP endpoint that you own. Fintela stores the URL and three
+An external strategy is an HTTP endpoint that you own. Fintela stores the URL and two
 HTTP-client settings and nothing else — no code, no data, no credentials. When a study runs,
 Fintela POSTs a parameter sample to `{your-endpoint}/simulate` and reads back a signal. Your
 implementation language, your dependencies, your private feeds and your alpha stay on your
@@ -87,8 +87,8 @@ become the study's search space, and the sampled values are what arrives in the 
 
 ## Endpoint address rules
 
-Fintela screens the endpoint twice — once when you save it, and again before every connection.
-Both screens are about *addresses*, not TLS.
+Fintela screens the endpoint twice — once when you save it, and again before it opens a
+connection. Both screens are about *addresses*, not TLS.
 
 ### The save-time screen
 
@@ -130,7 +130,8 @@ resolves to is classified. If any one of them is private, loopback, link-local, 
 multicast or unspecified — including IPv4-mapped IPv6 forms — the call is refused before a
 socket exists. A host that answers with both a public and a private record is refused.
 
-Every refusal message starts with the same sentence:
+Every refusal message opens with the same prefix, `Your endpoint address is not allowed:`,
+and then names the reason:
 
 ```text
 Your endpoint address is not allowed: the host '10.0.0.5' is a private, loopback or
@@ -143,15 +144,14 @@ not resolve to any IP address. Check the spelling and that its DNS record is pub
 Redirects are never followed — the compiler and sandbox clients set `follow_redirects=False`
 explicitly — so a public URL cannot bounce Fintela's egress into an internal target.
 
-### Where ssrf-guard applies
+### `https` is never required
 
-`crates/ssrf-guard` is the Rust screen that **requires `https`**, resolves the host, and pins
-the connection to a screened address to defeat DNS rebinding. It guards *external data
-sources*, not strategy endpoints. The strategy path reuses only its IP-classification
-function (`ip_is_blocked`) inside the save-time screen above.
+Fintela's Rust `ssrf-guard` crate carries a stricter screen that **requires `https`**. The
+strategy path reuses exactly one thing from it — the IP-classification function
+`ip_is_blocked`, inside the save-time screen above — and never its scheme rule.
 
-So: do not conclude from `ssrf-guard` that an external strategy endpoint must be HTTPS. It
-must not be. The strategy screens accept `http`.
+So do not conclude from `ssrf-guard` that an external strategy endpoint has to be HTTPS.
+Both strategy screens accept `http` and `https` alike; the choice is yours.
 
 ## The request Fintela sends
 
@@ -203,9 +203,9 @@ universe-parametric endpoint can use it to scope its output.
 
 > [!CAUTION] Never declare a parameter named `tickers`
 > The two paths disagree. At validation, a parameter named `tickers` wins and the universe is
-> silently not forwarded, with the warning *"validation_universe tickers were not forwarded to
-> the endpoint: a strategy parameter named 'tickers' already occupies that body key."* In a
-> study, the universe overwrites your parameter. Pick another name.
+> not forwarded, with the warning *"validation_universe tickers were not forwarded to the
+> endpoint: a strategy parameter named 'tickers' already occupies that body key."* In a study,
+> the universe overwrites your parameter. Pick another name.
 
 ## The response Fintela expects
 
@@ -230,8 +230,8 @@ Any extra top-level keys are ignored. Only `signal` is read.
 
 ### Signal validation rules
 
-The `signal` object goes through exactly the same validator as an internal strategy's return
-value. Each rule below rejects the whole response.
+At validation, the `signal` object goes through exactly the same validator as an internal
+strategy's return value. Each rule below rejects the whole response.
 
 | Rule | Message when violated |
 |---|---|
@@ -333,10 +333,10 @@ A **read timeout is deliberately not retried** by the sandbox, optimizer or upda
 request was accepted, so retrying only doubles the load on an already-slow service. Only the
 validation client retries read timeouts.
 
-Connection behaviour is fixed and small: each client holds at most **2 connections**, with a
-keep-alive expiry of **30 seconds**. Set `timeout_keep_alive` to at least 30 s on your server
-(uvicorn defaults to 5 s), or Fintela will periodically reuse a socket your server has already
-closed.
+Connection behaviour is fixed and small: the sandbox, optimizer and updater clients each hold
+at most **2 connections**, with a keep-alive expiry of **30 seconds** (the validation client is
+one-shot). Set `timeout_keep_alive` to at least 30 s on your server (uvicorn defaults to 5 s),
+or Fintela will periodically reuse a socket your server has already closed.
 
 ## Max concurrency and study fan-out
 
@@ -514,7 +514,7 @@ Honest limits, all of them enforced rather than stylistic:
 | The breaking-change dialog on save | It fires only for internal strategies with launched studies. |
 | Rule-based (declarative) strategies | Rejected server-side: "Rule-based (declarative) strategies are not supported yet." Declarative rule trees are a risk-manager feature. |
 
-External execution is available for strategies and for
-[fitness functions](/docs/external-fitness). For everything else — see
-[Execution modes](/docs/execution-modes) for the full matrix, and
-[Strategies](/docs/strategies) for the registry itself.
+External execution is not unique to strategies. See
+[Execution modes](/docs/execution-modes) for the full matrix,
+[External fitness](/docs/external-fitness) for the fitness contract — which inverts the
+query-string/body split — and [Strategies](/docs/strategies) for the registry itself.
