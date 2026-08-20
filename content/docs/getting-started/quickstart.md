@@ -2,227 +2,437 @@
 title: Quickstart
 section: Getting Started
 sectionOrder: 1
-order: 3
+order: 5
 published: true
-updated: 2026-08-04
-summary: From a blank account to your first optimization results in under ten minutes — strategy creation, running a study, and reviewing the output.
-keywords: first study, getting started, tutorial, hello world, quickstart
+updated: 2026-08-20
+summary: From a blank account to your first optimization results, step by step.
+keywords: quickstart, tutorial, first study, getting started, first strategy, first results, hello world
 ---
 
-From a blank account to your first optimization results in under ten minutes. This
-guide walks through the app — strategy creation, running a study, and reviewing the
-output. Pulling those results back out over the read-only API is at the bottom.
+This is the shortest real path through Fintela: build a universe, write one small Python strategy,
+bind both to a built-in objective, run a twenty-trial optimization and read what it produced. Every
+step below names the exact screen, the exact control and the exact value to type, and the strategy
+code is a complete internal strategy you can paste as-is.
 
-## Overview
+## What you will build
 
-Four steps, two of which are optional for going live:
+Three objects you create, in this order, bound to a fourth you only pick — `sharpe_ratio` is a
+platform-seeded built-in that already exists. All four are rows in a [registry](/docs/registries),
+so everything here is reusable afterwards.
 
 ```text
-1. Create a strategy          (Registry → Strategies)
-2. Run an optimization study  (Registry → Studies → + New Study)
-3. Inspect the results        (Analytics → Portfolios)
-4. Go live — optional         (Portfolio Manager → Operations)
+  Asset Group            Strategy              Fitness (built-in)
+  12 US tickers        momentum_top_n              sharpe_ratio
+  the universe        the signal rule            the objective
+       └────────────────────┴──────────────────────────┘
+                            ▼
+                          Study
+          20 trials · finite grid · 5-year window split
+                  train / validation / OOS
+                            ▼
+                   up to 20 portfolios
+              ranked on the Portfolios Dashboard
 ```
 
-> [!NOTE] Already have an asset group?
-> Studies run on a universe. You can build an asset group — a saved set of tickers
-> and date range (**Data → Markets → + New Cluster**) — or, in the study builder,
-> just pick a **pre-built grouping** (the Sector ETFs, an index like the S&P 500, a
-> sector or country) and skip cluster creation entirely. The rest of this guide
-> assumes a universe is ready.
+## Before you start
 
-## 1. Create a strategy
+| Requirement | Where it is covered |
+|---|---|
+| A signed-in account inside an organization | [Account setup](/docs/account-setup) |
+| A role that can create a study — Owner, Admin or Manager. An **Analyst** may create asset groups and strategies but sees **New Study** and **Launch** disabled | [Studies](/docs/studies) |
+| A non-zero Fintela Token balance. Launching a study is prepaid; creating a draft is not | [Tokens & billing](/docs/tokens-and-billing) |
+| Free-plan room: this tutorial uses one of your asset-group slots, one strategy slot and one study slot | [Tokens & billing](/docs/tokens-and-billing) |
 
-`Registry → Strategies → + New Strategy → Internal`
-
-A strategy is a Python function that receives market data and returns a signal map —
-which tickers to hold, in what direction, and at what allocation.
-
-### Open Registry → Strategies
-
-Click **Registry** in the left sidebar, then **Strategies**. Click
-**+ New Strategy** in the top right and choose **Internal**.
-
-### Name it and add parameters
-
-Give it a name like `roc_top_n` (lowercase, underscores only). Add the parameters
-the optimizer will sweep — for example:
-
-| Parameter | Type | Description |
-|---|---|---|
-| `n_top` | Integer | Number of top tickers to hold. |
-| `roc_window_size` | Integer (window) | Look-back window for rate-of-change. Mark "Window size" so the optimizer constrains it to available data. |
-| `freq` | Integer | Rebalancing frequency in trading days. |
-
-### Write the Python code
-
-The editor is pre-filled with a template that matches your parameters. A minimal
-implementation — `roc_top_n.py`:
-
-```python
-def roc_top_n(data, start_date, end_date, n_top, roc_window_size, freq):
-    import pandas as pd
-    roc = data.pct_change(periods=roc_window_size)
-    dates = [d for d in roc.index.astype(str) if start_date <= d <= end_date]
-    signal = {}
-    for date in dates[::freq]:
-        top = roc.loc[date].nlargest(n_top).index.tolist()
-        alloc = 1.0 / len(top)
-        signal[date] = {t: {"position": "L", "allocation": alloc} for t in top}
-    return signal
-```
-
-### Validate and save
-
-Click **Validate + Save** (or press `Cmd+S`). Fintela runs your code against a small
-real data slice using your test parameter values. If it passes, the strategy is saved
-and ready to link to a study.
-
-> [!TIP]
-> Use the **Sandbox** tab on the strategy detail page to run a full backtest with
-> fixed parameter values before launching a study. It's a fast sanity check.
-
-## 2. Run an optimization study
-
-`Registry → Studies → + New Study`
-
-A study is a parameter sweep — it runs your strategy many times with different
-parameter combinations to find the best-performing configuration.
-
-### Open Registry → Studies → + New Study
-
-The study creation wizard opens. It has 5 steps you can navigate freely before
-creating.
-
-### Step 1 — Strategy & fitness
-
-Select your `roc_top_n` strategy. For fitness, choose any internal fitness
-function — `sharpe_like` is a good default.
-
-### Step 2 — Data & dates
-
-Select your universe — your asset group, or a pre-built grouping like the Sector ETFs
-or the S&P 500. Set a start date and end date. Leave the train split at 70% for now —
-this gives you a validation window automatically.
-
-### Step 3 — Sampler
-
-Leave the sampler as **TPE** (default). Set `n_trials` to **50** for a quick first
-run.
-
-### Step 4 — Parameter search space
-
-Set the min/max range for each parameter (all three are integers here — categorical
-parameters would show their declared choices instead, and any parameter can be fixed
-to a single value):
-
-| Parameter | Min | Max |
-|---|---|---|
-| `n_top` | 1 | 10 |
-| `roc_window_size` | 5 | 60 |
-| `freq` | 1 | 5 |
-
-### Step 5 — Review & create
-
-Review the summary card, then click **Create study**. The study is queued immediately
-and starts as soon as a worker is available — usually within seconds.
-
-Watch the progress bar on the study detail page. With 50 trials and a small dataset,
-expect it to complete in a few minutes.
-
-## 3. Inspect results
-
-`Analytics → Portfolios`
-
-Once the study reaches **COMPLETED**, every trial appears as a portfolio in the
-Analytics section.
-
-### Open Analytics → Portfolios
-
-Select your study from the filter dropdown at the top.
-
-### Sort by Sharpe or CAGR
-
-Click a column header to sort. Find the trial with the best balance of return and
-risk — not just the highest raw return.
-
-### Open the portfolio detail
-
-Click any row. Review the equity curve, drawdown chart, trade log, and the exact
-parameter values used.
-
-### Overlay multiple portfolios
-
-Check the checkbox column on multiple rows to overlay their equity curves in the
-chart below — useful for comparing parameter sensitivity.
-
-> [!TIP]
-> Switch to **Pivot view** to see which parameter ranges produced the best results
-> across all 50 trials. This guides the bounds for your next, more focused study.
-
-## 4. Go live (optional)
-
-When you've found a parameter set you're confident in, you can promote it to a live
-portfolio and trade it through your connected brokerage.
-
-### Promote the portfolio
-
-In the portfolio detail view, open the action menu and click **Promote**. This marks
-the trial as your chosen production configuration.
-
-### Connect your brokerage
-
-Go to **Account settings → Broker connections → Connect your brokerage**. Link your
-account with **Connect with your brokerage**, and pick the **Paper** environment —
-every operation on that connection inherits it.
-
-### Start an operation
-
-Open **Portfolio Manager → your basket → Operations → Trade with your brokerage**.
-Pick the connection and the capital to commit, then click **Launch**.
-
-See [Live trading](/docs/live-trading) for the full walkthrough including monitoring,
-stopping, and risk considerations.
-
-## Reading results from the API
-
-Strategies, studies and portfolios are created and controlled in the app — that's
-where the work you're billed for is metered. The developer API is **read-only**:
-every endpoint is a `GET`, and it exists so you can feed finished results into your
-own notebooks, dashboards and pipelines.
-
-Poll a study's completion fraction while it runs:
-
-```bash
-curl -H "Authorization: Bearer $FINTELA_API_KEY" \
-     "https://developer.fintela.io/studies/progress?study_ids=42"
-```
-
-```json
-{
-  "data": {
-    "42": 0.64
-  }
-}
-```
-
-Then list the trials it produced:
-
-```bash
-curl -H "Authorization: Bearer $FINTELA_API_KEY" \
-     "https://developer.fintela.io/v2/trials?study_name=roc_top_n_q1"
-```
+Terms you will meet along the way are defined in [core concepts](/docs/core-concepts). You do not
+need to read it first — but come back to it before your second study.
 
 > [!NOTE]
-> See the [API reference](/docs/api-overview) for authentication, every available
-> endpoint, and error codes.
+> Nothing here needs a data source, a risk manager or an external endpoint. Those are all optional
+> layers you can add later; a study of the bare signal is the right first experiment.
 
-## What's next
+## Step 1 — Create an asset group
 
-| Page | What it covers |
+An [asset group](/docs/asset-groups) is a frozen list of instruments. It carries **no dates** — the
+date window belongs to the study.
+
+### Open the builder
+
+In the sidebar, under **Registry**, click **Asset Groups** (`/asset-groups`), then **New Asset
+Group**. The header reads **Create Asset Group** / *Define a new asset group by selecting tickers
+and filters*.
+
+### Pick the instruments
+
+Leave the exchange selector on **US** — its default. Ignore the three filter strips
+(**Classification**, **Size & Value**, **Performance**) for now; you are going to name the
+instruments directly.
+
+In the search box (placeholder **Ticker or name…**), type each code below and click the matching
+row — or its checkbox — to add it to the selection rail on the right. The rail header counts up as
+**{{count}} selected**.
+
+```text
+AAPL  MSFT  NVDA  AMZN  GOOGL  META
+JPM   JNJ   XOM   PG    KO     WMT
+```
+
+Twelve large, liquid US names keep the run fast and the price history deep. Any dozen tickers will
+do — the tutorial does not depend on these.
+
+> [!WARNING]
+> As soon as anything is selected, a chip under the screener states the rule: **An Asset Group saves
+> a fixed ticker list; filters are not re-evaluated later.** The screener is a selection tool.
+> Nothing about the exchange, the filters or the sort is stored, and a selected ticker is never
+> pruned by a later filter change.
+
+### Name and save the group
+
+Click **Create asset group**. It stays disabled until at least one instrument is selected, with the
+caption **Select at least one ticker or portfolio group**.
+
+A dialog titled **Confirm Action** opens — it is the only place an asset group is named — carrying
+the line *Name your asset group to create it.*
+
+| Field | Value to type |
 |---|---|
-| [Managing strategies](/docs/managing-strategies) | Strategy types, parameters, validation, and the sandbox. |
-| [Running optimizations](/docs/running-optimizations) | Full study wizard walkthrough — all 5 steps explained. |
-| [Analyzing results](/docs/analyzing-results) | Portfolio dashboard, pivot table, equity charts, custom date windows. |
-| [External strategies](/docs/external-strategies) | Host your signal logic on your own server. |
-| [Sampler selection](/docs/sampler-selection) | TPE, CMA-ES, Random — which to use and when. |
+| **Name** | `Quickstart US large caps` |
+| **Description** | `Twelve large-cap US names for the quickstart.` |
+
+Both fields are required; **Confirm** stays disabled until both are filled. Press **Confirm**.
+
+## Step 2 — Create the strategy
+
+A [strategy](/docs/strategies) is one top-level Python function that returns a signal: date →
+ticker → `{position, allocation}`.
+
+### Open the editor
+
+Sidebar → **Registry** → **Strategies** (`/strategy`) → **New Strategy**. The header reads **Create
+Strategy** / *Define a new strategy implementation*. Leave the header's segmented control on
+**Internal**, its default. **Internal** and **External** are selectable in create mode only — an
+existing strategy can never change execution type — and the third option, **Rule-based**, is
+permanently disabled (*Rule-based strategies are coming soon.*).
+
+### Replace the template code
+
+The Python editor is pre-filled with a scaffold. Select all of it and paste this in its place:
+
+```python
+def momentum_top_n(data, start_date, end_date, lookback=60, top_n=10):
+    out = {}
+    for ts in data.index:
+        window = data.loc[:ts].tail(lookback + 1)
+        if len(window) < lookback + 1:
+            continue
+        mom = (window.iloc[-1] / window.iloc[0]) - 1.0
+        mom = mom.dropna()
+        mom = mom[mom > 0]
+        if mom.empty:
+            continue
+        chosen = mom.sort_values(ascending=False).head(top_n)
+        names = list(chosen.index)
+        n = len(names)
+        w = 1.0 / n
+        out[ts.strftime("%Y-%m-%d")] = {c: {"position": "L", "allocation": w} for c in names}
+    return out
+```
+
+Why this passes the validator, line by line:
+
+| Rule | How the code satisfies it |
+|---|---|
+| The entry point is found **by signature** — the first function whose parameters are a superset of `data`, `start_date`, `end_date` | Those three come first, then the two declared parameters |
+| Date keys must be `YYYY-MM-DD` strings | `ts.strftime("%Y-%m-%d")` — a `pd.Timestamp` key is rejected |
+| `position` is `"L"` or `"S"`; `allocation` is finite and in `(0, 1]` | `w = 1.0 / n` over a non-empty list |
+| Allocations on one date sum to at most `1.0` | `n` equal weights sum to exactly 1.0; the residual would be held as cash |
+| No look-ahead — the strategy is run over a short window and a long one, and the save is rejected if a past signal changes | Every date reads `data.loc[:ts]` only |
+
+### Set the test values
+
+Pasting the code populates the **Parameters** panel automatically: editing the Python signature
+adds, removes and renames parameter rows for you. You get two rows, both typed **Integer**, both
+with an empty **Test value**. Fill them in:
+
+| Parameter name | Type | Test value |
+|---|---|---|
+| `lookback` | **Integer** | `60` |
+| `top_n` | **Integer** | `10` |
+
+> [!CAUTION]
+> **A test value is not a default.** It is the single concrete value your code is executed with
+> during validation — the optimizer never reads it. Pick something from the middle of the range you
+> intend to sweep, or validation proves the wrong thing.
+
+### Watch the validation chip
+
+Until both test values exist, the chip beside the editor toolbar reads **Set test values to
+validate**. Once they are set, live validation fires on a short debounce against a reduced ticker
+sample: the chip moves to **Validating…** and then to **Valid**. If it lands on **Validation error**
+or **Error on line N**, click it to jump to the offending line.
+
+Leave the rail's **Advanced options → Lookback** section alone. It is **Auto-synced**, meaning
+Fintela generated a `required_lookback` function from your parameters:
+
+```python
+def required_lookback(lookback, top_n):
+    return max(lookback, top_n)
+```
+
+That is how much price history is loaded *before* the study's start date so your indicators are warm
+on day one. The study re-evaluates it at each parameter's **maximum** to confirm the asset group has
+enough history.
+
+### Name and save the strategy
+
+Click **Create strategy**. The **Confirm Action** dialog opens with *Name your strategy to create
+it.* It is the only place a strategy is named.
+
+| Field | Value |
+|---|---|
+| **Name** | already `momentum_top_n` — pasting the code parsed the `def` and filled it in |
+| **Description** | type `Hold the strongest N names by trailing return.` |
+
+The Name helper reads *Lowercase identifier — also the Python function name.* Editing the name
+lowercases it, replaces spaces with `_` and **renames the Python entry point in your code** — the
+compiler rejects a function whose name does not match the registry name. Leave it as it arrived and
+nothing is rewritten. Description is required too; **Confirm** stays disabled until both fields are
+filled. Press **Confirm**.
+
+## Step 3 — Configure the study
+
+Sidebar → **Registry** → **Studies** (`/studies`) → **New Study**. The header reads **New Study** /
+*Select asset groups, a strategy, and a fitness function, then configure and launch.*
+
+This is **not a stepper**. It is one screen with four blocks, an action bar and a final confirmation
+dialog that owns both writes.
+
+```text
+  ┌─────────────┬─────────────┬─────────────┬──────────────┐
+  │ Asset Group │  Strategy   │   Fitness   │ Optimization │
+  └─────────────┴─────────────┴─────────────┴──────────────┘
+             ↓ Study name  ·  Cancel  ·  Continue
+```
+
+### Block 1 — Asset Group
+
+Open **Select asset group** and pick **Quickstart US large caps** from the **Asset Groups** option
+group. (The list also offers **Platform sets (indices, sectors, ETFs)** — picking one materializes a
+derived group behind the scenes, which is how you skip Step 1 entirely on a later study.)
+
+Leave **Start date** and **End date** as they arrive: the builder pre-selects the trailing **5
+years**, clamped to the group's own data coverage. Leave the **Advanced options** accordion closed
+too. Its defaults are what you want for a first run:
+
+| Setting | Default | Result |
+|---|---|---|
+| **Include out-of-sample period** | on | The last slice is held back and never optimized on |
+| **Train / validation split** | 70 % train of the non-OOS window | — |
+| **OOS size** | 10 % | — |
+| **Period breakdown** | — | **Train 63 %** · **Validation 27 %** · **OOS 10 %** of the whole window |
+
+Under the dates sits a read-only **Data compatibility** panel: a tier chip (**Total** · **Partial** ·
+**Partial (window)** · **Partial (mixed)** · **Incompatible**) and a line reading **{{covered}} of
+{{total}} tickers runnable**. For a study like this one — no data sources, no risk managers, strict
+mode off — anything short of **Incompatible** launches. A **Partial** tier only means some tickers
+are dropped from the universe, and the confirm dialog lists them under **Excluded**.
+
+> [!WARNING]
+> **Exactly one asset group per study.** Picking a different group replaces the current one; it
+> never appends. There is also **no walk-forward or rolling-window option** — a study is a single
+> train / validation / out-of-sample partition of one contiguous window.
+
+### Block 2 — Strategy
+
+Open **Select strategy** and pick `momentum_top_n`. The **Parameters** section appears with one row
+per declared parameter, integers first. Each row has a **Fixed** / **Optimized** segmented control;
+both rows start on **Optimized** with empty **min** and **max** fields.
+
+| Parameter | Control | min | max |
+|---|---|---|---|
+| `lookback` | **Optimized** | `20` | `120` |
+| `top_n` | **Optimized** | `5` | `15` |
+
+Flip a row to **Fixed** if you want to pin a parameter instead of searching it — the field becomes a
+single **value** box and that dimension drops out of the search.
+
+> [!WARNING]
+> Changing the strategy **wipes** the parameter configuration and any attached risk managers. Pick
+> the strategy before you tune anything.
+
+### Block 3 — Fitness
+
+Open **Select fitness function** and pick **`sharpe_ratio`** — a platform-seeded built-in whose
+author shows as `platform`. It scores each simulated window by excess return per unit of total risk,
+and its natural direction is higher-is-better.
+
+A built-in objective renders **no** parameter section and takes **no** fitness asset group; the
+server rejects both outright. Nothing else to do in this block.
+
+### Block 4 — Optimization
+
+Under **Run Configuration**, set the one visible field:
+
+| Field | Default | Value to type |
+|---|---|---|
+| **Number of trials** | `1000` | `20` |
+
+As soon as both parameter ranges are set, the block adds derived feedback. Because both parameters
+are integers, the search space is **finite**, and 101 × 11 gives:
+
+- **Search space: 1,111 combinations**
+- **Finite grid (1,111 combinations): configurations are enumerated as a grid search — each tried at
+  most once, no repeats — so the sampler below isn't applied.**
+
+That second line is the important one. On a finite grid at or below one million combinations the
+optimizer enumerates the grid without replacement instead of running the sampler, so your 20 trials
+are 20 *distinct* configurations drawn from the shuffled grid. The **Sampler** setting still reads
+**TPE** and is still stored — it simply does not drive this particular run. See
+[sampler selection](/docs/sampler-selection) for when it does.
+
+Leave the **Advanced options** accordion closed. For the record, this is what you are accepting:
+
+| Setting | Default for this run |
+|---|---|
+| **Optimization objective** | `NOT_SET` — displayed as **Maximize**, because `sharpe_ratio` is higher-is-better |
+| **Benchmark** | **Auto — one per asset group** |
+| **Sampler** | **TPE** |
+| **Grid precision (decimals)** | empty (continuous — irrelevant here, both parameters are integers) |
+| **Stop early if health drops below threshold** | on, **Failure threshold: 30 %** |
+| **Recalculate daily after market data arrives** | off |
+| **Eligibility rules** | **Insufficient warm-up history** on; the other three off; **Require every ticker eligible** off |
+| **Risk Managers** | none attached |
+
+> [!NOTE]
+> `NOT_SET` is not a synonym for "maximize". It means *inherit the objective's own natural
+> direction* — so a lower-is-better built-in such as `max_drawdown` would minimize under the same
+> default. The direction is frozen once the study launches.
+
+### Name it and continue
+
+The action bar carries a **Study name** field, pre-filled with `momentum_top_n · Quickstart US large
+caps` and recomputed as you change the strategy or the group until you type your own. Keep it or
+replace it — names do not have to be unique; a collision is auto-suffixed and the toast tells you
+what the study was actually saved as.
+
+If the bar shows **{{count}} issues to resolve**, hover it for the full list. Otherwise click
+**Continue**.
+
+## Step 4 — Launch it
+
+The **Confirm your study** dialog opens — *Save it as a draft to launch later, or save and launch
+now.* Check the recap rows: **Study name**, **Asset group**, **Strategy**, **Fitness**, **Trials**,
+**Data range** and **Out-of-sample** (which should read **Included**).
+
+Below the recap, a **Cost** block prices the run:
+
+| Row | Meaning |
+|---|---|
+| **Optimization (20 trials)** | The base token charge |
+| **Total** | What you will be charged |
+| **Your balance** | Your organization's current balance |
+
+with the note **Charged when the study launches. Whatever it doesn't use is refunded automatically
+when it finishes.** While the quote resolves it reads **Calculating cost…**.
+
+Click **Save & Launch**. The study is written and queued in one call, and you are returned to the
+registry with a **1 study created** toast — or **Study created as "…"** if the server had to
+rename it.
+
+> [!TIP]
+> **Save Draft** writes the same study without launching it and without charging tokens. A draft
+> shows as **Draft** in the registry and can still be edited; once launched, a study is immutable
+> and the only way to change anything is **Duplicate**.
+
+Watch the row you just created. Its **Status** badge moves **Queued** → **Running** → **Completed**,
+and the **Progress** and **Health** meters refresh every five seconds while anything is active.
+
+| Column | What it means |
+|---|---|
+| **Progress** | Trials in a *terminal* state over the trial budget. Tooltip: **Completed trials over the total requested.** |
+| **Health** | Share of trials that produced a usable result. Bands: ≥ 0.9 good, ≥ 0.7 caution, below that poor |
+
+> [!CAUTION]
+> A completed study can legitimately sit below 100 % progress — that is what an exhausted finite
+> grid looks like. **Completion is signalled by the status badge, never by progress reaching 100 %.**
+
+There is no Stop, Pause or Resume action in this registry — and no `PAUSED` state anywhere in the
+product. The **Stop** button lives on the study's own
+[Optimization Dashboard](/docs/optimization-dashboard) at `/analysis/portfolios/study/<id>`.
+[Study lifecycle](/docs/study-lifecycle) covers every state, the ten-stage run pipeline and what a
+failure diagnostic tells you.
+
+## Step 5 — Read the results
+
+Click the study row to open its actions popover, then **View**. That lands you on the
+[Portfolios Dashboard](/docs/portfolios-dashboard) at `/analysis/portfolios?studyId=<id>` with your
+study already selected.
+
+### Rank the trials
+
+The filter bar arrives configured for a first look:
+
+| Control | Value on arrival |
+|---|---|
+| **Metric** | `fitness` — the objective value each trial scored |
+| **Study** | your study |
+| **Top N** | `10` |
+| **Rank by** | **Overall** |
+
+The **Portfolio Ranking** carousel on the left lists one card per trial. Each is labelled with its
+trial number and the study's name, and carries its rank, its ranked value, an equity sparkline and
+headline **Sharpe**, **Alpha** and **Beta**. Every card starts checked, so all ten curves are
+overlaid on the combined equity chart beside it. Uncheck cards to isolate a comparison.
+
+Now change **Rank by** from **Overall** to **Train**, then to **Val**, then to **OOS**. A parameter
+set that leads on Train and collapses on OOS is the whole reason the window is split three ways.
+
+### Open one candidate
+
+Click a card. The **Portfolio Analysis** tab reveals itself, carrying that trial's own six detail
+views — Performance, Holdings, Transactions, Risk Analytics, Robustness and Profile — documented in
+[portfolio detail](/docs/portfolio-detail). Every number on those screens is defined in the
+[metrics reference](/docs/metrics-reference), and every chart in
+[visualizations](/docs/visualizations).
+
+### Ask whether the winner is real
+
+Switch the section tab to **Optimization Dashboard** (`/analysis/portfolios/study/<id>`). Four
+sub-views hang off it — **Overview**, **Robustness**, **Families** and **Parameters**. **Overview**
+carries the run configuration, a **Best trial** card, a **Robustness & Overfitting** verdict and a
+**Hyperparameter Importances** panel telling you which knob actually moved the objective. With only
+twenty trials over a 1,111-point grid, treat every verdict as provisional — that is the honest
+reading, and it is exactly why the next study should have a bigger budget.
+
+## If something goes wrong
+
+| Symptom | What it is |
+|---|---|
+| **Save & Launch** is disabled | The compatibility gate blocks the launch, or the cost exceeds your balance (**You don't have enough tokens for this study.**), or a memory-driven worker clamp is waiting on its **I understand this study will take longer** checkbox. **Save Draft** is never gated by any of them |
+| The action bar shows **This strategy can't run on the selected data — resolve the compatibility issues below.** | The compatibility report came back incompatible for this group and window. Hover for the reasons; widening the start date or picking a different group usually clears it |
+| Pressing **New Study** opens **You've reached your plan limit** | You are at the studies quota. Delete one to make room — see [tokens & billing](/docs/tokens-and-billing) |
+| The study ran fewer trials than you asked for | On a limited plan `n_trials` is **clamped silently** to the per-study ceiling, with no message in the response and no cap shown in the builder. Twenty is far below it |
+| The status badge reads **Failed** | Open the study's [Optimization Dashboard](/docs/optimization-dashboard) and read the failure notice. `FAILED` is **not** resumable — duplicate the study and relaunch |
+| A completed study carries a warning about secondary analysis | Robustness, families and importances are *secondary* stages. A failure there leaves the results usable — it is not a failed study |
+
+## What you just built
+
+| Object | Reusable as |
+|---|---|
+| `Quickstart US large caps` | The universe for any future study, or a second study's fitness universe |
+| `momentum_top_n` | A strategy any number of studies can optimize, pinned per launch to the version it ran with |
+| The study | A launched, immutable run. **Duplicate** it to start the next experiment with everything pre-seeded |
+| Up to 20 portfolios | One per successful trial — candidates you can promote into [promoted portfolios](/docs/promoted-portfolios) and collect into a [portfolio group](/docs/portfolio-groups) |
+
+## Where to go next
+
+| Page | Why |
+|---|---|
+| [End-to-end workflow](/docs/end-to-end-workflow) | The same path taken all the way to a deployed portfolio group |
+| [Studies](/docs/studies) | Every field on the study canvas, the row actions and the server-side validation |
+| [Strategies](/docs/strategies) | The full function contract, injected data sources, the curated library list and the sandbox |
+| [Fitness functions](/docs/fitness-functions) | The 26 built-in objectives and how to write your own |
+| [Risk managers](/docs/risk-managers) | Stops, caps and halts the optimizer can tune alongside your parameters |
+| [Sampler selection](/docs/sampler-selection) | When the sampler matters, and which one to pick |
+| [Analyzing results](/docs/analyzing-results) | Reading a study's output properly, including overfitting |
+| [Execution modes](/docs/execution-modes) | Running your own code on your own infrastructure instead |
+| [API overview](/docs/api-overview) | Pulling finished results out over the read-only Developer API |
