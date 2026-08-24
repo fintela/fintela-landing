@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fintela — Executive Platform Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  /* Brand Palette from Logo */
+  --brand-blue: #376291;
+  --brand-crimson: #e73541;
+  --brand-gold: #f0c13b;
+  
+  --grad-brand: linear-gradient(135deg, #376291 0%, #e73541 50%, #f0c13b 100%);
+  --grad-h: linear-gradient(90deg, #376291 0%, #e73541 50%, #f0c13b 100%);
+  --grad-soft: linear-gradient(135deg, rgba(55,98,145,0.08) 0%, rgba(231,53,65,0.08) 50%, rgba(240,193,59,0.08) 100%);
+  
+  --fg-1: #0f172a; 
+  --fg-2: #334155; 
+  --fg-3: #475569; 
+  --fg-4: #94a3b8; 
+  --bg-1: #ffffff;
+  --bg-2: #f8fafc; 
+  --bg-3: #f1f5f9;
+  --border-1: #e2e8f0; 
+  --border-2: #f1f5f9;
+  
+  --radius-md: 16px; 
+  --radius-lg: 24px;
+  --shadow-sm: 0 4px 12px rgba(15,23,42,0.03);
+  --shadow-md: 0 12px 32px rgba(15,23,42,0.06);
+  --shadow-brand: 0 8px 24px rgba(231,53,65,0.20);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: #0b0f17; -webkit-font-smoothing: antialiased; }
+
+/* Deck Viewport & Track */
+.deck-vp { width: 100vw; height: 100vh; overflow: hidden; position: relative; background: #fff; }
+.deck-track { display: flex; flex-direction: column; width: 100vw; will-change: transform; }
+
+/* Slide Canvas */
+.slide-m { flex: 0 0 100vh; width: 100vw; height: 100vh; overflow: hidden; position: relative; background: #fff; display: flex; flex-direction: column; }
+.m-logo-strip { display: flex; align-items: center; justify-content: space-between; padding: 24px 80px 12px; flex-shrink: 0; z-index: 10; }
+.m-logo-strip img { height: 28px; width: 28px; object-fit: contain; }
+.m-counter { font-size: 13px; color: var(--fg-4); font-weight: 700; letter-spacing: 0.12em; }
+.m-body { flex: 1; display: flex; flex-direction: column; padding: 8px 80px 36px; overflow: hidden; gap: 20px; max-width: 1380px; width: 100%; margin: 0 auto; justify-content: center; }
+.m-progress { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--grad-h); }
+
+/* Navigation Dots */
+.m-dots { position: absolute; right: 28px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 20; }
+.dot { width: 10px; height: 10px; border-radius: 5px; background: var(--border-1); transition: all 250ms ease; cursor: pointer; }
+.dot.active { height: 32px; background: var(--brand-crimson); }
+
+/* Navigation Keyboard Hint */
+.nav-hint { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg-4); pointer-events: none; z-index: 30; animation: hintAnim 4s 1.5s both; }
+.nav-hint kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 6px; border: 1px solid var(--border-1); border-bottom-width: 2px; border-radius: 4px; background: #fff; font-size: 11px; font-weight: 600; color: var(--fg-3); }
+@keyframes hintAnim { 0% { opacity: 0; } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Executive Typography */
+.gt { background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+.h1-m { font-size: 68px; font-weight: 900; line-height: 1.06; letter-spacing: -0.035em; color: var(--fg-1); text-align: left; }
+.h2-m { font-size: 40px; font-weight: 800; line-height: 1.12; letter-spacing: -0.025em; color: var(--fg-1); }
+.sub-m { font-size: 17px; color: var(--fg-3); line-height: 1.55; max-width: 880px; font-weight: 400; }
+.divider-m { height: 3px; background: var(--grad-h); opacity: 0.8; border-radius: 2px; }
+.sec-lbl { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-4); }
+
+/* Layout Cards */
+.m-card { background: #fff; border: 1px solid var(--border-1); border-radius: var(--radius-md); padding: 18px 20px; box-shadow: var(--shadow-sm); transition: transform .25s ease, box-shadow .25s ease; position: relative; }
+.m-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.m-card h3 { font-size: 16px; font-weight: 700; color: var(--fg-1); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+.m-card p { font-size: 13px; color: var(--fg-2); line-height: 1.5; margin: 0; }
+.m-icon-box { width: 40px; height: 40px; border-radius: 10px; background: var(--grad-brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: var(--shadow-brand); }
+.m-icon-box svg { width: 20px; height: 20px; stroke: #fff; stroke-width: 2; }
+
+/* Grids */
+.m-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.m-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.m-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.two-col-7-5 { display: grid; grid-template-columns: 7fr 5fr; gap: 32px; align-items: center; }
+
+/* Helpers */
+.m-hbox { background: var(--grad-soft); border: 1px solid rgba(231,53,65,0.18); border-radius: var(--radius-md); padding: 18px 22px; font-size: 14px; color: var(--fg-2); line-height: 1.6; }
+.m-hbox strong { color: var(--fg-1); }
+
+.stat-m { text-align: center; background: var(--bg-2); border: 1px solid var(--border-1); border-radius: var(--radius-md); padding: 22px 18px; position: relative; }
+.stat-m .num { display: block; font-size: 44px; font-weight: 900; line-height: 1; background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-m .lbl { font-size: 12px; color: var(--fg-3); font-weight: 600; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+.stage-bar { display: flex; border-radius: 10px; overflow: hidden; height: 46px; }
+.stage-bar .seg { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.seg.train { background: rgba(55,98,145,0.14); color: var(--brand-blue); }
+.seg.val { background: rgba(231,53,65,0.14); color: var(--brand-crimson); }
+.seg.oos { background: rgba(240,193,59,0.20); color: #d97706; }
+
+.m-tl { position: relative; padding-left: 44px; }
+.m-tl::before { content: ''; position: absolute; left: 15px; top: 12px; bottom: 12px; width: 2px; background: var(--grad-h); opacity: 0.4; }
+.m-tl-item { position: relative; margin-bottom: 18px; }
+.m-tl-item:last-child { margin-bottom: 0; }
+.m-tl-marker { position: absolute; left: -44px; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--grad-brand); color: #fff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-brand); }
+.m-tl-body h3 { font-size: 16px; font-weight: 700; color: var(--fg-1); margin-bottom: 4px; }
+.m-tl-body p { font-size: 13px; color: var(--fg-2); line-height: 1.5; }
+
+.qual-card { background: var(--bg-2); border: 1px solid var(--border-1); border-radius: var(--radius-md); padding: 20px 22px; }
+.qual-card .q-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand-crimson); margin-bottom: 6px; }
+.qual-card h3 { font-size: 16px; font-weight: 700; color: var(--fg-1); margin-bottom: 6px; }
+.qual-card p { font-size: 13px; color: var(--fg-3); line-height: 1.5; }
+
+/* ══ CIRCULAR WORKFLOW DIAGRAM STYLING ══ */
+.circle-workflow-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+.circle-container {
+  position: relative;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  border: 2px dashed rgba(231,53,65,0.25);
+  background: rgba(248,250,252,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.circle-center {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--brand-blue);
+  line-height: 1.35;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-1);
+  box-shadow: var(--shadow-sm);
+}
+.node-circle {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid var(--border-1);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  transition: all 0.25s ease;
+}
+.node-circle:hover {
+  transform: scale(1.08);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-crimson);
+}
+.node-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--grad-brand);
+  color: #fff;
+  font-weight: 800;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  box-shadow: var(--shadow-brand);
+}
+.node-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-1);
+  line-height: 1.2;
+}
+
+/* ══ FINTELLIGENT CHAT MOCKUP STYLING ══ */
+.chat-window {
+  background: #ffffff;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 12px;
+}
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-1);
+  background: #ffffff;
+}
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.chat-sparkle-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--grad-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: var(--shadow-brand);
+}
+.chat-sparkle-avatar svg { width: 14px; height: 14px; }
+.chat-title-group h4 { font-size: 14px; font-weight: 700; color: var(--fg-1); margin: 0; line-height: 1.2; }
+.chat-title-group span { font-size: 11px; color: var(--fg-4); font-weight: 400; }
+.chat-status-online { font-size: 11px; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 4px; }
+.chat-status-online::before { content: '•'; font-size: 16px; }
+
+.chat-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fafafa;
+}
+
+.chat-user-bubble {
+  align-self: flex-end;
+  background: var(--grad-brand);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 16px 16px 4px 16px;
+  max-width: 88%;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-ai-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.chat-ai-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.chat-pill-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 3px 10px;
+  border-radius: 999px;
+  width: fit-content;
+  border: 1px solid #e2e8f0;
+  text-transform: uppercase;
+}
+.chat-pill-tag.success {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.chat-card-box {
+  background: #ffffff;
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--fg-2);
+  line-height: 1.5;
+}
+.chat-card-box strong { color: var(--fg-1); display: block; margin-bottom: 2px; font-size: 13px; }
+
+.chat-confirm-box {
+  border: 1px dashed #cbd5e1;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-confirm-box svg { width: 14px; height: 14px; stroke: #10b981; }
+
+.chat-btn-confirm {
+  align-self: flex-end;
+  background: var(--grad-brand);
+  color: #ffffff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-footer-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-1);
+  background: #ffffff;
+}
+.chat-input-fake {
+  flex: 1;
+  border: 1px solid var(--border-1);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--fg-4);
+  background: #fafafa;
+}
+.chat-send-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--grad-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.chat-send-btn svg { width: 14px; height: 14px; }
+
+/* Closing Slide Extra Styles */
+.contact-card {
+  background: #ffffff;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  padding: 24px 32px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+.contact-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(231,53,65,0.3);
+}
+.contact-card .c-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--grad-soft);
+  border: 1px solid rgba(231,53,65,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-crimson);
+  flex-shrink: 0;
+}
+.contact-card .c-icon svg { width: 26px; height: 26px; }
+.contact-card .c-info label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-4); display: block; margin-bottom: 2px; }
+.contact-card .c-info span { font-size: 18px; font-weight: 800; color: var(--fg-1); }
+
+/* ══ STYLES SPECIFIC TO PDF PRINTING ══ */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+  html, body {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .deck-vp {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .deck-track {
+    transform: none !important;
+    display: block !important;
+    width: 100% !important;
+  }
+  .slide-m {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .m-dots, .nav-hint, .m-progress {
+    display: none !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="deck-vp" id="deck">
+<div class="deck-track" id="track">
+
+<!-- ══ 01 COVER SLIDE ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">01 / 09</span>
+  </div>
+  <div class="m-body" style="align-items: flex-start; text-align: left;">
+    <img src="https://fintela.io/assets/fintela_large_logo-m_IsPxrV.png" alt="Fintela Logo" style="height: 64px; width: auto; margin-bottom: 20px; object-fit: contain;" />
+    <h1 class="h1-m">The Future of<br/><span class="gt">Intelligent Investing.</span></h1>
+    <div class="divider-m" style="width: 200px; margin: 16px 0;"></div>
+    <p class="sub-m" style="font-size: 22px; max-width: 780px;">Accelerating quantitative research to live execution.</p>
+  </div>
+  <div class="m-progress" style="width: 11.1%;"></div>
+</div>
+
+<!-- ══ 02 QUANT WORKFLOW BROKEN ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">02 / 09</span>
+  </div>
+  <div class="m-body">
+    <h2 class="h2-m">The Quantitative Workflow Is <span class="gt">Broken by Design</span></h2>
+    <p class="sub-m">Traditional infrastructure divides critical operations, consuming capital, bandwidth, and market edge.</p>
+    <div class="m-grid4">
+      <div class="m-card">
+        <div class="m-icon-box"><i data-lucide="settings"></i></div>
+        <h3>Infrastructure Overhead</h3>
+        <p>Quant teams allocate <strong>80% of bandwidth</strong> to infrastructure maintenance, leaving only <strong>15% for alpha generation</strong> and 5% for operations.</p>
+      </div>
+      <div class="m-card">
+        <div class="m-icon-box"><i data-lucide="link-2"></i></div>
+        <h3>Siloed Tool Stack</h3>
+        <p>Data ingestion, backtesting engines, parameter optimization tools, and execution gateways exist in disconnected environments.</p>
+      </div>
+      <div class="m-card">
+        <div class="m-icon-box"><i data-lucide="trending-down"></i></div>
+        <h3>Capital Intensity</h3>
+        <p>Maintaining enterprise quantitative stacks requires <strong>$600K+/year baseline</strong> across data vendor feeds, compute clusters, and DevOps support.</p>
+      </div>
+      <div class="m-card">
+        <div class="m-icon-box"><i data-lucide="clock"></i></div>
+        <h3>Bottlenecked Velocity</h3>
+        <p>Operational friction restricts experimentation speed, stalling strategy deployment and delaying time-to-market.</p>
+      </div>
+    </div>
+    <div style="background:var(--bg-2);border:1px solid var(--border-1);border-radius:var(--radius-md);padding:18px 24px;">
+      <p style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--fg-4);margin-bottom:12px;">
+        Quantitative Bandwidth Allocation
+      </p>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+        <span style="font-size:13px;color:var(--fg-3);width:180px;flex-shrink:0;font-weight:600;">Infrastructure Maintenance</span>
+        <div style="flex:1;background:var(--bg-3);border-radius:6px;height:18px;overflow:hidden;"><div style="width:80%;height:100%;background:var(--grad-h);border-radius:6px;"></div></div>
+        <span style="font-size:14px;font-weight:800;color:var(--brand-crimson);width:40px;flex-shrink:0;">80%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+        <span style="font-size:13px;color:var(--fg-3);width:180px;flex-shrink:0;font-weight:600;">Alpha Generation</span>
+        <div style="flex:1;background:var(--bg-3);border-radius:6px;height:18px;overflow:hidden;"><div style="width:15%;height:100%;background:var(--brand-blue);border-radius:6px;"></div></div>
+        <span style="font-size:14px;font-weight:800;color:var(--brand-blue);width:40px;flex-shrink:0;">15%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span style="font-size:13px;color:var(--fg-3);width:180px;flex-shrink:0;font-weight:600;">Compliance & Operations</span>
+        <div style="flex:1;background:var(--bg-3);border-radius:6px;height:18px;overflow:hidden;"><div style="width:5%;height:100%;background:var(--fg-4);border-radius:6px;"></div></div>
+        <span style="font-size:14px;font-weight:800;color:var(--fg-4);width:40px;flex-shrink:0;">5%</span>
+      </div>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 22.2%;"></div>
+</div>
+
+<!-- ══ 03 ONE UNIFIED PLATFORM (REDESIGNED ROUND TABLE LAYOUT) ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">03 / 09</span>
+  </div>
+  <div class="m-body">
+    <h2 class="h2-m">One Platform. <span class="gt">Every Stage. Seamlessly Connected.</span></h2>
+    <p class="sub-m">Continuous data flow across the entire quantitative lifecycle, eliminating operational friction.</p>
+    
+    <div style="display: grid; grid-template-columns: 6fr 6fr; gap: 40px; align-items: center;">
+      <!-- Left Column: Circular Round Table Diagram -->
+      <div class="circle-workflow-wrap">
+        <div class="circle-container">
+          <div class="circle-center">
+            <span>UNIFIED PIPELINE WORKFLOW</span>
+          </div>
+          <!-- Node 1: Top -->
+          <div class="node-circle" style="top: 0px; left: 145px;">
+            <div class="node-num">1</div>
+            <div class="node-title">Asset Groups</div>
+          </div>
+          <!-- Node 2: Top Right -->
+          <div class="node-circle" style="top: 99px; left: 288px;">
+            <div class="node-num">2</div>
+            <div class="node-title">Strategies</div>
+          </div>
+          <!-- Node 3: Bottom Right -->
+          <div class="node-circle" style="top: 266px; left: 233px;">
+            <div class="node-num">3</div>
+            <div class="node-title">Studies</div>
+          </div>
+          <!-- Node 4: Bottom Left -->
+          <div class="node-circle" style="top: 266px; left: 57px;">
+            <div class="node-num">4</div>
+            <div class="node-title">Portfolios</div>
+          </div>
+          <!-- Node 5: Top Left -->
+          <div class="node-circle" style="top: 99px; left: 2px;">
+            <div class="node-num">5</div>
+            <div class="node-title">Live Execution</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Stacked Detail Cards -->
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="m-hbox">
+          <strong>Unified Asset Engine.</strong> ETFs, Equities, Forex, and Indices powered within a centralized architecture.
+        </div>
+        <div class="m-hbox">
+          <strong>Guaranteed Reproducibility.</strong> Every backtest runs against fixed dataset snapshots for complete historical consistency.
+        </div>
+        <div class="m-hbox">
+          <strong>Autonomous AI Operator.</strong> Fintelligent translates natural language into platform-wide workflows.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 33.3%;"></div>
+</div>
+
+<!-- ══ 04 STUDIES & OPTIMIZATION ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">04 / 09</span>
+  </div>
+  <div class="m-body">
+    <h2 class="h2-m"><span class="gt">Intelligent Optimization</span> &amp; Overfitting Discipline</h2>
+    <p class="sub-m">High-efficiency parameter exploration backed by institutional out-of-sample validation rigor.</p>
+    <div class="two-col-7-5">
+      <div>
+        <p class="sec-lbl" style="margin-bottom:10px;text-align:left;">Three-Stage Evaluation Architecture</p>
+        <div class="stage-bar">
+          <div class="seg train">Train</div>
+          <div class="seg val">Validation</div>
+          <div class="seg oos">Out-of-Sample</div>
+        </div>
+        <p style="font-size:12px;color:var(--fg-3);margin-top:8px;">Strict data segmentation ensures forward testing remains completely uncompromised.</p>
+      </div>
+      <div class="m-grid2">
+        <div class="stat-m">
+          <span class="num">Optimized</span>
+          <span class="lbl">Search Efficiency</span>
+        </div>
+        <div class="stat-m">
+          <span class="num">Parallel</span>
+          <span class="lbl">Compute Scale</span>
+        </div>
+      </div>
+    </div>
+    <div class="m-grid2">
+      <div class="m-card" style="display:flex;align-items:center;gap:18px;">
+        <div class="m-icon-box" style="margin:0;"><i data-lucide="target"></i></div>
+        <div><h3>Custom Fitness Targets</h3><p>Design institutional scoring models combining Sharpe, Sortino, and drawdown constraints.</p></div>
+      </div>
+      <div class="m-card" style="display:flex;align-items:center;gap:18px;">
+        <div class="m-icon-box" style="margin:0;"><i data-lucide="bar-chart-2"></i></div>
+        <div><h3>Parameter Sensitivity</h3><p>Analytical attribution isolate drivers of performance and risk across trial sets.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 44.4%;"></div>
+</div>
+
+<!-- ══ 05 PORTFOLIO ANALYTICS ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">05 / 09</span>
+  </div>
+  <div class="m-body">
+    <h2 class="h2-m">Institutional Performance &amp; <span class="gt">Risk Analytics</span></h2>
+    <p class="sub-m">Deep attribution and side-by-side comparative analysis across every strategy trial.</p>
+    <div class="m-grid2">
+      <div style="background:var(--bg-2);border:1px solid var(--border-1);border-radius:var(--radius-md);padding:16px;">
+        <p style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--fg-4);margin-bottom:10px;">Return Attribution</p>
+        <div class="m-grid2" style="gap:10px;">
+          <div style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--border-1);"><strong style="font-size:13px;color:var(--fg-1);">Total Return</strong><div style="font-size:11px;color:var(--fg-3);">Absolute P&amp;L</div></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--border-1);"><strong style="font-size:13px;color:var(--fg-1);">CAGR</strong><div style="font-size:11px;color:var(--fg-3);">Annualized growth</div></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--border-1);"><strong style="font-size:13px;color:var(--fg-1);">Win Rate</strong><div style="font-size:11px;color:var(--fg-3);">Trade accuracy</div></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--border-1);"><strong style="font-size:13px;color:var(--fg-1);">Max Drawdown</strong><div style="font-size:11px;color:var(--fg-3);">Peak-to-trough risk</div></div>
+        </div>
+      </div>
+      <div style="background:var(--grad-soft);border:1px solid rgba(231,53,65,0.18);border-radius:var(--radius-md);padding:16px;">
+        <p style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--brand-crimson);margin-bottom:10px;">Risk Ratios</p>
+        <div class="m-grid3" style="gap:10px;">
+          <div style="background:#fff;padding:10px;border-radius:8px;"><strong style="font-size:12px;color:var(--fg-1);">Sharpe</strong></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;"><strong style="font-size:12px;color:var(--fg-1);">Sortino</strong></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;"><strong style="font-size:12px;color:var(--fg-1);">Calmar</strong></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;"><strong style="font-size:12px;color:var(--fg-1);">Alpha</strong></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;"><strong style="font-size:12px;color:var(--fg-1);">Beta</strong></div>
+          <div style="background:#fff;padding:10px;border-radius:8px;"><strong style="font-size:12px;color:var(--fg-1);">Omega</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="m-grid3">
+      <div class="m-card" style="text-align:center;"><div class="m-icon-box" style="margin:0 auto 10px;"><i data-lucide="trending-up"></i></div><h3>Equity Curve Evaluation</h3><p>Inspect P&amp;L trajectories across Train, Validation, and Out-of-Sample periods.</p></div>
+      <div class="m-card" style="text-align:center;"><div class="m-icon-box" style="margin:0 auto 10px;"><i data-lucide="folder-open"></i></div><h3>Trade-Level Attribution</h3><p>Examine individual trade timing, duration, and position sizing dynamics.</p></div>
+      <div class="m-card" style="text-align:center;"><div class="m-icon-box" style="margin:0 auto 10px;"><i data-lucide="columns"></i></div><h3>Side-by-Side Comparison</h3><p>Evaluate risk-adjusted return trade-offs across strategy configurations.</p></div>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 55.5%;"></div>
+</div>
+
+<!-- ══ 06 LIVE DEPLOYMENT ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">06 / 09</span>
+  </div>
+  <div class="m-body">
+    <h2 class="h2-m">From Research to <span class="gt">Live Execution in One Click</span></h2>
+    <p class="sub-m">Deploy validated portfolios directly into live trading environments via automated live execution.</p>
+    <div class="two-col-7-5">
+      <div class="m-tl">
+        <div class="m-tl-item"><div class="m-tl-marker">1</div><div class="m-tl-body"><h3>Select Validated Portfolio</h3><p>Choose top-performing configurations verified across out-of-sample evaluation stages.</p></div></div>
+        <div class="m-tl-item"><div class="m-tl-marker">2</div><div class="m-tl-body"><h3>Instantiate Live Execution</h3><p>Connect directly to your broker integration. Live portfolios automatically inherit precise parameters and trading logic.</p></div></div>
+        <div class="m-tl-item"><div class="m-tl-marker">3</div><div class="m-tl-body"><h3>Real-Time Execution Control</h3><p>Track order flows, execution logs, and live portfolio P&amp;L within the central workspace.</p></div></div>
+        <div class="m-tl-item"><div class="m-tl-marker">4</div><div class="m-tl-body"><h3>Scale Strategy Fleet</h3><p>Deploy and monitor multiple live executions simultaneously across disparate asset classes.</p></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="stat-m"><span class="num">Continuous</span><span class="lbl">Research-to-Execution Loop</span></div>
+        <div class="stat-m"><span class="num">Enterprise</span><span class="lbl">Broker Integration Architecture</span></div>
+        <div class="m-hbox"><strong>Broker Integration.</strong> Native broker API links enable direct execution routing with minimal latency.</div>
+      </div>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 66.6%;"></div>
+</div>
+
+<!-- ══ 07 FINTELLIGENT AI OPERATOR ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">07 / 09</span>
+  </div>
+  <div class="m-body">
+    <h2 class="h2-m">Autonomous Platform Control via <span class="gt">Fintelligent</span></h2>
+    <p class="sub-m">An AI platform operator that reads data, builds strategies, operates the UI, and executes complex quantitative workflows in plain English.</p>
+    
+    <div style="display:grid; grid-template-columns: 5fr 7fr; gap: 24px; align-items: center;">
+      <!-- Left Column: Feature Cards -->
+      <div style="display:flex; flex-direction:column; gap: 12px;">
+        <div class="m-card" style="display:flex; align-items:flex-start; gap:14px;">
+          <div class="m-icon-box"><i data-lucide="line-chart"></i></div>
+          <div>
+            <h3>Reads your data</h3>
+            <p>Any metric, any equity curve, any trade, any study: answered in plain English with sources.</p>
+          </div>
+        </div>
+
+        <div class="m-card" style="display:flex; align-items:flex-start; gap:14px;">
+          <div class="m-icon-box"><i data-lucide="code-2"></i></div>
+          <div>
+            <h3>Generates strategies</h3>
+            <p>Describe an idea: Fintelligent writes the Python, configures parameters, and stages the form for review.</p>
+          </div>
+        </div>
+
+        <div class="m-card" style="display:flex; align-items:flex-start; gap:14px;">
+          <div class="m-icon-box"><i data-lucide="compass"></i></div>
+          <div>
+            <h3>Operates the UI</h3>
+            <p>"Open study 8 and clone it." "Switch to Markets." Every page and action reachable by intent.</p>
+          </div>
+        </div>
+
+        <div class="m-card" style="display:flex; align-items:flex-start; gap:14px;">
+          <div class="m-icon-box"><i data-lucide="shield-check"></i></div>
+          <div>
+            <h3>Always transparent</h3>
+            <p>Every tool call is visible. Every irreversible action waits for your explicit confirmation.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Recreated Interactive Chat UI Mockup -->
+      <div class="chat-window">
+        <div class="chat-header">
+          <div class="chat-header-left">
+            <div class="chat-sparkle-avatar">
+              <i data-lucide="sparkles"></i>
+            </div>
+            <div class="chat-title-group">
+              <h4>Fintelligent</h4>
+              <span>Connected · Sonnet 4.6 · 12.4k tokens</span>
+            </div>
+          </div>
+          <div class="chat-status-online">online</div>
+        </div>
+
+        <div class="chat-body">
+          <!-- User Prompt -->
+          <div class="chat-user-bubble">
+            Run 500 optimization trials on my momentum strategy. Use the Sharpe fitness and the SP500 cluster.
+          </div>
+
+          <!-- AI Response 1: Plan & Confirmation -->
+          <div class="chat-ai-row">
+            <div class="chat-sparkle-avatar" style="width:22px; height:22px;">
+              <i data-lucide="sparkles" style="width:11px; height:11px;"></i>
+            </div>
+            <div class="chat-ai-content">
+              <span class="chat-pill-tag">CREATE_STUDY</span>
+              <div class="chat-card-box">
+                <strong>Plan</strong>
+                Launch study with: strategy = MomentumV3, fitness = Sharpe, cluster = SP500 (2019–2025), 500 trials, train/val/OOS split 70/15/15.
+              </div>
+              <div class="chat-confirm-box">
+                <i data-lucide="check"></i>
+                <span>Awaiting confirmation: irreversible action</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirm Action Button -->
+          <button class="chat-btn-confirm">Confirm.</button>
+
+          <!-- AI Response 2: Study Launched -->
+          <div class="chat-ai-row">
+            <div class="chat-sparkle-avatar" style="width:22px; height:22px;">
+              <i data-lucide="sparkles" style="width:11px; height:11px;"></i>
+            </div>
+            <div class="chat-ai-content">
+              <span class="chat-pill-tag success">✓ STUDY.STATUS</span>
+              <div class="chat-card-box">
+                <strong>Study #142 launched</strong>
+                312 / 500 trials complete. Best Sharpe 2.41 (train) → 1.94 (OOS). Live progress on the Studies page.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-footer-bar">
+          <div class="chat-input-fake">Ask anything: "explain study 142 vs 138"</div>
+          <div class="chat-send-btn">
+            <i data-lucide="arrow-up"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 77.7%;"></div>
+</div>
+
+<!-- ══ 08 STRATEGIC ADVANTAGE ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">08 / 09</span>
+  </div>
+  <div class="m-body">
+    <h2 class="h2-m">The <span class="gt">Fintela Advantage</span>: Strategic Impact</h2>
+    <p class="sub-m">Transformational capabilities designed to maximize capital efficiency, accelerate throughput, and ensure strategic agility.</p>
+    
+    <div class="m-grid2" style="gap:20px;">
+      <div class="qual-card">
+        <div class="q-tag">Speed-to-Market Acceleration</div>
+        <h3>Rapid Concept-to-Execution Deployment</h3>
+        <p>Transition from research hypothesis to live execution seamlessly without spending months engineering bespoke data pipelines or broker execution bridges.</p>
+      </div>
+      <div class="qual-card">
+        <div class="q-tag">Zero Infrastructure Overhead</div>
+        <h3>Serverless Quantitative Architecture</h3>
+        <p>Eliminate cloud maintenance costs, DevOps overhead, and fragmented vendor subscriptions through a single institutional software platform.</p>
+      </div>
+      <div class="qual-card">
+        <div class="q-tag">High-Throughput Research</div>
+        <h3>Automated Parameter Optimization</h3>
+        <p>Explore complex, high-dimensional parameter spaces systematically without manual script modifications or localized execution bottlenecks.</p>
+      </div>
+      <div class="qual-card">
+        <div class="q-tag">Disciplined Capital Protection</div>
+        <h3>Multi-Stage Out-of-Sample Integrity</h3>
+        <p>Enforce strict statistical separation across training, validation, and forward-testing datasets to minimize curve-fitting risk prior to capital deployment.</p>
+      </div>
+    </div>
+    
+    <div style="background:var(--grad-soft);border:1px solid rgba(231,53,65,0.2);border-radius:var(--radius-md);padding:18px;text-align:center;">
+      <h3 style="font-size:18px;font-weight:800;color:var(--fg-1);margin-bottom:4px;">Unified Institutional Engine</h3>
+      <p style="font-size:13px;color:var(--fg-2);">Institutional capability engineered to maximize research bandwidth and operational agility.</p>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 88.8%;"></div>
+</div>
+
+<!-- ══ 09 CLOSING SLIDE ══ -->
+<div class="slide-m">
+  <div class="m-logo-strip">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAABEVBMVEVHcExON1FBXIenkm85QVhwUlwxM1PouUHOrVorYI1DYYquPE+jkWO4n1nHo1Letk3Cq2/bsUvTrE7Gq2KEaUPjwlzkuE0yW4ZDPlU6XYYwMU8qLk6VfjyMQ1lNPl7ivFBeRGJpVXWzP1AAgvVork7it0uTTGKukEHQOUO9npi/Qk7arkztN3suYpTtvjvaN0RfW3s3YpFHQGBxSGChQlnwwTu5P1HruzzLOkvnNUE3OFhCYItRX4TovEHltULfsURbRWJxVnTYqUziNkSMRVqigzaNUGepSFznKz2XZj+3ckyFR1x9UG7RQUbebz7lk37lIz69R1OngGe1VEPmsGXmt3HYrz3ejkq4lkDFojrjfkoysGWlAAAALHRSTlMAP3X5Dh5j/TJo+VZrUt6dEK7IHqQ+baQuRJd8guDchNmS7AMFiKrydgi8v0hROAYAAAESSURBVCiRvdDXcoJAGIbhVUHEXtJ7QnomlCSUVRFDMajY0pP7v5D8G2RAhRzmPdpvntkZWIT+ofXcH6gzyXYo8xtJxukyrydhRZV59Szeqh0ekLmKxRqgqjKVOGsY/s1ONQbrhv46mbzpndqq5cz38dT1p9+M0VjB8tfYxdgShA/jZtlKnwOMsSCMNM00lh/xwrEsC19ezxRlZtYXreiMBAjRT9DAXLzqvGhQAaHzXs/znstR2+sr0AmcKO8RypRCO+0/kArkfCySMiGuDYe2be/7QxTbUDEw+v63lL/S7RaUD/CgSzoKZr4lQZvz1bwjbQW4LUm30HztNKFs+AlpYmywUrtZKvJjHMWyNEqKS5RIP1aSLZzz5ECeAAAAAElFTkSuPxM=" alt="Fintela Icon" width="28" height="28" style="object-fit: contain;"/>
+    <span class="m-counter">09 / 09</span>
+  </div>
+  <div class="m-body" style="align-items: center; text-align: center;">
+    <h1 class="h1-m" style="text-align: center; font-size: 72px;">Thank You for Your <span class="gt">Attention.</span></h1>
+    <p class="sub-m" style="text-align: center; font-size: 20px; max-width: 700px; margin-top: 8px;">
+      Building the future of intelligent quantitative investing.
+    </p>
+
+    <div style="display: flex; gap: 24px; margin-top: 36px;">
+      <a href="https://fintela.io" target="_blank" class="contact-card">
+        <div class="c-icon"><i data-lucide="globe"></i></div>
+        <div class="c-info" style="text-align: left;">
+          <label>Website</label>
+          <span>fintela.io</span>
+        </div>
+      </a>
+
+      <a href="https://www.linkedin.com/company/fintela" target="_blank" class="contact-card">
+        <div class="c-icon"><i data-lucide="linkedin"></i></div>
+        <div class="c-info" style="text-align: left;">
+          <label>LinkedIn</label>
+          <span>Fintela Financial Intelligence</span>
+        </div>
+      </a>
+    </div>
+  </div>
+  <div class="m-progress" style="width: 100%;"></div>
+</div>
+
+</div><!-- /track -->
+
+<!-- Navigation Dots -->
+<div class="m-dots" id="dots">
+  <div class="dot active" data-idx="0"></div><div class="dot" data-idx="1"></div><div class="dot" data-idx="2"></div>
+  <div class="dot" data-idx="3"></div><div class="dot" data-idx="4"></div><div class="dot" data-idx="5"></div>
+  <div class="dot" data-idx="6"></div><div class="dot" data-idx="7"></div><div class="dot" data-idx="8"></div>
+</div>
+
+<!-- Navigation Keyboard Hint -->
+<div class="nav-hint" id="navHint">
+  Use <kbd>↑</kbd> <kbd>↓</kbd> or scroll to navigate
+</div>
+
+</div><!-- /deck-vp -->
+
+<script src="https://unpkg.com/lucide@0.439.0/dist/umd/lucide.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() { 
+  if (window.lucide) { lucide.createIcons(); } 
+});
+
+(function() {
+  var TOTAL = 9;
+  var current = 0;
+  var track = document.getElementById('track');
+  var dots = document.querySelectorAll('.dot');
+
+  function goTo(n, animate) {
+    current = Math.max(0, Math.min(TOTAL - 1, n));
+    track.style.transition = (animate === false) ? 'none' : 'transform 480ms cubic-bezier(0.4, 0, 0.2, 1)';
+    track.style.transform = 'translate3d(0,' + (-current * window.innerHeight) + 'px,0)';
+    dots.forEach(function(d, i) { d.classList.toggle('active', i === current); });
+  }
+
+  /* Keyboard Controls */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); goTo(current + 1, true); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goTo(current - 1, true); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0, true); }
+    if (e.key === 'End') { e.preventDefault(); goTo(TOTAL - 1, true); }
+  });
+
+  /* Mouse Wheel Controls */
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e) {
+    if (wheelLock) return;
+    if (Math.abs(e.deltaY) < 20) return;
+    wheelLock = true;
+    if (e.deltaY > 0) goTo(current + 1, true);
+    else goTo(current - 1, true);
+    setTimeout(function() { wheelLock = false; }, 600);
+  }, { passive: true });
+
+  /* Navigation Dot Clicks */
+  dots.forEach(function(d) {
+    d.addEventListener('click', function() {
+      var idx = parseInt(d.dataset.idx, 10);
+      goTo(idx, true);
+    });
+  });
+
+  /* Window Resize Handling */
+  window.addEventListener('resize', function() { goTo(current, false); });
+
+  /* Initialize */
+  goTo(0, false);
+})();
+</script>
+</body>
+</html>
