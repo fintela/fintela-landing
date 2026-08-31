@@ -11,13 +11,13 @@ published: true
 
 The asset management industry is undergoing rapid transformation driven by growing data complexity, tighter margins, and rising client expectations for transparency and performance. Solutions that can turn that complexity into clear, actionable insight are becoming essential rather than optional.
 
-Being shortlisted by Hedgeweek — a leading voice in hedge fund industry coverage — is an acknowledgment from the industry itself that Fintela is building in the right direction: solutions that don't just add features, but meaningfully improve how investment decisions are made.
+Being shortlisted by Hedgeweek is an acknowledgment from the industry itself that Fintela is building in the right direction: solutions that don't just add features, but meaningfully improve how investment decisions are made.
 
 ## What This Recognition Reflects
 
-- **Innovation** — a genuinely new approach to solving a real problem for asset managers, not an incremental update to existing tools.  
-- **Client impact** — solutions designed around real workflows, helping teams move faster and make more informed decisions.  
-- **Industry validation** — recognition from an established, respected voice in hedge fund and asset management coverage.
+- **Innovation** a genuinely new approach to solving a real problem for asset managers, not an incremental update to existing tools.  
+- **Client impact** solutions designed around real workflows, helping teams move faster and make more informed decisions.  
+- **Industry validation** recognition from an established, respected voice in hedge fund and asset management coverage.
 
 ## The Road Ahead
 
