@@ -4,384 +4,309 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 4
 published: true
-updated: 2026-08-20
-summary: Comparative analysis across your whole book of portfolio groups — equity, metrics, holdings and trades.
-keywords: portfolio manager, book, comparative, equity, metrics, holdings, trades, groups, toolbar, filters
+updated: 2026-09-01
+summary: Compare your whole book of portfolio groups side by side — performance, metrics, holdings and trades — then drill into any one group for a full analysis.
+keywords: portfolio manager, portfolio groups, comparative analysis, equity curve, metrics, holdings, trades, benchmark, rebalancing
 ---
 
-Portfolio Manager at `/analysis/portfolio-manager` is where you read your whole book of [portfolio groups](/docs/portfolio-groups) side by side: how they performed, how their numbers compare, what they hold and how they trade. It is one filtered set of groups seen through four tabs, driven by a single toolbar that sits above all of them — so the Equity chart and the Metrics matrix can never disagree about which groups they describe. Drilling into one group re-points those same four views at that group and its members, and adds five surfaces only a group has.
+Portfolio Manager is where you look at your whole book of [portfolio groups](/docs/portfolio-groups) side by side — how each one has performed, how their numbers stack up against each other, what they're holding right now, and how they trade. Four views — Equity, Metrics, Holdings and Trades — all look at the same set of groups at the same time, controlled by one shared set of filters, so a chart and a table can never tell two different stories about the same comparison. Click into any single group and those same four views refocus on that group and the managed portfolios inside it, with several extra views that only make sense once you're looking at one group.
 
-Portfolio Manager is the **analysis** half of portfolio groups. The administrative half — creating groups, editing membership, allocation weights, rebalance cadence and broker configuration — lives at `/analysis/portfolio-groups` and is documented in [Portfolio Groups](/docs/portfolio-groups).
+Portfolio Manager is the analysis side of portfolio groups — you come here to read results. Building groups, choosing which portfolios belong in each one, setting allocation weights, deciding how often a group rebalances, and connecting it to a broker is done on the [Portfolio Groups](/docs/portfolio-groups) page instead.
 
-> [!NOTE] The names invert the old URLs
-> `/analysis/portfolio-manager` is the analysis hub. `/analysis/portfolio-groups` is the administrative registry. Old links that used `portfolio-manager` for administration are redirected — see [Retired routes and redirects](#retired-routes-and-redirects).
+> [!NOTE] Two related pages, two purposes
+> Portfolio Manager is where you analyze your groups. Portfolio Groups is where you build and manage them. If an old bookmark seems to have the two the wrong way round, you'll be taken to the right page automatically.
 
 ## What the section compares
 
-The subject of every book-level view is a **portfolio group**. A group is built from promoted portfolios, so the section has nothing to show until you have promoted at least one trial and put it in a group. Until then every tab renders:
+Every view in this section compares **portfolio groups** — collections of promoted portfolios you assembled on the [Portfolio Groups](/docs/portfolio-groups) page. There's nothing to compare until you've promoted at least one ranked trial from the [Portfolios dashboard](/docs/portfolios-dashboard) and added it to a group; until then, every tab shows the same simple message:
 
 > No portfolio groups yet. Promote ranked trials from the Portfolios dashboard to build your first one.
 
-Portfolio Manager appears in the **Analysis** section of the sidebar, directly after Portfolios. It carries no entitlement lock — there is no blurred preview or "Buy tokens" gate on any of its routes. Every backend handler behind it requires the `portfolios:read` realm permission and scopes results to your organization.
+Portfolio Manager sits in the Analysis section of the sidebar, right after Portfolios. Unlike some parts of the platform, it isn't held behind a paid plan or a token balance — if you have portfolio groups, you can compare them here. You'll only ever see your own organization's groups; nobody else's book is visible to you, and yours isn't visible to them.
 
 ## The section tab bar
 
-The bar above the toolbar holds **two** tabs, not four, and both are dropdowns of real links (so open-in-new-tab works on every item). Its `nav` element is labelled **Portfolio Manager sections**.
+At the very top of the section sits a small tab bar with two tabs — not the four you might expect:
 
 | Tab | When it appears | Contains |
 |---|---|---|
-| **Portfolio Manager** | Always | **Equity**, **Metrics**, **Holdings**, **Trades** |
-| **Portfolio Group Analysis** | Only once you open a group | That group's nine sub-views |
+| **Portfolio Manager** | Always | Equity, Metrics, Holdings, Trades |
+| **Portfolio Group Analysis** | Only after you open a group | That group's own set of views |
 
-The second tab slides in last when you drill into a group and carries a dismiss control labelled **Close Portfolio Group Analysis**. Closing it returns you to whichever book-level tab and filter state you opened the group from, falling back to the section root when there is no recorded origin. Neither tab carries a count badge.
+Each tab is a dropdown, so you can jump straight to any view inside it — including opening one in a new browser tab. The Portfolio Group Analysis tab appears the moment you drill into a group, and closing it takes you back to whichever book-level view and filters you came from.
 
-Book-level tab links carry the current query string **minus** the `from` return address; group sub-tab links carry the whole query string including `from`.
+## Views in this section
 
-## Routes
+Portfolio Manager has four book-level views, plus nine additional views once you open a single group:
 
-| Path | View |
-|---|---|
-| `/analysis/portfolio-manager` | **Equity** — the landing tab, on the bare route |
-| `/analysis/portfolio-manager/metrics` | **Metrics** |
-| `/analysis/portfolio-manager/holdings` | **Holdings** |
-| `/analysis/portfolio-manager/trades` | **Trades** |
-| `/analysis/portfolio-manager/:basketId/profile` | One group — **Profile** (the landing sub-view) |
-| `/analysis/portfolio-manager/:basketId/equity` | One group — **Equity** |
-| `/analysis/portfolio-manager/:basketId/metrics` | One group — **Metrics** |
-| `/analysis/portfolio-manager/:basketId/holdings` | One group — **Holdings** |
-| `/analysis/portfolio-manager/:basketId/trades` | One group — **Trades** |
-| `/analysis/portfolio-manager/:basketId/robustness` | One group — **Robustness** |
-| `/analysis/portfolio-manager/:basketId/ideas` | One group — **Ideas** |
-| `/analysis/portfolio-manager/:basketId/news` | One group — **News** |
-| `/analysis/portfolio-manager/:basketId/operations` | One group — **Operations** |
+**Book-level (comparing your whole book):**
+- **Equity** — the view you land on; performance curves for every group
+- **Metrics** — a side-by-side table of key numbers
+- **Holdings** — what each group currently owns
+- **Trades** — how each group has been trading
 
-> [!WARNING] Equity has no `/equity` URL
-> Equity is the bare route. `/analysis/portfolio-manager/equity` exists only as a redirect back to it. The `:basketId` route sits at the same depth, so every retired section segment has to be claimed by a redirect or it would be read as a group whose id is that word.
+**Group-level (once you open one group):**
+- Profile, Equity, Metrics, Holdings, Trades, Robustness, Ideas, News, Operations
+
+Each view has its own address, so you can bookmark it, share it with a colleague, or come back later to exactly the comparison you were looking at.
 
 ## One toolbar, four windows
 
-There is exactly one filter bar in the section, rendered by the layout **above** the router outlet, with the accessible label **Portfolio Manager filters**. That placement is the design: the four tabs are four windows onto the same filtered set, so no tab owns a filter of its own and switching tabs never resets anything.
+There is exactly one filter bar for the whole section, sitting above the four book-level views. That's a deliberate design choice: Equity, Metrics, Holdings and Trades are four different windows onto the same filtered comparison, so no single view has its own private filters, and switching between them never resets what you were looking at.
 
 ```text
-  ┌─────────────────────────────────────────────────────────┐
-  │  Portfolio Manager ▾        Portfolio Group Analysis ▾ x │   section tabs
-  ├─────────────────────────────────────────────────────────┤
-  │  Timeframe · Top N · Rank by · Benchmark · Add group     │   ONE toolbar
-  │                              "8 of 23"   [Reset]        │
-  ├─────────────────────────────────────────────────────────┤
-  │                                                         │
-  │   Equity  |  Metrics  |  Holdings  |  Trades            │   the outlet
-  │   (whichever route is mounted)                          │
-  └─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  Portfolio Manager ▾        Portfolio Group Analysis ▾ x │  ← section tabs
+├─────────────────────────────────────────────────────────┤
+│  Timeframe · Top N · Rank by · Benchmark · Add group     │  ← one shared toolbar
+│                              "8 of 23"        [Reset]    │
+├─────────────────────────────────────────────────────────┤
+│   Equity  |  Metrics  |  Holdings  |  Trades             │  ← whichever view is open
+└─────────────────────────────────────────────────────────┘
 ```
 
-The toolbar wraps onto extra rows when it does not fit; it is not a horizontal scroller.
+If the toolbar doesn't fit on one line, it wraps onto a second row rather than making you scroll sideways.
 
 ### Toolbar controls
 
-| Control | Label | Behaviour |
-|---|---|---|
-| Timeframe | **Timeframe** | Ten presets plus a custom range. Custom dates are capped by the book's `as_of` date. |
-| Metric (Metrics tab only) | **Metric** | Replaces Timeframe in the same slot when Metrics is in across-timeframes mode. |
-| Top N | **Top N** | Presets **Top 5 / Top 10 / Top 25 / Top 50**, then **Custom…** (secondary line **Any number up to 50**) and **Show all ({shown})**. When no cap is set the field reads **All ({shown})**. |
-| Ranking metric | **Rank by** | Searchable list from the server's metric catalog; search placeholder **Search metrics**. |
-| Benchmark | — | Ticker picker with an exchange filter and an eye toggle. |
-| Add group | **Add group** | Placeholder **Add a group…**, search **Search groups**, chip **{count} added**. Pins a group into scope past the Top N cut. **Hidden at group scope.** |
-| Counter | — | **{shown} of {total}** at book scope; **{shown} of {total} subjects** at group scope. |
-| Reset | **Reset** | Appears only when something differs from the defaults; restores every toolbar control. |
+| Control | What it's for |
+|---|---|
+| **Timeframe** | Choose the comparison window: ten quick presets, or a custom date range. A custom range can't extend past your book's most recent data. |
+| **Metric** (Metrics tab only) | Replaces Timeframe when you switch the Metrics table to compare across timeframes instead of across metrics. |
+| **Top N** | Limit how many groups are compared at once — Top 5 / 10 / 25 / 50, a custom number up to 50, or show everything in scope. |
+| **Rank by** | Pick which metric decides the order groups are ranked in — searchable across [Fintela's full metrics list](/docs/metrics-reference). |
+| **Benchmark** | Choose a ticker to compare against, with an exchange filter and a toggle to show or hide it on the chart. |
+| **Add group** | Pin a specific group into the comparison even if it would otherwise be cut off by Top N. Not shown once you're inside a single group. |
+| Counter | Shows how many groups are currently shown out of your total. |
+| **Reset** | Appears only once you've changed something, and restores every control to its default. |
 
-The ten Timeframe presets, in menu order, are **1W · 2W · 1M · 3M · 6M · YTD · MTD · 1Y · Since inception · Custom…**. "Custom…" opens a popover with **From** and **To** fields.
+The ten Timeframe presets are: 1 week, 2 weeks, 1 month, 3 months, 6 months, year-to-date, month-to-date, 1 year, since inception, or a custom range.
 
-> [!NOTE] `QTD` and `3Y` are not toolbar presets
-> Both are real matrix columns and remain reachable through the Metrics tab's across-timeframes mode, but the toolbar deliberately offers ten presets and no more.
+> [!NOTE] Quarter-to-date and 3-year views live inside Metrics
+> They're not on the toolbar's quick-pick list, but you can still see them as columns when you switch the Metrics table to compare across timeframes instead of across metrics.
 
-### Which controls each tab enables
+### Which controls each view enables
 
-A control a tab does not use is greyed with a tooltip, never removed, so the bar's geometry is identical on every tab.
+A control a view doesn't use is greyed out rather than hidden, so the toolbar always looks the same. Hover over a greyed control to see why it's off.
 
-| Tab | Enabled controls |
+| View | Active controls |
 |---|---|
 | Equity | Timeframe, Top N, Rank by, Benchmark |
-| Metrics (across metrics) | Timeframe, Top N, Rank by, Benchmark |
-| Metrics (across timeframes) | **Metric** (in the Timeframe slot), Top N, Rank by, Benchmark |
+| Metrics (comparing metrics) | Timeframe, Top N, Rank by, Benchmark |
+| Metrics (comparing timeframes) | Metric (in the Timeframe slot), Top N, Rank by, Benchmark |
 | Holdings | Timeframe, Top N, Rank by |
 | Trades | Timeframe, Top N, Rank by, Benchmark |
 
-The two disabled tooltips, verbatim:
+Two examples of what you'll see on hover:
+- On Holdings, Benchmark is disabled: *"A benchmark has no holdings to compare against."*
+- On Metrics' across-timeframes mode, Timeframe is disabled: *"Every timeframe is a column in this mode — there is no single one to pick."*
 
-- Holdings → Benchmark: **"A benchmark has no holdings to compare against."**
-- Metrics (across timeframes) → Timeframe: **"Every timeframe is a column in this mode — there is no single one to pick."**
+### Sharing and returning to a view
 
-### Toolbar state in the URL
+Every choice that changes *which* groups you're comparing, or *what order* they're ranked in — timeframe, Top N, ranking metric, benchmark, pinned groups, hidden groups — is captured in the page's own link. Copy the address from your browser and send it to a colleague, or bookmark it, and it reopens showing exactly the comparison you had on screen.
 
-Everything that changes *which* groups you see or *in what order* lives in the query string, so a link reproduces exactly what you were looking at. Defaults are omitted from the URL.
+Choices that only change *how* the same groups are drawn — which line the Equity chart is plotting, how the Metrics table is oriented, how Holdings groups things, which lens Trades is showing — aren't part of the link, and reset to their defaults each time you open the view.
 
-| Parameter | Meaning | Default and parsing |
-|---|---|---|
-| `tf` | Timeframe | `2w`. A range is `tf=custom:YYYY-MM-DD:YYYY-MM-DD`; anything malformed falls back to `2w`. |
-| `top` | Top N cut | Absent means "show all". A value below 1, or one that is not a number, degrades to "all"; anything above `50` is clamped to `50`. |
-| `rank` | Ranking metric | `total_return`. |
-| `bm` | Benchmark | A positive ticker id, or the literal `none` for an explicit clear. Absent means the platform default benchmark resolves. |
-| `pin` | CSV of group ids pinned into scope past the Top N cut | Empty. Pinned groups appear in rank order, not appended. |
-| `off` | CSV of unchecked ids | Empty. |
+By default, the section opens on a two-week window, ranked by Total Return, with no benchmark filter and every group shown.
 
-Everything that changes only *how* the same groups are drawn is **local** state and is not in the URL: the Equity Y-axis metric and its rolling window, the Metrics orientation, the Holdings dimension, weight mode, date scrub, drill and lens, and the Trades lens and ledger list.
-
-> [!TIP] The default Rank by metric is `total_return`, not Sharpe
-> The section opens on a two-week window — roughly ten observations — and the backend's sufficiency gate asks for at least 20 observations for most metrics: `total_return` needs 2, the drawdown family 3, `sharpe_ratio` 20, and skew and excess kurtosis 30. Ranking by Sharpe on the first paint would make every row unrankable and the Top N cut arbitrary.
+> [!TIP] Why the default ranking is Total Return, not Sharpe
+> The section opens on a two-week window, which usually isn't enough trading days for a statistic like the Sharpe ratio to be considered reliable — some metrics simply need more history than others before Fintela will show a computed value for them. Opening on Sharpe by default would leave most rows unranked before you'd even started. Total Return only needs a couple of data points, so it's usable right away; switch Rank by to any other metric once you've picked a longer window.
 
 ### Top N, pins and unchecking
 
-Three different mechanisms decide what you see, and they are not interchangeable.
+Three different controls decide what you see, and they aren't interchangeable.
 
-| Mechanism | Effect on the table | Effect on charts and derived numbers |
+| Control | Effect on the table | Effect on charts and calculations |
 |---|---|---|
-| **Top N** | Rows below the cut are removed from the table | Removed |
-| **Add group** (`pin`) | Adds a group back in, at its rank position | Included |
-| **Unchecking a row** (`off`) | Row stays, greyed at half opacity | Excluded from every derivation |
+| **Top N** | Groups below the cutoff are removed from the table entirely | Removed from every chart and figure |
+| **Add group** (pin) | Adds a specific group back into view, at its normal rank position | Included everywhere |
+| **Unchecking a group** | The row stays, dimmed to half opacity | Left out of every chart, table and calculation |
 
-Unchecking is subtractive and uncapped — everything in scope is compared unless you uncheck it — and it is shared across all four tabs. A **{count} groups hidden · Show all** strip appears whenever anything in scope is unchecked; it counts only unchecked rows, never rows the Top N cut removed.
+Unchecking is separate from Top N and applies across all four views — uncheck a group on Equity and it stays unchecked on Metrics, Holdings and Trades too. Whenever anything is unchecked, a small strip appears letting you show everything again; it only affects groups you personally unchecked, not ones removed by Top N.
 
-> [!WARNING] The Top N control's "Show all" is not unbounded
-> Top N's **Show all ({shown})** option resolves to at most 50 subjects and says so: its secondary line reads **Max 50 compared at once**, or **First 50 of {total} — max 50 compared at once** when the book is larger. It is a different control from the hidden-groups strip's **Show all**, which only re-checks unchecked rows. At book scope the Holdings tab compares at most 12 regardless of the cut.
+> [!WARNING] "Show all" still has a ceiling
+> Top N's "Show all" option compares at most 50 groups at once, and says so on screen. That's a different control from the hidden-groups strip's "show all," which only brings back groups you unchecked. On the whole-book Holdings view, the practical limit is lower still — at most 12 groups can be compared side by side at once, regardless of your Top N setting.
 
-**Custom…** opens a small popover whose field is labelled **Top N**, under the helper text **1–50**. The field accepts digits only, at most three of them; Enter commits and Escape cancels. The 50 ceiling is enforced again on the URL write and once more when the cut is applied, so a hand-edited `?top=800` cannot outrun it.
+Choosing "Custom…" opens a small field where you can type any number from 1 to 50 to set your own cutoff.
 
 ## Equity tab
 
-The section's landing view, on the bare route. It answers "how did they do" — against each other and against the market — over the toolbar's window.
+The view you land on by default. It answers a simple question: how has each group done, on its own and against the market, over the period you've selected?
 
-**Comparative chart.** One curve per checked subject, in the subject's own colour. Its header carries a **Y axis** picker grouped as:
+**Comparative chart.** One line per checked group, each in its own color. Above the chart, a Y-axis picker lets you choose what's plotted:
 
-- **Curve** — **Equity** (*"The portfolio's value over time, rebased so every curve starts together."*) and **Drawdown** (*"How far below its own peak the portfolio is, day by day."*)
-- then every metric in the server's catalog, grouped by **Performance / Risk / Risk-adjusted / Recovery / Distribution / Benchmark**, excluding the four trade aggregates (`trade_win_rate`, `trade_profit_factor`, `avg_trade_duration`, `expectancy`), which have no curve to roll.
+- **Equity** — each group's value over time, rebased so every line starts at the same point for a fair comparison
+- **Drawdown** — how far below its own peak each group currently sits, day by day
+- Any other metric from [Fintela's full metrics list](/docs/metrics-reference), grouped into Performance, Risk, Risk-adjusted, Recovery, Distribution and Benchmark categories (trade-only figures like win rate aren't offered here, since they don't have a meaningful day-by-day line to draw)
 
-Every axis except Equity and Drawdown takes a rolling **Window** input. It defaults to 10, and its minimum is the metric's `min_window` reported by the server — the same sufficiency gate the Metrics matrix uses, so a rolling statistic here can never contradict the matrix cell for the same window. A **min {min} for this metric** warning sits beside the field whenever the value is below that floor. Chart notes include **thinned to fit** when the series was downsampled and **{names} has no value over this window** for subjects that fall short of it; with nothing checked the card reads **Every group is unchecked — check one to draw it.**
+Metrics other than Equity and Drawdown are shown as a rolling figure over a window you can adjust — for example, a 10-day rolling Sharpe ratio. Each metric has a practical minimum window before Fintela treats it as reliable enough to show; picking something narrower triggers a small warning. If a group's own history is too short to cover the window you picked, the chart says so rather than guessing at a number.
 
-A **Lifecycle:** legend under the chart marks **Train**, **Validation**, **Out-of-sample** and **Promoted** on each curve.
+Underneath the chart, a lifecycle legend marks which part of each line came from training, validation, out-of-sample testing, or live trading since promotion — so at a glance you can see how much of a group's track record actually happened after it went live. For more on reading charts across Fintela, see [Visualizations & Plots](/docs/visualizations).
 
-**Operational rail** (book scope only, hidden on narrow viewports): a **Needs attention** card and a **Rebalances** card. Needs attention lists groups with drift, stale data or a failed refresh; its **Update all ({count})** action acts only on `stale` and `refresh_failed` items, because a refresh does not clear drift. The empty state is **All clear — nothing needs attention.** Rebalances shows **Next: {date}** with **Upcoming** and **Recent** sections, empty state **No rebalances scheduled.**
+**Sidebar** (visible on wider screens, only when comparing your whole book): two cards sit alongside the chart —
 
-**Subject table** (`aria-label` **Portfolio groups**), capped at 42% of the pane:
+- **Needs attention** lists groups with data drift, stale prices, or a failed update, with a one-click "Update all" action for the ones a refresh can actually fix
+- **Rebalances** shows upcoming and recent rebalancing dates across your groups, so you know what's about to trade
 
-| Column | Header | Shown |
-|---|---|---|
-| Rank | **#** | Always |
-| Name | **Name** | Always — with a swatch in the curve's colour |
-| Status | **Status** | Book scope only — chip **LIVE** or **BACKTEST** |
-| Health | **Health** | Book scope only — badge **Healthy**, **Stale**, **Drift** or **Failed** |
-| Value | **Value** | Always — the current Y axis's latest value |
-| Benchmark delta | **vs Benchmark** | When a benchmark is drawn and present |
-| Members | **Members** | Book scope only |
-| Next rebalance | **Next** | Book scope only — falls back to **Static (no rebalance)** |
+**Subject table**, sitting below the chart:
 
-Rows arrive pre-sorted; the value's colour follows the metric's declared direction, never its sign, so a deepening drawdown is never painted green. Row checkboxes and the header select-all write the whole selection in one URL update. The caption above the table reads **{shown} shown** or **{shown} shown · {hidden} beyond Top N**.
+| Column | What it shows |
+|---|---|
+| # | Rank, by your current sort |
+| Name | Group name, with a color swatch matching its line on the chart |
+| Status | Live or Backtest (whole-book comparisons only) |
+| Health | Healthy, Stale, Drift or Failed (whole-book comparisons only) |
+| Value | The current value of whatever metric is on the Y-axis |
+| vs Benchmark | How the group compares to your chosen benchmark, when one is shown |
+| Members | How many portfolios make up the group (whole-book comparisons only) |
+| Next | The group's next scheduled rebalance, or "Static" if it doesn't rebalance |
+
+Values are colored by whether they're good or bad for that particular metric, not just by plus or minus — so, for example, a deepening drawdown is never shown in green just because the number itself is negative. Checkboxes on each row (and "select all" in the header) control what's included everywhere else in the section.
 
 ## Metrics tab
 
-One matrix in two orientations, chosen with the **Compare** control:
+One table, in two different orientations, switched with the Compare control:
 
-| Option | Columns are | Column bands |
+| Mode | Each column is | Grouped into |
 |---|---|---|
-| **Across metrics** | one per visible metric, at the toolbar's window | **Return / Risk / Risk-adjusted / Recovery / Distribution / Benchmark** |
-| **Across timeframes** | one per server window, for the ranking metric | **Trailing / Calendar / Custom** |
+| Across metrics | One metric, over your selected timeframe | Return, Risk, Risk-adjusted, Recovery, Distribution, Benchmark |
+| Across timeframes | One timeframe, for whichever single metric you're ranking by | Trailing, Calendar, Custom |
 
-The row identity column is **Portfolio Group**; across-metrics mode adds a **Trend** sparkline column. An **as of {date}** stamp sits at the right of the control strip.
+Each row is a portfolio group; in across-metrics mode there's also a small trend sparkline column.
 
-**Header clicks are coupled to the toolbar.** Clicking a metric header sets the table's sort *and* the toolbar's **Rank by**. Clicking a window header (across-timeframes mode) sets the sort *and* the toolbar's **Timeframe**. There is therefore exactly one ordering in play, and the `#` column, the Top N cut and the leader can never describe different orderings.
-
-The sort column also drives a verdict sentence, printed above the analysis band's bar chart: **"{name}" leads on {metric} over {window}, among {count} comparable portfolio groups.**
+Clicking a column header both sorts the table and changes your Rank by (or Timeframe) selection in the toolbar — so the sort order you see, the ranking, and the Top N cutoff always describe the same ordering, never three different ones. A line above the chart at the bottom of the page states the current leader in plain language, for example: *"Alpha Growth" leads on Sharpe Ratio over 3 months, among 12 comparable portfolio groups.*
 
 ### Cell states
 
-Five states, and they make three different claims. Do not read them as one "no data".
+| What you see | What it means |
+|---|---|
+| A plain number, shaded by value | Enough history exists, and it's ranked normally |
+| A dimmed, italic number | A value could be calculated, but there wasn't enough history for Fintela to treat it as reliable — shown for reference, but left out of the ranking |
+| A number with a "partial" badge | Reliable, but the group's history doesn't fully cover your selected window |
+| **n/d** | The metric couldn't be calculated for this group at all |
+| A blank cell | No data at all for this group in this window |
 
-| State | Rendering | Ranked? | Meaning |
-|---|---|---|---|
-| `ok` | Plain, heat-shaded | Yes | Sufficient observations **and** the history covers the whole window |
-| `low` | Dimmed, italic, `*` | No | A value exists but failed the sufficiency gate |
-| `partial` | Shown with a **partial** badge | No | Sufficient, but the group's history does not span the window |
-| `nd` | **n/d** | No | The metric was not computable here |
-| `empty` | Blank | No | No data at all inside the window |
+Ranking, the leader, and the color scale only ever use the first kind of cell — a value can be visible on screen without counting toward the ranking.
 
-Ranking, the leader and the heat scale use only `ok` cells. A value can be displayed and still not rank.
+**Choosing which metrics show.** In across-metrics mode, a "Metrics shown" picker lets you choose exactly which metrics appear as columns, with Select all / Clear all buttons and a search box. Every metric is shown by default, and the table scrolls sideways rather than hiding anything you haven't explicitly chosen to hide — at least one column always stays visible.
 
-**Column chooser.** In across-metrics mode a **Metrics shown** chooser lists every metric with **Select all** and **Clear all**; the search placeholder is **Search metrics**. Every metric is visible by default and the matrix scrolls horizontally rather than curating for you. `Clear all` leaves one metric column standing, not zero.
-
-**Analysis band.** A bar chart of the selected metric — captioned **Each portfolio's {window} value for the metric selected above.** in across-metrics mode and **The metric selected above, across every timeframe.** in across-timeframes mode — and, at book scope only, a **Cross-group correlation** card. Its subtitle is **average pairwise ρ {rho}**; with fewer than two groups it reads **Two groups are needed for a correlation.** A blank cell means the pair shares fewer than the required number of days, not that they are uncorrelated.
+**Below the table.** A bar chart visualizes whichever metric you're currently ranked by. When comparing your whole book, a correlation card also shows how closely your groups' returns move together — useful for spotting when a "diversified" book is really just one bet wearing different wrappers. It needs at least two groups to show anything, and a blank cell there means two groups don't share enough overlapping days of data, not that they're uncorrelated.
 
 ## Holdings tab
 
-Where the exposure actually sits, where the compared subjects agree, and where they diverge. Everything below the fetch is a pure derivation over one cached response, so changing dimension, scrubbing the date, flipping Net/Gross, drilling into a bucket and unchecking a subject all cost zero requests.
+Where your exposure actually sits — what your compared groups agree on, and where they diverge. Once the data loads, everything you do here — changing how positions are grouped, scrubbing through dates, switching between net and gross weighting, drilling into a category, or unchecking a group — updates instantly with no extra loading time.
 
-| Control | Label | Options |
-|---|---|---|
-| Dimension | **Group by** | **Ticker · Sector · Industry · Theme · Sub-theme · Sub-portfolios** (Sub-portfolios is book scope only) |
-| Weight mode | **Weight** | **Net** / **Gross** — disabled when the dimension is Sub-portfolios |
-| Subject chips | **Compare** | One chip per in-scope subject, in its rank colour; writes the same unchecked state as the other tabs |
-| Lens | **View** | **Concentration** / **Composition over time** / **Composition on date** |
+| Control | Options |
+|---|---|
+| Group by | Ticker, Sector, Industry, Theme, Sub-theme, or Sub-portfolios (Sub-portfolios only when comparing your whole book) |
+| Weight | Net or Gross (not available when grouped by Sub-portfolios) |
+| Compare | Toggle individual groups on or off — shared with the rest of the section |
+| View | Concentration, Composition over time, or Composition on a specific date |
 
-**Consensus book** (left card). Columns in order: **Bucket**, **Book net** or **Book gross**, **Held by**, a chips lane, one column per compared subject in rank order and colour, then **σ**. The subject columns sit under a band reading **Groups · net weight** or **Groups · gross weight**. Row chips flag **hedged** and **only-in** buckets. Empty state: **No holdings on this day.** Clicking a row drills down the ladder sector → industry → ticker and theme → sub-theme → ticker, with a breadcrumb. Header chips report **{shown} of {raw} days shown** and **{count} tickers classified from a frozen snapshot**.
+**Consensus book.** The main table lists every holding category, the book's combined net or gross weight in it, how many of your compared groups hold it, and then a column per group showing its individual weight, plus a column showing how much that weighting varies across groups. Rows are flagged when a position is hedged, or held by only one group. Click any row to drill down — from sector into industry into individual ticker, or from theme into sub-theme into ticker.
 
-**Concentration** (right card lens). Columns **Name**, **Top 5**, **Eff. N**, **Names**, **Gross**, **Net** — where Eff. N is the inverse-Herfindahl effective number of positions.
+**Concentration view.** For each group: the combined weight of its top 5 positions, its effective number of positions (a measure of how spread out the book really is, not just a count of names), total names held, and gross/net exposure.
 
-**Date axis.** A timeline below the cards with **As of**, **Previous snapshot** / **Next snapshot**, **Pick a date** and **Latest**. Any date you pick resolves to the last snapshot on or before it — composition is a step function.
+**Date control.** A timeline lets you step to the previous or next snapshot, jump to a specific date, or jump to the latest. Holdings are captured periodically, so picking a date shows you the most recent snapshot at or before that date, not a live intraday picture.
 
-**Summary line.** `{groups} groups · {buckets} buckets · gross {gross} · L{long}/S{short} · crowding {crowding}`, optionally suffixed `consensus: {bucket}`.
+A summary line gives you the total groups compared, categories shown, combined gross exposure, your long/short split, and a crowding score.
 
-> [!CAUTION] Holdings compares at most 12 subjects
-> The holdings endpoint refuses with **HTTP 400** past 12 basket ids rather than truncating, because its per-day position map is by far the heaviest response in the section. The tab therefore sends the top 12 in the toolbar's rank order and says so with a chip: **Top {shown} compared · {omitted} more in scope**.
+> [!CAUTION] Holdings compares at most 12 groups at once
+> Because Holdings shows a full daily position history for every group, comparing more than 12 at once would be too heavy to load responsively. When your Top N or pinned selection includes more than 12 groups, Holdings automatically shows the top 12 by your current ranking and tells you how many more are in scope but not shown.
 
 ## Trades tab
 
-Which subject traded best, and how each one trades differently. Six tiles run across the top — **P&L**, **Closed / Open**, **Win%**, **PF**, **Payoff**, **Open P&L** — recomputed client-side from the server's additive counters whenever you uncheck a subject, with no refetch. The cohort tooltip states why: *"Derived from the checked groups' counters — not the average of the rows above, because ratios do not combine that way."*
+Which of your groups has traded best, and how each one trades differently. Six summary tiles across the top — P&L, Closed/Open trade counts, Win rate, Profit Factor, Payoff ratio, and Open P&L — recalculate instantly whenever you check or uncheck a group, with no reload. These combined figures are worked out freshly from the checked groups together, not by averaging each group's own row, because ratios like win rate don't average that way.
 
-One card, five lenses, selected with **View**:
+Below the tiles, one card with five lenses:
 
 | Lens | What it shows |
 |---|---|
-| **Trade metrics** | Scorecard banded **Realized (window)** and **Open · mark-to-market**. Columns **N · P&L · Win% · Payoff · PF · Expect. · Hold · Size**, then **α** and **Beat BM** when a benchmark is drawn, then **Open** and **Unreal.** |
-| **Timing** | Monthly realized P&L bars with a cumulative line; y axis **% of NAV** |
-| **Distribution** | Shared-bin return histogram; y axis **trades** |
-| **Contribution** | Per-ticker contribution across the compared subjects |
-| **Ledger** | The trade list, with its own two controls inside the card body |
+| Trade metrics | A scorecard split into realized results for your selected window and open, mark-to-market positions — count, P&L, win rate, payoff, profit factor, expectancy, average hold time and size, plus alpha and "beat benchmark" when a benchmark is selected |
+| Timing | Monthly realized P&L as bars, with a cumulative line on top |
+| Distribution | A histogram of trade returns |
+| Contribution | Which tickers contributed most to each group's results |
+| Ledger | The actual list of trades |
 
-The Ledger's controls are **Rank trades by** (**P&L** / **Return**) and **List** (**Top winners** / **Top losers** / **Open positions**). "Rank trades by" is part of the request — it changes which 25 trades the server returns, not just the client sort. Ledger columns: **Portfolio Group · Ticker · Side · Entry → Exit · Hold · Size · Return · P&L**, plus **α** when a benchmark is present. Empty: **No trades in this window.**
+The Ledger lets you rank trades by P&L or Return, and filter to Top winners, Top losers, or Open positions — this changes which trades are brought up, not just how the same list is sorted. Each row shows the group, ticker, side, entry and exit, hold time, size, return, P&L, and alpha when a benchmark is set.
 
-> [!WARNING] These figures are NAV fractions, never money
-> The tab's permanent footnote reads: **"P&L and returns are fractions of NAV, never money. * marks a figure computed from too few closed trades."** The wire format carries a unit field precisely so a client cannot render them as currency.
+> [!WARNING] These figures are percentages of your portfolio, not dollar amounts
+> P&L and returns throughout this tab are shown as a fraction of the portfolio's total value, never as raw currency. A figure marked with `*` is computed from too few closed trades to be fully reliable.
 
 ## Per-group sub-views
 
-Opening a group replaces the toolbar area with that group's header and reveals the **Portfolio Group Analysis** tab. The header carries the eyebrow **Portfolio**, the group's name, the subtitle *"Performance, metrics, ideas, news and live operations for this portfolio group."*, a **Strategies involved** / **Authors involved** provenance strip, and four actions:
+Opening a single group swaps the toolbar area for that group's own header and reveals the Portfolio Group Analysis tab. The header shows the group's name, a short description, which strategies and authors contributed to it, and four actions:
 
-| Action | Behaviour |
+| Action | What it does |
 |---|---|
-| **Back to Portfolio Manager** | Returns to the tab and filters you came from |
-| **Manage structure** | Opens `/analysis/portfolio-groups/baskets/:id` with a return address |
-| **Trading Lab** | Disabled when the group has no members |
-| **Update portfolios** | Refreshes members; the label cycles through **Queuing…**, **Queued…** and **Updating {n} of {total}…** |
+| Back to Portfolio Manager | Returns you to the book-level view and filters you came from |
+| Manage structure | Opens the group's settings page, where you edit membership and configuration |
+| Trading Lab | Test changes to this group — disabled if the group has no members yet |
+| Update portfolios | Refreshes the group's member portfolios, with a progress indicator while it runs |
 
-A group with no members shows **"This portfolio group has no members yet — add managed portfolios on its structure page to see performance here."** An unresolvable group shows **Portfolio Group not found.** with a **Back to Portfolio Manager** button.
+A group with no members yet points you to add managed portfolios on its structure page before it can show any performance here. If a group no longer exists or you don't have access to it, you'll see a simple "not found" message with a button back to Portfolio Manager.
 
 ### The four comparative sub-views
 
-`:basketId/equity`, `:basketId/metrics`, `:basketId/holdings` and `:basketId/trades` render **the exact same view components** as the book-level tabs, pointed at a different subject set: the group itself plus its member managed portfolios. The toolbar reappears above them — and only above them; the other five sub-views are not window-scoped, so no timeframe control is shown there.
+Equity, Metrics, Holdings and Trades reappear inside a single group too, using the exact same views as the book-level tabs — just pointed at a different set of subjects: the group itself, plus each managed portfolio inside it. The shared toolbar reappears here as well, though the other five group views (Profile, Robustness, Ideas, News, Operations) aren't tied to a timeframe, so no toolbar shows on those.
 
-| | Book scope | Group scope |
+| | Comparing your whole book | Comparing inside one group |
 |---|---|---|
-| Subjects | Every portfolio group in your workspace | The group itself plus its member managed portfolios |
-| Row is a link | Yes, to that group's Profile | No — a member has no page of its own |
-| Operational columns | Status, Health, Members, Next | Dropped |
-| Table caption | **{shown} shown · {hidden} beyond Top N** | **Showing {shown} · {hidden} hidden by Top N** |
-| Toolbar counter | **{shown} of {total}** | **{shown} of {total} subjects** |
-| **Add group** control | Shown | Hidden |
-| Cross-group correlation card | Shown | **Absent** |
-| Holdings dimensions | Includes **Sub-portfolios** | Excludes it |
-| Holdings composition history | Any in-scope group | Only the parent group |
-| Holdings subject cap | 12 | None — the endpoint takes one group id |
+| What's compared | Every portfolio group you have | The group plus its individual member portfolios |
+| Clicking a row | Opens that group's Profile | Does nothing — a member portfolio has no page of its own |
+| Extra columns | Status, Health, Members, Next rebalance | Not shown |
+| Add group control | Available | Hidden |
+| Correlation card | Shown | Not available |
+| Group-by Sub-portfolios | Available on Holdings | Not offered |
+| Holdings history | Any group in scope | Just this one group |
+| Groups comparable on Holdings | Up to 12 | No practical limit — you're only looking at one group's own members |
 
-The parent group is always pinned into scope, so a Top N of 3 can never hide the very group whose page you are on. Rows are still ordered by the ranking metric, so the parent sits wherever its own number puts it.
+The group you opened is always included in the comparison, so a tight Top N setting can never accidentally hide the very group you're looking at.
 
-> [!NOTE] Two absences at group scope are deliberate
-> The correlation endpoint takes basket ids and members are not baskets, so a group's Metrics tab has no correlation card. Inside a group the Holdings columns already *are* the members, so a Sub-portfolios dimension would put the same axis in both directions. Neither is a bug.
+> [!NOTE] Two things are missing on purpose inside a group
+> There's no correlation card here because correlation compares whole portfolio groups against each other, and a group's members aren't groups themselves. And grouping Holdings by "Sub-portfolios" would be redundant inside a single group — the whole view is already organized around its members.
 
 ### Profile
 
-`:basketId/profile` is the landing sub-view and reads the group as an investor would. Left column: a summary card of headline metrics computed from the group's own stitched curve, then a **Growth of an investment** card subtitled *"The group's blended track record against its benchmark, rebased to a common starting amount."* Right column: a **Members** card subtitled *"The promoted portfolios this group is built from, and where each came from."* with columns **Member · Strategy · Author · Study · Total return · Sharpe**, followed by calendar returns and traded assets.
+Profile is the view you land on when you open a group, and it reads the group the way an investor would. On the left, a summary card shows headline performance numbers computed from the group's own blended track record, alongside a "Growth of an investment" chart showing the group's performance against its benchmark, rebased so you can see what a fixed initial investment would be worth over time. On the right, a Members card lists every promoted portfolio the group is built from — which strategy and author produced it, which study it came from, its total return and Sharpe ratio — followed by calendar-year returns and the assets it has traded.
 
-> [!NOTE] A group has no train/validation/OOS split
-> Out-of-sample return, out-of-sample Sharpe and beta are deliberately blank on a group's Profile. A group is assembled from members that each had their own split; the group itself never did. The honest out-of-sample question is answered on **Robustness**, against the live period.
+> [!NOTE] A group doesn't have its own training history
+> Out-of-sample return, out-of-sample Sharpe, and beta are intentionally left blank on a group's Profile. Each member portfolio went through its own training and validation before being promoted, but the group itself is just an assembly of already-promoted portfolios — it never went through that process as a unit. To see how a group has actually performed since it went live, check Robustness instead.
 
 ### Robustness
 
-`:basketId/robustness` opens with a **Group verdict** eyebrow and one of four verdicts, each with its own blurb: **Well trained**, **Borderline**, **Overfitting risk**, **Not enough evidence**. Three sections follow:
+Robustness opens with an overall verdict on the group — **Well trained**, **Borderline**, **Overfitting risk**, or **Not enough evidence** — each with a short explanation of what it means. Below that, three sections:
 
-| Section | Contents |
+| Section | What it covers |
 |---|---|
-| **What the members say** | Per-member table: **Member · Weight · Study · Verdict · DSR · Study PBO · OOS days**, plus a disclosure of how the weights were sourced |
-| **What the blended curve says** | **PSR · Sharpe (ann.) · Observations · Skew · Excess kurtosis · Autocorrelation** |
-| **How this group was built** | **Epochs · Config changes · Effective members · Live vs backtest (z)** |
+| What the members say | Each member portfolio's weight in the group, which study it came from, its own overfitting verdict, and how much live/out-of-sample history backs it up |
+| What the blended curve says | Statistical measures of the group's combined track record, including how likely its results are to be a statistical fluke rather than genuine skill |
+| How this group was built | How many times it's been rebalanced or reconfigured, how many members are actively contributing, and how live results compare to what backtests predicted |
 
-Members with no stored overfitting verdict are called out by count and by share of the group's weight: *"Their risk is unknown, not absent."*
+If some members never received a formal overfitting verdict, Robustness calls that out explicitly by count and by how much of the group's weight they represent — their risk is unknown, not confirmed safe.
 
 ### Ideas, News and Operations
 
 | Sub-view | What it is |
 |---|---|
-| `:basketId/ideas` | AI-suggested changes to the group, each testable in Trading Lab. Generating narrated ideas is entitlement-gated and returns **HTTP 402** on the free tier; the tab itself still routes and renders. |
-| `:basketId/news` | Headlines and sentiment for what the group currently holds |
-| `:basketId/operations` | The group's live actionings against its broker connections, with its stale-member and daily-update state |
+| Ideas | AI-suggested changes to the group that you can test in Trading Lab before adopting. Generating these narrated ideas requires a paid plan or available tokens — on the free tier the page still opens, it just won't generate new ideas. |
+| News | Headlines and sentiment for whatever the group currently holds |
+| Operations | The group's live trading activity through its connected broker, including which members are stale and when they last updated |
 
-### The `from` return address
+### Returning to where you were
 
-Every drill-down out of a book-level table carries `?from=` recording the tab and filters you left. It is what makes **Back to Portfolio Manager** and the Manage-structure round trip return to where you actually were instead of to the section's bare path. The trail is one hop deep — an existing `from` is replaced, never stacked — and the value is sanitised before use, so a hand-edited external URL cannot become an open redirect.
+Whenever you drill from a book-level table into a single group, Fintela remembers the view and filters you came from, so "Back to Portfolio Manager" and the round trip from "Manage structure" bring you back to the exact comparison you were looking at, not just the section's starting page.
 
-## Endpoints behind the views
+## Old bookmarks and links
 
-All of these are `GET` and all require `portfolios:read`.
+Portfolio Manager used to be called "Deployed Portfolios," and its layout has changed a few times as the product evolved. If you have an old bookmark, a saved link, or a shared URL from before these changes, Fintela automatically brings you to the current equivalent page and preserves whatever filters were in the link — so nothing you've saved stops working.
 
-| Surface | Book scope | Group scope |
-|---|---|---|
-| Ranking (decides which rows are in scope) | `/portfolio_manager/dashboard/compare/matrix` with only the active window and `sparklines=0` | `/portfolio_manager/baskets/{id}/subjects/matrix` |
-| Inventory | `/portfolio_manager/dashboard` | `/portfolio_manager/baskets/{id}` + `/subjects` |
-| Equity | `/portfolio_manager/dashboard/compare/series` + `/compare/lifecycle` | `/portfolio_manager/baskets/{id}/subjects/series` + `/subjects/lifecycle` |
-| Metrics | `/portfolio_manager/dashboard/compare/matrix` with `sparklines=1&benchmark_row=1` + `/compare/correlation` | `/portfolio_manager/baskets/{id}/subjects/matrix` — **no correlation call** |
-| Holdings | `/portfolio_manager/dashboard/holdings` | `/portfolio_manager/baskets/{id}/subjects/holdings` |
-| Trades | `/portfolio_manager/dashboard/compare/trade-metrics` with `sort` and `limit=25` | `/portfolio_manager/baskets/{id}/subjects/trade-metrics` |
-| Robustness | — | `/portfolio_manager/baskets/{id}/robustness` |
+> [!CAUTION] One old link type can't be redirected
+> A very old style of saved link that pointed directly at a saved view by its short id can no longer be told apart from a link to a portfolio group, so it isn't redirected automatically. If a bookmark like this stops working, just open Portfolio Manager and reopen the view manually.
 
-The matrix endpoint is called twice on purpose. The whole-book ranking call asks for one window and no sparklines and decides which rows are in scope; the Metrics tab's display call asks for every window plus sparklines and the benchmark row, for just those rows. The options are part of the cache key, so one call can never serve the other's payload — and changing Top N, the ranking metric or the timeframe costs no request at all.
+### What changed
 
-### Per-endpoint id caps
-
-These are **refusals, not truncations**. Exceeding one returns **HTTP 400** with `too many basket_ids: {n} (max {cap} for this endpoint)`.
-
-| Endpoints | Cap |
-|---|---|
-| `compare/matrix`, `compare/series`, `compare/lifecycle`, `compare/correlation` | 200 |
-| `compare/trade-metrics` | 60 |
-| `dashboard/holdings` | 12 |
-
-A malformed id returns **HTTP 400** with `invalid basket id: '{bad}'`.
-
-## Retired routes and redirects
-
-Every path below is a **redirect**, not a live surface. All of them preserve the query string and replace the current history entry, so the toolbar state on a shared link survives the hop and Back does not bounce through the old URL.
-
-| Retired path | Redirects to | Why |
-|---|---|---|
-| `/analysis/deployed-portfolios/*` | `/analysis/portfolio-manager/*` | The section was renamed; the sub-path is preserved |
-| `/analysis/portfolio-manager/equity` | `/analysis/portfolio-manager` | Equity is the bare route |
-| `/analysis/portfolio-manager/overview` | `/analysis/portfolio-manager` | The pre-refactor landing tab |
-| `/analysis/portfolio-manager/live` | `/analysis/portfolio-manager` | The live/backtest inventory split is gone — there is one book |
-| `/analysis/portfolio-manager/backtest` | `/analysis/portfolio-manager` | As above |
-| `/analysis/portfolio-manager/exposure` | `/analysis/portfolio-manager/holdings` | Absorbed into Holdings |
-| `/analysis/portfolio-manager/rank` | `/analysis/portfolio-groups/rank` | Administrative half moved |
-| `/analysis/portfolio-manager/rank/:viewId` | `/analysis/portfolio-groups/rank/:viewId` | Administrative half moved |
-| `/analysis/portfolio-manager/baskets/:basketId` | `/analysis/portfolio-groups/baskets/:basketId` | Structure editing lives in the registry |
-| `/analysis/portfolio-manager/groups/create` | `/analysis/portfolio-groups/groups/create` | Administrative half moved |
-| `/analysis/portfolio-manager/groups/:groupId/edit` | `/analysis/portfolio-groups/groups/:groupId/edit` | Administrative half moved |
-| `/analysis/portfolio-manager/:basketId` | `/analysis/portfolio-manager/:basketId/profile` | Profile is the landing sub-view |
-| `/analysis/portfolio-manager/:basketId/performance` | `.../:basketId/equity` | Drew its own curves and could contradict the Metrics matrix |
-| `/analysis/portfolio-manager/:basketId/risk` | `.../:basketId/equity` | The risk question is now a Y-axis choice |
-| `/analysis/portfolio-manager/:basketId/transactions` | `.../:basketId/trades` | An order log says what was *sent*, not whether it worked |
-
-The bare `/:basketId` route also translates legacy `?tab=` values and then drops the parameter, so the address bar ends up naming the view the way the app now does:
-
-| Legacy `?tab=` | Lands on |
-|---|---|
-| `results` | Equity |
-| `performance` | Equity |
-| `risk` | Equity |
-| `transactions` | Trades |
-
-> [!CAUTION] One legacy shape is not recoverable
-> A bare saved-view link of the form `/analysis/portfolio-manager/:viewId` cannot be redirected: that URL shape is now a portfolio group id. Only the longer `/analysis/portfolio-manager/rank/:viewId` form redirects, to `/analysis/portfolio-groups/rank/:viewId`.
-
-### Retired concepts
-
-- The **live/backtest inventory split** is gone. There is one book, and Status is a column rather than a filter tab.
-- The retired **Overview** tab's two surviving surfaces are the **Needs attention** feed and the **Rebalances** timeline, now the Equity tab's right-hand rail at book scope only.
-- The three-way Compare toggle (Scorecard / Detailed matrix / Top trades) is retired. Metrics is one matrix in two orientations, and trades moved to their own tab.
-- The **Common window** / **Own history** comparison modes are no longer user-selectable; the toolbar always requests book mode.
+- The old split between "live" and "backtest" portfolios as separate tabs is gone — everything lives in one book, with Status shown as a column instead.
+- The old Overview tab has been folded into Equity: its "Needs attention" and "Rebalances" panels now live in Equity's sidebar when you're comparing your whole book.
+- An older three-way switch between a scorecard, a detailed matrix and a top-trades list has been simplified into the single Metrics table (in two orientations) plus its own dedicated Trades tab.
+- You can no longer choose between comparing groups over "a common window" versus "each group's own history" — comparisons are always shown over the same shared window now, so results stay apples-to-apples.

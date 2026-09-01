@@ -4,655 +4,501 @@ section: Registries
 sectionOrder: 3
 order: 7
 published: true
-updated: 2026-08-20
-summary: Group promoted portfolios into a book you can analyze, allocate across, and trade.
-keywords: portfolio group, basket, allocation, weights, members, operation, orders, trading, paper, live, deploy, eod report
+updated: 2026-09-01
+summary: Combine your promoted portfolios into one book you can allocate, rebalance, and deploy to a broker as paper or live trading.
+keywords: portfolio group, allocation, rebalancing, weights, members, broker connection, paper trading, live trading, deploy, end-of-day report
 ---
 
-A Portfolio Group is a named, organization-scoped container that holds a set of [promoted portfolios](/docs/promoted-portfolios) plus one shared trading configuration. It answers three questions about a book of strategies: how is it weighted, how often is it re-weighted, and how do its orders reach a broker. The registry at `/analysis/portfolio-groups` is the administrative half — which groups exist, what they hold, and how they are configured. Performance and monitoring live in the [Portfolio Manager](/docs/portfolio-manager) hub, one click away from every row.
+A Portfolio Group lets you combine several [promoted portfolios](/docs/promoted-portfolios) into one book you manage as a single unit — with one shared allocation recipe, one rebalancing schedule, and one trading configuration. It answers three questions for a book of strategies: how is capital weighted across the members, how often are those weights recalculated, and how do the resulting orders reach a broker. This page — the Portfolio Groups registry — is where you build and configure that structure: which groups exist, what they hold, and how they're set up. Once a group exists, its performance and day-to-day monitoring live one click away, in the [Portfolio Manager](/docs/portfolio-manager) hub.
 
 ## Overview and purpose
 
-### Portfolio Group and "basket" are one object
+### Portfolio Groups and the "basket" name
 
-**"Portfolio Group" is the product noun. "basket" is the persistence and API noun.** They are the same row in the same table. Nothing translates between them at runtime — the frontend simply labels a `basket` as a Portfolio Group. This matters the moment you read a URL, an API path or a database column, so the full mapping is below.
+You may occasionally see the word "basket" used instead of "Portfolio Group" — in an older bookmark, in the Developer API, or in a notification. It's simply an earlier name for the same object; nothing about how it behaves, or what you can do with it, changes.
 
-| Layer | Identifier in use |
-|---|---|
-| UI label, nav entry, registry route | **Portfolio Groups**, `/analysis/portfolio-groups` |
-| SPA structure page | `/analysis/portfolio-groups/baskets/:basketId` |
-| Feature key | `portfolio-groups-analysis` |
-| Backend HTTP paths | `/portfolio_manager/baskets`, `/portfolio_manager/baskets/:id`, … |
-| Developer API | `GET /v2/baskets` |
-| Database table | `developers.portfolio_manager_baskets` |
-| Membership table | `developers.basket_members` |
-| Deployment table | `developers.basket_operations` |
-| Entitlement quota key | `baskets` |
-| Activity-feed events | `basket.created`, `basket.updated`, `basket.deleted` |
-
-The word `baskets` in the SPA path is deliberate and load-bearing: bookmarks, notification deep links and the activity feed all point at `/analysis/portfolio-groups/baskets/:basketId`.
-
-> [!NOTE]
-> A Portfolio Group does not *contain* baskets. There is no such nesting. The only hierarchy is Portfolio Group (= basket) → **members** → **operations**.
-
-### Group, members, operations
+### Groups, members, and operations
 
 ```text
-  Promoted Portfolios (managed portfolios)
-            │  selected in the creation form
-            ▼
-  ┌───────────────────────────────────────────────┐
-  │  PORTFOLIO GROUP  (= basket, one UUID)        │
-  │    members         → basket_members           │
-  │    allocation recipe + rebalance cadence      │
-  │    execution + protective policy              │
-  │    staged backtest track record               │
-  └───────────────────────────────────────────────┘
-            │  one deployment per broker connection
-            ▼
-  OPERATION  (basket_operations)
-     ├─ allocations   weight snapshots per rebalance
-     ├─ orders        what was sent to the broker
-     ├─ state log     who did what, and when
-     └─ EOD reports   end-of-day reconciliation
+  Promoted Portfolios
+        │  you choose which ones to include
+        ▼
+  PORTFOLIO GROUP
+    members               → the promoted portfolios you picked
+    allocation recipe     → how capital is split across them
+    rebalance schedule    → how often weights are recalculated
+    order & exit policy   → how orders are placed and protected
+    track record          → its backtested and live performance history
+        │  deploy to a broker connection
+        ▼
+  OPERATION
+     ├─ allocations   weight snapshots taken at each rebalance
+     ├─ orders        what was actually sent to your broker
+     ├─ activity log  who did what, and when
+     └─ end-of-day reports   daily reconciliation against your broker
 ```
 
-- **Members** are managed portfolios, referenced by `managed_portfolio_id`. They are independent, frozen copies of a study trial that keep updating on the group's cadence even if you delete the study. The structure page states this outright: *"Portfolio Group members are managed portfolios (MP) — independent, frozen copies of a study trial that keep updating on the portfolio group's cadence even if you delete the study."*
-- **Operations** are deployments. One operation is one group running against one broker connection, with its own capital, its own status and its own rebalance clock. `UNIQUE (basket_id, connection_id)` means a group can have at most one operation per connection — and therefore can run paper and live at the same time, on two different connections.
+- **Members** are the promoted portfolios you add to a group. Each one keeps running independently — its value keeps advancing on the group's daily schedule — even if the study it came from is later deleted. Deleting a study never takes a live portfolio down with it.
+- **Operations** are deployments. One operation is one group running against one broker connection, with its own capital, its own status, and its own rebalancing clock. A group can have at most one operation per connection, so the same group can trade paper and live at the same time, on two different connections.
+
+> [!NOTE]
+> A Portfolio Group never contains other Portfolio Groups. The only hierarchy is: group → members (portfolios) → operations (deployments).
 
 ### What a group carries
 
-| Facet | Stored as | Set where |
+| Setting | What it controls | Where you set it |
 |---|---|---|
-| Membership | `portfolio_ids` (JSONB array of ints), mirrored into `basket_members` | Creation form, structure page, Rank & Build |
-| Allocation recipe | `allocation_method` + `allocation_method_params` | Creation form, Trading Lab |
-| Manual weights / risk budgets | `basket_members.weight`, `allocation_method_params.risk_budget` | Trading Lab only |
-| Rebalance cadence | `rebalance_enabled` + `rebalance_frequency_days` (data-days) | Creation form, Trading Lab |
-| Rebalance grid phase | `rebalance_anchor_date` (NULL reads as the creation date) | Trading Lab only |
-| Daily member extension | `daily_update_enabled` | Locked on — see below |
-| Order policy | `execution_config`, plus per-member overrides | Trading Lab, per-operation override at deploy |
-| Protective exit | `protective_config`, plus per-member overrides | Trading Lab only |
-| Stop re-entry policy | `reenter_after_stop`, `reentry_cooldown_days` | Trading Lab only |
-| Benchmark | `benchmark_ticker_id` (NULL = platform default) | Trading Lab only |
-| Track record | `basket_backtest_stages` (configuration epochs) | Written by the platform |
-| Free text | `description` | Naming dialog; presentation only |
+| Membership | Which promoted portfolios belong to the group | Creation form, structure page, Rank & Build |
+| Allocation recipe | How capital is split across members | Creation form, Trading Lab |
+| Manual weights / risk budgets | Exact per-member weights, when you choose Manual or Risk Parity | Trading Lab only |
+| Rebalance schedule | How often weights are recalculated | Creation form, Trading Lab |
+| Rebalance start date | The date the schedule counts from | Trading Lab only |
+| Daily updates | Keeps every member's value current each trading day | Always on — see below |
+| Order policy | Order type, time-in-force, and pricing cushion for every trade | Trading Lab, with a per-operation override at deploy time |
+| Protective exit | An optional resting stop that guards open positions | Trading Lab only |
+| Stop re-entry rule | Whether a stopped-out position can be bought back | Trading Lab only |
+| Benchmark | What the group's performance is measured against | Trading Lab only |
+| Track record | The group's backtested and live performance history | Maintained automatically |
+| Description | Free-text notes, for your own reference | Naming dialog |
 
-Two columns on the table are dead and are never documented as settings: `frequency` (a legacy every-N-days cadence, superseded by `daily_update_enabled`) and `membership_rule` (reserved, always NULL).
+### Visibility and your plan's limits
 
-### Visibility and quota
+A Portfolio Group is visible to your whole organization, not just the person who created it — the configuration (allocation recipe and member weights) is shared, so your team is always looking at the same setup. What isn't shared automatically is each member's underlying strategy code, which stays protected at its own layer. A group outside your organization simply won't appear for you at all.
 
-A Portfolio Group is **permanently visible to the whole organization**. The access spec for `portfolio_manager_basket` scopes on `organization_id`, uses `deleted_at` for soft deletes, and sets `allow_platform_shared: false`. The reasoning is in the handler: the configuration — the allocation recipe and the member weights — is org-visible; member strategy *code* is protected at its own layer. A group outside your organization is a **404, never a 403**.
+Creating a group counts against your plan's Portfolio Group limit. The free tier includes one Portfolio Group; if you try to create a second while on that tier, Fintela stops you at the naming step, before anything is lost, and points you to the same upgrade prompt used for insufficient tokens.
 
-Creating a group consumes the `baskets` quota (`Quota::Baskets`), counted as the number of rows in `developers.portfolio_manager_baskets` for your organization with `deleted_at IS NULL`. The **free-tier default is `max_baskets = 1`** — a second create returns a structured HTTP 402 and the naming dialog hands off to the insufficient-tokens dialog rather than toasting an error.
+### Screens you'll use
 
-### Screens and routes
+- **The registry** (this page) — browse, filter, and manage every Portfolio Group you have access to.
+- **Rank & Build** — rank your promoted portfolios and build a new group from your top picks, or add members to a group you already have. See [Promoted Portfolios](/docs/promoted-portfolios).
+- **The structure page** — manage a group's members, check their freshness, and open the Trading Lab.
+- **The creation form** — a single screen for naming a new group and choosing its members and starting configuration.
 
-| Path | Screen |
-|---|---|
-| `/analysis/portfolio-groups` | The registry — table or card view |
-| `/analysis/portfolio-groups/rank` | Rank & Build workspace (rank trials, saved Views, promote) |
-| `/analysis/portfolio-groups/rank/:viewId` | Rank & Build with a saved View applied |
-| `/analysis/portfolio-groups/baskets/:basketId` | Structure page — members, freshness, trading configuration |
-| `/analysis/portfolio-groups/groups/create` | Creation form |
-| `/analysis/portfolio-groups/groups/:groupId/edit` | The same form in edit mode |
-| `/analysis/portfolio-groups/:viewId` | Back-compat only — a legacy saved-View deep link, resolves to Rank & Build |
+A link to any of these — including a filtered list or a saved ranking view — can be bookmarked or shared with a teammate, and it will reopen in the same state.
 
-The screen is resolved from the path: anything containing `/rank` opens Rank & Build; a bare `:viewId` also opens Rank & Build for back-compatibility; everything else is the list.
+### A note on older bookmarks and links
 
-Four query parameters are read by these screens:
-
-| Parameter | Effect |
-|---|---|
-| `?returnTo=basket&basketId=<uuid>` | Rank & Build runs in "append to an existing group" mode. Emitted by the structure page's **"Browse & filter"** button |
-| `?origin=…` | Sets the structure page's Back target. An origin under `/analysis/portfolio-manager` changes the button from **"Back"** to **"Back to portfolio"** |
-| `?panel=schedule` / `?panel=allocation` | Force-expands and scrolls to that section of the creation form's right rail |
-| `?ff_registryGeneratedDescriptions=0` | Turns off the generated Description column, falling back to stored free text |
-
-### Legacy paths that redirect
-
-The administrative pages used to live under `/analysis/portfolio-manager`, and that section itself used to be called "Deployed Portfolios". Both renames are covered by redirects.
-
-| Legacy path | Redirects to |
-|---|---|
-| `/analysis/deployed-portfolios/*` | `/analysis/portfolio-manager/*` (base segment rewritten, query preserved) |
-| `/analysis/portfolio-manager/rank` | `/analysis/portfolio-groups/rank` |
-| `/analysis/portfolio-manager/rank/:viewId` | `/analysis/portfolio-groups/rank/:viewId` |
-| `/analysis/portfolio-manager/baskets/:basketId` | `/analysis/portfolio-groups/baskets/:basketId` |
-| `/analysis/portfolio-manager/groups/create` | `/analysis/portfolio-groups/groups/create` |
-| `/analysis/portfolio-manager/groups/:groupId/edit` | `/analysis/portfolio-groups/groups/:groupId/edit` |
+This section used to live under a different name. If you have an old bookmark or a saved link from before the rename, it will still take you to the right place automatically.
 
 > [!WARNING]
-> A bare `/analysis/portfolio-manager/:viewId` link — the old saved-View deep link — is **not recoverable**. That URL shape is now a basket id in the Portfolio Manager hub. Old saved-View links of that form will open the wrong screen or fail to resolve.
+> One older link format — a bare saved-ranking link from the previous section name — can't be resolved automatically. If you saved one of these, re-save it from the current page; the old link may open the wrong screen.
 
-### What consumes a Portfolio Group
+### Where a Portfolio Group shows up elsewhere in Fintela
 
-```text
-  Portfolio Group ──┬─► Portfolio Manager       performance, metrics, holdings, trades
-                    ├─► Operations              broker deployments (paper / live)
-                    ├─► Asset Groups            injected as a BASKET:<uuid> curve
-                    ├─► Trading Lab             re-simulate, reconfigure, re-weight
-                    └─► Developer API           GET /v2/baskets (read-only)
-```
+- **[Portfolio Manager](/docs/portfolio-manager)** is where you actually watch a group perform — its equity curve, metrics, holdings, trades, robustness checks, and related news all live there. This registry deliberately shows none of that: no returns, no P&L, no sparklines, so you're never tempted to make an allocation call from a half-loaded summary.
+- **[Asset Groups](/docs/asset-groups)** can hold a Portfolio Group as a member, treating its combined performance like a single ticker. That's how you build a portfolio of portfolios.
+- **The [Developer API](/docs/api-baskets)** exposes a read-only view of your groups — more on that later on this page.
 
-- **[Portfolio Manager](/docs/portfolio-manager)** is the monitoring half. Every analytic a group has — equity, metrics, holdings, trades, robustness, ideas, news — lives there, at `/analysis/portfolio-manager/:basketId/<tab>`. The registry deliberately shows no returns, no P&L, no sparklines.
-- **[Asset Groups](/docs/asset-groups)** can hold a Portfolio Group as a member: `developers.data_clusters.basket_members` stores `{"basket_id": <uuid>, "injection_mode": "curve"}`, and the group's stitched equity curve is injected into the price panel as a pseudo-ticker. That is the portfolio-of-portfolios case.
-- **The [Developer API](/docs/api-baskets)** exposes a read-only projection at `/v2/baskets`.
+## Browsing the Portfolio Groups registry
 
-## Registry table view
+### Toolbar and controls
 
-### Command bar
-
-| Control | Exact text | Behaviour |
-|---|---|---|
-| Title | **Portfolio Groups** | — |
-| Filter button | **Filter** | Opens the filter panel, titled **Filters**, with **Clear all**, **Any**, **Contains…**, **Min**/**Max**, **From**/**To** controls and an "{{count}} active" badge |
-| View toggle | **List view** / **Card view** | Aria label **View mode**. The choice is remembered per registry |
-| Column chooser | tooltip **Choose columns** | Disabled while Card view is active |
-| Refresh | tooltip and aria **Refresh** | Invalidates the `portfolio_manager_baskets` query |
-| Primary CTA | **Create Portfolio Group** | Navigates to `/analysis/portfolio-groups/groups/create` |
+| Control | What it does |
+|---|---|
+| **Filter** | Opens the filter panel |
+| **List view / Card view** | Switches layout; your choice is remembered |
+| **Choose columns** | Picks which optional columns show (list view only) |
+| **Refresh** | Reloads the list |
+| **Create Portfolio Group** | Opens the creation form |
 
 > [!NOTE]
-> **There is no search box on this registry.** The shared toolbar renders no search field here. Text search happens through the filter panel's `name` and `description` fields.
+> This page has no free-text search box in the toolbar. To search by name or description, open the filter panel — both fields live there.
 
 ### Columns
 
-Rows are keyed by the basket `id`. The default sort is the shared registry default resolved against `created_at`.
+| Column | What it shows | Visible by default |
+|---|---|---|
+| Group name | The group's name | Yes |
+| Description | An auto-generated summary of the group's setup; your own notes show in the hover tooltip | Yes |
+| Portfolios | How many members the group has | Yes |
+| Total AUM | Capital committed across the group's active or paused deployments | Yes |
+| Created | When the group was created | Yes |
+| Allocation | The allocation method in use | Optional |
+| Rebalance | The rebalance cadence | Optional |
+| Daily update | Always reads "Daily update ON" | Optional |
+| Stage | The ranking time window used when the group was built | Optional |
+| Strategies involved | Distinct strategy names among the members | Optional |
+| Authors involved | Distinct authors among the members | Optional |
 
-| Column key | Header | Render | Sorts on | Default |
-|---|---|---|---|---|
-| `name` | **Group name** | Bold, no wrap; the full name is the hover title | `name` | Visible |
-| `description` | **Description** | Secondary text, no wrap; generated sentence with the stored text in the tooltip | Generated text | Visible |
-| `portfolios` | **Portfolios** | Right-aligned chip with the member count | `portfolio_ids.length` | Visible |
-| `aum` | **Total AUM** | Right-aligned monospace currency; dimmed `—` when zero | Raw `deployed_capital` | Visible |
-| `created_at` | **Created** | Shared created-at cell | Date | Visible |
-| `allocation_method` | **Allocation** | The method's display label | Raw method id | Chooser |
-| `cadence` | **Rebalance** | The cadence label | `rebalance_frequency_days`, or `-1` when static | Chooser |
-| `daily_update` | **Daily update** | Centered chip, always reading **Daily update ON** | Not sortable | Chooser |
-| `stage` | **Stage** | Outlined chip with the raw `stage` string | `stage` | Chooser |
-| `strategies` | **Strategies involved** | Comma-joined distinct member strategy names | Count of distinct strategies | Chooser |
-| `authors` | **Authors involved** | Comma-joined distinct author usernames | Count of distinct authors | Chooser |
+**Total AUM** adds up capital across every operation of that group that's currently Active or Paused — real money or paper money actually at work, not a backtest figure. Hover it to see how many operations that total reflects; with nothing deployed yet, it reads as a dash rather than zero, so "nothing deployed" is never confused with "deployed with $0."
 
-**Total AUM** is a server-side aggregate, not an analytic. It is `COALESCE(SUM(target_capital), 0)` over that group's operations whose `last_status` is `ACTIVE` or `PAUSED`. Its tooltip says so:
-
-- With capital committed: *"Capital committed in {{count}} active operation."* (plural: *"…{{count}} active operations."*)
-- With none: *"No capital committed — this group has no active operations."*
-
-`Strategies involved` and `Authors involved` are resolved against the Promoted Portfolios list. If that list has not loaded, both cells render an em dash rather than a wrong attribution.
+**Strategies involved** and **Authors involved** are read from your Promoted Portfolios list; if that list hasn't finished loading, these cells briefly show a dash rather than risk crediting the wrong strategy or author.
 
 > [!CAUTION]
-> **Stage is not a lifecycle.** It is a ranking time-window label stored as a free `VARCHAR(50)` with no CHECK constraint. The server default is `'ytd'`; the creation form sends `'overall'`. There is no Status column and no draft/active/deployed badge anywhere in this registry — those strings exist in the translation bundle and in exported selectors, but no shipped surface renders them.
+> **Stage is a label, not a status.** It records which ranking time window (year-to-date, since inception, and so on) was in effect when the group was built from Rank & Build — it does not mean draft, active, or deployed. There's no separate status column on this page; to see whether a group is actually trading, check its Total AUM, or open its Operations tab in Portfolio Manager.
 
 ### The Description column
 
-The cell is generated from the group's own configuration rather than from the free text you typed. The template is:
+The Description cell is generated from the group's own settings rather than the free text you typed, for example:
 
-```text
-Portfolio group configured with allocation methodology {method},
-{n} member portfolios, rebalancing frequency {cadence}
-```
+*"Portfolio group configured with allocation methodology Risk parity, 5 member portfolios, rebalancing frequency Every 30 data-days."*
 
-The member clause is dropped entirely when the group has zero members — an empty group is a legal state, and "0 member portfolios" inside a configuration sentence is noise. The stored free text is not lost: it moves into the hover tooltip, prefixed with **Author's note**.
+The member count is dropped from the sentence entirely for an empty group — an empty group is a normal state while you're still building it, and "0 member portfolios" would just be noise. Your own free text isn't lost: it moves into the hover tooltip, labeled **Author's note**, so you can leave yourself context without it crowding the summary.
 
-There is **no maximum-size field on a Portfolio Group** at any layer — no cap column, no create or update input, no wizard control. The sentence substitutes the observed member count and says "member portfolios", never "max".
+There's no member-limit setting anywhere on a Portfolio Group — add as many promoted portfolios as your book calls for. Rebalance cadence reads as **Every {{count}} data-day(s)**, or **Static** when rebalancing is switched off. Allocation methods always read with the same label everywhere in the product:
 
-Cadence labels resolve to **Every {{count}} data-day** / **Every {{count}} data-days**, or **Static** when rebalancing is off or the frequency is null. Allocation labels come from one shared mapping, so a method reads identically in the column, the description and the picker:
-
-| Method id | Label |
+| Method | Label |
 |---|---|
-| `equal_weight` | Equal weight |
-| `manual` | Manual |
-| `metric_proportional` | Metric-proportional |
-| `metric_responsive` | Metric-responsive (momentum / contrarian) |
-| `risk_parity` | Risk parity |
-| `volatility_target` | Volatility target |
-| `mean_reversion` | Mean reversion |
+| Equal weight | Equal weight |
+| Manual | Manual |
+| Metric-proportional | Metric-proportional |
+| Metric-responsive | Metric-responsive (momentum / contrarian) |
+| Risk parity | Risk parity |
+| Volatility target | Volatility target |
+| Mean reversion | Mean reversion |
 
 ### Filters
 
-The filter panel is URL-backed, so a filtered view survives a reload and can be shared as a link.
-
 | Field | Kind |
 |---|---|
-| `name` | text |
-| `description` | text |
-| `portfolios` | numberRange |
-| `aum` | numberRange |
-| `allocation_method` | multiselect |
-| `cadence` | multiselect |
-| `stage` | multiselect |
-| `created_at` | dateRange |
+| Group name | text |
+| Description | text |
+| Portfolios | number range |
+| Total AUM | number range |
+| Allocation | multi-select |
+| Rebalance | multi-select |
+| Stage | multi-select |
+| Created | date range |
 
-`strategies` and `authors` have **no filter spec on purpose**. Both are sets, and the panel matches a row on one exact string — a two-author group would only ever match the literal `"ana, luis"`, never `"ana"`, which looks like a working filter while quietly hiding rows.
+Your filter selections are saved directly in the page's link, so a filtered view survives a refresh, and you can send a teammate the exact same list by sharing the URL.
 
-Per-column funnel icons are switched off on this table. The header's Filter button is the single filter surface.
+You can't filter directly by strategy or author — a group can hold several of each, and matching on an exact combination is easy to get wrong in a way that quietly hides groups you meant to find. Use the **Strategies involved** and **Authors involved** columns to check membership instead.
 
 ### Card view
 
-A card renders the group's `name` as its title, the Description as its subtitle, and `portfolios`, `aum` and `created_at` as meta. Interactive columns — the Daily update chip and the actions button — are excluded, because a card is a single click target and a nested control would be invalid ARIA. Card actions are reached the same way as row actions: by clicking the card.
+A card shows the group's name as its title, the Description as its subtitle, and the portfolio count, Total AUM, and creation date underneath. Interactive elements like the Daily update chip and the actions menu aren't shown on a card; open a card the same way you'd open a row, by clicking it.
 
-### Row action menu
+### Row actions
 
-Clicking a row (list) or a card (cards) opens a pop-up titled with the group's name. The actions, in order:
+Clicking a row (or a card) opens a menu titled with the group's name:
 
-| Action | Exact label | What it does |
-|---|---|---|
-| 1 | **Edit structure** | Opens `/analysis/portfolio-groups/baskets/:id` — the structure page |
-| 2 | **Deploy Portfolio Group** | Opens the deploy dialog for this one group. **Disabled** when the group has zero members, with the tooltip *"This group has no portfolios to allocate."* |
-| 3 | **View** | A real `href` to `/analysis/portfolio-manager/:id/profile`, so open-in-new-tab works |
-| 4 | **Duplicate** | Client-side copy — see below |
-| 5 | **Delete** | Opens a confirmation dialog |
+| Action | What it does |
+|---|---|
+| **Edit structure** | Opens the group's structure page |
+| **Deploy Portfolio Group** | Opens the deploy dialog for this group. Disabled with the tooltip *"This group has no portfolios to allocate"* when it has zero members |
+| **View** | Opens the group's Portfolio Manager profile (works with open-in-new-tab) |
+| **Duplicate** | Creates a copy — see below for exactly what carries over |
+| **Delete** | Opens a confirmation dialog |
 
 The delete confirmation reads: *Delete the portfolio group "{{name}}"?*
 
-Success toasts:
-
-| Action | Toast |
+| Action | Confirmation toast |
 |---|---|
-| Delete | **Portfolio Group deleted.** |
-| Duplicate | **Duplicated as "{{name}}".** |
-| Create (generic path) | **Portfolio Group created** |
-| Update | **Portfolio Group updated** |
+| Delete | Portfolio Group deleted. |
+| Duplicate | Duplicated as "{{name}}". |
+| Create | Portfolio Group created |
+| Update | Portfolio Group updated |
 
 > [!NOTE]
-> There is no multi-select and no bulk action bar on this registry. The deploy dialog is written to accept many groups, but the only shipped call site passes exactly one.
+> You can only act on one group at a time from this page — there's no multi-select or bulk actions here.
 
-### Duplicate: what is and is not copied
-
-Duplicate has **no backend endpoint**. It is a client-side composite: a `POST` that creates a copy named `<name> (copy)`, followed by a `PUT` that carries the trading configuration the create payload cannot express.
+### Duplicating a group: what is and isn't copied
 
 | Copied | Not copied |
 |---|---|
-| Name, as `<name> (copy)` | `description` |
-| `portfolio_ids` | `execution_config` |
-| `daily_update_enabled` | `protective_config` |
-| `stage` | `benchmark_ticker_id` |
-| `allocation_method` and `allocation_method_params` | `reenter_after_stop`, `reentry_cooldown_days` |
-| `rebalance_enabled`, `rebalance_frequency_days` | Per-member execution and protective overrides |
-| `member_weights`, when present | Unlocked premium allocation methods |
+| Name, as "{{name}} (copy)" | Description |
+| Members | Order policy |
+| Daily update setting | Protective exit settings |
+| Stage | Benchmark |
+| Allocation method and its parameters | Re-entry rule and cooldown |
+| Rebalance schedule | Per-member order and protective overrides |
+| Manual weights, when set | Unlocked premium allocation methods |
 
 > [!WARNING]
-> Premium allocation unlocks are keyed on `(basket_id, method)` and cascade away with the basket UUID. A duplicated group is a new UUID, so **a premium method is charged again** on the duplicate's first save.
+> Duplicating a group creates a brand-new group, so any premium allocation method you'd already unlocked on the original is **not** carried over — you'll be asked to unlock (and pay for) it again the first time you save the duplicate.
 
-### Delete: when it is refused
+### Deleting a group
 
-Delete is a **soft delete** — it stamps `deleted_at` and the row disappears from every listing. A background cleanup worker later purges baskets, operations and holdings in chunks.
+Deleting removes the group from every list right away. Treat it as final — there's no undo in the interface.
 
-The delete is **refused outright while any operation is `ACTIVE` or `PAUSED`**, with this message:
+Delete is refused outright while the group has any operation that's Active or Paused — trading real or paper money right now:
 
-```text
-This basket has live operations (ACTIVE or PAUSED). Stop them first — deleting it
-would orphan open broker positions.
-```
+*"This group has live operations (active or paused). Stop them first — deleting it would orphan open broker positions."*
 
-`STOPPED` and `DRAFT` operations do not block a delete. The reason for the guard is the schema: `basket_operations.basket_id` is `ON DELETE CASCADE`, so a hard delete would silently drop the record of positions still open at a broker.
+Operations that are Stopped or still in Draft don't block a delete. This guard exists so you never lose the record of positions still open at a broker.
 
-On the structure page the same delete is offered through a dialog titled **Delete "{{name}}"?** with the body **This cannot be undone.** That dialog deliberately **stays open on failure**, because a failure is almost always this refusal and the message is the instruction.
+On the structure page the same delete is offered through a dialog titled **Delete "{{name}}"?** with the body **This cannot be undone.** That dialog deliberately stays open if the delete is refused, because the refusal message tells you exactly what to fix first.
 
 ### Empty states
 
-| Situation | Copy |
+| Situation | What you'll see |
 |---|---|
-| No groups at all | **No portfolio groups yet. Create one from your promoted portfolios.** plus a **Create Portfolio Group** button |
-| List empty because the workspace filter is on "My" | Title **You haven't created any portfolio groups yet.**, body **Workspace filter is on — it is showing only yours. Your teammates' portfolio groups are still there.**, button **Show all portfolio groups** |
+| No groups at all | **No portfolio groups yet. Create one from your promoted portfolios.**, plus a Create button |
+| List empty because your workspace filter is set to "My" | **You haven't created any portfolio groups yet.** — *Workspace filter is on — it is showing only yours. Your teammates' portfolio groups are still there.* — with a **Show all portfolio groups** button |
 
-The table and the card grid both carry the aria-label **Portfolio groups**.
+## Building and running a Portfolio Group
 
-## Creation wizard and advanced options
+### One screen, not a step-by-step wizard
 
-### It is one screen, not a sequence of steps
+Creating a group is **a single screen**, not a sequence of steps: a center pane for picking members, a right-hand rail of collapsible sections for everything else, and a pinned Cancel/Save row at the bottom. There's no Next, no Back, no progress bar, and no separate review step.
 
-The route is `/analysis/portfolio-groups/groups/create` and the component is named `CreatePortfolioGroupWizard`, but the shipped UI is **a single screen with a right-hand rail** — a centre working pane holding the portfolio picker, a rail of collapsible sections, and a pinned action row. There is no Next, no Back, no step indicator, no progress bar, and no review step.
-
-| Element | Exact text |
+| Element | Text |
 |---|---|
-| Page title | **Create Portfolio Group** (edit mode: **Edit Portfolio Group**) |
+| Page title | **Create Portfolio Group** (or **Edit Portfolio Group**) |
 | Subtitle | **Assemble promoted portfolios into a group for consistent management.** |
-| Top-right button | **Cancel** — returns to `/analysis/portfolio-groups` |
-| Action row | **Cancel** and **Save** (**Saving…** while pending) |
+| Top-right button | **Cancel** — returns to the registry |
+| Action row | **Cancel** and **Save** (**Saving…** while it's in progress) |
 
-One blocking alert can appear above the picker, rendered at `severity=warning`. Two conditions raise it — the first takes precedence — and either disables **Save**:
+One warning banner can appear above the picker, and either one disables Save until you address it:
 
 | Condition | Message |
 |---|---|
 | Zero members selected | **Select at least one promoted portfolio to continue.** |
-| A premium allocation method is chosen and its unlock has not been confirmed | **Confirm the allocation method unlock to continue.** |
+| A premium allocation method is chosen but not yet confirmed | **Confirm the allocation method unlock to continue.** |
 
-### Member selection
+### Choosing members
 
-The centre pane is the **Promoted Portfolios picker**, mounted with inline filters. It reads `GET /portfolio_manager/managed/registry` — **exactly the [Promoted Portfolios](/docs/promoted-portfolios) registry**, using the same columns and the same filter specs, so a metric cannot render one way there and another here. Selection emits `managed_portfolio_id`s.
+The center pane is the **Promoted Portfolios picker** — the same registry, the same columns, and the same filters as the [Promoted Portfolios](/docs/promoted-portfolios) page itself, so a metric never reads differently in one place than the other.
 
 | Aspect | Detail |
 |---|---|
-| Columns shown | **Name**, **Strategy**, **CAGR**, **Sharpe**, **Max drawdown**, **Status** |
-| Columns in the chooser | **Study**, **Author**, **Total return**, **Portfolio Groups**, **Daily updates**, **Data points**, **Date promoted** |
-| Inline filter fields, in order | name, strategy, study, status |
-| Everything else | Collapses behind **More Filters** |
-| Filter state | URL-backed — a half-built group survives a reload |
-
-The picker's table is wider than its slot and scrolls horizontally.
+| Columns shown | Name, Strategy, CAGR, Sharpe, Max drawdown, Status |
+| Columns available in the chooser | Study, Author, Total return, Portfolio Groups, Daily updates, Data points, Date promoted |
+| Quick filters | Name, strategy, study, status — everything else is under **More Filters** |
+| Filter state | Saved in the page link, so a half-built group survives a reload |
 
 ### Field reference
 
-Everything the form collects, with its real default and its real validation:
-
-| Field | Where | Type | Default | Validation / message |
+| Field | Where | What it is | Default | Rule |
 |---|---|---|---|---|
-| Members | Centre pane | Checkbox selection over promoted portfolios | Empty, or the ids passed in from Rank & Build | At least one required — **Select at least one promoted portfolio to continue.** |
-| **Daily update** | Advanced → Schedule | Static chip reading **Daily update ON** | `true`, hardcoded | Not editable in this form |
-| **Periodic rebalance** | Advanced → Schedule | Switch | Off | Turning it on seeds the days field with `30`; turning it off clears it |
-| **Rebalance every (data-days)** | Advanced → Schedule | Number, shown only while the switch is on | `30` | `min=1`; the submitted value is clamped with `max(1, …)` |
-| **Allocation method** | Advanced → Allocation | Select, grouped **Free** / **Premium (tokens)** | Equal weight | A premium method opens the unlock dialog and blocks Save until confirmed |
-| Per-method parameters | Advanced → Allocation | Varies by method | Seeded per method — see the table below | Numeric minimums per control |
-| **Name** | Naming dialog | Text, pre-filled with a suggested codename | A generated three-word codename | Required — **Give the group a name to continue.** |
-| **Description** | Naming dialog | Text | Empty | Not required. Trimmed; all-whitespace is stored as NULL |
+| Members | Center pane | Tick the promoted portfolios to include | Empty, or pre-filled if you arrived from Rank & Build | At least one required |
+| Daily update | Advanced → Schedule | Always on for group members | On, not editable here | — |
+| Periodic rebalance | Advanced → Schedule | Switch | Off | Turning it on seeds 30 data-days; turning it off clears the field |
+| Rebalance every (data-days) | Advanced → Schedule | Number, shown only while the switch is on | 30 | Minimum of 1 data-day |
+| Allocation method | Advanced → Allocation | Select, grouped Free / Premium | Equal weight | Choosing a premium method opens the unlock dialog and blocks Save until confirmed |
+| Per-method parameters | Advanced → Allocation | Varies by method | Seeded per method — see below | Sensible minimums per control |
+| Name | Naming dialog | Text, pre-filled with a suggested name | A generated three-word name | Required |
+| Description | Naming dialog | Text | Empty | Optional |
 
-The **Daily update** helper text explains why it is locked on: *"When on, each portfolio in the group extends daily. Required before the group can be deployed."*
+The **Daily update** field explains why it's locked on: *"When on, each portfolio in the group extends daily. Required before the group can be deployed."* The **Periodic rebalance** switch explains itself either way:
 
-The **Periodic rebalance** helper switches on state:
-
-| Switch | Helper |
+| Switch | Helper text |
 |---|---|
 | On | **Weights are recomputed on this data-day cadence once the group is deployed.** |
 | Off | **Static: the group allocates once and holds until you change it.** |
 
 > [!IMPORTANT]
-> The cadence is in **data-days on the valuation calendar**, not calendar days. The field label says so literally. The grid's phase is the `rebalance_anchor_date`, which is frozen and defaults to the group's creation date; it is editable only in the Trading Lab.
+> Rebalance cadence counts in **data-days** — trading days on the market calendar — not calendar days, so weekends and holidays are skipped automatically. The date the schedule counts from defaults to the day you created the group, and can only be changed afterward, in the Trading Lab.
 
-### Advanced options panel
+### Advanced options
 
-The right rail's first section is **Advanced options**, and it is **collapsed by default** — both of its subsections carry a working default, so neither is on the path you must walk to create a group. It is deliberately *not* lazily mounted: the allocation control is what reports the unlock blocker, and unmounting it while collapsed would silently clear the guard on Save.
-
-| Subsection | Title | Contents |
-|---|---|---|
-| `schedule` | **Schedule** | The Daily update chip, the Periodic rebalance switch, the data-day field |
-| `allocation` | **Allocation** | The method select and its parameter panel |
-
-Both are addressable with `?panel=schedule` and `?panel=allocation`, which force-expand the parent group on the way in.
+The **Advanced options** section is collapsed by default, because both of its subsections — Schedule and Allocation — already carry a sensible working default. You only need to open it if you want to change how the group is weighted or how often it rebalances.
 
 ### Allocation methods
 
-Seven methods exist, split into two option groups in the select. The database enforces the same seven in a CHECK constraint on `allocation_method`.
+Seven methods are available, split into two groups:
 
-| Group label | Methods |
+| Group | Methods |
 |---|---|
-| **Free** | Equal weight, Manual |
-| **Premium (tokens)** | Metric-proportional, Metric-responsive (momentum / contrarian), Risk parity, Volatility target, Mean reversion |
+| Free | Equal weight, Manual |
+| Premium (token cost) | Metric-proportional, Metric-responsive (momentum / contrarian), Risk parity, Volatility target, Mean reversion |
 
-Each premium entry carries a padlock icon, or an **Unlocked** chip when that method has already been unlocked for that specific group.
+Each premium method carries a padlock icon until you unlock it for that specific group, at which point it shows an **Unlocked** chip instead.
 
 ### Per-method parameters
 
-| Method | Controls | Seeded defaults |
+| Method | What you configure | Starting values |
 |---|---|---|
-| Equal weight | none | `{}` |
-| Manual | none in this form — per-member weights are set in the Trading Lab | `{}` (params must be NULL server-side) |
-| Metric-proportional | **Metric**, **Lookback (days)**, **Weights as-of** | `metric: sharpe_ratio`, `lookback_days: 90`, `risk_free_rate: 0`, `weight_as_of: grid` |
-| Metric-responsive | **Metric**, **Lookback (days)**, **Direction**, **Transform**, **Tau (softmax temperature)** (softmax only), **Blend toward equal weight**, **Weights as-of** | `metric: total_return`, `lookback_days: 21`, `direction: momentum`, `transform: linear_clip`, `blend: 0.5`, `weight_as_of: grid` |
-| Risk parity | **Covariance window (days)**, **Weights as-of** | `lookback_days: 90`, `weight_as_of: grid` |
-| Volatility target | **Target volatility (annualized)**, **Lookback (days)**, **Base method**, **Max leverage**, **Weights as-of** | `target_volatility: 0.15`, `lookback_days: 63`, `base_method: inverse_vol`, `max_leverage: 1.0`, `weight_as_of: grid` |
-| Mean reversion | none | `{}` — the caption reads *"Preset: overweights recent underperformers (contrarian, rank-based) — no parameters."* |
-
-Enumerated option values:
+| Equal weight | Nothing — capital splits evenly | — |
+| Manual | Nothing here — per-member weights are set in the Trading Lab | — |
+| Metric-proportional | Metric, lookback (days), weights as-of | Sharpe ratio, 90-day lookback, grid date |
+| Metric-responsive | Metric, lookback (days), direction, transform, softmax temperature (for the softmax transform), blend toward equal weight, weights as-of | Total return, 21-day lookback, momentum direction, linear-clip transform, 50% blend, grid date |
+| Risk parity | Covariance window (days), weights as-of | 90-day window, grid date |
+| Volatility target | Target volatility (annualized), lookback (days), base method, max leverage, weights as-of | 15% target, 63-day lookback, inverse-volatility base, 1.0x max leverage, grid date |
+| Mean reversion | Nothing — a fixed preset | *"Overweights recent underperformers (contrarian, rank-based) — no parameters."* |
 
 | Control | Options |
 |---|---|
-| **Direction** | **Momentum (overweight winners)** (`momentum`) · **Mean reversion (overweight losers)** (`contrarian`) |
-| **Transform** | **Linear clip** (`linear_clip`) · **Softmax** (`softmax`) · **Rank** (`rank`) |
-| **Base method** | **Inverse volatility** (`inverse_vol`) · **Equal weight** (`equal_weight`) |
-| **Weights as-of** | **Grid date (matches backtest)** (`grid`) · **Latest data** (`latest`) |
+| Direction | Momentum (overweight winners) · Mean reversion (overweight losers) |
+| Transform | Linear clip · Softmax · Rank |
+| Base method | Inverse volatility · Equal weight |
+| Weights as-of | Grid date (matches the backtest) · Latest data |
 
-**Blend toward equal weight** is a slider from 0 to 1 in steps of 0.05. **Target volatility (annualized)** carries the helper **e.g. 0.15 = 15%**.
+**Blend toward equal weight** is a slider from 0 to 1, in steps of 0.05. **Target volatility** is annualized — the field helper reads *"e.g. 0.15 = 15%."*
 
-The **Metric** picker offers the canonical metric catalog, grouped by category: Return, Risk, Risk-Adjusted, Recovery, Distribution, Benchmark (vs SPY), Trade. The `optimizer` category is excluded — a fitness objective is not a per-asset metric. If the catalog request fails the picker falls back to a static 32-metric list, so it is never empty. Three legacy stored metric ids are normalized for display only (`sharpe` → `sharpe_ratio`, `sortino` → `sortino_ratio`, `cagr` → `compound_annual_growth_rate`); the engine accepts both spellings.
+The **Metric** picker offers Fintela's full metric catalog, grouped by category — Return, Risk, Risk-Adjusted, Recovery, Distribution, Benchmark (vs SPY), and Trade. If the catalog is briefly unavailable, you'll still see a solid default list of common metrics rather than an empty picker.
 
-### Unlocking a premium method
+### Unlocking a premium allocation method
 
-Picking a premium method that is not already unlocked for this group opens a confirmation dialog before Save can proceed.
+Choosing a premium method that isn't already unlocked for this group opens a confirmation before Save can proceed:
 
 | Element | Text |
 |---|---|
 | Title | **Unlock {{method}}** |
 | Body | **Unlocking this advanced method for this portfolio group is a one-time token charge. Once unlocked it stays free for this portfolio group. Tip: a very short lookback with daily rebalancing trades a lot — mind the costs.** |
-| Figures | **Cost**: the token price · **Your balance**: your current balance |
+| Figures shown | The token cost, and your current balance |
 | Insufficient balance | **Not enough tokens — buy more from your account to unlock.** |
-| Buttons | **Cancel** (reverts the select to the previous method) · **Unlock on save** |
+| Buttons | **Cancel** (reverts your method choice) · **Unlock on save** |
 
-The price comes from `GET /portfolio_manager/baskets/:id/allocation-unlock/estimate?method=<m>`, which returns `{ method, paid, cost, already_unlocked, balance }`. Free methods report `paid: false, cost: 0`; an already-unlocked method reports `cost: 0, already_unlocked: true`.
-
-The charge itself is applied **inside the same database transaction as the create or update**, with the ledger reason `advanced_allocation` and the group's id as the reference. Re-saving a method that is already unlocked is free, and re-saving a pre-existing premium configuration never retro-charges — only a genuine change *to* a premium method is billed. See [tokens and billing](/docs/tokens-and-billing).
+The charge only happens at the moment you actually save the group — a failed save never charges you. Re-saving a method already unlocked for this group is always free, and changing other settings without changing the allocation method never triggers a new charge; only switching to a genuinely new premium method does. See [tokens and billing](/docs/tokens-and-billing).
 
 ### Selection preview
 
-The rail's second section is **Selection preview**, and it is **expanded by default** — a summary that has to be opened is not a summary. Its collapsed summary line reads **Selected: {{n}}**.
+The rail's **Selection preview** section is expanded by default and reads **Selected: {{n}}**.
 
 | Element | Detail |
 |---|---|
-| Config read-back | Three rows labelled with the registry's own column names: **Allocation**, **Rebalance**, **Daily update** (value **On** / **Off**) |
-| Member list | Headed **Selected portfolios** with a count chip and a **Clear all** chip |
+| Config read-back | Allocation, Rebalance, and Daily update, shown with their current values |
+| Member list | Headed **Selected portfolios**, with a count and a **Clear all** option |
 | Empty state | **Portfolios you tick in the table land here, with the settings above applied to them.** |
-| Each row | Member name (falling back to `#<id>` if it has left the promoted list), its strategy name or **Unknown strategy**, and a remove button with the tooltip **Remove from selection** |
+| Each row | Member name, its strategy, and a remove button |
 
-The list caps at a fixed height and then scrolls, in selection order, newest at the bottom.
+The list caps at a fixed height and scrolls, newest selection at the bottom.
 
-### Saving: the naming confirmation
+### Saving and naming your group
 
-**Save** does not write directly. It opens the shared naming dialog, which is the real commit step.
+**Save** doesn't write immediately — it opens a naming dialog, which is the real commit step:
 
 | Element | Text |
 |---|---|
-| Dialog title | **Confirm Action** |
+| Title | **Confirm Action** |
 | Message | **Name this portfolio group before saving it.** |
-| Name field | **Name**, with an icon-button **Suggest another name** |
-| Description field | **Description** — not required |
+| Name field | With a **Suggest another name** button |
+| Description field | Optional |
 | Blank-name error | **Give the group a name to continue.** |
 | Buttons | **Cancel** · **Confirm** |
 
-Portfolio Groups are the only registry that offers name suggestions, because a group has nothing to derive a name from the way a strategy or a fitness function does. Suggestions are three-word mission codenames drawn from a generator that avoids names already in use — group names are **not unique** in the database, so this is a courtesy, not a constraint.
+Portfolio Groups are the only registry that offers name suggestions, because — unlike a strategy or a fitness function — a group doesn't have an obvious name to draw from. Suggestions are three-word names; feel free to keep one, generate another, or type your own. Names don't have to be unique, so this is a courtesy, not a constraint.
 
-On confirmation the form sends `POST /portfolio_manager/baskets`:
+Saving takes you straight to the new group's **structure page** — never to a deploy screen, so you always land somewhere you can double-check your setup before any capital moves.
 
-```json
-{
-  "name": "Onyx Dubhe Compass",
-  "description": null,
-  "portfolio_ids": [4412, 4418, 4470],
-  "daily_update_enabled": true,
-  "stage": "overall",
-  "allocation_method": "risk_parity",
-  "allocation_method_params": { "lookback_days": 90, "weight_as_of": "grid" },
-  "rebalance_enabled": true,
-  "rebalance_frequency_days": 30
-}
-```
+### Messages you might see while creating a group
 
-Notes on that payload, all of them verifiable in the request:
-
-- `allocation_method` is omitted entirely when the method is `equal_weight`.
-- `allocation_method_params` is sent as `null` for both `manual` and `equal_weight` — the database has a CHECK that refuses params on `manual`.
-- `stage` is `'overall'`. The server's own default is `'ytd'`; this form overrides it.
-- With rebalance off, the form sends `rebalance_enabled: false` and `rebalance_frequency_days: null` explicitly.
-
-A successful save navigates to the new group's **structure page**, never to a deploy screen.
-
-### Server-side validation
-
-These messages come back verbatim as HTTP 400 (or 402 for the token case) and are surfaced in the dialog or as a toast.
-
-| Condition | Message |
+| Situation | What you'll see |
 |---|---|
-| Rebalance enabled without a cadence | `rebalance_frequency_days is required when rebalance_enabled is true` |
-| `portfolio_ids` is not an array | `portfolio_ids must be a JSON array` |
-| Non-integer member id | `portfolio_ids must contain integers, got {v}` |
-| Member id out of range | `portfolio id {n} out of range` |
-| Unknown id | `id {id} is neither a managed portfolio nor a promotable trial in this organization` |
-| An EXTERNAL-strategy member | `portfolio {id} uses an EXTERNAL strategy ({execution_type}); it cannot daily-extend (managed mode supports INTERNAL only), so it cannot be in a tracked basket. Remove it from the basket.` |
-| A meta-portfolio carrying a sector/country cap risk manager | `portfolio {id} has a sector_cap/country_cap risk manager and its parent study is a Mode-1 meta-strategy (portfolio-of-baskets); … Remove the sector_cap/country_cap attachment(s) before adding it. Other risk managers are fully supported on meta-portfolios.` |
-| Manual weight out of range | `member weight {w} for portfolio {id} is out of range; each manual weight must be in (0, 1]` |
-| Manual weights over 100% | `manual member weights sum to {sum}, which exceeds 1.0; reduce them so together they are at most 1.0 (100% of target capital)` |
-| Params sent with `manual` | `allocation_method 'manual' does not take allocation_method_params (per-member weights are set separately); omit the params` |
-| Invalid execution config | `invalid execution config: {reason}` |
-| Not enough tokens for a premium method | `Insufficient tokens: this allocation method costs {required} but only {available} are available.` (structured 402) |
+| A member you picked uses an External strategy | A message explaining it can't stay current automatically and asking you to remove it (see [Execution modes](#execution-modes) below) |
+| A member built from other portfolios also carries a sector-cap or country-cap risk manager | A message asking you to remove that specific risk-manager attachment first — every other risk manager type works fine here |
+| A manual weight you entered is zero, negative, or over 100% for one member | A message telling you the valid range |
+| Your manual weights add up to more than 100% | A message showing the total and asking you to bring it back to 100% or less |
+| A portfolio ID you entered isn't a promoted portfolio or a promotable trial in your organization | A message telling you it wasn't found |
+| You chose a premium allocation method without enough tokens to unlock it | A message showing the cost and your available balance |
 
-### Members can be submitted as trial ids
+### Adding members by trial ID
 
-The ids you submit may **mix already-managed portfolio ids and raw trial ids**. The server resolves them: an id that is already a managed portfolio of your organization passes through after its snapshotted execution type is re-checked; anything else is treated as a trial id and **idempotently promoted** into a managed portfolio; anything that is neither is rejected. The result is sorted and deduplicated. This is exactly what the structure page's helper text means by *"A trial id is promoted to a managed portfolio on save."*
+You don't have to pick members only from the picker. You can type in the numeric ID of a study trial directly, and Fintela will automatically promote it to a managed portfolio the moment you save — exactly as if you'd promoted it yourself first. Already-promoted portfolio IDs and raw trial IDs can be freely mixed in the same group.
 
-### What creation deliberately does not collect
+### What creating a group does not do yet
 
 > [!IMPORTANT]
-> **Capital, broker account, paper vs live, execution policy, protective exits, benchmark, rebalance anchor and per-member weights are not part of creating a group.** Saving creates the group and stops there. It never launches anything.
+> Capital, your broker account, paper vs. live, order policy, protective exits, benchmark, the rebalance start date, and per-member weights are **not** part of creating a group. Saving only builds the group's structure — it never places an order or commits any capital.
 
-| Setting | Where it is actually set |
+| Setting | Where you actually set it |
 |---|---|
-| Capital, broker connection, paper vs live | The deploy dialog, or the Initiate-Tracking dialog on the Operations tab |
-| Per-operation execution override | The Initiate-Tracking dialog |
-| Execution policy, protective exit, benchmark, re-entry policy, rebalance anchor | The Trading Lab modal |
-| Manual weights, risk budgets, per-member overrides | The Trading Lab modal |
-| Membership, after creation | The structure page, or Rank & Build in append mode |
+| Capital, broker connection, paper vs. live | The deploy dialog, or the **Trade with your brokerage** dialog on the Operations tab |
+| Per-operation order override | The **Trade with your brokerage** dialog |
+| Order policy, protective exit, benchmark, re-entry rule, rebalance start date | The Trading Lab |
+| Manual weights, risk budgets, per-member overrides | The Trading Lab |
+| Membership, after creation | The structure page, or Rank & Build in "add to group" mode |
 
-### Edit mode
+### Editing a group's settings later
 
-`/analysis/portfolio-groups/groups/:groupId/edit` renders the same form with the draft hydrated from `GET /portfolio_manager/baskets/:id` and submits through `PUT /portfolio_manager/baskets/:id`. Name suggestion is suppressed. Note that **the registry's row actions do not link here** — **Edit structure** goes to the structure page instead — so this route is reached by URL or by a bookmark.
+Opening a group's Edit option loads the same form, pre-filled with its current setup — it just won't suggest a new name. Note that the registry's row menu doesn't link here directly; **Edit structure** takes you to the structure page instead, since that's where you'll do most day-to-day membership changes. This edit form is still useful for changing the basics — name, members, schedule — in one pass; reach it by bookmark or from the structure page.
 
 ### The structure page
 
-`/analysis/portfolio-groups/baskets/:basketId` is where membership and re-weighting are managed after creation. Its header reads eyebrow **Portfolio structure**, the group's name, and the subtitle **Members, data freshness and trading configuration. Performance lives in Portfolio Manager.**
+This is where you manage membership and re-weighting after a group exists. Its subtitle sums it up: **Members, data freshness and trading configuration. Performance lives in Portfolio Manager.**
 
-| Header action | Label | Notes |
-|---|---|---|
-| Back | **Back**, or **Back to portfolio** when `origin` points into Portfolio Manager | — |
-| Performance | **View performance** | Hidden when you arrived from the Portfolio Manager dashboard |
-| Trading Lab | **Trading Lab** | Primary button; disabled with zero members |
-| Refresh members | **Update portfolios** | Disabled while pending, already armed, or empty. Label cycles **Queuing…** → **Updating {{count}} of {{total}}…** → **Queued…** |
-| Kebab | **More** | See below |
-
-The **More** menu holds **Rename portfolio group**, **Seed**, a permanently **disabled** item reading **Daily update ON**, a divider, and **Delete portfolio group** in the error colour.
+| Header action | Notes |
+|---|---|
+| Back / Back to portfolio | Returns to wherever you came from |
+| View performance | Opens Portfolio Manager; hidden if you arrived from there |
+| Trading Lab | Disabled with zero members |
+| Update portfolios | Refreshes stale members; disabled while already running or while the group is empty |
+| More menu | Rename portfolio group, Seed, Daily update ON (disabled), Delete portfolio group |
 
 > [!WARNING]
-> **Daily update cannot be turned off from the UI.** The creation form shows a static chip; the structure page's menu item is disabled. The backend does accept `daily_update_enabled: false`, but refuses it once the group has any operation: *"This basket has operations; daily update can't be turned off while it is being tracked. Stop and remove its operations first."*
+> You can't turn daily updates off from the interface, and once the group has any operation, Fintela won't allow it to be turned off at all — trading depends on members staying current. If you truly need it off, remove the group's operations first.
 
-Membership editing controls:
-
-| Control | Label | Behaviour |
-|---|---|---|
-| Id entry | **Portfolio ID** | Number field, `min=1`, Enter submits. Helper: **A trial id is promoted to a managed portfolio on save.** |
-| Add | **Add** | Client-side only — deduplicates and requires `id > 0` |
-| Browse | **Browse & filter** | Opens Rank & Build in append mode for this group |
-| Commit | **Save changes** / **Saving…** | Appears **only** when the local list differs from the stored one (order-insensitive). Sends `PUT /portfolio_manager/baskets/:id` with `portfolio_ids` alone |
-
-Member chips are colour-coded, in this precedence: EXTERNAL **or** frozen → error; stale → warning; otherwise primary. Their hover titles are exact:
-
-| State | Chip title |
+| Membership control | What it does |
 |---|---|
-| EXTERNAL strategy | **EXTERNAL strategy — cannot daily-extend; remove it from the portfolio group** |
-| Daily updates off | **frozen: daily updates disabled — cannot stay up to date** |
-| Behind the market | **stale: behind the latest market bar — click "Update portfolios"** |
-| Healthy | **up to date** |
+| Portfolio ID field | Type in an ID and press Enter to queue it for adding |
+| Add | Adds it to your working list (deduplicated) |
+| Browse & filter | Opens Rank & Build in "add to this group" mode |
+| Save changes | Appears only when your working list differs from what's saved; commits the change |
 
-An EXTERNAL member renders as **{{name}} · EXTERNAL**; an unresolvable one falls back to **Managed portfolio**. With no members at all the panel reads **No portfolios. Add some below.**
+Member chips are color-coded so you can see status at a glance:
 
-The page also offers **Optimize Risk Managers** — one row per member with an **Optimize RMs** button. Its body states the contract: *"Runs a risk-manager optimization for one portfolio group member at a time — creates a new study; the portfolio group itself is never modified until you add the winning trial back."* The button is disabled for a member that already has a risk manager, with the tooltip *"This member already has a risk manager — pick a member whose study never injected one."* See [risk managers](/docs/risk-managers).
+| State | What the chip tells you |
+|---|---|
+| External strategy | Can't extend daily — remove it from the group |
+| Daily updates off | Frozen — can't stay up to date |
+| Behind the market | Stale — click **Update portfolios** |
+| Healthy | Up to date |
 
-**Seed** opens a dialog titled **Portfolio Group seed** with **Blended** and **By member** views, backed by `GET /portfolio_manager/baskets/:id/seed?view=bundle|blended|both` (default `both`). It is **entitlement-gated** behind `seed_export` — the seed is the raw rebalancing signal, so whoever holds it can trade the signal directly. It is not token-charged.
+With no members at all, the panel reads **No portfolios. Add some below.**
 
-### Freshness
+The page also offers **Optimize Risk Managers** — one row per member, each with an **Optimize RMs** button. It runs a risk-manager optimization for that one member, creating a new study; the group itself is never touched until you decide to bring the winning result back in. It's disabled for a member that already has a risk manager. See [risk managers](/docs/risk-managers).
 
-Every membership surface reads `GET /portfolio_manager/baskets/:id/freshness`, which returns:
+**Seed** opens a dialog showing the group's current rebalancing signal — either **Blended** (the combined target) or **By member** (each portfolio's own weights). This is available on plans that include raw signal export, since whoever holds it can trade on it directly outside Fintela; it doesn't cost tokens to view.
 
-```json
-{
-  "basket_id": "…",
-  "fresh": [4412],
-  "stale": [4418],
-  "not_scheduled": [4470],
-  "members": [
-    {
-      "managed_portfolio_id": 4418,
-      "stale": true,
-      "daily_updates_enabled": true,
-      "execution_type": "INTERNAL",
-      "refresh_status": "RUNNING",
-      "protective_overlap_warning": null,
-      "has_risk_manager": false,
-      "source_study_resolvable": true
-    }
-  ],
-  "daily_update_enabled": true,
-  "rebalance_frequency_days": 30
-}
-```
+### Freshness: keeping members up to date
 
-A member can be in **both** `stale` and `not_scheduled`. `refresh_status` is one of `PENDING`, `RUNNING`, `COMPLETED`, `FAILED` or null. The structure page renders three chips from this:
+Every membership view shows how current each member is. A member can be **stale** (behind the latest market bar) and also **not scheduled** for daily updates at the same time — the two are checked independently.
 
-| Chip | Copy | Severity |
-|---|---|---|
-| Fresh | **{{count}} up to date** | success |
-| Stale | **{{count}} stale** | warning |
-| Not scheduled | **{{count}} not on daily updates** | error |
+| Chip | Copy |
+|---|---|
+| Fresh | **{{count}} up to date** |
+| Stale | **{{count}} stale** |
+| Not scheduled | **{{count}} not on daily updates** |
 
-with hints **Stale portfolios haven't reached the latest market day — click "Update portfolios".** and **Some portfolios aren't scheduled for daily updates and can't be invested — enable daily updates first.**
+with hints: *"Stale portfolios haven't reached the latest market day — click 'Update portfolios'."* and *"Some portfolios aren't scheduled for daily updates and can't be invested — enable daily updates first."*
 
-**Update portfolios** posts to `POST /portfolio_manager/baskets/:id/update` and returns `{ basket_id, portfolio_count, studies_enqueued }`. It reuses the study-scoped updater pipeline, and studies already `PENDING` or `RUNNING` are intentionally not re-queued, so the call is idempotent. While a refresh is armed an info banner explains it runs in the background and that you may leave the page.
+**Update portfolios** queues a background refresh for every stale member. It's safe to click more than once — a member already refreshing isn't queued twice — and an info banner lets you know it's fine to leave the page while it runs.
 
-### Trading Lab
+### The Trading Lab
 
-The Trading Lab modal is the post-creation configuration surface, opened from the structure page. Title **Trading Lab**, subtitle **Configure and re-simulate the portfolio group's trading strategy**. Its left column configures; its right column previews.
+The Trading Lab is where you configure — and re-simulate — a group's trading strategy after it's created, opened from the structure page. Its left column configures; its right column previews the effect.
 
 **Allocation and schedule**
 
-| Control | Label | Notes |
-|---|---|---|
-| Method + parameters | **Allocation method** | Same picker as the creation form, but with the group's real `unlocked_methods`, so an already-unlocked premium method shows the **Unlocked** chip and skips the charge |
-| Rebalance | **Rebalance** switch, **Rebalance every (data-days)** | Seeds to `30` |
-| Grid phase | **Rebalance anchor** | Date field. Helper is either *grid counts from here* or *defaults to {{date}}* (the group's creation date) |
+| Control | Notes |
+|---|---|
+| Allocation method + parameters | The same picker as the creation form, but reflecting this group's own unlocked methods — an already-unlocked premium method shows the **Unlocked** chip and skips the charge |
+| Rebalance switch and cadence | Seeds to 30 data-days |
+| Rebalance anchor (start date) | Defaults to the group's creation date; editable only here |
 
-**Execution settings** (the shared order policy every order inherits)
+**Order policy** (the shared rules every order inherits)
 
-| Control | Label | Values |
-|---|---|---|
-| Order type | **Order type** | **Market**, **Limit**, **Stop**, **Stop limit**, **Trailing stop** — the stop family is tagged **— protective, coming soon** |
-| Time in force | **Time in force** | **Day**, **Good till canceled**, **At the open**, **At the close**, **Immediate or cancel**, **Fill or kill** — some tagged **— not yet on the buy leg** |
-| Limit offset | **Limit offset (bps)** | Helper: *"Marketable cushion above the reference price — higher fills more reliably, lower ties up less of the reserved cash."* |
-| Preview | **Order intent preview** | **Buy leg** and **Sell leg** cards, each labelled **From portfolio group config** or **Engine default (market + day)** |
+| Control | Values |
+|---|---|
+| Order type | Market, Limit, Stop, Stop limit, Trailing stop (the stop family is marked "protective, coming soon") |
+| Time in force | Day, Good till canceled, At the open, At the close, Immediate or cancel, Fill or kill (some marked "not yet on the buy leg") |
+| Limit offset (bps) | A marketable cushion above the reference price — higher fills more reliably, lower ties up less of your reserved cash |
+| Order intent preview | Shows the buy leg and sell leg your settings will actually produce |
 
-The section's own hint states the asymmetry: *"Funding sells are always market + DAY so they fill and release buying power; buys carry the configured type and time-in-force as a bounded marketable limit."* Only `market` and `limit` are honoured on the rebalance buy leg today, and only `day` and `gtc`; the rest are stored-and-valid but not yet wired into live execution. The server refuses the rest outright:
-
-```text
-stop, stop-limit and trailing-stop are protective order types and are not yet
-configurable for rebalancing — use market or limit
-```
+Sells that fund a rebalance are always sent as market orders, good for the day, so they fill and free up buying power reliably; buys carry whatever order type and time-in-force you configured, as a bounded marketable limit. Today, only market and limit orders — with day or good-till-canceled — are actually used for rebalancing; the rest are saved but not yet wired into live execution, and choosing one of the stop-family types for the buy leg is refused with a message explaining they're reserved for protective exits.
 
 **Protective exit**
 
-| Control | Label |
+| Control | What it sets |
 |---|---|
-| Arm | **Arm a protective exit** |
-| Type | **Protective order type** — stop, stop limit or trailing stop only |
-| Time in force | **Time in force** — day or gtc |
-| Stop | **Stop offset (bps below)** |
-| Limit | **Limit offset (bps below)** |
-| Trail | **Trail (%)** |
+| Arm a protective exit | Turns the feature on |
+| Protective order type | Stop, stop limit, or trailing stop only |
+| Time in force | Day or good-till-canceled |
+| Stop offset (bps below) | How far below entry the stop sits |
+| Limit offset (bps below) | For a stop-limit |
+| Trail (%) | For a trailing stop |
 
-Its hint: *"An optional resting exit armed per long position after a buy fills. It sits at the broker and triggers if price falls to your stop; a trailing stop tracks the high-water mark server-side and ratchets up as the position gains."* A non-stop type is refused with **a protective exit must be a stop, stop-limit or trailing stop**.
+A protective exit is an optional resting order armed for each long position right after a buy fills. It sits at your broker and triggers if price falls to your stop; a trailing stop tracks the position's high-water mark and ratchets up as the position gains.
 
 **Re-entry, benchmark, weights**
 
-| Control | Label | Default | Notes |
-|---|---|---|---|
-| Re-entry | **Re-enter after a stop-out** | Off | *"When off (default), a symbol whose protective stop fires stays out until you change the config — a hard stop-loss. When on, the next rebalance can buy it back to target."* |
-| Cooldown | **Days out after a stop** | `0` | Shown only while re-entry is off. *"Trading days the symbol stays out, counting the day it exited. 0 keeps it out for the whole stage."* |
-| Benchmark | **Benchmark** | **Platform default** | *"Alpha, beta and information ratio are measured against this. If this group is allocated by one of those metrics, it also decides the weights."* |
-| Manual weights | one % field per member | Even split | Only when the method is `manual`. Running total shown; guarded when \|total − 100\| > 0.5; normalized to sum 1.0 before sending |
-| Risk budget | **Risk budget per portfolio** | `1` per member | Only when the method is `risk_parity`. *"Relative risk shares — renormalized automatically (equal = classic risk parity)."* |
-| Per-strategy overrides | **Per-strategy overrides** | Inherit | One form per member, chipped **Override** or **Inherits portfolio group**. *"When two strategies hold the same symbol, the one contributing the most dollars to it wins."* |
+| Control | Default | Notes |
+|---|---|---|
+| Re-enter after a stop-out | Off | Off (default): a symbol that gets stopped out stays out until you change the config — a hard stop-loss. On: the next rebalance can buy it back to target |
+| Days out after a stop | 0 | Shown only while re-entry is off. Trading days the symbol stays out; 0 keeps it out for the whole stage |
+| Benchmark | Platform default | Alpha, beta, and information ratio are measured against this — and if the group is allocated by one of those metrics, it also decides the weights |
+| Manual weights | Even split | Only when the method is Manual. A running total is shown; it's normalized to 100% before saving |
+| Risk budget per portfolio | 1 per member | Only when the method is Risk parity. Relative shares, renormalized automatically — equal shares is classic risk parity |
+| Per-strategy overrides | Inherit from the group | One form per member; when two members hold the same symbol, the one contributing the most dollars to it wins |
 
-**What-if hypothesis** is preview-only. It offers **Exclude names**, **Exclude sectors**, a **From**/**To** window and a **Reallocate the freed weight to the other names** switch, and states plainly: *"Reshapes the backtest preview on the right. Nothing here is saved to the portfolio group or sent to live trading."*
+**What-if hypothesis** is preview-only: exclude names or sectors, pick a date window, and optionally reallocate the freed weight to the remaining names. It reshapes the backtest preview on the right — nothing here is ever saved to the group or sent to live trading.
 
-**Re-simulate** runs `POST /portfolio_manager/baskets/:id/simulate` — a synchronous fund-of-funds backtest that **is token-charged**. The preview badge reads **Committed track record**, **Unsaved preview** or **Inverted (what-if) — backtest only**, and the delta grid is headed **Impact vs. track record**.
+**Re-simulate** runs a fresh backtest reflecting your new settings, and this uses tokens the same way any backtest does. The preview badge tells you what you're looking at — **Committed track record**, **Unsaved preview**, or **Inverted (what-if) — backtest only** — with a delta grid showing the impact versus your committed track record.
 
-**Save & apply** sends one `PUT /portfolio_manager/baskets/:id` carrying allocation, rebalance, anchor, manual weights, execution, protective, re-entry, benchmark and `rewrite_backtest`, then fires the per-member override PUTs **separately and non-atomically**. A partial failure toasts **Couldn't save {{count}} per-strategy overrides.** and leaves the modal open; a full success toasts **Configuration saved.** and closes.
+**Save & apply** saves your allocation, schedule, order policy, protective exit, re-entry rule, benchmark, and manual weights together. Per-strategy overrides save as a separate step; if some of those fail, you'll see a message telling you how many didn't save, while the rest of your configuration is kept.
 
-**The rewrite prompt** appears only for a group that has never traded and already has a committed curve:
+**The rewrite prompt** appears only for a group that has never traded and already has a committed backtest:
 
 | Element | Text |
 |---|---|
@@ -662,240 +508,193 @@ Its hint: *"An optional resting exit armed per long position after a buy fills. 
 | Buttons | **Rewrite backtest** · **Apply forward only** · **Cancel** |
 
 > [!CAUTION]
-> **A group that has ever traded can never have its backtest rewritten.** Server-side, "has traded" means any operation whose `last_status` is not `DRAFT`, **or** a `DRAFT` operation that shows evidence of a real cycle (`last_rebalanced_at` or `current_cycle_id` set) — and **a STOPPED operation still counts**. For such a group `rewrite_backtest` is ignored entirely and every grid-affecting change is applied forward-only, freezing the existing slice and opening a new epoch. Grid-affecting means a change to the anchor date, the allocation method, its parameters, or the effective cadence (toggling rebalance off counts, since NULL means static). Membership and manual-weight edits are explicitly **not** stage triggers.
+> **A group that has ever traded can never have its backtest rewritten.** Once a group has placed a real trade through any operation — even one that's since been stopped — every configuration change that would affect the backtest (a new rebalance start date, allocation method, its parameters, or turning rebalancing on or off) is applied forward-only: it freezes the existing record and opens a new stage from today. Changing membership or manual weights never triggers this — only changes that would reshape the historical grid do.
 
-### Deploying a group: capital, account, paper vs live
+### Deploying a group: capital, account, paper vs. live
 
-The row action **Deploy Portfolio Group** opens a dialog that collects the three things the group itself does not carry, then makes **two sequential API calls per group**: `POST …/operations` to create it, then `PATCH …/operations/:opId/launch` to start it.
+The **Deploy Portfolio Group** action opens a dialog that collects the three things a group doesn't carry on its own, then creates the operation and starts it:
 
 | Input | Notes |
 |---|---|
-| Broker account | A select over your **active** broker connections only. Each option shows the connection's display name and an environment chip — orange for `live`, blue for paper |
-| Capital | A number per group; the dialog shows the run's total when more than one group is eligible |
-| Operation name | Optional label for the resulting operations, placeholder **e.g. Paper $10k** |
+| Broker account | A select over your active broker connections — each option shows its name and an environment chip: orange for live, blue for paper |
+| Capital | An amount per group; the dialog shows the run's total when more than one group is eligible |
+| Operation name | Optional label, e.g. "Paper $10k" |
 
-With no active connection at all the dialog shows a guided empty state: title **Connect your brokerage account**, body **You need to link your brokerage credentials before you can trade this portfolio group. Add a connection under Account settings → Broker connections, then come back here.**
+With no active broker connection at all, the dialog shows a guided empty state: **Connect your brokerage account** — *"You need to link your brokerage credentials before you can trade this portfolio group. Add a connection under Account settings → Broker connections, then come back here."*
 
-Before the run, each group is tagged from its own freshness read. **Only an empty group is a hard client-side block**; stale members and members not on daily updates are warnings you may still attempt, since a member can refresh between the preflight and the launch.
+Before the run, each group is checked against its own freshness. Only a completely empty group is a hard block; stale members or members not on daily updates are shown as warnings you can still proceed past, since a member can catch up between the check and the actual launch.
 
-Every run settles each group into one of four outcomes:
+Every group in the run settles into one of four outcomes:
 
 | Outcome | Meaning | What to do |
 |---|---|---|
-| `deployed` | Created **and** launched. Capital is at work | Nothing |
-| `draft_only` | Created, but the launch failed. **A DRAFT operation is left behind** | Open the group's Operations tab and launch it. This is not a failure |
-| `skipped` | The group already has an operation on this connection (`UNIQUE (basket_id, connection_id)`) | Nothing — re-running a deploy over the same selection is expected and harmless |
-| `failed` | The operation was never created | Read the message; it is the server's own diagnosis |
+| Deployed | Created and launched — capital is at work | Nothing |
+| Created, not launched | The operation exists, but launching it failed | Open the group's Operations tab and launch it manually — this isn't a failure, just an extra step |
+| Skipped | The group already has an operation on that connection | Nothing — re-running a deploy over the same selection is expected and harmless |
+| Failed | The operation was never created | Read the message; it names the fix |
 
-The result summary reads **{{launched}} of {{total}} groups launched.**, and a draft-only result adds **Groups marked "Created, not launched" have a draft operation waiting. Open the group's Operations tab to launch it.**
-
-> [!NOTE]
-> `draft_only` is also the exact outcome for a user who holds `broker_tracking:create` but not `broker_tracking:update`: the operation is created and the launch is refused.
+The summary reads **{{launched}} of {{total}} groups launched.**, and any created-not-launched groups get a reminder pointing you to their Operations tab.
 
 > [!WARNING]
-> Several labels in this dialog are currently untranslated — their keys are missing from the English, Spanish and Portuguese bundles, so the running app renders the raw key text (for example `bulkDeploy.title`, `bulkDeploy.capitalPerGroup`, `bulkDeploy.confirm`). The dialog's behaviour is as described above; do not treat the on-screen strings as final copy.
+> A few labels in this dialog haven't been fully translated yet, so you may occasionally see a raw text key instead of finished copy in some languages. The dialog's behavior is exactly as described here regardless.
 
 > [!IMPORTANT]
-> **There is no per-group live/paper switch.** The environment is a property of the broker connection you pick. Because one group can hold one operation per connection, the same group can run paper and live simultaneously on two connections. Live trading is additionally gated platform-wide behind the `ALLOW_LIVE_BROKER_TRADING` environment flag. See [live trading](/docs/live-trading).
+> There's no per-group live/paper switch — the environment is a property of the broker connection you pick. Because a group can hold one operation per connection, the same group can run paper and live at the same time, on two different connections. Live trading is additionally gated at the platform level. See [live trading](/docs/live-trading).
 
-The single-group equivalent, reached from the Operations tab, is the **Trade with your brokerage** dialog. It collects the same things plus an optional per-operation execution override:
+The single-group equivalent, reached from a group's Operations tab, is the **Trade with your brokerage** dialog. It collects the same information, plus an optional order-policy override just for that operation:
 
-| Field | Label | Validation |
-|---|---|---|
-| Connection | **Brokerage account** | Active connections only; defaults to the first |
-| Capital | **Capital to trade ($)** | `min=1`, `step=100`; must be greater than 0. Helper: *"The total amount available to this trading session."* |
-| Name | **Name (optional)** | Placeholder **e.g. Paper $10k** |
-| Override | **Override execution policy for this operation** | Off by default. When on: **Order type** (market or limit), **Time in force** (day or gtc), **Limit offset (bps)** (0–1000, step 5) for a limit |
+| Field | Notes |
+|---|---|
+| Brokerage account | Active connections only; defaults to the first one |
+| Capital to trade ($) | Must be greater than 0. *"The total amount available to this trading session."* |
+| Name | Optional, e.g. "Paper $10k" |
+| Override order policy for this operation | Off by default. When on: order type (market or limit), time-in-force (day or GTC), and limit offset in basis points |
 
-Warnings appear above the fields when members are stale or unscheduled, and the footer states: *Next: review it, then **Launch** to place the first orders.* The confirm button reads **Create operation** (**Creating…** while pending), and creation alone does not trade.
+Warnings appear here too if members are stale or unscheduled. The confirm button reads **Create operation** — creating the operation alone doesn't place any trade; the next step is **Launch**.
 
 ### What an operation is
 
-An operation is one deployment of one group against one broker connection. The group holds the shared trading rules; the operation holds capital, status and its own rebalance clock. The panel says exactly that: *"Each trading session invests this portfolio group through one broker account. The portfolio group holds the shared trading rules; each session runs its own capital, status, and rebalances."*
+An operation is one deployment of one group against one broker connection. The group holds the shared trading rules; the operation holds its own capital, status, and rebalance clock — as the panel itself puts it: *"Each trading session invests this portfolio group through one broker account. The portfolio group holds the shared trading rules; each session runs its own capital, status, and rebalances."*
 
-Operations are **not** rendered inside the Portfolio Groups feature. The Operations tab is a Portfolio Manager route: `/analysis/portfolio-manager/:basketId/operations`. This registry only *starts* an operation and *counts* it in the Total AUM column.
+You won't find the list of an operation's activity inside the Portfolio Groups screen itself — head to the group's entry in Portfolio Manager and open its **Operations** tab. This registry only *starts* an operation and *counts* it toward the Total AUM column.
 
-The row for an operation shows its name (or the connection label), the connection and capital, **Last rebalanced:** with a date, and a **Next:** date when one is known. `next_due_date` stays null until the operation has actually rebalanced once, or if the group is static, or if the next grid date is not yet a known data-day.
+An operation's row shows its name (or the connection's label), the connection and capital, when it last rebalanced, and when it's next due — which stays blank until the operation has rebalanced at least once, or if the group is static, or if the next scheduled date isn't yet known.
 
-Status chips:
+| Status | Meaning |
+|---|---|
+| Draft | Created, never launched — no capital at work |
+| Active | Trading |
+| Paused | Positions held, rebalancing stopped |
+| Stopped | Liquidated and finished; history is kept |
 
-| `last_status` | Colour | Meaning |
-|---|---|---|
-| `DRAFT` | default | Created, never launched. No capital at work |
-| `ACTIVE` | success | Trading |
-| `PAUSED` | warning | Positions held, rebalancing stopped |
-| `STOPPED` | error | Liquidated and finished; history is kept |
-
-A second outlined chip **→ {{status}}** appears whenever `desired_status` differs from `last_status` — the orchestrator has been told to move and has not finished. **rebalance pending** appears while a manual rebalance is queued, and **connection revoked** / **connection error** when the broker connection is unusable.
+A small **→ {{status}}** chip appears while a change you requested (like a pause or stop) is still being carried out. **Rebalance pending** shows while a manual rebalance you asked for is queued, and **Connection revoked** / **Connection error** appears when the broker connection itself needs attention.
 
 ### Operation lifecycle
 
-The only legal transitions are:
-
 ```text
-  DRAFT ──launch──► ACTIVE ⇄ PAUSED
-                      │        │
-                      └────────┴──stop──► STOPPED ──re-initiate──► DRAFT
+  Draft ──Launch──► Active ⇄ Paused
+                       │        │
+                       └────────┴──Stop──► Stopped ──Re-initiate──► Draft
 ```
 
-An illegal move is refused with `Invalid status transition: {from} → {to}`. `PENDING` exists elsewhere in the system but is reserved for the orchestrator; the API accepts only these four.
+An action that isn't valid for an operation's current state is refused and explained rather than silently ignored.
 
-| Button | Shown when | Tooltip | Confirmation |
-|---|---|---|---|
-| **Launch** | `DRAFT`, connection healthy | **Place the initial buy and start trading this operation (DRAFT → ACTIVE).** | **Launch operation** — *"The orchestrator will place the initial buy on its next cycle."* |
-| **Pause** | `ACTIVE`, connection healthy | **Stop rebalancing but keep current positions (ACTIVE → PAUSED).** | none |
-| **Resume** | `PAUSED`, connection healthy | **Resume rebalancing and re-buy into the market (PAUSED → ACTIVE).** | **Resume operation** — *"The orchestrator will rebalance back into the market."* |
-| **Stop** | `ACTIVE` or `PAUSED`, connection healthy | **Liquidate all positions and stop this operation.** | **Stop operation** — *"This liquidates all positions for this operation."* |
-| **Force stop** | `ACTIVE` or `PAUSED` on a revoked/errored connection | **Connection revoked: liquidation is impossible. Mark this operation STOPPED locally so you can delete it. Positions are NOT sold — close them in your brokerage.** | **Force stop operation**, with the warning that broker positions are **NOT** sold |
-| **Re-initiate** | `STOPPED` | **Reset a stopped operation back to DRAFT so it can be launched again (history is kept).** | none |
-| **Rebalance** | `ACTIVE` or `PAUSED`, connection healthy | **Recompute the member weights now (the orchestrator rebalances on its next tick).** | see below |
+| Button | Shown when | What it does |
+|---|---|---|
+| **Launch** | Draft, connection healthy | Places the initial buy and starts trading (Draft → Active) |
+| **Pause** | Active, connection healthy | Stops rebalancing but keeps current positions (Active → Paused) |
+| **Resume** | Paused, connection healthy | Resumes rebalancing and re-buys into the market (Paused → Active) |
+| **Stop** | Active or Paused, connection healthy | Liquidates all positions and stops the operation |
+| **Force stop** | Active or Paused on a revoked/errored connection | Marks the operation Stopped locally so you can delete it — positions are **not** sold; close them directly at your broker |
+| **Re-initiate** | Stopped | Resets it back to Draft so it can be launched again; history is kept |
+| **Rebalance** | Active or Paused, connection healthy | Recomputes member weights on the operation's next cycle |
 
 > [!CAUTION]
-> Only the direction that **adds** exposure is entitlement-gated. Creating an operation, launching one and resuming to `ACTIVE` require the `broker_paper_trading` feature. Pausing, stopping and returning to `DRAFT` stay open on every tier — the exit is never locked.
+> Only actions that **add** exposure require paper-trading access on your plan: creating an operation, launching one, and resuming to Active. Pausing, stopping, and resetting back to Draft are always available, on every plan — you're never locked into a position you can't get out of because of your plan tier.
 
-Force-stop on a still-healthy connection is refused with a 409: *"the broker connection is still active; use Stop to liquidate positions — force-stop is only for revoked/errored connections"*.
+If you try Force stop on a connection that's still working normally, Fintela stops you: use **Stop** instead — force-stop is reserved for connections that are revoked or erroring.
 
-**Manual rebalance** opens a dialog titled **Rebalance**, body **Recomputes the member weights via the allocation method (the portfolio group's portfolios stay the same).**, and a warning **This places live buy/sell orders at your broker on the next cycle.** It offers a **Periodic counter** choice: **Keep — counter continues** or **Reset — restart from today**. Two throttles apply:
+**Manual rebalance** opens a dialog explaining what it will do: *"Recomputes the member weights via the allocation method (the portfolio group's portfolios stay the same)"* — with a warning that it places live buy/sell orders at your broker on the next cycle. You choose whether the rebalance schedule's counter keeps going from where it was, or restarts from today. Two safety limits apply: you can't request a rebalance more than once every 60 seconds, and a rebalance is held back if the operation already has 50 or more orders still settling — both cases tell you to try again shortly.
 
-| Guard | Rule | Message |
-|---|---|---|
-| Debounce | 60 seconds between requests | `Rebalance recently requested; wait {n}s before retrying` (HTTP 429) |
-| Backpressure | at most 50 unsettled orders | `Operation has {in_flight} in-flight orders (max {max}); try again shortly` (HTTP 429) |
+**Position drift** blocks rebalancing outright. If your broker's reported positions diverge from Fintela's own records and that divergence hasn't been acknowledged, a warning explains it symbol by symbol — expected quantity, broker-reported quantity, and the difference — flagged as either unexplained or a likely corporate action. Acknowledging it is treated as a real-money, irreversible action, so you're asked to confirm explicitly before rebalancing can proceed.
 
-**Position drift** blocks rebalancing. When the broker's reported positions diverge from Fintela's ledger and the divergence has not been acknowledged, a warning banner reads **Position drift detected — rebalancing is blocked until acknowledged.** with a per-symbol breakdown in columns **Symbol**, **Expected**, **Broker**, **Drift** and a disposition chip reading **Unexplained — check broker account** or **Possible corporate action ({{types}}) — review**. Quantities are carried as **full-precision strings**, not numbers. The **Acknowledge** action opens a confirmation titled **Acknowledge position drift**, whose body warns it is *"a real-money, irreversible action"*.
+### Messages you might see before a launch
 
-### Launch preflight refusals
+Fintela checks a group thoroughly before it lets capital move, both when you create an operation and again right before launch, and every refusal names the fix:
 
-The server runs the real preflight at both create and launch, and every refusal is a plain sentence that names the fix. These are the exact strings.
-
-| Situation | Message |
+| Situation | What it means |
 |---|---|
-| Empty group | `the basket has no portfolios; add at least one before initiating or launching` |
-| Daily update off | `enable daily update on the basket before initiating tracking` |
-| Stale members | `cannot launch: portfolios not up to date: {stale}; refresh them (update the basket) before investing` |
-| Members not on daily updates | `cannot launch: portfolios are not scheduled for daily updates: {…}; enable daily updates on these portfolios before investing` |
-| EXTERNAL members | `members use EXTERNAL strategies which cannot daily-extend: {…}; remove them from the basket before initiating or launching` |
-| Meta-portfolios not flattened | `cannot launch: meta-portfolios (portfolio-of-baskets) have not been built yet: {…}; run "Update portfolios" and wait for it to finish so their holdings are flattened before investing` |
-| Short crypto | `cannot launch: portfolios hold SHORT positions in crypto, which the broker cannot short: {…}; remove the crypto shorts before investing` |
-| Shorts without margin | `cannot launch: portfolios hold SHORT positions but the broker account is not enabled for short selling (a margin account is required): {…}; enable margin/short selling on the broker account or remove the shorts` |
-| Cleartext external risk manager | `cannot launch: this operation would be driven by an external risk manager reached over plain http, so its per-tick response — which shapes real orders — is unauthenticated and readable in transit: {hosts}. Move those endpoints to https, or confirm explicitly that you accept the risk` |
-| Unsupported execution config | `execution config is not supported: {reason}` |
-| Capital above the per-tick cap | `cannot launch: target_capital (${tc}) exceeds the per-tick notional cap (${cap}); the first rebalance batch would exceed the cap and abort every tick, deploying nothing — lower target_capital or raise this connection's per-tick limit` |
-| Bad capital | `target_capital must be greater than 0` |
-| Duplicate on this connection | `An operation already exists for this basket and connection` |
-| Connection not usable | `Connection not active or not owned by user` |
+| Empty group | Add at least one member before starting or launching it |
+| Daily updates off | Turn daily updates on for the group first |
+| Stale members | Refresh the group (**Update portfolios**) before investing |
+| Members not on daily updates | Turn daily updates on for those specific portfolios first |
+| A member uses an External strategy | Remove it — External members can't stay current automatically |
+| A member built from other portfolios hasn't finished consolidating | Run **Update portfolios** and wait for it to finish before investing |
+| A member holds short crypto | Remove it — your broker can't short crypto |
+| A member holds shorts without margin enabled | Enable margin/short selling on the broker account, or remove the shorts |
+| An external risk manager is reached over an unencrypted connection | Move that endpoint to a secure address, or explicitly confirm you accept the risk |
+| Your order policy isn't supported for live rebalancing yet | Check the order type and time-in-force |
+| Capital exceeds the connection's per-rebalance limit | Lower the amount, or ask to have the connection's limit raised |
+| Capital is zero or negative | Enter an amount greater than zero |
+| The group already has an operation on that connection | Pick a different connection, or use the existing operation |
+| The connection isn't active or isn't yours | Check Account settings → Broker connections |
 
-Membership changes on a **live** group have their own guards, refused before anything reaches the broker:
+Changing membership on a group with a **live** operation has its own guards, so you can't accidentally disrupt something already trading:
 
-```text
-cannot change a live basket's membership: meta-portfolios are not yet flattened
-  (empty holdings): {…}; wait for the nightly flatten or remove them
-cannot change a live basket's membership: portfolios SHORT crypto, which the broker
-  cannot short: {…}; remove the crypto shorts first
-cannot change a live basket's membership: portfolios hold SHORT equity but a live
-  broker account is not enabled for short selling: {…}; enable margin/short selling
-  on the account or remove the shorts
-```
+- A member built from other portfolios that hasn't finished consolidating its holdings — wait for the next update, or remove it.
+- A member holding short crypto — your broker can't short crypto, so remove it first.
+- A member holding short equity on an account not enabled for margin — enable that on the account, or remove the shorts.
 
-The per-tick notional cap defaults to 250,000 dollars and can be raised per connection.
+By default, a single rebalance can move up to $250,000 through a given broker connection at once — enough headroom for most portfolios, and a safety limit against an oversized order going out by mistake. If your strategy genuinely needs more, this limit can be raised for your connection.
 
-### Orders, allocations, state log and EOD reports
+### Orders, allocations, activity, and end-of-day reports
 
-Expanding an operation reveals five read-only tabs. Each fetches only while it is the active tab.
+Opening an operation reveals five read-only tabs:
 
-| Tab | Contents | Empty state |
+| Tab | Columns | Empty state |
 |---|---|---|
-| **Allocations** | Columns **Portfolio**, **Weight**, **Triggered by**, **When** | **No weight snapshots yet — they appear after the first rebalance.** |
-| **Orders** | Columns **When**, **Portfolio**, **Ticker**, **Class**, **Broker id**, **Action**, **Side**, **Qty**, **Type**, **Fill**, **Status** | **No orders yet — they appear after Launch places the initial buy.** |
-| **Activity** | Columns **When**, **Actor**, **Event**, **Detail** | **No activity yet.** |
-| **Reconciliation** | Columns **Day**, **Scope**, **Outcome**, **Fills matched**, **Discrepancies**, **Ran at** | **No reconciliation yet (runs end-of-day).** |
-| **Positions** | Columns **Symbol**, **Side**, **Qty**, **Avg entry**, **Current**, **Market value**, **Unrealized P&L**, **Today**, over a **Long** / **Short** / **Gross** / **Net** / **Unrealized P&L** roll-up | **No open positions on this brokerage account.** |
+| **Allocations** | Portfolio, Weight, Triggered by, When | No weight snapshots yet — they appear after the first rebalance |
+| **Orders** | When, Portfolio, Ticker, Class, Broker id, Action, Side, Qty, Type, Fill, Status | No orders yet — they appear after Launch places the initial buy |
+| **Activity** | When, Actor, Event, Detail | No activity yet |
+| **Reconciliation** | Day, Scope, Outcome, Fills matched, Discrepancies, Ran at | No reconciliation yet (runs end-of-day) |
+| **Positions** | Symbol, Side, Qty, Avg entry, Current, Market value, Unrealized P&L, Today, with Long / Short / Gross / Net / Unrealized P&L roll-ups | No open positions on this brokerage account |
 
-What each history actually records:
+- **Allocations** records one weight snapshot per member every time the group rebalances, along with what triggered it — the schedule, or a manual rebalance — and when.
+- **Orders** records every order actually sent to your broker: ticker, buy or sell, quantity, order type, fill price, and status, plus the reason if your broker rejected it.
+- **Activity** is a plain audit trail of what happened and when — for example, the exact moment an operation was launched. If Fintela can't record who started an operation, it doesn't start it, so this trail is always complete.
+- **Reconciliation** is Fintela's end-of-day check against your broker's own numbers. The **Scope** column tells you whether a row is specific to this operation or a connection-wide summary for that day.
+- **Positions** is account-wide, not per group — its own caption says so: *"Live positions on the entire brokerage account behind this connection — the whole account, not segmented by portfolio group."*
 
-- **Allocations** — one weight snapshot per member per rebalance: `{ id, operation_id, portfolio_id, allocation, triggered_by, recorded_at }`. `portfolio_id` is a managed portfolio id.
-- **Orders** — one row per order sent, carrying the broker's own order id, the asset class, the action and position side, quantity, order type, limit price, status, fill price and timestamps, plus `error_message` when the broker rejected it.
-- **Activity (state log)** — `{ log_id, operation_id, actor_kind, actor_id, event_type, payload, occurred_at }`, written to `developers.broker_tracking_state_log`. A launch writes `event_type = 'launched'` with the payload `{"note":"live trading enabled"}` **in the same transaction as the status flip**: if the platform cannot record who started an operation, it does not start it.
-- **Reconciliation (EOD reports)** — `{ report_id, connection_id, operation_id, trading_day, outcome, fills_matched, fill_discrepancies, position_discrepancies, non_trade_activities, ran_at }`, produced end-of-day. The **Scope** column reads **operation** or **account**: a row with `operation_id = NULL` is the connection-level, account-wide summary for that day.
-- **Positions** is account-level, not per group. Its caption says so: *"Live positions on the entire brokerage account behind this connection — the whole account, not segmented by portfolio group."* The tab is badged **Account-wide**.
+Allocations, Orders, Activity, and Reconciliation are also available read-only through the [Developer API](/docs/api-baskets), so you can pull this history into your own systems or dashboards. Positions is the exception — it reflects your broker connection directly and isn't available through the API today; check this tab in the app instead.
 
-Allocations, Orders, Activity and Reconciliation each have a matching read-only endpoint under `/portfolio_manager/baskets/:id/operations/:op_id/…` and a mirror in the [Developer API](/docs/api-baskets). Positions is the exception: it reads the broker connection directly at `/broker/connections/:id/positions` and has no Developer API mirror.
+### Who on your team can do what
 
-### Permissions
+Fintela splits Portfolio Group permissions into layers, so different people on your team can have different levels of access:
 
-Basket configuration and operation control use **different permission families**, which is why a user can be able to edit a group but not deploy it.
+- **Building and configuring a group's structure** — its members, allocation, schedule, and even deleting it — sits behind one permission.
+- **Viewing an operation's history** — its orders, allocations, activity, and reports — sits behind a separate permission.
+- **Creating a new operation** is its own permission.
+- **Launching, pausing, resuming, stopping, overriding an order policy, or acknowledging position drift** requires yet another.
 
-| Surface | Permission |
-|---|---|
-| The `/analysis/portfolio-groups` route | `portfolios:read` |
-| All basket CRUD, freshness, seed, backtest, order-intent, member-config endpoints | `portfolios:read` |
-| Operation reads — list, get, allocations, orders, state log, EOD reports | `broker_tracking:read` |
-| Creating an operation | `broker_tracking:create` |
-| Launch, status change, execution override, force stop, rebalance, acknowledge drift | `broker_tracking:update` |
+In practice, a teammate can fully design a group's setup without being able to deploy a dollar of it, or view your live operations without being able to touch them. If an action here looks greyed out or gets refused for you, check with your organization's admin about your account's access.
 
 ## Execution modes
 
-Internal and External are properties of a **[strategy](/docs/strategies)**, not of a Portfolio Group. A group has no execution-mode selector, no code, and no endpoint of its own — it is a container plus a trading policy. What the two modes decide here is **which portfolios are allowed to be members**.
+Internal and External are properties of a **[strategy](/docs/strategies)**, not of a Portfolio Group — a group has no execution-mode choice of its own; it's a container plus a trading policy. What the two modes decide here is **which portfolios are allowed to be members**.
 
-| Mode | What it is | Can it be a Portfolio Group member? |
+| Mode | What it means for you | Can it be a group member? |
 |---|---|---|
-| **Internal** | Python that runs inside Fintela against a deterministic function signature | **Yes.** This is the only supported case |
-| **External** | A strategy you host yourself, in any language, on your own infrastructure and against your own private data | **No.** Rejected everywhere |
+| **Internal** | Strategy logic you write and run inside Fintela's own strategy editor | **Yes** — the only supported case |
+| **External** | A strategy you run yourself, in any language, on your own infrastructure and against your own private data, connected to Fintela | **No** — rejected everywhere |
 
-### Why External does not apply
+### Why external strategies can't be members
 
-Membership requires a **managed portfolio**, and a managed portfolio has to **daily-extend**: every day the platform advances its equity to the latest market bar so the group's weights and orders reflect current prices. Managed mode supports **INTERNAL only**. An externally hosted strategy cannot be extended by the platform, so it can never keep a group's book current — and a group whose members go stale cannot be launched.
+Being a group member requires being a *managed portfolio*, and a managed portfolio has to extend every trading day — Fintela advances its value to the latest market close so the group's weights and orders always reflect current prices. That only works for strategies you write and run inside Fintela. A strategy running on your own infrastructure can't be advanced this way, so it can never keep a group's book current — and a group with a stale member can't be launched.
 
-The refusal is enforced at every entry point, with these exact messages:
+This is checked at every point where it could matter:
 
 | Where | What happens |
 |---|---|
-| Creating a group, or changing membership | `portfolio {id} uses an EXTERNAL strategy ({execution_type}); it cannot daily-extend (managed mode supports INTERNAL only), so it cannot be in a tracked basket. Remove it from the basket.` |
-| Creating or launching an operation | `members use EXTERNAL strategies which cannot daily-extend: {…}; remove them from the basket before initiating or launching` |
-| Promoting from Rank & Build | An alert reading **One or more selected trials use an EXTERNAL-execution strategy. These are rejected on promotion — remove them to continue.**, with the action **Remove EXTERNAL trials and continue** and an **EXTERNAL** badge on each offending row |
-| The structure page | The member chip turns error-coloured, labelled **{{name}} · EXTERNAL**, with the title **EXTERNAL strategy — cannot daily-extend; remove it from the portfolio group** |
+| Creating a group, or changing its membership | You're told the portfolio uses an External strategy and can't be added — remove it to continue |
+| Creating or launching an operation | The same check runs again, listing every offending member, before anything reaches your broker |
+| Promoting from Rank & Build | A banner flags any selected trial using an External strategy, with a one-click action to remove just those and keep going |
+| The structure page | The member's chip turns red, labeled "{{name}} · EXTERNAL," so you can spot and remove it before you try to deploy |
 
-The freshness endpoint reports each member's snapshotted `execution_type` as `"INTERNAL"` or `"EXTERNAL"`, so an EXTERNAL member that slipped in through an older path is visible before you try to launch.
+Freshness also reports each member's strategy type directly, so an External member that slipped in through an older workflow is visible before you try to launch.
 
 > [!NOTE]
-> If your strategy is External, the path into a Portfolio Group is to reimplement it as an Internal strategy. There is no bridge, no proxy mode and no opt-in. See [external strategies](/docs/external-strategies) and [execution modes](/docs/execution-modes).
+> If your strategy is External today, the only path into a Portfolio Group is to rebuild it as an Internal strategy inside Fintela. There's no bridge or opt-in mode for this. See [external strategies](/docs/external-strategies) and [execution modes](/docs/execution-modes).
 
-### The one External thing that does run inside a live group
+### External risk managers can still drive a live group
 
-**External risk managers are supported.** A member can carry a risk manager of kind `external_http` — your own endpoint, called by the engine on every tick — and it will drive real orders inside a live operation. That is a different surface from an External strategy, and it is not blocked.
+External risk managers work differently, and they're fully supported. A member can use a risk manager that calls out to your own endpoint on every tick, and that risk manager genuinely drives orders inside a live operation. This is a separate capability from running an External *strategy* — it isn't blocked.
 
-It does carry one security gate. Before a launch or a resume, the platform collects the distinct endpoints of the active members' external risk managers whose URL begins with `http://` and refuses:
+There's one safeguard: before a launch or a resume, Fintela checks every active member's external risk-manager endpoint. If any of them is reached over an unencrypted connection, the launch is refused — because that risk manager's response shapes real orders, and an unencrypted connection means it could be read or altered in transit. You'll see a dialog titled **"This endpoint is unencrypted,"** explaining that anyone on the network path could alter it, with a checkbox to confirm you understand and accept the risk, and a **Trade anyway** button to proceed regardless. This acceptance is per attempt and never remembered — close the dialog, or restart the operation later, and you'll be asked again. It fails safe by default.
 
-```text
-cannot launch: this operation would be driven by an external risk manager reached
-over plain http, so its per-tick response — which shapes real orders — is
-unauthenticated and readable in transit: {hosts}. Move those endpoints to https,
-or confirm explicitly that you accept the risk
-```
+### Pulling your Portfolio Group data into your own tools
 
-The refusal itself is the prompt. The UI then shows a dialog titled **This endpoint is unencrypted**, explaining that *"Anyone on the network path could alter it."*, with the checkbox **I understand, and I accept the risk for this operation** and the action **Trade anyway**. Acceptance is **per attempt and never remembered** — closing the dialog drops it, and the payload flag `acknowledge_insecure_endpoints` defaults to `false`, so the gate fails closed.
+You can pull your Portfolio Groups — their settings, freshness, deployments, and trading history — into your own systems or dashboards, using a personal access key from your account settings. See the [Developer API overview](/docs/api-overview) and [API authentication](/docs/api-authentication) to get started, and [the Portfolio Groups API reference](/docs/api-baskets) for the full set of what's available.
 
-### No external control over the API
+This access is **read-only**, by design: it lets you build your own reporting or monitoring without any risk of an accidental change to a live group. Every action that actually changes a group — creating, editing, deleting, deploying, launching, pausing, stopping, rebalancing, or refreshing members — has to happen inside Fintela itself, since several of those actions consume tokens or place real trades, and a personal access key is meant for safely pulling data out, not triggering billable or capital-moving actions from outside the app.
 
-The [Developer API](/docs/api-baskets) exposes Portfolio Groups **read-only**. Every route under `/v2/baskets` is a `GET`:
-
-```http
-GET /v2/baskets
-GET /v2/baskets/{id}
-GET /v2/baskets/{id}/freshness
-GET /v2/baskets/{id}/operations
-GET /v2/baskets/{id}/operations/{op_id}
-GET /v2/baskets/{id}/operations/{op_id}/allocations
-GET /v2/baskets/{id}/operations/{op_id}/orders
-GET /v2/baskets/{id}/operations/{op_id}/state_log
-GET /v2/baskets/{id}/operations/{op_id}/eod_reports
-```
-
-There is **no way to create, edit, delete, deploy, launch, pause, stop or rebalance a Portfolio Group with an API key**, and no way to trigger a member refresh or a simulation. This is policy, not an oversight: every write this service used to expose was a compute trigger, and this service has no token-ledger integration, so the compute would be billed to nobody. Every group-changing action goes through the SPA or the authenticated backend.
-
-Two more facts worth carrying into an integration:
-
-- **Auth is header-only**: `Authorization: Bearer <api-key>`. The old `?api_key=` query fallback was removed, because a query string leaks into access logs, proxy logs, browser history and `Referer` headers.
-- **The projection is narrower than the app's.** `/v2/baskets` returns `id`, `name`, `portfolio_ids`, `daily_update_enabled`, `stage`, `allocation_method`, `allocation_method_params`, `rebalance_enabled`, `rebalance_frequency_days`, `rebalance_anchor_date`, `member_weights`, `created_at`, `updated_at` — and nothing else. There is no `description`, no `execution_config`, no `protective_config`, no `unlocked_methods`, no `benchmark_ticker_id`, and none of the `operations_count` / `live_operations_count` / `deployed_capital` aggregates the registry's Total AUM column is built from.
-
-The four history endpoints paginate with `?limit=` (clamped to `[1, 1000]`) and `?offset=` (default 0). The default limit is 500 for allocations, orders and the state log, and **90 for EOD reports**. A basket outside the key owner's organization returns **404**.
+One thing isn't available through this API today: your current broker positions, which come straight from your brokerage connection rather than from Fintela's own records — check the **Positions** tab in the app for those. Large result sets are automatically split into pages so they stay fast to load, and — same as everywhere else — a group outside your own organization simply isn't visible to your key.

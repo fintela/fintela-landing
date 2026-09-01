@@ -4,684 +4,530 @@ section: Registries
 sectionOrder: 3
 order: 6
 published: true
-updated: 2026-08-20
-summary: The governance layer that acts during a simulation — stops, caps, and halts, and when each one fires.
-keywords: risk manager, stop loss, trailing stop, drawdown, exposure cap, position cap, halt, rules, precedence, execution log
+updated: 2026-09-01
+summary: How Fintela's built-in and custom risk managers protect a portfolio during a backtest — automatic stops, exposure caps, and trading halts, plus the order in which they act.
+keywords: risk manager, stop loss, trailing stop, take profit, max drawdown, exposure cap, position cap, cash floor, trading halt, re-entry block, risk manager activity log
 ---
 
-A risk manager is the governance layer of a backtest. On every simulated bar it inspects the portfolio as it stood after the previous bar and, before the strategy is allowed to rebalance, it can close positions, trim them, or suppress the rebalance entirely. It never replaces the strategy's book — it only overrides it. Ten built-in rules cover stops, caps, cash floors, circuit breakers and trading calendars; on top of those you can register your own in the Risk Managers registry, either as a composed rule tree, as Python, or as an HTTP endpoint you host.
+A risk manager is Fintela's automatic protection layer for a backtest. On every simulated trading day, it looks at your portfolio as it stood after the previous day and — before your strategy is allowed to rebalance — it can close a position, trim it back, or block that day's rebalance entirely. A risk manager never rewrites your strategy's target allocations; it can only step in and close, trim, add to, or pause what your strategy has already decided. Fintela ships ten ready-made rules covering stops, exposure caps, cash floors, circuit breakers, and trading calendars. On top of those, you can build your own — either by composing the built-in rules into a custom policy with no code, by writing Python inside Fintela's own editor, or by connecting a risk-management service you host yourself.
 
 ## Overview and purpose
 
 ### What a risk manager does
 
-A risk manager is a per-bar hook the engine calls with three things: the current date, a snapshot of the portfolio, and a read-only market-data view. It returns a list of operations. It has three levers, and only three:
+Every risk manager you attach to a study is checked on each simulated day. It's given the date, a snapshot of your portfolio (cash, holdings, current drawdown from the peak), and read-only access to market data — it can look at prices, but it can't place a trade outside the three actions below.
 
-| Lever | Mechanism | Effect |
+A risk manager can only do three things:
+
+| What it can do | What it looks like to you | Effect on your portfolio |
 |---|---|---|
-| Emit operations | `close_position`, `close_all_sides`, `sell`, `buy` | Changes the book before the strategy rebalances |
-| Suppress the rebalance | `is_strategy_suppressed_today(today)` | The strategy's `SetTargets` is skipped for that bar only; other risk managers still fire |
-| Go terminal | `is_terminal()` | The engine stops calling every risk manager **and** the strategy for the rest of the run |
+| Close or trim a position | Fully close a holding, sell part of it, or buy back into a name it previously closed | Changes your book immediately, before your strategy's own rebalance happens |
+| Pause today's rebalance | Your strategy's planned trades are skipped for that one day only; every other risk manager still runs | Nothing changes that day beyond what the risk manager itself does |
+| Halt trading entirely | Every risk manager and your strategy stop acting for the rest of the run | Used by permanent circuit breakers, such as a Max Drawdown rule set to "halt permanently" |
 
-A risk manager can never issue `set_targets`. Both the Python and HTTP boundaries reject that op outright, so no risk manager can rewrite the target book — it can only close, trim, add, or block.
+A risk manager can never rewrite your strategy's full set of target allocations — that lever is reserved for your strategy alone. It can only close, trim, add to, or pause; it can never redraw your whole book from scratch.
 
 ### The four kinds
 
-| Kind | Registry label | What it is | Where it runs |
-|---|---|---|---|
-| `builtin` | `Built-in` | One of the ten catalog rules | Natively in the Rust engine |
-| `declarative` | `Rule-based` | A rule tree you compose from primitives, no code | Compiled to built-ins when the study is built |
-| `internal` | `Custom code` | Your Python, run in-process | Rust engine calling Python per tick |
-| `external` | `External HTTP` | Your endpoint, one `POST` per tick | Rust engine calling your server |
+| Kind | What it is | Where it runs |
+|---|---|---|
+| Built-in | One of Fintela's ten ready-made rules | Runs instantly inside Fintela — nothing to write or host |
+| Rule-based | A policy you build by combining built-in rules with your own thresholds, no code required | Runs inside Fintela, using the settings you configured |
+| Custom code | Python you write in Fintela's own code editor | Runs inside Fintela, checked once per simulated day |
+| External | A risk-management service you host on your own infrastructure | Runs on your systems; Fintela calls it once per simulated day |
 
 > [!IMPORTANT]
-> **Built-ins never appear in the registry table.** `/risk-managers` filters to `kind !== 'builtin'`. You pick a built-in when you **attach** a risk manager to a study, not when you register one. The registry page is where you author the three custom kinds.
+> Built-in rules never show up as rows in this registry. The Risk Managers list only shows the rule-based, custom-code, and external risk managers you've created. You choose a built-in rule when you **attach** a risk manager to a study — this registry page is only for authoring the other three kinds.
 
-The segmented control in the editor calls the Python kind **`Internal`**; the Kind column chip and the reference dialog tab call the same thing **`Custom code`**; the Execution Type column shows the raw value `internal`. Three labels, one kind.
+Custom-code risk managers go by a couple of different names around the product: the kind picker calls this option **Internal**, the registry table's Kind column and the reference guide call it **Custom code**, and the Execution Type column shows it as `internal`. All three refer to the same thing.
 
-### The per-bar sequence
+### The order risk managers act each day
 
-```text
-Day 0
-  initial book inserted
-  → one risk-manager pass (stops record entry prices, caps trim opening breaches)
+On the very first day of a simulation, your starting portfolio is set up and every attached risk manager gets one initial pass — this is when a stop records its entry price, or a cap trims an opening position that's already over the limit.
 
-Every later bar
-  1. mark to market, drop tickers with no return
-  2. age any re-entry blocks by one bar
-  3. if ANY risk manager went terminal on an earlier bar → skip 4-7 entirely
-  4. run every attached risk manager's on_tick, in list order, collecting ops
-  5. apply the collected ops, sorted by priority then execution_order
-  6. record which names were closed, for re-entry blocking
-  7. terminal check; then, unless some risk manager suppresses today,
-     apply the strategy's SetTargets (blocked names dropped from the targets)
-```
+On every day after that:
 
-Step 5 is where precedence is decided. Step 7 is why a risk manager's close sticks: a name held out by a re-entry block is dropped from the strategy's target book and its weight stays in cash, leaving a zero-quantity `Skipped` order naming the manager responsible.
+1. Prices update for everything you hold; a name with no price that day is skipped.
+2. Any re-entry block from a previous exit counts down by one day.
+3. If a risk manager has already halted trading permanently on an earlier day, nothing else happens for the rest of the run — no risk manager and no strategy rebalance.
+4. Otherwise, every risk manager attached to the study checks the portfolio, in the order you set when you attached them, and proposes its actions for the day.
+5. Those actions are applied — closes and trims happen first, buys happen next.
+6. Fintela records which names were closed, so it knows which ones to keep out if you've set a re-entry block.
+7. Finally, unless some risk manager is pausing today's rebalance, your strategy's own trade instructions run — with any blocked names left out and their weight held in cash.
 
-### Operation precedence
+A name a risk manager closed and blocked from re-entry doesn't just vanish for one day — it's actively excluded from your strategy's next rebalance too, and shows up in your trade log as a zero-quantity trade with the responsible risk manager named.
 
-Operations collected in one bar are sorted by a priority bucket, lowest first:
+### The order in which actions are applied
 
-| Operation | Source | Priority |
-|---|---|---|
-| `ClosePosition`, `CloseAllSides` | risk manager | 10 |
-| `Sell` | risk manager | 20 |
-| `Buy` | risk manager | 50 |
-| other granular operations | — | 90 |
-| `SetTargets` | strategy or manual | 100 |
-| `NoOp` | — | 200 |
+When more than one action happens on the same day, Fintela applies them in a fixed order so the outcome is predictable:
 
-Ties inside a bucket break on the emitting risk manager's `execution_order` (lower first), then on the source tag alphabetically. Risk-manager operations and the strategy's `SetTargets` are applied in two separate batches, so the two are never sorted against each other — closes always land before the rebalance because the rebalance runs later in the bar, not because 10 sorts before 100.
+1. Halts and closes
+2. Sells (trims)
+3. Buys (re-entries)
+4. Your strategy's regular rebalance
 
-The attachment editor states the same thing as a legend: `Halts / closes` → `Sells` → `Buys` → `Strategy rebalance`.
+This is also what the attachment editor shows you as a simple legend: **Halts / closes → Sells → Buys → Strategy rebalance**. Closes always land before your strategy's rebalance because risk-manager actions and your strategy's rebalance are applied as two separate steps, with risk managers going first — not because of any hidden numeric priority.
 
-### The rule catalogue
+If two of your risk managers would both act on the same day, whichever one comes first in your attachment list — the order you set when you attached them — takes precedence.
 
-Ten built-in rules. The compiler publishes them alphabetically by name; `params_schema` is closed (`additionalProperties: false`) and the engine configs reject unknown fields, so a misspelled parameter is an error, never a silent default.
+### The ten built-in rules
 
-| Rule | Label | Scope | Trigger | Action | Priority | Can hold a name out |
-|---|---|---|---|---|---|---|
-| `stop_loss` | Stop Loss | per position, both sides | loss from entry ≥ threshold | close that position | 10 | yes |
-| `trailing_stop` | Trailing Stop | per position, both sides | reversal from the favourable extreme ≥ trail | close that position | 10 | yes |
-| `take_profit` | Take Profit | per position, both sides | gain from entry ≥ target | close that position | 10 | yes |
-| `max_drawdown` | Max Drawdown Circuit Breaker | portfolio | drawdown from peak ≥ limit | close everything, halt the strategy | 10 | no |
-| `sector_cap` | Sector Cap | long allocations by sector | any sector over cap | proportional sells in that sector | 20 | no |
-| `country_cap` | Country Cap | long allocations by country | any country over cap | proportional sells in that country | 20 | no |
-| `position_cap` | Position Cap | each long holding | holding over cap | trim that holding | 20 | no |
-| `cash_floor` | Cash Floor | portfolio | invested > 1 − min_pct | proportional sells across all holdings | 20 | no |
-| `gross_exposure_cap` | Gross Exposure Cap | portfolio | Σ absolute allocation over cap | proportional sells across all holdings | 20 | no |
-| `time_window_halt` | Time-Window Halt | calendar | today matches the calendar | none — suppresses the rebalance only | — | no |
+Fintela's rule catalogue is fixed and published in a consistent order. Every rule takes a specific, known set of settings — if you mistype a setting name or leave a required one out, Fintela flags it rather than silently ignoring it or falling back to a hidden default.
+
+| Rule | What it watches | What it does | Can hold a name out after it closes it |
+|---|---|---|---|
+| Stop Loss | Loss on a position since entry | Closes that position | yes |
+| Trailing Stop | Pullback from the position's best price since entry | Closes that position | yes |
+| Take Profit | Gain on a position since entry | Closes that position | yes |
+| Max Drawdown Circuit Breaker | Portfolio drawdown from its peak | Closes everything and halts the strategy | no |
+| Sector Cap | Long exposure to any one sector | Trims that sector proportionally | no |
+| Country Cap | Long exposure to any one country | Trims that country proportionally | no |
+| Position Cap | Size of any single long holding | Trims that holding | no |
+| Cash Floor | How much of the portfolio is invested | Trims every holding proportionally | no |
+| Gross Exposure Cap | Combined long + short exposure | Trims every holding proportionally | no |
+| Time-Window Halt | Today's date against a calendar you define | Pauses the rebalance only — nothing is closed | no |
 
 > [!NOTE]
-> Every threshold is stored **positive**; the engine applies the sign. A 5 % stop is `threshold: 0.05`, never `-0.05`.
+> Enter every threshold as a positive number. A 5% stop is `0.05`, never `-0.05` — Fintela applies the direction (loss vs. gain) for you based on which rule it is.
 
 #### Stop Loss
 
-Closes a position when its unrealised return falls below `-threshold`. Entry price is recorded on first observation and reset when the position is closed and later re-opened.
+Closes a position once it's lost more than your threshold since you entered it. Fintela remembers your entry price the moment a position opens, and resets that memory if the position is later closed and reopened.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `threshold` | number, required | `> 0` and `≤ 1`, a fraction of entry (`0.05` = 5 %) | none | float `0.01 – 0.30` |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Threshold | Loss from entry that triggers the close, as a fraction (`0.05` = 5%) | 1% – 30% |
 
-**Evaluates** every tick, per held position, long and short. State is pruned to the currently-held `ticker:side` keys each tick, so a name that leaves and re-enters gets a fresh entry price. Ticks where the ticker has no price are skipped. Return is `price/entry − 1` for a long, `1 − price/entry` for a short.
-
-**Acts** by emitting `ClosePosition` for that ticker and side when the return is at or below `-threshold`.
+It's checked every day for every position you hold, long or short, and closes just that one name — the rest of your portfolio is untouched.
 
 #### Trailing Stop
 
-Tracks the most favourable price observed since entry — peak for longs, trough for shorts — and closes when the market reverses past `trail_pct` against that high-water mark.
+Tracks the best price a position has reached since you entered it — the peak for a long, the trough for a short — and closes it once the market reverses by more than your trail percentage from that high-water mark.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `trail_pct` | number, required | `> 0` and `≤ 1` (`0.10` = 10 %) | none | float `0.02 – 0.40` |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Trail | Reversal from the best price that triggers the close, as a fraction (`0.10` = 10%) | 2% – 40% |
 
-**Evaluates** every tick, per held position, maintaining one extreme per `ticker:side`, pruned to held keys. Drawdown is `1 − price/extreme` for a long, `price/extreme − 1` for a short.
-
-**Acts** by emitting `ClosePosition` when the drawdown reaches `trail_pct`.
+Unlike Stop Loss, which is measured from your entry price, Trailing Stop is measured from the position's best point — so it locks in gains as a position runs up, rather than only protecting against losses from entry.
 
 #### Take Profit
 
-Closes a position once its unrealised return reaches `target`. Same entry-price bookkeeping as Stop Loss.
+Closes a position once its gain since entry reaches your target.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `target` | number, required | `> 0`, **no upper bound** | none | float `0.05 – 1.00` |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Target | Gain from entry that triggers the close, as a fraction (`0.15` = 15%) | 5% – 100% |
 
-`target` is a fraction of entry: `0.15` is +15 %. Because there is no ceiling, `2.5` (+250 %) is a legal value — the optimizable range only bounds the search, not the parameter.
-
-**Evaluates** every tick per position. **Acts** by emitting `ClosePosition` when the return reaches `target`.
+There's no upper limit on the target you can enter — a 250% target (`2.5`) is valid if that's genuinely your strategy. The typical range above is just a sensible search window if you let Fintela optimize this setting for you.
 
 #### Max Drawdown Circuit Breaker
 
-When `(peak − value) / peak` exceeds `limit`, every held position is closed and the strategy stops rebalancing. Recovery is governed by `recovery_mode`.
+Fintela's portfolio-level safety switch. When the portfolio falls a set percentage below its own high-water mark, this rule closes every position and pauses the strategy — protecting you from riding a losing streak all the way down.
 
-| Parameter | Type | Domain | Default | Optimizable range | Optimized by default |
-|---|---|---|---|---|---|
-| `limit` | number, required | `> 0` and `≤ 1` | none | float `0.05 – 0.50` | yes |
-| `recovery_mode` | string enum | `threshold`, `cooldown`, `none` | `"threshold"` | not optimizable | — |
-| `recovery_threshold` | number | `> 0` and `≤ 1` | `0.05` | float `0.01 – 0.30` | **no** |
-| `recovery_days` | integer | `1 – 2520` | `21` | integer `5 – 63` | **no** |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Drawdown limit | How far below the peak triggers the halt, as a fraction (`0.20` = 20%) | 5% – 50% |
+| Resume behavior | What happens after the halt — see below | — |
+| Recovery bounce | Required bounce off the lows before resuming (only for "resume on a recovery") | 1% – 30% |
+| Recovery wait | Days to wait before resuming (only for "resume after a wait") | 5 – 63 days |
 
-The enum renders in the UI as `threshold — resume on a recovery off the lows`, `cooldown — resume after a fixed wait`, `none — halt permanently`.
+Choose one of three ways for trading to resume after a halt:
 
-**Evaluates** every tick at portfolio level. It seeds its peak once from the engine's own `portfolio_peak`, then tracks its own high-water mark.
+- **Resume on a recovery off the lows** (the default) — trading picks back up once the liquidated portfolio, if it had stayed in cash, would have bounced back by your recovery-bounce percentage from its lowest point. If that bounce can't be measured, Fintela falls back to the fixed wait instead.
+- **Resume after a fixed wait** — trading resumes automatically after your chosen number of days, regardless of what the market has done.
+- **Halt permanently** — the strategy stops for the rest of the run. Nothing brings it back.
 
-**Acts on trip** by emitting `CloseAllSides` for every held ticker, snapshotting a "shadow book", and writing a `halted` event carrying `limit`, `drawdown`, `peak`, `value`, `recovery_mode`, `recovery_threshold`, `recovery_days`, `permanent` and `shadow_measurable`. While halted it suppresses the strategy every bar and re-flattens the book as a guard.
-
-**Recovery** depends on the mode. `threshold` resumes once the liquidated book, marked to market, has bounced `recovery_threshold` off its lowest point since the halt; when that bounce cannot be measured it falls back to the `recovery_days` bar count. `cooldown` resumes after `recovery_days` bars regardless of the market. `none` never resumes and makes the manager terminal, which stops the engine's risk-manager and strategy loop for the rest of the run. On resume the peak is rebased to the current value and a `reactivated` event records `rule`, `bars_halted`, `bounce_off_trough`, `recovery_threshold`, `recovery_days`, `previous_peak` and `rebased_peak`.
+Once trading resumes, the drawdown peak used to judge future halts is reset to the portfolio's value at that point, so the same rule doesn't immediately trigger again against the old, higher peak.
 
 > [!CAUTION]
-> The study-results notice tells you to "set `recovery_days` to 0 if you want the halt to be permanent instead". **That value is invalid.** `recovery_days` has a minimum of 1 in both the compiler and the engine bounds table, and a 0-bar cooldown would only ever mean "resume next bar". A permanent halt is `recovery_mode: "none"`.
+> If a note in your study results suggests setting the recovery wait to 0 days to make the halt permanent, don't — the minimum wait Fintela accepts is 1 day, and a 0-day wait would just mean "resume the very next day." To make a halt permanent, choose **Halt permanently** as the resume behavior instead.
 
 #### Sector Cap
 
-Caps the gross long allocation in any single sector. Sums long allocations grouped by `sectors[ticker]`; for any sector over `max_pct`, emits proportional sells to trim it back.
+Keeps your long exposure to any single sector under a limit. If one sector grows past your cap — say, tech runs up and now makes up too much of your book — Fintela sells just enough from each name in that sector, proportionally, to bring it back under the limit.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `max_pct` | number, required | `> 0` and `≤ 1` | none | float `0.10 – 0.80` |
-| `default_sector` | string | any | `"_unknown"` | not optimizable |
-| `sectors` | object, ticker → sector | injected at runtime | — | not optimizable |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Sector cap | Maximum long exposure to any one sector, as a fraction of equity (`0.30` = 30%) | 10% – 80% |
+| Default sector | Bucket used for tickers with no sector classification | — |
 
-`sectors` is in `required_runtime_metadata`, not in `params_schema`. You never set it: the optimizer injects it from the universe's grouping metadata, and pinning it in `static_params` is rejected.
-
-**Evaluates** every tick over long allocations only; shorts are untouched. **Acts** with one `Sell` per member of an over-cap sector at `fraction = excess / sector total`. An empty `sectors` map puts every ticker in one `default_sector` bucket, so the cap applies globally rather than becoming a silent no-op.
+Sector classifications come from your universe's own data — you don't enter them yourself. If your universe doesn't carry sector data at all, every ticker falls into one shared bucket, so the cap still applies to your whole long book rather than silently doing nothing.
 
 #### Country Cap
 
-Mirrors Sector Cap, grouping by `ticker → country`.
+The same idea as Sector Cap, but grouped by country instead of sector — useful for keeping single-country concentration risk in check on a global book.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `max_pct` | number, required | `> 0` and `≤ 1` | none | float `0.20 – 0.90` |
-| `default_country` | string | any | `"_unknown"` | not optimizable |
-| `countries` | object, ticker → country | injected at runtime | — | not optimizable |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Country cap | Maximum long exposure to any one country, as a fraction of equity | 20% – 90% |
+| Default country | Bucket used for tickers with no country classification | — |
 
-`countries` is in `required_runtime_metadata` and behaves exactly as `sectors` does above. Same tick semantics, same `Sell` action.
+As with Sector Cap, country classifications come from your universe's own data automatically.
 
 #### Position Cap
 
-Caps any single long position at `max_pct` of total equity. Shorts are untouched.
+Keeps any single long holding from growing past a set share of your portfolio — useful for preventing one winning position from dominating your book's risk.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `max_pct` | number, required | `> 0` and `≤ 1` (`0.10` = 10 %) | none | float `0.02 – 0.50` |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Position cap | Maximum size of any one long holding, as a fraction of equity (`0.10` = 10%) | 2% – 50% |
 
-**Evaluates** every tick per long holding. **Acts** with `Sell` at `fraction = (allocation − max_pct) / allocation`.
+Only long positions are checked; shorts are left alone.
 
 #### Cash Floor
 
-Ensures the portfolio holds at least `min_pct` in cash. When invested exposure exceeds `1 − min_pct`, every holding is trimmed proportionally to release the shortfall.
+Makes sure your portfolio always holds at least a minimum share of cash. If your invested exposure creeps above that limit, Fintela trims every holding proportionally — long and short — until the cash floor is restored.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `min_pct` | number, required | `≥ 0` and `< 1` | none | float `0.00 – 0.30` |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Minimum cash | Smallest cash share the portfolio must hold, as a fraction (`0.10` = 10%) | 0% – 30% |
 
-Note the domain: inclusive at 0, exclusive at 1 — the opposite shape from the caps, which are `> 0` and `≤ 1`.
-
-**Evaluates** every tick on the sum of allocations across **all** holdings, long and short. **Acts** with one `Sell` per holding at `fraction = excess / invested`, on both sides.
+Note the boundary: 0% is a valid minimum (no cash requirement at all), but 100% is not — a portfolio that's always fully in cash isn't really a portfolio.
 
 #### Gross Exposure Cap
 
-Caps `|long| + |short|` gross exposure. Built for long/short books that want to bound leverage rather than the uninvested-cash bucket.
+Caps your combined long-plus-short exposure — your total gross leverage — rather than just how much cash you're holding. Built for long/short books where you want to bound overall leverage directly.
 
-| Parameter | Type | Domain | Default | Optimizable range |
-|---|---|---|---|---|
-| `max_pct` | number, required | `> 0` and `≤ 5.0` | none | float `0.50 – 2.00` |
+| Setting | What it means | Typical range |
+|---|---|---|
+| Exposure cap | Maximum gross exposure, expressed as a multiple of equity | 0.5× – 2.0× |
 
 > [!WARNING]
-> `max_pct` here is a **leverage multiple**, not a percentage of equity. `1.0` is fully invested and `2.0` is 2×. Every other cap parameter in the catalogue is a fraction of equity.
+> This setting is a **leverage multiple**, not a percentage of equity like every other cap in the catalogue. `1.0` means fully invested with no leverage; `2.0` means 2× leverage. Double-check you're not entering a percentage by mistake.
 
-**Evaluates** every tick on the sum of absolute allocations. **Acts** with a proportional `Sell` on every holding when over cap.
+When your combined long and short exposure goes over the cap, Fintela trims every holding proportionally until you're back under it.
 
 #### Time-Window Halt
 
-Suppresses strategy rebalancing on configured weekdays, dates, or date ranges. Other risk managers still fire — only the strategy's `SetTargets` is skipped. Use it to bake a trading calendar into a strategy that does not honour one natively.
+Pauses your strategy's rebalance on specific days you define — weekdays, individual dates, or date ranges — without closing anything. Every other risk manager still runs as normal; only your strategy's own trades are skipped on those days. Use it to bake a trading calendar (skip Fridays, skip a holiday week, sit out earnings season) into a strategy that doesn't otherwise account for one.
 
-| Parameter | Type | Domain |
-|---|---|---|
-| `weekdays` | array of string | `Mon`/`Tue`/`Wed`/`Thu`/`Fri`/`Sat`/`Sun`, case-insensitive, abbreviations or full names |
-| `dates` | array of string | individual `YYYY-MM-DD` days |
-| `date_ranges` | array of `{start, end}` | inclusive at both ends; `start <= end` enforced |
+| Setting | What it means |
+|---|---|
+| Weekdays | Days of the week to pause on (e.g. Sat, Sun) |
+| Specific dates | Individual calendar days to pause on |
+| Date ranges | Inclusive start/end ranges to pause on |
 
-No parameter is individually required, but at least one of the three must be non-empty. Validation messages:
+You need to fill in at least one of the three — Fintela won't let you save an empty calendar. Since this rule never closes or trims anything, it has no adjustable numeric setting to optimize; every setting here is fixed by you.
 
-- `time_window_halt needs at least one of: weekdays, dates, date_ranges.`
-- `Unknown weekday '{w}'. Use Mon/Tue/Wed/Thu/Fri/Sat/Sun (case-insensitive, abbreviations or full names accepted).`
-- `Parameter 'dates[]' must be a valid YYYY-MM-DD date, got '{value}': {error}`
-- `date_ranges[] requires start <= end, got start={start} end={end}.`
+### Combining rules into one policy
 
-**Evaluates** every tick and **returns no operations, ever.** Its only effect is the suppression flag the engine consults before emitting the strategy's targets. It exposes **no optimizable parameters** by design, so its attachment card shows `No optimizable params — the engine will use the risk manager's static params.` and all three arrays are edited in the **Fixed parameters** block as JSON lists.
+There are two independent ways to combine risk protection on a study, and they stack.
 
-### Rule composition and precedence
+**Attach several risk managers to one study.** Each one you attach gets its own position in your list — reordering the list changes which one takes precedence when more than one would act on the same day (see [the order in which actions are applied](#the-order-in-which-actions-are-applied) above). You can attach the same built-in rule twice — say, a tight stop and a looser backup stop — as long as they sit at different positions in the list; Fintela blocks two identical rules at the same position, since it wouldn't know which one should win.
 
-There are two ways to compose. They stack.
+**Combine several rules inside one rule-based risk manager.** When you build a rule-based risk manager, you choose how its rules relate to each other:
 
-**Several attachments on one study.** Each attachment is one risk manager with its own `execution_order`. Array position in the attachment editor *is* the execution order — reordering renumbers every attachment to its index. Two attachments that resolve to the same built-in at the same order are rejected: `Two risk-manager attachments of the same built-in type '{builtin_name}' share execution_order {n} — precedence between them would be ambiguous. Give them distinct execution_order values.` Two stops at *different* orders — a tight one and a loose one — is a legitimate layered setup.
+| Mode | Behaviour |
+|---|---|
+| Run every rule | Every rule you've added is checked every day, and their actions combine. This is the default. |
+| Use the first match | Rules are checked in order, and only the first one that fires that day takes effect — the rest are skipped for that day. |
 
-**Several rules inside one rule-based risk manager.** The declarative builder offers two composition modes:
+Use "first match" for a fallback pattern — for example, a tight stop-loss with a wider trailing stop behind it as a backup. Right now this grouping applies to your whole list of rules at once; you can't nest one first-match group inside another.
 
-| Mode | Short label | Wire version | Behaviour |
-|---|---|---|---|
-| `Sequential (all run)` | `v1 sequential` | `"1"` | Every rule runs every tick; the resulting operations are combined by the engine's coalescing rules. Default. |
-| `First-match (any_of)` | `v2 short-circuit` | `"2"` | Only the first rule whose primitive emits operations applies that tick; the rest are skipped. |
-
-`First-match` wraps the whole list in one `any_of` group. Children run in order, the first to produce a non-empty operation list wins, and `is_terminal` / suppression are OR-ed across children. Child state is persisted under a key combining the child's ordinal position with its name, so reordering the group cannot mis-restore state. Use it for alternative fallbacks — a tight `stop_loss` with a wider `trailing_stop` backup.
-
-When a study is built, a rule-based attachment is expanded into one built-in per leaf, and the leaves are renumbered as `attachment.execution_order × 1000 + rule.execution_order + 1`. Leaves therefore interleave *inside* their parent's slot and can never escape into a sibling attachment's.
+Either way, a rule-based risk manager still occupies just one position in your study's overall attachment order — its rules never leapfrog into another risk manager's turn.
 
 ### Attaching a risk manager to a study
 
-Attachment is where composition, ordering and optimization actually live. A registry row is one model; a stack of ordered attachments is a policy.
+Registering a risk manager and attaching it to a study are two different steps. The registry is where a rule-based, custom-code, or external risk manager is defined once; attaching is where you decide, per study, which risk managers apply, in what order, and with which settings.
 
-| Surface | How you get there |
+| Where you attach from | When you'd use it |
 |---|---|
-| Study builder → Risk Managers section | Building or editing a study |
-| `Attach` row action on this registry | Opens the attach dialog, which mounts the same editor |
-| Portfolios → Derive/optimize risk managers | Derives one risk-manager-optimization study per portfolio |
+| The study builder's Risk Managers section | While building or editing a study |
+| The Attach action on a row in this registry | Straight from the registry, without opening the study first |
+| Portfolios → Derive/optimize risk managers | Creates a new study specifically to search for the best risk-manager settings for an existing portfolio |
 
-The picker offers two groups: `Built-in` (from the compiler catalog, every rule, unfiltered) and `Registered (rule-based / custom code / external)` (your org's non-built-in registry rows). Each attachment card carries:
+When you attach a risk manager, you can pick from any built-in rule, or from any rule-based, custom-code, or external risk manager your organization has registered. Each attachment shows:
 
-- an ordinal, `Move up` / `Move down` (only when more than one is attached), and `Remove`;
-- a kind chip — `built-in · {{name}}`, `rule-based`, `custom code`, `external endpoint`, or `registered`;
-- a **Parameters** block, one row per optimizable parameter, each with a `Fixed` / `Optimized` toggle and a `value` box or `min` / `max` boxes;
-- an **After an exit** block, for the three per-symbol stops and for any registered risk manager;
-- a **Fixed parameters** block for every `params_schema` key that is not an optimizable parameter, rendered as a number, enum select, free string, JSON array or checkbox. Runtime-metadata keys are not `params_schema` keys, so they never appear here at all.
+- its position in the list, with controls to move it up or down, or remove it;
+- a chip naming which kind it is;
+- a **Parameters** section, where every adjustable setting can be fixed at a value or optimized within a range;
+- an **After an exit** section, for rules that close one name at a time (see below);
+- a **Fixed parameters** section for every other setting the rule takes, shown as the right kind of field — a number, a dropdown, free text, a list, or a checkbox.
 
-Seeding on add: each of a built-in's `optimizable_params` becomes an `Optimized` range at the catalog's `[min, max]`, unless the catalog marks `optimize_by_default: false` (Max Drawdown's `recovery_threshold` and `recovery_days`), in which case it is seeded `Fixed` at the schema default. Static parameters are seeded from every schema default. A registered risk manager carries no bounds in the catalog, so each declared parameter is seeded `Optimized` at `min: 0, max: 0` for you to fill in.
+When you first attach a built-in rule, its adjustable settings start pre-filled with sensible ranges for optimization (unless that particular setting isn't meant to be searched, in which case it starts fixed at its default — this applies to the Max Drawdown rule's recovery-bounce and recovery-wait settings). Every other setting starts at its catalogue default. When you attach one of your own registered risk managers, Fintela doesn't know sensible ranges for your custom settings, so each one starts as an empty optimize range for you to fill in.
 
-**After an exit** controls re-entry blocking:
+**After an exit.** For the three rules that close one name at a time — Stop Loss, Take Profit, Trailing Stop — plus any custom risk manager you've registered, you can control whether a name that was just closed is allowed straight back in:
 
-| Control | Range | Meaning |
-|---|---|---|
-| `Hold the name out after this closes it` | switch | Off, the strategy can buy the name back on the same bar and the exit is undone |
-| `Trading days out` | `0 – 5000`, step 1 | Counting the day it exited. **`0` keeps it out for the rest of the run** |
+| Control | What it does |
+|---|---|
+| Hold the name out after this closes it | Off, and your strategy can buy the name straight back in on the same day, effectively undoing the exit |
+| Trading days out | How many days to keep the name out, counting the day it exited. `0` keeps it out for the rest of the run |
 
-Only `stop_loss`, `take_profit` and `trailing_stop` close one name at a time, so only those three (and registered risk managers, whose code cannot be read) offer the control. When the client says nothing, the server defaults blocking **on** for those three and **off** for everything else. Explicitly asking a non-per-symbol built-in to block is refused: `'{builtin_name}' cannot hold a symbol out after it exits. A re-entry block only applies to a manager whose exit is a judgement about ONE name (stop_loss, take_profit, trailing_stop); the caps only trim, and max_drawdown flattens the whole book for a portfolio-level reason — blocking every symbol it touched would defeat its own recovery mode. Leave reenter_after_stop unset for this attachment.`
+By default, this protection is turned on for Stop Loss, Take Profit, and Trailing Stop, and off for everything else — the caps and the circuit breaker don't offer it at all, since they don't act on one name at a time; blocking every symbol a portfolio-wide halt touched would work against the halt's own recovery logic.
 
 > [!WARNING]
-> **Attachments are replace-all.** Saving the attachment set writes the whole list; anything you left out is detached. The editor always loads the study's current full set before you edit it, which is why the attach dialog shows attachments you did not add.
+> **Saving your attachment list replaces the whole list.** Whatever you leave out when you save is detached from the study. The editor always starts by loading the study's current full list, which is why you may see risk managers attached that you didn't personally add.
 
 > [!CAUTION]
-> Risk managers can only be changed while a study is in `SAVED` status. After launch: `This study has already been launched, so its risk managers can't be changed. Duplicate it to attach different ones. (study {id})` The attach dialog shows the same rule as a warning — `This study has already been launched — risk-manager attachments can only be edited while a study is in SAVED status.` — and disables its `Attach` button.
+> Risk managers can only be changed while a study hasn't been launched yet. Once a study is launched, its risk-manager list is locked — duplicate the study if you want to try a different set.
 
-Two more gates apply at attach or launch time:
+Two more gates apply when you attach or launch:
 
-- **Universe coverage.** Attaching `sector_cap` or `country_cap` to a universe where no ticker carries that grouping blocks the launch: `Risk manager '{rm}' requires {sectors|countries} data, but none of the {N} ticker(s) in the selected universe have {…} coverage. Pick a universe with {…} metadata or remove this risk manager.`
-- **Attachment count.** At most `max_rm_attachments_per_study` attachments per study, default 20: `A study can have at most {limit} risk-manager attachments; this request has {count}.`
+- **Your universe needs the right data.** Attaching Sector Cap or Country Cap to a universe where none of its tickers carry that classification blocks the study from launching — pick a universe with sector or country data, or remove the rule.
+- **There's a cap on how many you can attach.** A single study can only carry a limited number of risk-manager attachments — up to 20 by default.
 
-**Preview stack** runs one representative backtest of the strategy with the whole ordered stack applied — midpoint parameter values, nothing saved. It appears in the study builder and the derive wizard, but **not** in the attach dialog, which has no strategy or universe context to run against. The sandbox does not resolve runtime metadata and does not expand rule trees, so `sector_cap`, `country_cap` and every rule-based attachment are dropped from the preview and named in a notice: `Not previewable in the sandbox and excluded from this run: {{names}}. They still apply in the real study.` Preview runs spend tokens.
+**Preview stack** runs one representative backtest with your whole ordered list of risk managers applied, using the midpoint of each optimized range, without saving anything — a quick sanity check before you commit to a full study. It's available from the study builder and the derive-risk-managers flow, but not from the plain attach dialog, which has no strategy or universe to test against yet. The preview can't run Sector Cap, Country Cap, or any rule-based risk manager — it tells you which ones it skipped, but they still apply once you actually run the study. Each preview run spends tokens.
 
 > [!IMPORTANT]
-> An attachment stores a **snapshot** of the risk manager. Editing or deleting the registry row never changes a study that already has it attached. If you fixed a risk manager and the results did not change, you need a new study, not a new save.
+> Attaching a risk manager to a study saves a snapshot of it as it was at that moment. If you later edit or delete the registry entry, studies that already have it attached are unaffected — you'll need to build a new study to pick up the change.
 
-### Optimizing risk-manager parameters
+### Optimizing risk-manager settings
 
-Any parameter set to `Optimized` on an attachment is sampled by Optuna alongside the strategy's own parameters, namespaced with an `rm_` prefix, the attachment id and the parameter name — `rm_12_threshold` for `threshold` on attachment 12. Rule-based leaves get synthetic attachment ids so two leaves never collide.
+Any setting you mark **Optimized** on an attachment is searched by Fintela's optimizer alongside your strategy's own parameters, as part of the same search. Only numeric settings (whole numbers or decimals) can be optimized — anything else, like a dropdown choice or a list, always stays fixed. A setting you mark **Fixed** is applied exactly as entered and is never explored by the optimizer.
 
-- Only `float`/`double` and `int`/`integer` dtypes can be optimized. Anything else raises `Unsupported risk-manager param dtype for {name}.{param}: {dtype}`.
-- The study's `grid_decimals` becomes the float step.
-- `Fixed` entries never reach Optuna. They are merged into the trial spec verbatim and never appear in trial parameters.
-- Merge precedence when a trial spec is built: runtime metadata beats sampled values, which beat fixed values, which beat static params.
-- `recovery_mode` and every array parameter are closed choices, so they are always static.
+When more than one source could supply the same setting, Fintela resolves it in this order: automatically-detected universe data (like sector or country classification) always wins first, then whatever the optimizer is currently searching, then your fixed values, then the catalogue default.
 
-### The execution log
+### The risk-manager activity log
 
-Every risk-manager event the engine emits during a trial is recorded per portfolio and surfaced on **Portfolio → Risk Analytics**, under `Risk-manager execution log` with the subtitle `Exceptions, timeouts, invalid outputs, and terminal transitions emitted by the risk managers attached to this portfolio during its trial. Empty is the happy path.`
+Every notable event a risk manager produces during a trial — an error, a timeout, a halt, a resume — is recorded per portfolio and shown on that portfolio's **Risk Analytics** tab, under **Risk-manager execution log**. An empty log is the good outcome: it means every attached risk manager behaved as expected for the whole run.
 
-Each row shows an event-type chip, the risk-manager name, an outlined kind chip, the trial (`Trial {{number}}`) and tick (`tick {{date}}`) where applicable, a timestamp, and the raw payload JSON.
+| Event | What it means |
+|---|---|
+| Error | Your custom code raised an error, or your external service's call failed |
+| Timeout | The risk manager took too long to respond that day and was skipped |
+| Invalid output | The actions it returned didn't match what Fintela expects, so they were rejected |
+| Switched off | The risk manager failed too many times and Fintela turned it off for the rest of the trial |
+| Halted | A circuit breaker tripped — this is protection working as intended, not a fault |
+| Resumed | Trading picked back up again after a halt |
 
-| Event type | Chip tone | What it means | Payload |
-|---|---|---|---|
-| `exception` | error | Your code raised, or the endpoint call failed | `{message}`, plus `endpoint` for external |
-| `timeout` | warning | The tick budget was exceeded | `{message, timeout_ms, base_timeout_ms, holdings}` |
-| `invalid_output` | warning | The returned operations failed the contract | `{message}`, plus `offending_op` for external |
-| `terminal` | error | The manager was switched off for the rest of the trial | `{reason, consecutive_failures, total_failures}` |
-| `halted` | info | A circuit breaker tripped — protection working, not a fault | `{limit, drawdown, peak, value, recovery_mode, recovery_threshold, recovery_days, permanent, shadow_measurable}` |
-| `reactivated` | success | Trading resumed after a halt | `{rule, bars_halted, bounce_off_trough, recovery_threshold, recovery_days, previous_peak, rebased_peak}` |
+Each row shows which trial and which date it happened on, along with a timestamp. Fintela keeps up to 50 events per risk manager per run, and the log shows the most recent 200 rows.
 
-The log is bounded twice over: the engine caps each risk manager at **50 events per run**, and the read endpoint returns at most **200 rows**, newest first. Empty state reads `No risk-manager events recorded for this portfolio.`
+### Study-level warnings
 
-### Study-level health notice
+A study's Overview tab stays quiet when every risk manager behaved across every trial. Otherwise, it surfaces up to two warnings, rolled up across all the study's trials:
 
-A study's Overview tab renders nothing when every risk manager behaved. Otherwise it raises up to two alerts, aggregated across trials:
+| Warning | What it's telling you |
+|---|---|
+| A risk manager was switched off | It failed too many times in a row during at least one trial and Fintela turned it off partway through |
+| A risk manager hit errors | It produced errors, but wasn't switched off |
+| A circuit breaker stopped trading | Max Drawdown (or a similar rule) tripped at least once during the study, and how many times trading later resumed |
 
-| Alert | Severity | Title | Chips |
-|---|---|---|---|
-| Some risk manager was switched off | warning | `A risk manager was switched off during this study` | `switched off in {{count}} trials`, `errors in {{count}} trials` |
-| Errors but no shutdown | info | `A risk manager hit errors during this study` | `errors in {{count}} trials` |
-| A breaker tripped | info | `A circuit breaker stopped trading during this study` | `tripped in {{count}} trials`, `resumed {{count}} times` |
+The first one matters most: it means a risk manager failed too many times in a row, so Fintela stopped running it partway through the trial — and the portfolio results from that point on were produced **without** that protection in place. If you see this warning, fix the underlying issue (in your Python code, or on your external service) and relaunch the study to get results that were actually protected the whole way through.
 
-The first one matters most: `It failed too many times in a row, so the engine stopped running it partway through. The portfolios below were simulated WITHOUT it from that point on. Fix the risk manager and relaunch to get protected results.` A study that reports this produced unprotected results after the shutdown point.
+### Plan limits
 
-### Quotas and limits
+Two separate limits apply to your risk managers, independent of each other.
 
-Two independent limits apply.
+**How many you can create.** Free-tier organizations can register up to 2 custom risk managers. This limit is only checked when you create, duplicate, or fork a risk manager — never when you're just viewing, editing, or deleting one. If your organization is already above the limit (say, after a plan change), nothing is taken away; you simply can't add more until you delete something or upgrade. See [tokens and billing](/docs/tokens-and-billing) for plan details.
 
-**Free-tier creation cap.** `max_risk_managers` defaults to **2** on the free tier and is checked on create, duplicate and fork only — never on read, update or delete. An org already above the cap keeps everything it has and simply cannot add more; deleting brings it back under and creation resumes. Refusal is a 402-class response. See [tokens and billing](/docs/tokens-and-billing).
+**Organization-wide limits.** Beyond the creation cap, your plan sets a ceiling on the total scale of what you can build:
 
-**Per-organization engineering quotas.** One row per org in the risk-manager quota table, enforced on create, update and duplicate:
+| Limit | What it covers |
+|---|---|
+| Total custom risk managers | Up to 50 combined rule-based, custom-code, and external risk managers per organization |
+| Custom-code risk managers | Up to 20 of those can be Python-based |
+| Rule-based risk managers | Up to 50 of those can be built from the no-code rule builder |
+| External risk managers | Up to 10 of those can point to your own hosted service |
+| Custom code size | Up to 64 KB of Python source per risk manager |
+| External response time | Your service needs to reply in a small fraction of a second — practically about one-tenth of a second |
+| Rules per policy | Up to 32 rules combined in one rule-based risk manager |
+| Attachments per study | Up to 20 risk managers attached to a single study |
 
-| Quota | Default | What it bounds |
-|---|---|---|
-| `max_risk_managers` | 50 | Total live risk managers in the org |
-| `max_internal_rms` | 20 | Custom-code rows |
-| `max_declarative_rms` | 50 | Rule-based rows |
-| `max_external_rms` | 10 | External HTTP rows |
-| `max_code_size_bytes` | 65536 | Python source size (64 KB) |
-| `max_per_tick_timeout_ms` | 100 | Compared against an external risk manager's `timeout × 1000` |
-| `max_rules_per_dsl` | 32 | Leaf rules in a rule tree, counted through `any_of`/`all_of` groups |
-| `max_rm_attachments_per_study` | 20 | Attachments on one study |
-
-Breaching one returns `Quota exceeded: {scope} (current={current}, limit={limit}). Contact support to raise the cap or soft-delete unused risk managers.` There is **no admin UI and no write endpoint** for these values — they are adjusted directly by operators. The registry's quota meter reads them but cannot change them.
+If you hit one of these, Fintela tells you which limit you've reached and what your current usage is. Contact support if you need any of these raised for your organization.
 
 ## Registry table view
 
-`/risk-managers` lists every custom risk manager in your organization. Built-ins are filtered out, so every row is one you authored. The page lives under **More Options** in the sidebar, not directly under Registry — see [navigation](/docs/navigation).
+The Risk Managers page lists every rule-based, custom-code, and external risk manager your organization has registered — built-in rules never appear here, since there's nothing for you to author about them. You'll find this page tucked under **More Options** in the sidebar rather than directly under the main Registry menu — see [navigation](/docs/navigation).
 
-Three URLs mount the same page: `/risk-managers` (the list), `/risk-managers/view/:id` (read-only editor) and `/risk-managers/edit/:id` (editor). Creating has no URL of its own; it is in-page state.
+Opening a row from the list shows a read-only view of it; from there, Edit (when available) opens the full editor. Creating a new risk manager happens right on the list page — there's no separate screen for it.
 
 ### Columns
 
-Five columns are visible by default; the rest are available through the column chooser.
+Five columns show by default; more are available through the column chooser.
 
-| Column | Header | Renders | Sortable | Visible by default |
-|---|---|---|---|---|
-| `name` | `Name` | Bold text | yes | yes |
-| `description` | `Description` | Generated sentence, `—` when empty; the author's stored note moves to the hover tooltip labelled `Author's note` | yes | yes |
-| `execution_type` | `Execution Type` | Outlined chip: `internal`, `external`, or `—` | yes | yes |
-| `author` | `Author` | The creating user's username | yes | yes |
-| `created_at` | `Created At` | Shared created-at renderer | yes | yes |
-| `kind` | `Kind` | Chip: `Built-in`, `Custom code`, `Rule-based`, `External HTTP` | yes | no |
-| `params` | `Params` | Monospaced `k=v` for the first three params then `…`, `—` when empty | **no** | no |
+| Column | What it shows |
+|---|---|
+| Name | The risk manager's name |
+| Description | An auto-generated summary of what the rule enforces; your own notes appear in a tooltip when you hover |
+| Execution Type | Whether it's custom code or external — blank for rule-based, since a rule-based policy compiles down to built-in rules rather than running your own code or service |
+| Author | Who created it |
+| Created At | When it was created |
+| Kind (hidden by default) | Built-in, Custom code, Rule-based, or External HTTP |
+| Params (hidden by default) | A quick preview of its first few settings |
 
-`Execution Type` is `null` — and therefore `—` — for rule-based rows: a rule tree compiles to built-ins and never reaches the user-code execution path. Read the `Kind` column when you need to tell rule-based from built-in.
-
-The generated description follows a fixed shape: `Risk model of type {{type}} enforcing {{clauses}}. Advanced: {{items}}.` Clauses name up to four risk models in plain words — `stop-loss`, `trailing stop`, `take-profit`, `max-drawdown circuit breaker`, `exposure cap`, `sector cap`, `country cap`, `position cap`, `cash floor`, `gross exposure cap`, `time-window halt` — then `+{{count}} more`. Magnitudes render as percentages except `gross_exposure_cap.max_pct`, which renders as `{{value}}×`. Optimizable leaves render as `Range {{bounds}}` with both endpoints, never a midpoint.
+The auto-generated description names up to four of the risk models a rule enforces in plain words — stop-loss, trailing stop, take-profit, drawdown circuit breaker, sector or country cap, position cap, cash floor, gross exposure cap, time-window halt — plus a count of any beyond that. Percentages render as percentages, and the Gross Exposure Cap's leverage setting renders with a `×` instead.
 
 > [!NOTE]
-> Custom-code and external rows produce **no "enforcing" clause at all**. Nothing in their payload says which risk model the code implements, so their generated sentence carries only the type and the advanced bucket. Write a real description for those.
+> Custom-code and external risk managers don't get an auto-generated "enforcing" summary — Fintela can't see what your code or your service actually does, so their description only shows the kind and your own notes. Write a clear description for these yourself so you and your teammates can tell them apart later.
 
-### Search, filters and view modes
+### Search, filters, and view modes
 
-| Control | String | Behaviour |
-|---|---|---|
-| Search | `Search risk managers…` | Indexes name, the generated description, the stored description, and the author |
-| Filter | `Filter`, panel `Filters`, `Clear all`, `Any`, `Contains…` | Text on `Name` and `Description`; multi-select on `Execution Type`, `Kind` and `Author`; date range on `Created At` |
-| View mode | `List view` / `Card view` | The card layout shows name as title, description as subtitle, and `Execution Type`, `Kind`, `Author`, `Created At` as facts |
-| Refresh | `Refresh` | Refetches the list and metadata |
-| Documentation | `View documentation` | Opens the contextual docs panel |
-| Create | `New Risk Manager` | Opens the create screen |
+| Control | What it does |
+|---|---|
+| Search | Searches name, both descriptions, and author |
+| Filter | Narrows by name or description text, and by Execution Type, Kind, Author, or Created date |
+| View mode | Switch between a list and a card layout |
+| Refresh | Reloads the list |
+| Documentation | Opens contextual help |
+| New Risk Manager | Opens the creation screen |
 
-Empty state: title `No custom risk managers yet`, body `No custom risk managers yet. Custom (internal / external) risk managers will appear here.` The body copy is narrower than the filter — rule-based rows appear in this table too. Load failure shows `Failed to load risk managers. ` followed by the raw error.
+If you haven't created any custom risk managers yet, the list simply tells you so — rule-based risk managers show up here too, alongside custom-code and external ones, once you've made any.
 
-The footer carries a quota meter with the tooltip `Your organization's risk-manager headroom.` and four buckets — `Total`, `Internal`, `Declarative`, `External` — each shown as `used/cap` over a hairline bar. A bucket turns amber above 80 % of its cap and red at or over it. The meter renders nothing at all until the quota response resolves.
+A quota meter at the bottom of the page shows your organization's headroom across four buckets — Total, Internal (custom code), Declarative (rule-based), and External — each as a used-versus-limit bar that turns amber, then red, as you approach the cap.
 
 ### Row actions
 
-Left-click a row for a popover anchored below it; right-click for a context menu at the pointer. No cell is a link. Six actions, in this order:
-
-| Action | Label | What it does | Disabled when |
-|---|---|---|---|
-| View | `View` | Opens `/risk-managers/view/:id`, read-only | never |
-| Edit | `Edit` | Opens `/risk-managers/edit/:id` | The row is used in a study, **or** its kind is not custom code or external |
-| Duplicate | `Duplicate` | Server-side copy into your org, name auto-allocated | never |
-| Attach | `Attach` | Opens the attach-to-study dialog | never |
-| Version history | `Version history` | Opens the View screen, whose History section holds the versions | never |
-| Delete | `Delete` | Confirms, then soft-deletes | The row is used in a study |
-
-Disabled tooltips are `This item is currently used in a study and cannot be edited.` and `Only internal and external risk managers can be edited here.`
+| Action | What it does | When it's unavailable |
+|---|---|---|
+| View | Opens a read-only view | Always available |
+| Edit | Opens the full editor | The risk manager is attached to a study, or it's a rule-based one (see below) |
+| Duplicate | Makes a copy in your organization with a new name | Always available |
+| Attach | Opens the attach-to-study dialog | Always available |
+| Version history | Shows every saved version | Always available |
+| Delete | Soft-deletes it | The risk manager is attached to a study |
 
 > [!WARNING]
-> **A rule-based risk manager cannot be edited.** Edit is enabled only for custom-code and external kinds, and the editor does not rehydrate a stored rule tree — reaching the edit URL directly would show an empty rule list. In practice a rule-based risk manager is create-once: duplicate it and build a new one, or edit its `execution_details` through the API.
+> **Rule-based risk managers can't be edited once created.** Edit only works for custom-code and external risk managers. If you need to change a rule-based policy, duplicate it and rebuild the copy — think of a rule-based risk manager as create-once.
 
-Delete opens a confirmation reading `Are you sure you want to delete the selected risk manager(s)?` The delete is a soft delete; the row disappears from the registry and stops counting against quota, and studies that already snapshotted it are untouched. The one bulk action is `Delete`, which opens the same confirmation for the whole selection. The selection bar shows `{{count}} selected` and `Clear selection`.
+Deleting asks you to confirm first; it's a soft delete, so the row disappears from your list and stops counting against your quota, but any study that already had it attached keeps working exactly as before. You can select multiple rows and delete them all at once. An insights strip above the table summarizes what's visible by name, kind, and how many studies use each one. Duplicating only ever copies within your own organization — there's no cross-organization sharing on this page.
 
-Toasts: `Risk manager created`, `Risk manager saved`, `Risk manager duplicated`, `Risk manager deleted`, `Risk managers attached to the study`.
-
-Above the table, an insights band summarizes the visible rows by name, kind and study usage. There is no cross-organization catalog and no sharing control on this page — `Duplicate` copies within your own organization only.
-
-## Creation wizard and advanced options
+## Creating a risk manager
 
 > [!NOTE]
-> **There is no wizard.** `New Risk Manager` opens a single-screen editor with a kind picker pinned to the top, a working surface below it that changes with the kind, and one confirmation dialog at the end. The risk manager is named at commit, not at the start.
+> There's no multi-step wizard. **New Risk Manager** opens a single screen: pick a kind at the top, fill in the working area below (which changes depending on the kind you picked), and confirm at the end — including naming it. You don't name it until you're ready to save.
 
-Header, by mode:
+| Mode | What you see |
+|---|---|
+| Create | "Create Risk Manager" — define a new rule-based, custom-code, or external risk manager |
+| Edit | "Edit Risk Manager" — update an existing one |
+| View | "View Risk Manager" — read-only |
 
-| Mode | Title | Subtitle |
-|---|---|---|
-| Create | `Create Risk Manager` | `Define a new declarative, internal, or external risk manager.` |
-| Edit | `Edit Risk Manager` | `Update definition and implementation details for this risk manager.` |
-| View | `View Risk Manager` | `Read-only view. Click Back to return to the list.` |
+### Choosing a kind
 
-`Back` appears only in view mode. In view mode the whole form is wrapped in a disabled fieldset and the code editor is explicitly read-only.
+You choose the kind once, up front, and it can't be changed afterward — switching kinds effectively means creating a new risk manager. Fintela reminds you of this in create mode, and also points out that the ready-made built-in rules (like Stop Loss, Max Drawdown, and Sector Cap) don't need to be registered at all — you attach those directly from a study; this screen is only for building something of your own.
 
-### The kind picker
-
-| Field | Type | Default | Behaviour |
-|---|---|---|---|
-| `Kind` | Segmented control: `Internal`, `External`, `Rule-based` | `Internal` | Locked outside create mode |
-
-Helper text in create mode: `Choose how this risk manager is implemented. This cannot be changed after it is created.` Outside create mode: `The kind is fixed once the risk manager exists — changing it means creating a new one.`
-
-Create mode also shows an information alert: `Built-in risk managers (stop-loss, trailing stop, take-profit, max-drawdown, sector cap) are invoked inline from the study wizard and do not need to be registered here. Use this view to register a rule-based (declarative) or custom-code RM.` That list names five of the ten built-ins; the full catalogue is above.
-
-A `Reference` button opens the reference dialog, `Risk manager reference`, deep-linked to the tab matching the current kind: `Custom code`, `External HTTP`, `Rule-based`.
+A **Reference** button opens a quick guide tailored to whichever kind you've picked.
 
 > [!CAUTION]
-> The reference dialog's **Rule-based** tab shows an `IF … THEN …` example with conditions such as `drawdown_from_peak`, `days_in_position` and a `sell fraction` action. **No such DSL exists.** The real rule format is a list of primitives with parameters, described below. Ignore that example.
+> The reference guide's rule-based example shows an "IF … THEN …" style condition that doesn't actually exist in the builder — ignore it. The real rule-based builder works by adding rules from a fixed catalogue and filling in their settings, described below.
 
-### Custom code (internal) fields
+### Writing your own Python (Custom code)
 
-| Field | Type | Default | Validation |
-|---|---|---|---|
-| `Python code` | Monaco editor, language `python`, 320 px | A generated template — see below | Runs in the compiler sandbox on save; live-validates per keystroke once every parameter has a test value |
-| `Warmup declaration (optional)` | Monaco editor, 110 px | empty | Validated with the code; sent as an explicit `null` when cleared |
-| Parameters | One row per detected parameter — name, type, test value | Detected from the signature as `integer`, no test value | `Every parameter needs a test value before validation.` |
+Choosing Custom code opens a code editor right in the browser, pre-filled with a starting template. You write a Python function that takes today's date, a snapshot of your portfolio, and read-only market data, plus whatever parameters you declare, and returns the list of actions you want to take:
 
-The template is a `def` line naming the risk manager, followed by the fixed three arguments, your declared parameters, `**params`, and a `return ops`. The helper under the editor states the contract verbatim:
-
-```text
-Function signature: (today, portfolio_state, market_data, <your params>, **params) → list[dict].
-The function name is kept in sync with the risk manager name, and params you declare in the
-signature are detected automatically below. Validation runs on save via the compiler sandbox.
+```python
+def my_risk_manager(today, portfolio, market_data, threshold, **params):
+    actions = []
+    # your logic here — inspect the portfolio and market data,
+    # then decide what, if anything, to close, trim, or buy back
+    return actions
 ```
 
-Parameters are extracted from your `def` line by pattern match, so adding an argument to the signature adds a parameter row and vice versa. Helper: `Params are detected from your function signature — set each one's type and test value here. Editing this list updates the signature while you're on the template.`
+Fintela keeps your function's name in sync with the risk manager's name, and automatically detects a parameter row — with a type and a test value — for every extra argument you add to the signature. You need to give each parameter a test value before Fintela will validate your code.
 
-The warmup box exists only if your code reads a trailing window: `Only if your code reads a trailing window. market_data.sma(t, n) needs n bars before the first simulated day, and the panel is warmed for the strategy — not for you. Undeclared, those calls return None for the first n days and your guard silently does not run. Example: def required_lookback(ma_win): return ma_win`
+If your logic needs to look back over a trailing window of prices (a moving average, for example), declare how many days of lookback it needs in the **Warmup declaration** box. Without that declaration, a lookback call returns nothing for the first several simulated days, and your check will silently fail to run during that window — declaring it tells Fintela to warm up that history before your logic sees its first real day.
 
-### External HTTP fields
+Your code is checked as you type once every parameter has a test value, and again for real when you save.
 
-| Field | Type | Seeded value | Server validation |
-|---|---|---|---|
-| `Endpoint` | text, required | empty, placeholder `https://my-service.example.com/risk-manager` | Parses as a URL, scheme `http` or `https`, host present, literal loopback and non-publicly-routable addresses refused. Missing → `Endpoint is required.` |
-| `Timeout (s)` | number, parsed as a whole number | `30` | Must satisfy `0.001 ≤ timeout ≤ 0.5` **seconds**, and `timeout × 1000` must not exceed the org's `max_per_tick_timeout_ms` (default 100) |
-| `Max concurrency` | number, parsed as a whole number | `4` | `1 ≤ max_concurrency ≤ 32` |
+### Connecting your own service (External)
 
-Endpoint helper: `Validated on save: the compiler fires a dummy per-tick POST and checks the response contract. http:// and https:// are both accepted; the host must be publicly reachable.` A plain `http://` URL adds an advisory warning above it — `Unencrypted (http://) — the request and your endpoint's reply travel in cleartext. Fine for testing; use https:// in production.` — which never blocks the save.
+External mode lets you run your risk logic anywhere — on your own infrastructure, in any language, against your own private data or models. Fintela calls your service once per simulated day and applies whatever actions it returns.
+
+| Field | What it's for |
+|---|---|
+| Endpoint | The web address of your risk-management service |
+| Timeout | How long Fintela waits for your service to respond before giving up on that day's check |
+| Max concurrency | How many simulated days Fintela can send to your service at once |
+
+Fintela checks your endpoint on save by sending it a real test request and confirming the reply looks right — it accepts both secure (`https://`) and plain (`http://`) addresses, though it warns you that a plain address sends data in the clear and recommends switching to a secure one before going live. Your service needs to be reachable on the public internet — a local or private address won't validate.
 
 > [!CAUTION]
-> **The seeded timeout cannot be saved, and the field will not accept a valid one.** The form seeds `Timeout (s) = 30`, but the server accepts only `0.001`–`0.5` seconds (`EXTERNAL risk manager timeout must be between 0.001 and 0.5 seconds, got 30`), and the org quota lowers the practical ceiling to `0.1` s. The field parses its input as a whole number, so a fractional second typed into it is read as `0`, which is also out of range. Until this is fixed, an external risk manager has to be created or updated through the API with an explicit fractional `timeout` — for example `0.1`.
+> The timeout field is pre-filled with a starting value of 30 seconds, but the actual allowed range is a small fraction of a second — well under one second — since your service is called on every simulated day of every trial and needs to keep the whole backtest fast. Replace the pre-filled value with a valid fractional-second number (for example, `0.1`) before saving.
 
-Parameters work as they do for custom code but are forwarded rather than injected: `Declared params are forwarded verbatim in the per-tick POST body to your endpoint. Each needs a test value so the sandbox can run it.`
+Just like custom code, any parameters you declare are sent to your service on every call, and each one needs a test value so Fintela can validate the connection.
 
-### Rule-based (declarative) builder
+### Building a rule-based policy without code
 
-`Add rule:` is followed by one outlined button per primitive, labelled with the primitive's name and tooltipped with its description. The full catalogue is offered — there is no strategy-type filtering. Nine primitives:
+Rule-based risk managers let you combine Fintela's built-in rules into your own policy without writing anything. You add rules one at a time from the full catalogue of nine building blocks — there's no filtering by strategy type, so every option is always available:
 
-| Primitive | Label | Compiles to | Description |
-|---|---|---|---|
-| `stop_loss` | Stop Loss | `stop_loss` | `Closes a position when its drawdown from entry exceeds a threshold.` |
-| `trailing_stop` | Trailing Stop | `trailing_stop` | `Closes a position when it pulls back from its peak by a configured percent.` |
-| `take_profit` | Take Profit | `take_profit` | `Closes a position once it rallies past a target gain from entry.` |
-| `max_drawdown` | Max Drawdown | `max_drawdown` | `Closes everything and pauses trading when the portfolio drawdown exceeds a limit. By default it resumes once the market bounces off its lows; a fixed wait or a permanent halt are also available via recovery_mode.` |
-| `exposure_cap` | Exposure Cap | `sector_cap` **or** `country_cap` | `Caps gross long exposure along a chosen dimension (sector or country).` |
-| `position_cap` | Position Cap | `position_cap` | `Caps any single long position to a maximum allocation.` |
-| `cash_floor` | Cash Floor | `cash_floor` | `Keeps a minimum cash bucket by proportionally trimming positions when invested exposure exceeds 1 - min_pct.` |
-| `gross_exposure_cap` | Gross Exposure Cap | `gross_exposure_cap` | `Caps \|long\| + \|short\| gross exposure. Useful for long/short books.` |
-| `time_window_halt` | Time-Window Halt | `time_window_halt` | `Suppresses strategy rebalancing on configured weekdays, dates, or date ranges. Other rules still fire — only SetTargets is skipped.` |
+| Building block | What it does |
+|---|---|
+| Stop Loss | Closes a position when its drawdown from entry crosses a threshold |
+| Trailing Stop | Closes a position when it pulls back from its peak by a set percent |
+| Take Profit | Closes a position once it rallies past a target gain from entry |
+| Max Drawdown | Closes everything and pauses trading when portfolio drawdown crosses a limit, with your choice of how it resumes |
+| Exposure Cap | Caps gross long exposure along a dimension you choose — sector or country |
+| Position Cap | Caps any single long position to a maximum allocation |
+| Cash Floor | Keeps a minimum cash bucket by proportionally trimming positions |
+| Gross Exposure Cap | Caps combined long + short exposure — useful for long/short books |
+| Time-Window Halt | Pauses rebalancing on weekdays, dates, or date ranges you choose |
 
-Each primitive takes the parameters of the built-in it compiles to, minus the runtime-metadata keys — you never write `sectors` or `countries` in a rule.
+Exposure Cap asks you to choose a dimension — **sector** or **country** — and re-fills its settings to match whichever you pick, since the two don't take quite the same fields.
 
-`exposure_cap` adds a required discriminator:
+Each rule you add gets its own card, labelled with its type and a number, and you can reorder or remove them freely — their order becomes the order they're checked in. Every numeric setting can be fixed at one value or optimized within a range, starting fixed at a sensible midpoint of the catalogue's typical range; dropdown and list settings are always fixed. You need at least one rule before you can save.
 
-| Field | Type | Values | Effect |
-|---|---|---|---|
-| `dimension` | enum, required | `sector`, `country` | Chooses which built-in the rule resolves to |
-
-Changing `dimension` re-seeds the rule's parameters from the newly-resolved built-in's schema, because the two do not accept the same keys. A leftover key is rejected, not dropped: `DSL primitive 'exposure_cap' resolved to 'country_cap', which does not accept: default_sector. Accepted params: default_country, max_pct.` A bad value gives `exposure_cap.dimension must be one of: 'sector', 'country'. Got: {dim}.`
-
-Per rule the builder renders:
-
-| Field | Type | Default | Notes |
-|---|---|---|---|
-| `Rule id` | text | `stop_loss`, `stop_loss_1`, `stop_loss_2`, … | Helper `Used to namespace Optuna parameters; must be unique within this DSL.` A duplicate is rejected on save |
-| Numeric parameter | Segmented `fixed` / `optimized`, then one value box or `min` / `max` | `fixed` at the midpoint of the catalog range | Ranges are validated at both endpoints and at the midpoint; `min > max` is rejected |
-| Enum parameter | Select | first allowed value | Discriminators re-seed the rule when changed |
-| Array parameter | JSON text field | `[]` | Helper `JSON list, e.g. ["Sat","Sun"]` |
-| String parameter | free text | schema default | — |
-
-Rule cards carry the primitive label plus `#N`, with `move up`, `move down` and `remove rule` controls. Array position becomes `execution_order`. Empty state: `No rules yet — add one above to start composing a risk policy.` Saving with no rules is refused with `Add at least one rule before saving.` Catalog states: `Loading primitives…`, `Could not load primitive catalog from compiler service.`, `No rule primitives are available.`
+By default, every rule you add runs every day and their actions combine (see [combining rules into one policy](#combining-rules-into-one-policy) above); flip the **First-match** toggle to have Fintela check them in order and stop at the first one that fires that day.
 
 > [!NOTE]
-> The `First-match (any_of)` toggle has two deliberate limits: it supports **one group level only** (no `any_of` inside `any_of`), and the group always wraps **all** rules. Partial grouping and deeper trees are accepted by the validator and the optimizer but have to be written into `execution_details` directly. DSL versions are `"1"` (flat) and `"2"` (with `all_of`/`any_of`); anything else gives `Unsupported DSL version {v}; supported: '1' (flat rules), '2' (with all_of/any_of nesting).`
+> The First-match toggle currently applies to your whole list of rules at once, and only one level deep — you can't nest a first-match group inside another. If you need a more elaborate structure, reach out to support.
 
-### Advanced options panel
+### Additional options while building
 
-The editor's collapsible sections, in order:
+| Section | Shown for | What it's for |
+|---|---|---|
+| Parameters | Custom code, external | Every parameter you've declared, with its test value |
+| Data sources | Custom code | Any extra data feeds your logic needs beyond prices |
+| Advanced options | All kinds | Collapsed by default; opens automatically if there's a validation error |
+| Variables | Custom code | A live look at exactly what your function receives at runtime |
+| Validation | All kinds | Shows validation errors, and lets you preview a sample of the actions your logic would produce |
+| Version History | Existing risk managers | Every saved version, newest first |
 
-| Section | Title | Shown for | Notes |
-|---|---|---|---|
-| Parameters | `Parameters` | custom code, external | Summary is the parameter count |
-| Data sources | `Data sources` | custom code only | Open by default; flagged as an error while a selected source still needs configuring |
-| Advanced options | `Advanced options` | always | Collapsed; force-opens on a validation error or a deep link |
-| → Variables | `Variables` | custom code only | Lazy; a live look at what your function receives at runtime |
-| → Validation | `Validation` | always | Holds the validation error, and the output-sample panel for custom code |
-| Version History | `Version History` | edit and view of a saved row | Lazy; summary is the version count |
+You never have to choose which price data your risk manager sees — it automatically gets the same price history your strategy already uses. The Data sources section is only for anything extra your custom code needs beyond that.
 
-A risk manager **never pins a price source.** It is handed the strategy's already-resolved price panel, so the Data sources section only declares additional injected data.
+The Validation section's **Output sample** lets you preview the actions your logic emits on a representative run before you commit to saving — a quick way to sanity-check your code or rules without launching a full study.
 
-The Validation section hosts `Output sample` — subtitle `The operations your risk manager emits on a sample run.`, buttons `Preview output` and `Refresh`, error `Could not load the output sample.` A gear icon next to the code editor opens a `Validation` popover with a universe override, for custom code only.
-
-**Version History** lists snapshots newest-first: `Version {{number}}`, `Captured {{date}}`, and chips for `kind: {{kind}}`, `builtin: {{name}}`, `strategy: {{strategyType}}`. Versions are written automatically by the database whenever the kind, built-in name, execution details, params, parameters or deletion state change — you never create one by hand. Only custom-code snapshots carry code for the diff, and `Restore` is enabled only for that kind and never in view mode; it loads the historical code back into the editor as an unsaved change, so you review it and save normally. Empty state: `No versions recorded.` The `Note` row is part of the panel but nothing in the product writes a note.
+**Version History** keeps every past version automatically — Fintela saves a new one whenever the definition, its settings, or its kind changes, so you never have to save a version by hand. For custom code, you can compare the code across versions and restore an older one, which loads it back into the editor as an unsaved change for you to review and save again. This isn't available in read-only view, and only custom-code versions carry the code itself for comparison.
 
 ### Saving and naming
 
-Save runs validation first, then names the risk manager.
+Saving happens in a few steps:
 
-1. **Save** — labelled `Create risk manager` in create mode, `Save changes` in edit mode. `Cancel` runs a leave guard.
-2. **Validation** runs against the compiler for the current kind: rule-based validates the DSL, custom code compiles and executes your function in the sandbox with the test values, external fires a dummy per-tick `POST` and checks the response contract. Failures land in the Validation section, and a custom-code failure marks the offending line in the editor.
-3. **The validated payload is pinned.** Only those exact bytes are persisted — the confirm dialog can rename the entrypoint, and the renamed text is what gets validated and stored.
-4. **Confirm and name.** `Create this risk manager? Give it a name and a short description.` (or `Save your changes to this risk manager?`) with `Name` and `Description` fields.
+1. Click **Create risk manager** (or **Save changes** when editing). **Cancel** warns you if you have unsaved changes.
+2. Fintela validates what you've built: a rule-based policy is checked against the rule catalogue, custom code is actually run with your test values, and an external endpoint gets a real test call. Any failure shows up in the Validation section — for custom code, the offending line is highlighted right in the editor.
+3. Once validation passes, exactly what you validated is what gets saved — if the confirmation step renames your custom-code function, that renamed version is what's checked and stored.
+4. Finally, you're asked to name it and add a short description.
 
-Naming rules:
+For custom code, the name you choose becomes your function's name too — Fintela lowercases it and swaps spaces for underscores automatically, and keeps your code's function name in sync as you type. If the name you pick is already taken in your organization, Fintela doesn't block you — it just tells you the name it's actually going to save as (appending a number, like ` (2)`), so names stay unique within your organization without getting in your way.
 
-- For custom code the name **is** a Python identifier: typing a name lowercases it and replaces spaces with underscores, and the function in your code is renamed in step. Helper: `Kept in sync with the function name in your code.`
-- A name collision is a hint, not a block. The dialog previews the allocated name as `Already in use — it will be saved as "{{name}}"`, and the server appends ` (2)`, ` (3)`, … Names are unique per organization among live rows.
+If someone else changes a risk manager while you're editing it, Fintela detects the conflict and asks you to reload rather than silently overwriting their change. For custom code specifically, any edit to your code, warmup declaration, or data sources means it has to pass validation again before it can be saved.
 
-Updates carry an optimistic-concurrency cursor, so a save against a row someone else changed is rejected rather than silently overwriting. Custom-code saves additionally require a fresh validation receipt covering the exact code, warmup declaration and data-source wiring — edit the code and it has to pass again.
+## How your custom logic runs
 
-## Execution modes
+Custom-code and external risk managers work the same way conceptually — Fintela checks your logic once per simulated day and applies whatever it returns — but where that logic actually runs is different, and the choice between them is permanent once a risk manager is created.
 
-Risk managers support both execution modes, and unlike some registries the choice is permanent: the `Kind` control is locked the moment the row exists, because changing it is a delete-and-recreate.
+### Custom code
 
-### Internal
+Your Python runs inside Fintela, checked once per simulated day for every trial that uses it. Each call receives today's date, a snapshot of your portfolio — current value, cash held, the highest value the portfolio has reached so far, and every current holding with its side (long or short) and size — and read-only access to market data: closing prices, moving averages, and standard deviation, on demand, for any ticker and lookback window you ask for.
 
-Internal (`Custom code`) risk managers run Python inside Fintela against a fixed signature:
+Your function returns a list of actions — close a position, trim it by a fraction, buy back into it, or do nothing that day. Fractions and allocations are always between 0 and 1 (never a percentage like `50`), and a fully-closed position is expressed as a close action, not a zero-size buy. Your function can't issue a full rebalance — that's reserved for your strategy — and a single malformed action in the list causes that whole day's actions to be rejected together.
 
-```python
-def my_rm(today, portfolio_state, market_data, threshold, **params) -> list[dict]:
-    ops = []
-    return ops
-```
+To remember something between days (like a running count, or a state machine), you can attach it to your function; Fintela persists it for you across the trial. If you need randomness, use a seeded random-number generator so your results stay reproducible.
 
-The function name **must equal** the risk manager's name; the validator rejects a mismatch and the runtime resolves the callable by that name. It is called once per simulation tick.
-
-`portfolio_state` is a dict:
-
-```python
-{
-    "today": "2024-01-15",
-    "value": 100000.0,          # current portfolio equity
-    "cash_allocation": 0.05,    # uninvested fraction (0.0–1.0)
-    "portfolio_peak": 102000.0, # highest equity seen so far
-    "holdings": [
-        {"ticker": "AAPL", "side": "L", "allocation": 0.35},
-        {"ticker": "TSLA", "side": "S", "allocation": 0.10},
-    ],
-    "equity_history": {"2024-01-12": 99000.0, "2024-01-15": 100000.0},
-}
-```
-
-`market_data` exposes:
-
-| Call | Returns | Notes |
-|---|---|---|
-| `price(date, ticker)` | `float \| None` | Close on an exact date; `None` when unknown or not yet listed |
-| `history(ticker, n)` | `list[float]` | Last `n` closes up to and including today, oldest first; calendar gaps already skipped |
-| `sma(ticker, n)` | `float \| None` | Mean of that window, O(1) from the engine's rolling cache |
-| `stdev(ticker, n)` | `float \| None` | **Sample** standard deviation of the same window |
-| `sma_many(tickers, n)`, `stdev_many(tickers, n)` | `dict[str, float]` | A ticker with no value is **absent**, never a zero |
-| `today` | property | The current tick date |
-
-Return a list of operation dicts — an empty list means "do nothing this tick":
-
-```python
-{"op": "close_position", "ticker": "AAPL", "side": "L"}
-{"op": "close_all_sides", "ticker": "AAPL"}
-{"op": "sell",  "ticker": "AAPL", "side": "L", "fraction": 0.5}
-{"op": "buy",   "ticker": "AAPL", "side": "L", "allocation": 0.25}
-{"op": "no_op"}
-```
-
-`side` is always `"L"` or `"S"`. Fractions and allocations are floats in `(0, 1]`, not percentages — `0` is rejected, so "no position" is `close_position`, never an allocation of zero. `set_targets` is reserved for strategies and is rejected. One malformed op rejects the whole tick.
-
-To keep state between ticks, set `my_rm.__rm_state__` to any JSON-serialisable value. Use `numpy.random.default_rng(seed)` for randomness; a top-level `import random` is rejected.
-
-Runtime budget:
-
-| Limit | Value |
-|---|---|
-| Base per-tick budget | 100 ms |
-| Extra per holding | 2 ms |
-| Hard cap | 2000 ms |
-| Consecutive failures before the manager goes terminal | 10 |
-| Total failures before the manager goes terminal | 25 |
-| Events recorded per run | 50 |
-
-If your code reads a trailing window, declare it in the warmup box. The price panel is warmed for the strategy, not for you — an undeclared `sma(t, n)` returns `None` for the first `n` simulated days and your guard silently does not run.
+Each check has to complete quickly — a small, fixed budget per day that grows slightly with how many positions you hold, with a hard ceiling well under a couple of seconds. If your code fails several times in a row, or too many times across the whole run, Fintela automatically switches it off for the rest of that trial and logs it (see [the risk-manager activity log](#the-risk-manager-activity-log) above) — the trial keeps running, just without that protection from that point on.
 
 ### External
 
-External risk managers are hosted by you, in any language, on your own infrastructure and against your own private data. The engine sends one `POST` per tick:
-
-```json
-{
-  "today": "2024-01-15",
-  "portfolio_state": {
-    "value": 100000.0,
-    "cash_allocation": 0.05,
-    "portfolio_peak": 102000.0,
-    "holdings": [ { "ticker": "AAPL", "side": "L", "allocation": 0.35 } ]
-  },
-  "params": { "threshold": 0.05 }
-}
-```
-
-Respond `2xx` with a JSON array of the same operation objects; `[]` does nothing this tick.
+Your risk logic runs entirely on your own infrastructure, in whatever language or stack you prefer, against whatever private data or models you don't want to share with anyone. Fintela calls your service once per simulated day with today's date and a snapshot of your portfolio, and expects back a list of actions in the same shape as custom code — an empty list means do nothing that day.
 
 > [!IMPORTANT]
-> **The engine sends no market data to an external risk manager.** It also omits `equity_history`, which internal risk managers do receive. An external risk manager owns its own data side — fetch whatever prices or signals you need from your own source.
+> Fintela does not send any market data to an external risk manager — only the date and your portfolio snapshot. If your logic needs prices or other signals, you're responsible for fetching them from your own source. This is also why an external risk manager doesn't get portfolio history the way custom code does — treat each call as a fresh, standalone check.
 
-Limits and failure handling:
+Your service needs to respond quickly — well under a second, and Fintela gives up on a call entirely past a hard ceiling of half a second — since it's called on every simulated day of every trial. A non-successful response, an unreadable reply, or one malformed action causes that day's whole set of actions to be rejected. The same automatic-shutoff protection applies as with custom code: too many failures in a row, or too many across the run, and Fintela switches the risk manager off for the rest of that trial. If your service is geographically distant from where your studies run, the round-trip latency can start to matter — keep it close if you can.
 
-| Limit | Value |
-|---|---|
-| Declared timeout | `0.001 – 0.5` s, further capped by the org's `max_per_tick_timeout_ms` (default 100 ms) |
-| Engine hard cap | 500 ms |
-| Max concurrency | `1 – 32` |
-| Consecutive failures before the manager goes terminal | 10 |
-| Total failures before the manager goes terminal | 25 |
-| Events recorded per run | 50 |
+The same internal-address screening applies here as anywhere else external services are connected to Fintela: at save time, and again on every call, Fintela refuses to talk to an address that isn't genuinely reachable on the public internet.
 
-A non-2xx status, a non-JSON body, or one malformed op rejects the whole tick. Keep the endpoint geographically close to the optimizer so round-trip latency does not dominate the simulation budget.
+This same internal-vs-hosted split shows up elsewhere on the platform too — see [execution modes](/docs/execution-modes) for the general pattern, and [external strategies](/docs/external-strategies) for the equivalent choice on the strategy side.
 
-Endpoint screening happens twice. At save time the URL is parsed, the scheme must be `http` or `https`, a host must be present, and a literal loopback or non-publicly-routable address is refused — this check is DNS-blind. At fetch time the compiler sandbox and the engine's per-run screen catch a public hostname that resolves to a private address.
+### Where neither applies
 
-The same two-mode split applies across the platform; see [execution modes](/docs/execution-modes) for the general contract and [external strategies](/docs/external-strategies) for the strategy-side equivalent.
-
-### Where neither mode applies
-
-| Kind | Execution Type | Why |
+| Kind | Runs your own code or service? | Why |
 |---|---|---|
-| `Rule-based` | `—` | Compiles to built-ins at study-build time. There is no user code and no endpoint, so neither mode applies. It is validated against the compiler on every save, but nothing of yours ever executes. |
-| `Built-in` | `—` | Runs natively in the Rust engine. Not registrable, not listed, and not authored — you attach it and set its parameters. |
+| Rule-based | No | Compiles down to built-in rules when the study is built — there's no code of yours involved at any point |
+| Built-in | No | Runs natively inside Fintela; not something you register, only something you attach and configure |
 
-Two consequences worth stating plainly:
+Two things worth knowing:
 
-- **Live validation** runs per keystroke for custom code (once every parameter has a test value) and for rule-based. **External does not live-validate** — there is nothing meaningful to check without calling your server, so validation happens only on save.
-- **The sandbox does not cover every kind.** Rule-based risk managers and the two runtime-metadata caps (`sector_cap`, `country_cap`) are excluded from both the single-manager and the stack preview. They still apply in the real study — the preview simply cannot run them.
+- Custom code and rule-based risk managers validate as you type, once you've filled in test values. External risk managers only validate when you save — there's nothing useful to check without actually calling your service.
+- The output preview doesn't cover every kind — rule-based risk managers, and the two rules that rely on universe classification data (Sector Cap and Country Cap), can't be previewed and are skipped with a note when you run one. They still apply fully once the real study runs; only the quick preview can't simulate them.
 
-Related reading: [studies](/docs/studies) for where attachments live, [study lifecycle](/docs/study-lifecycle) for the `SAVED` rule, [portfolio detail](/docs/portfolio-detail) for the Risk Analytics tab, and [registries](/docs/registries) for the shared registry conventions.
+Related reading: [studies](/docs/studies) for where you attach risk managers, [study lifecycle](/docs/study-lifecycle) for when your risk-manager list can and can't be changed, [portfolio detail](/docs/portfolio-detail) for the Risk Analytics tab, and [registries](/docs/registries) for how this registry fits with the others.

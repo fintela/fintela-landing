@@ -4,609 +4,252 @@ section: Integration Guides
 sectionOrder: 9
 order: 2
 published: true
-updated: 2026-08-20
-summary: The same external endpoints in the JavaScript ecosystem.
-keywords: express, node, javascript, guide, external, simulate, evaluate, body limit, production checklist
+updated: 2026-09-01
+summary: Build your external strategy or fitness service in Node.js and Express, and connect it to Fintela.
+keywords: express, node, javascript, guide, external strategy, external fitness, own logic, going live checklist
 ---
 
-Fintela reaches an external strategy at `POST {your-base-url}/simulate` and an external fitness
-function at `POST {your-base-url}/evaluate`. This page builds one Express server that answers
-both, with the body limits, socket timeouts and concurrency bounds a real study will actually
-exercise. The contracts are identical to the ones the [Python · FastAPI](/docs/python-fastapi)
-guide implements — you are choosing a language, not a different contract.
+If your team builds in JavaScript or TypeScript, Node.js and Express are a natural way to host
+your own trading logic or your own scoring logic outside Fintela, while still connecting it into
+the platform. This guide walks through what that connection actually involves: what your service
+is asked to do, how to keep it responsive enough for a study to depend on, and what to check
+before you connect it for real. It's a companion to
+[External strategies](/docs/external-strategies) and [External fitness](/docs/external-fitness),
+which cover the underlying capability — your logic, your data and your models staying on your own
+systems — in full. This page focuses on the practical side of building that service in Node.js
+and Express specifically. The same capability, described for a team working in Python instead, is
+in [Python · FastAPI](/docs/python-fastapi) — pick whichever guide matches how your team already
+works; Fintela treats the two exactly the same way.
 
-## The two contracts are mirror images
+## Two kinds of requests your service handles
 
-The single most expensive mistake on this page is assuming the two endpoints read their inputs
-from the same place. They do not.
+A strategy and a fitness function do different jobs, and if you're hosting both from the same
+Node.js service — which is entirely supported — it's worth being clear about the difference
+before you write a line of code.
 
-| | External strategy | External fitness |
+| | A strategy service | A fitness service |
 |---|---|---|
-| Path appended to your base URL | `/simulate` | `/evaluate` |
-| Query string | `start_date`, `end_date` (both `YYYY-MM-DD`) | one key per declared parameter |
-| JSON body | one key per declared parameter, plus `tickers` when a universe is configured | the simulation period: `equity`, `holdings`, `orders`, `trades`, `metrics` |
-| Response key Fintela reads | `signal` | `fitness` |
-| Calls per trial in a study | 1 | 3, or 4 with an out-of-sample window |
-| Calls per validation | 2 | 1 |
-| Health probe | `GET /health`, live portfolios only, 5 s timeout | none |
+| What it's asked | Given a stretch of time and a set of parameter values, decide what to hold and how much to allocate | Given the outcome of a simulation Fintela already ran, turn it into a single quality score |
+| What it answers with | A full trading signal covering the whole period in one response, not one answer per day | One number representing how good that outcome was |
+| How often it's asked, per trial | Once | Several times — once for each stretch of the trial Fintela wants scored (its training period, its validation check, and its out-of-sample window, if the study has one) |
+| Checked before it goes live | Yes — Fintela replays a longer window and confirms none of your past decisions change | No — there's nothing to replay, since it's scoring a simulation that has already finished |
 
-> [!WARNING] Do not copy one handler into the other
-> The strategy takes dates from the query string and parameters from the body. The fitness
-> function takes parameters from the query string and its payload from the body. Reading
-> `req.body.risk_free` on `/evaluate` yields `undefined` in every environment, including the one
-> where your tests pass.
+> [!WARNING] Don't point both jobs at the same handler
+> A strategy service is asked to make a decision; a fitness service is asked to judge one that's
+> already been made. The two expect different information and answer in different ways, so if
+> you're serving both from one Node.js app, keep them as two clearly separate pieces of code
+> rather than reusing one handler for both.
 
-Every query-string value arrives as a **string** — the HTTP client serializes it, and nothing
-coerces it back. `req.query.risk_free` is `"0.02"`, never `0.02`, so coerce with `Number(...)` and
-check the result, as `queryNumber` below does. In a study, a fitness parameter declared `integer`
-is coerced to a real integer before the request goes out, so a stored `15.0` arrives as `"15"` —
-and a stored value with a genuine fractional part fails the study rather than being truncated.
+## Why build this on Node.js and Express
 
-In a study the strategy is called once over the whole window: `train_start_date` through the
-out-of-sample end date, or through the validation end date when the study has no out-of-sample
-segment. You return the entire signal for that window in one response.
+Node.js and Express are a solid choice whenever your quant or engineering team already works
+comfortably in JavaScript or TypeScript. Building your strategy or fitness logic this way means
+it keeps living on your own systems, in a language your team already knows how to maintain,
+rather than being rewritten to fit Fintela's own in-app editor. This is the same trade-off
+[External strategies](/docs/external-strategies) and [External fitness](/docs/external-fitness)
+describe more generally: writing your logic directly inside Fintela is simpler to get started
+with, since Fintela runs and monitors it for you; hosting it yourself in Node.js means Fintela
+never sees your code, your data or your models — only the trading decisions or the score your
+service produces — and in exchange, keeping that service running, fast and correct is on you.
 
-## Project setup
+Node.js in particular tends to make sense when you're already pulling data through a
+JavaScript-based pipeline, want to reuse logic that already lives in your web or trading
+infrastructure, or simply want your quant work living in the same language as the rest of your
+engineering organization. There's no requirement to pick Node.js over any other stack — Fintela
+only cares about the address it can reach and the shape of what comes back, never the language
+behind it.
 
-```json
-{
-  "name": "fintela-endpoints",
-  "private": true,
-  "type": "module",
-  "engines": { "node": ">=18" },
-  "scripts": { "start": "node server.js" },
-  "dependencies": { "express": "^5.1.0" }
-}
+## What your service needs to do
+
+Whichever of the two jobs your service performs, the shape of the conversation stays simple:
+
+- **As a strategy**, your service is told the time window it needs to cover, the specific
+  combination of parameter values being tested, and — if you've set up a validation universe —
+  which tickers to consider. It replies with a signal: for each date in that window, which
+  tickers to hold, whether each position is long or short, and what fraction of the portfolio to
+  put into it. The full rules a valid signal has to follow are covered in
+  [External strategies](/docs/external-strategies).
+- **As a fitness function**, your service is told the parameter values being scored, plus the
+  simulated outcome for one period — the account's value over time, the positions it held, the
+  orders it placed and the trades that closed, along with performance metrics Fintela has already
+  calculated for that window (return, risk, risk-adjusted measures like Sharpe ratio, and more).
+  It replies with one number: how good that outcome was, by whatever definition of "good" your
+  own scoring logic uses.
+
+Fintela handles everything in between — loading price history, running the simulation, building
+the portfolio, and applying any risk managers you've configured. Your service's job starts and
+ends at turning inputs into a decision, or an outcome into a score; nothing about how Fintela
+gets there is something your service needs to know or worry about.
+
+## Handling large scoring requests
+
+A single strategy response is small — a handful of decisions for a handful of dates. A fitness
+request is a different story: it carries a whole simulated trading history for the period being
+scored, which can add up to a meaningful amount of data for a longer window or a busier book. If
+your Node.js service isn't set up to accept a reasonably large amount of incoming data, a scoring
+request for a longer or more active window can be turned away before your own scoring logic ever
+runs — and that shows up as a failed trial with no obvious cause, since the rejection happens
+before your logic sees the request at all.
+
+Give the fitness side of your service a generous allowance for incoming request size, and keep
+the strategy side considerably tighter — a strategy request never needs to carry more than your
+declared parameters and, optionally, a list of tickers, so there's no reason to leave it open to
+something much larger.
+
+## Staying responsive
+
+Fintela won't wait forever for an answer. During a normal run — a backtest, a study trial, or a
+live portfolio's daily update — it waits however long you've set in **Timeout**; while you're
+saving or validating a new strategy or fitness function, it always waits up to 30 seconds
+regardless of what Timeout is set to, so a slow validation window can't be fixed by raising that
+setting — shrinking the window itself is the fix instead.
+
+Fintela also reuses open connections to your service rather than opening a fresh one for every
+call, since that's faster for everyone. If your service closes an idle connection too quickly,
+Fintela can end up trying to reuse one that's already gone, and that call fails outright. Keep
+connections open for at least 30 seconds before your Node.js service closes them on its own, so
+Fintela's own connection reuse doesn't run into one closing underneath it.
+
+## Handling bursts of traffic
+
+**Max Concurrency** is the setting that tells Fintela how many requests your service is
+comfortable handling at the same time — a running study sizes its own pace around that number,
+sending it that many trials in parallel rather than one at a time. If a burst of requests briefly
+outpaces what your service can keep up with, the healthiest response is to tell Fintela plainly
+that you're at capacity right now, rather than letting requests queue silently behind each other
+or fail with an unrelated error. Fintela treats that as worth a short retry, and comes back a
+small number of times with brief pauses before it gives up and moves on to the next trial.
+
+If scoring a period or building a signal involves any real computation, make sure it doesn't tie
+your service up long enough for other incoming requests to back up behind it — from Fintela's
+side, that pile-up looks the same as your service having simply stopped answering. Running more
+than one instance of your service, each handling a modest share of the traffic, is generally a
+better fit than one instance trying to do everything at once.
+
+> [!WARNING] A slow handler defeats the whole guard
+> Telling Fintela you're at capacity only helps if your service can still say so promptly. If
+> your own logic is what's slow, requests pile up waiting for it instead of being turned away
+> cleanly, and they all eventually time out together instead of being shed gracefully. Move heavy
+> computation off the request path where you can, and add capacity rather than letting one slow
+> instance absorb everything.
+
+## Marking an outcome that can't be scored
+
+Some combinations of parameters just don't produce anything worth scoring — a strategy that never
+opens a single position over the window it's given is a common example. When that happens, tell
+Fintela directly that this particular outcome can't be scored, rather than inventing a very low
+number to stand in for "bad." A number, even a deliberately punishing one, still looks like a
+genuine score to Fintela's search — it gets compared against real outcomes and can quietly steer
+the search away from a region that might otherwise be worth exploring. Fintela has a dedicated,
+supported way to say "not scoreable," and that trial is then set aside cleanly rather than treated
+as a poor result.
+
+Getting this right is worth double-checking in whatever web framework you use — it's an easy
+detail to get wrong by accident, since a service can end up sending something that merely looks
+like a stand-in placeholder instead of the deliberate "not scoreable" signal Fintela expects.
+
+## Keeping your address private
+
+Fintela never sends any credentials to your service — no API key, no login header, no signed
+request, nothing. Every call arrives as a plain, unauthenticated request, which keeps the setup
+simple, but also means your service has to be willing to answer anything that reaches it; if your
+service demands its own authentication and turns away unauthenticated calls, every trial will
+fail.
+
+The one thing standing between the open internet and your service is the address itself, so give
+it a long, hard-to-guess path rather than a short, memorable one. That same address is used for
+every call Fintela makes, from the very first validation check through a live portfolio's daily
+update, so making it hard to stumble onto is the real protection here — not a login screen. If
+you want an extra layer on top, an IP allowlist at your own network's edge sits comfortably
+alongside this approach.
+
+## Connecting your service to Fintela
+
+Once your Node.js service is running, create the strategy from the
+[Strategies](/docs/strategies) registry, or the fitness function from the
+[Fitness Functions](/docs/fitness-functions) registry, and choose **External** at the top of the
+editor — that choice is locked in once you save, so make it deliberately from the start. Both
+editors ask for the same three things: the address of your service, how long Fintela should wait
+for an answer (**Timeout**), and how many requests your service can comfortably handle at once
+(**Max Concurrency**). Whatever address you register, Fintela always calls a fixed destination
+beneath it, so register the base address of your service and nothing more.
+
+One detail carries over no matter which language your service itself is written in: if you're
+building a strategy, Fintela still asks you to declare how much price history it needs, by
+writing a short lookback function directly inside Fintela's own editor — always in Python,
+regardless of what your Node.js service is doing on its own. For a strategy with a single
+parameter named `lookback`, that function is as simple as:
+
+```python
+def required_lookback(lookback):
+    return lookback
 ```
 
-```bash
-npm install
-npm start
-```
+Before you can save, every parameter you've declared needs a representative test value, and
+Fintela runs your service through a validation check — covered next — before the strategy or
+fitness function is finalized.
 
-`"type": "module"` is load-bearing: without it Node parses `server.js` as CommonJS and the first
-`import` throws `SyntaxError: Cannot use import statement outside a module`. Node 18 is the floor
-because the test script below uses the global `fetch`.
+## Testing before you connect it
 
-The server works on Express 4 and 5 alike. Express 5 forwards a rejected promise from a handler
-to the error middleware on its own; Express 4 does not, so the `guarded` wrapper below catches
-handler errors itself rather than relying on either.
+Try your own service against a handful of realistic scenarios before you register it — a failed
+validation costs a round trip through Fintela's own check, so it's faster to catch problems on
+your side first. For a strategy, run it over a normal window and confirm the signal that comes
+back looks sensible; for a fitness function, run it against both a normal simulated outcome and a
+degenerate one — a window with no trades at all — and confirm the degenerate case correctly comes
+back marked as not scoreable rather than erroring or quietly returning a placeholder score.
 
-## The server
+It's also worth reproducing, on your own, the look-ahead check Fintela's own validation performs
+on a strategy: ask your service for the same window twice — once as usual, and once with the end
+date pushed much further into the future — and confirm every date from the first answer comes
+back identical in the second. If it doesn't, your strategy is using information it wouldn't
+actually have had at the time it made that decision. Fintela's own validation checks for exactly
+this and blocks the save if it finds it, so confirming it yourself first saves a failed save
+later.
 
-One file, both endpoints, nothing elided. `server.js`:
+## What you'll see if something goes wrong
 
-```js
-import express from "express";
+A study never retries a failed trial on its own — once Fintela's short automatic retries are used
+up, that one trial is set aside and the study moves on with the rest. Every set-aside trial's
+reason shows up in the study's [errors panel](/docs/studies), so you always know which of your
+services to look at, and roughly why.
 
-const PORT = Number(process.env.PORT ?? 8000);
-const MAX_IN_FLIGHT = Number(process.env.MAX_IN_FLIGHT ?? 4);
-
-const app = express();
-app.disable("x-powered-by");
-
-// ── Concurrency guard ───────────────────────────────────────────────────────
-// Node runs your handlers on one thread. Bound in-flight work and shed the
-// excess with 503 — one of the four statuses Fintela retries with backoff.
-let inFlight = 0;
-
-const guarded = (handler) => (req, res) => {
-  if (inFlight >= MAX_IN_FLIGHT) {
-    res.status(503).json({ error: "at capacity" });
-    return;
-  }
-  inFlight += 1;
-  Promise.resolve()
-    .then(() => handler(req, res))
-    .catch((err) => {
-      console.error(`${req.method} ${req.originalUrl} failed`, err);
-      if (!res.headersSent) res.status(500).json({ error: err.message });
-    })
-    .finally(() => {
-      inFlight -= 1;
-    });
-};
-
-// ── Strategy: POST /simulate ────────────────────────────────────────────────
-// Dates arrive in the query string. Parameters, plus an optional `tickers`
-// array, arrive in the JSON body.
-
-const FALLBACK_UNIVERSE = ["AAPL", "MSFT", "NVDA"];
-
-function rebalanceDates(startDate, endDate) {
-  // Illustrative cadence: the first weekday of each month in the window. A real
-  // endpoint aligns these to the exchange calendar it trades.
-  const start = new Date(`${startDate}T00:00:00Z`);
-  const end = new Date(`${endDate}T00:00:00Z`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    throw new Error(`unparseable window ${startDate}..${endDate}`);
-  }
-  const dates = [];
-  const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
-  while (cursor <= end) {
-    const day = new Date(cursor);
-    while (day.getUTCDay() === 0 || day.getUTCDay() === 6) {
-      day.setUTCDate(day.getUTCDate() + 1);
-    }
-    if (day >= start && day <= end) dates.push(day.toISOString().slice(0, 10));
-    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
-  }
-  return dates;
-}
-
-function equalWeight(book) {
-  // Truncate each weight to six decimals so the per-date sum can only ever land
-  // at or below 1: the validator rejects a date whose allocations sum above
-  // 1.0 + 1e-6, and rounding up is how you get there.
-  const allocation = Math.floor((1 / book.length) * 1e6) / 1e6;
-  return Object.fromEntries(book.map((t) => [t, { position: "L", allocation }]));
-}
-
-app.post(
-  "/simulate",
-  express.json({ limit: "1mb" }),
-  guarded((req, res) => {
-    const startDate = req.query.start_date;
-    const endDate = req.query.end_date;
-    if (typeof startDate !== "string" || typeof endDate !== "string") {
-      res.status(400).json({ error: "start_date and end_date are required" });
-      return;
-    }
-
-    // `tickers` is the universe, added by Fintela alongside your parameters:
-    // the study's asset group during a run, and the validation universe (when
-    // you set one) at validation. Absent otherwise.
-    const { tickers, ...params } = req.body ?? {};
-    const universe =
-      Array.isArray(tickers) && tickers.length > 0 ? tickers : FALLBACK_UNIVERSE;
-
-    // `lookback_window` is declared on the record and returned by
-    // required_lookback(...) so Fintela warms enough price history; this
-    // placeholder holds no prices of its own, so only book_size is used.
-    const bookSize = Math.max(
-      1,
-      Math.min(universe.length, Math.trunc(Number(params.book_size ?? 3)) || 1),
-    );
-    const book = universe.slice(0, bookSize);
-
-    const signal = {};
-    for (const date of rebalanceDates(startDate, endDate)) {
-      signal[date] = equalWeight(book);
-    }
-
-    if (Object.keys(signal).length === 0) {
-      // An empty signal is not a legal answer: validation rejects it with
-      // "Output dict is empty — strategy must return at least one date entry".
-      res.status(422).json({ error: "no rebalance date inside the window" });
-      return;
-    }
-    res.json({ signal });
-  }),
-);
-
-// ── Fitness: POST /evaluate ─────────────────────────────────────────────────
-// Parameters arrive in the query string. The simulation period arrives in the
-// JSON body.
-
-const NOT_SCOREABLE = '{"fitness": NaN}';
-
-function queryNumber(raw, fallback) {
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : fallback;
-}
-
-app.post(
-  "/evaluate",
-  express.json({ limit: "64mb" }),
-  guarded((req, res) => {
-    const riskFree = queryNumber(req.query.risk_free, 0);
-    const drawdownWeight = queryNumber(req.query.drawdown_weight, 1);
-
-    const { metrics = {}, trades = [] } = req.body ?? {};
-    const sharpe = metrics.sharpe_ratio;
-    const drawdown = metrics.max_drawdown;
-
-    // Degenerate windows are real: no trades at all, or a `metrics` object that
-    // simply does not carry the key for this window. NaN prunes the trial
-    // cleanly; `Number.isFinite` rejects `undefined` and `null` alike.
-    if (!Number.isFinite(sharpe) || !Number.isFinite(drawdown) || trades.length === 0) {
-      res.type("application/json").send(NOT_SCOREABLE);
-      return;
-    }
-
-    // Illustrative arithmetic — Fintela reads the number, never the formula.
-    const fitness = sharpe - riskFree - drawdownWeight * Math.abs(drawdown);
-    if (!Number.isFinite(fitness)) {
-      res.type("application/json").send(NOT_SCOREABLE);
-      return;
-    }
-    res.json({ fitness });
-  }),
-);
-
-// ── Health probe ────────────────────────────────────────────────────────────
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
-
-// ── Fallbacks ───────────────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ error: `no route for ${req.method} ${req.path}` });
-});
-
-app.use((err, req, res, _next) => {
-  // Body-parser rejects an oversized body here with status 413. Log it: in the
-  // study errors panel every 4xx collapses into one classification.
-  console.error(`${req.method} ${req.originalUrl} rejected`, err);
-  const status = Number(err.status ?? err.statusCode ?? 500);
-  if (!res.headersSent) res.status(status).json({ error: err.message });
-});
-
-// ── Listen ──────────────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => {
-  console.log(`listening on :${PORT}, max ${MAX_IN_FLIGHT} in flight`);
-});
-
-server.keepAliveTimeout = 65_000;
-server.headersTimeout = 66_000;
-
-process.on("SIGTERM", () => server.close(() => process.exit(0)));
-```
-
-The signal shape is `date → ticker → { position, allocation }`, with `position` exactly `"L"` or
-`"S"`. Four allocation rules are enforced by the validator and worth internalising before you
-write a real allocator:
-
-| Rule | Consequence of breaking it |
+| What you'll see | What it usually means for a Node.js service |
 |---|---|
-| `allocation` is a finite number | Rejected — allocations must be finite |
-| `allocation` is strictly greater than zero | Rejected — filter out names you do not intend to trade instead of emitting a zero weight |
-| `allocation` is at most `1` | Rejected — normalise before returning |
-| The allocations on one date sum to at most `1.0 + 1e-6` | Rejected — the excess is reported in the message |
-
-The full rule table, with the exact message for each, is in
-[External strategies](/docs/external-strategies).
-
-## Body size limits
-
-Express's JSON parser defaults to a **`100kb`** limit. That is comfortable for `/simulate`, whose
-body is a handful of parameters plus a ticker list, and far too small for `/evaluate`, whose body
-is the simulation sliced to the scored window: one equity point per trading day, a holdings array
-per date, and every order and trade in that window. It grows with the window length and the size
-of the book.
-
-Mount the parser per route rather than globally, so a 60 MB body cannot reach the strategy
-handler:
-
-```js
-app.post("/simulate", express.json({ limit: "1mb" }), handler);
-app.post("/evaluate", express.json({ limit: "64mb" }), handler);
-```
-
-> [!CAUTION] A 413 is a dead trial, not a retry
-> When the body exceeds the limit the parser raises a `413` before your handler runs, and the
-> error middleware above turns it into `{"error":"request entity too large"}`. Fintela classifies
-> **any** 4xx as
-> `ENDPOINT_REJECTED_REQUEST` and does not retry it — the trial is pruned and the user is told to
-> check the endpoint's address, authentication and expected body. Nothing in that message points
-> at a body limit, which is why the error handler above logs the failure on your side.
-
-## Timeouts and keep-alive
-
-Node's HTTP server defaults are the wrong shape for Fintela's pooled clients.
-
-| Setting | Node default | Set it to | Why |
-|---|---|---|---|
-| `server.keepAliveTimeout` | `5000` (5 s) | `65000` | The optimizer, the sandbox and the portfolio updater hold idle pooled connections for **30 s**. A 5 s server-side idle timeout closes sockets Fintela is about to reuse, and the reuse fails as `ENDPOINT_DROPPED_CONNECTION`. |
-| `server.headersTimeout` | `60000` | `66000` | Keep it above `keepAliveTimeout` so the headers timer never expires on a socket that is only being held open for reuse. |
-| `server.requestTimeout` | `300000` (5 min) | leave alone | Already far above any timeout Fintela uses; the client always gives up first. |
-
-Your own upstream calls — a database, a data vendor — must time out **sooner** than the timeout
-registered on the Fintela record (**Timeout (seconds)**, default `30`). If Fintela's read timeout
-fires first the trial is pruned as `ENDPOINT_TOO_SLOW`, and a read timeout is deliberately **not**
-retried by the optimizer, the sandbox or the updater: the request was accepted, so retrying only
-doubles the load on an already-slow service.
-
-> [!NOTE] Validation ignores the timeout you registered
-> The compiler's validation client uses a fixed **30 seconds** regardless of the stored `timeout`,
-> and it calls `/simulate` twice. Raising **Timeout (seconds)** does not buy validation more time;
-> shrinking the validation window does.
-
-## Concurrency and load shedding
-
-**Max Concurrency** on the record is not a connection limit — every Fintela client pool is fixed
-at 2 connections. It is the worker budget the dispatcher gives a study with an external component,
-and each worker holds one in-flight request, so the practical ceiling of simultaneous requests
-against your server is that number. Size `MAX_IN_FLIGHT` at or above it, and serve the endpoint
-with at least two workers.
-
-Shedding matters because Fintela retries a specific set of statuses and nothing else.
-
-| What you return | Optimizer, sandbox, portfolio updater | Compiler validation |
-|---|---|---|
-| `429`, `502`, `503`, `504` | Retried — 1 attempt plus 3 retries, full-jitter exponential backoff, base 1 s, ceiling 8 s | **Not retried**; validation fails with `Endpoint returned HTTP {status}: {first 500 characters of the body}` |
-| Any other `4xx` | Not retried — pruned as `ENDPOINT_REJECTED_REQUEST` | Fails the same way |
-| Any other `5xx` | Not retried — pruned as `ENDPOINT_SERVER_ERROR` | Fails the same way |
-
-The backoff is drawn uniformly from zero to the ceiling, and `Retry-After` is ignored. The three
-sleeps cap out at 1 s, 2 s and 4 s, so the whole retry budget buys at most about seven seconds of
-relief; a `503` that outlives it still prunes the trial. Shedding is a safety valve, not a
-scheduler.
-
-> [!WARNING] A synchronous scorer defeats the guard
-> `inFlight` only rises above 1 if your handler yields. A CPU-bound scoring loop blocks the event
-> loop, so requests pile up in the kernel accept queue instead of being shed, and they all time
-> out together as `ENDPOINT_UNREACHABLE` or `ENDPOINT_TOO_SLOW`. Move heavy work to
-> `node:worker_threads`, or run more processes and let each one carry a small `MAX_IN_FLIGHT`.
-
-## Returning a non-scoreable trial
-
-NaN is the supported way to tell Fintela that a configuration cannot be scored: the trial is
-pruned with the reason `nan_fitness` and shown in the errors panel as **Fitness wasn't a number**.
-Returning a large negative number instead makes an unscoreable trial comparable to real ones and
-skews the search.
-
-JavaScript makes this awkward. `JSON.stringify(NaN)` produces `null`, so `res.json({ fitness: NaN })`
-puts `{"fitness":null}` on the wire — and a null score is not NaN. It fails later, in a different
-place, with an error that names neither your endpoint nor the reason.
-
-```js
-// Wrong — becomes {"fitness":null}
-res.json({ fitness: NaN });
-
-// Right — Fintela parses the reply with Python's json module, which accepts a
-// bare NaN literal.
-res.type("application/json").send('{"fitness": NaN}');
-```
-
-Only the top-level `fitness` key is read; anything else in the object is ignored. Validation
-requires the same key, and rejects a non-numeric value with
-`'fitness' must be a number, got {type}` — which is exactly how the `null` that
-`res.json({ fitness: NaN })` produces fails, by name, before you ever launch a study.
-
-## Mounting under a base path
-
-Fintela appends `/simulate`, `/evaluate` and `/health` to the base URL you register, after
-stripping a trailing slash. Registering `https://api.example.com/quant` means serving
-`/quant/simulate`. Lift the two handler bodies above into named functions and mount them on an
-`express.Router` once, rather than rewriting every path:
-
-```js
-function simulate(req, res) { /* the /simulate body from above */ }
-function evaluate(req, res) { /* the /evaluate body from above */ }
-
-const api = express.Router();
-
-api.post("/simulate", express.json({ limit: "1mb" }), guarded(simulate));
-api.post("/evaluate", express.json({ limit: "64mb" }), guarded(evaluate));
-api.get("/health", (_req, res) => res.json({ status: "ok" }));
-
-app.use("/quant", api);
-```
-
-This is worth doing deliberately, because the path is the only secret in the contract.
-**Fintela sends no credentials** — no API key field, no header configuration, no bearer token, no
-request signing. An endpoint that answers unauthenticated calls with `401` or `403` prunes every
-trial as `ENDPOINT_REJECTED_REQUEST`. A hard-to-guess path segment survives into every call and is
-the one lever the contract leaves you.
-
-## Registering the two records
-
-Both records store the same three keys and nothing else:
-
-```json
-{
-  "endpoint": "https://api.example.com/quant",
-  "timeout": 30,
-  "max_concurrency": 4
-}
-```
-
-The endpoint must be publicly routable. `localhost`, `*.localhost` and any literal private,
-loopback, link-local or reserved IP are rejected at save time with **HTTP 406** and
-`kind: "not_acceptable"`; a public hostname that resolves to a private address is refused again at
-call time. Plain `http://` is accepted — the editor warns about cleartext but never blocks it.
-
-The two `parameters` shapes differ, and the difference is not cosmetic.
-
-| | `POST /strategies` | `POST /fitness` |
-|---|---|---|
-| `parameters` | an object keyed by parameter name | an array of declarations |
-| Key naming the parameter | the object key | `parameter_name` |
-| Type field | `datatype` — `integer`, `float` or `categorical`, case-insensitive | `dtype` — `integer` or `float`, defaulting to `float` when omitted |
-| Other required fields | `is_window` (boolean) | none |
-| Lookback | a non-empty `lookback_function_code`; `lookback_mode` defaults to `function`, the only accepted value | not applicable |
-
-The strategy:
-
-```json
-{
-  "name": "monthly_equal_weight",
-  "description": "Equal-weight the first N names of the universe, monthly.",
-  "execution_type": "external",
-  "execution_details": {
-    "endpoint": "https://api.example.com/quant",
-    "timeout": 30,
-    "max_concurrency": 4
-  },
-  "parameters": {
-    "book_size": { "datatype": "integer", "is_window": false, "test_value": 3 },
-    "lookback_window": { "datatype": "integer", "is_window": false, "test_value": 60 }
-  },
-  "lookback_mode": "function",
-  "lookback_function_code": "def required_lookback(book_size, lookback_window):\n    return lookback_window",
-  "data_sources": []
-}
-```
-
-The fitness function:
-
-```json
-{
-  "name": "drawdown_penalised_sharpe",
-  "description": "Sharpe with a configurable drawdown penalty.",
-  "execution_type": "external",
-  "execution_details": {
-    "endpoint": "https://api.example.com/quant",
-    "timeout": 30,
-    "max_concurrency": 4
-  },
-  "parameters": [
-    { "parameter_name": "risk_free", "dtype": "float", "test_value": 0.02 },
-    { "parameter_name": "drawdown_weight", "dtype": "float", "test_value": 1.5 }
-  ],
-  "data_sources": []
-}
-```
-
-Both answer **201 Created** with the new id inside a `data` envelope: `{"data": 42}`.
-`lookback_function_code` is mandatory for external strategies too — omitting it fails with
-`A required_lookback(...) function is required (lookback_function_code must be non-empty).`
-In the editor the Internal/External selector is only enabled while you are creating a strategy, so
-changing an existing record's modality is not something the UI offers.
-
-> [!CAUTION] One base URL for both records halves your worker budget
-> When a study's strategy and fitness resolve to the **same** endpoint — compared after trimming,
-> dropping a trailing slash and lowercasing — the dispatcher gives the study
-> `min(strategy, fitness) / 2` workers, floored, minimum 1, because each trial hits that one
-> server on both paths. Two distinct base URLs keep the budget at `min(strategy, fitness)` —
-> mount two Routers, register `https://api.example.com/quant/strategy` on the strategy and
-> `https://api.example.com/quant/fitness` on the fitness function, and serve
-> `/quant/strategy/simulate`, `/quant/strategy/health` and `/quant/fitness/evaluate`. Either way
-> the optimizer caps per-batch fan-out at 32, so a budget above 32 buys nothing.
-
-> [!CAUTION] Never declare a strategy parameter named `tickers`
-> It collides with the universe key Fintela adds to the `/simulate` body. At validation your
-> parameter wins, the universe is not forwarded, and the run carries the warning *"validation_universe
-> tickers were not forwarded to the endpoint: a strategy parameter named 'tickers' already occupies
-> that body key."* In a study there is no such guard — the universe overwrites your parameter.
-
-## Testing before you register
-
-Exercise both paths against the running server first — a failed save costs a round trip through
-the async validation job.
-
-```bash
-curl -X POST "http://127.0.0.1:8000/simulate?start_date=2024-01-01&end_date=2024-06-30" \
-     -H "Content-Type: application/json" \
-     -d '{"book_size": 3, "lookback_window": 60, "tickers": ["AAPL", "MSFT", "NVDA"]}'
-
-curl -X POST "http://127.0.0.1:8000/evaluate?risk_free=0.02&drawdown_weight=1.5" \
-     -H "Content-Type: application/json" \
-     -d '{"equity":{"2024-01-02":100000},"holdings":{},"orders":[],
-          "trades":[{"ticker_code":"AAPL","position_side":"L","entry_date":"2024-01-02",
-                     "exit_date":"2024-02-01","total_pnl":118.0}],
-          "metrics":{"sharpe_ratio":1.2,"max_drawdown":-0.1}}'
-
-curl http://127.0.0.1:8000/health
-```
-
-The `trades` array in that second call is not decoration: with it empty the handler takes its
-degenerate branch and answers `{"fitness": NaN}`, so a payload without a trade tests the wrong
-path. Fintela's own validation fixture carries one closed trade for the same reason.
-
-Then reproduce the causality check that validation performs. It calls `/simulate` twice — once
-over your window, once with `end_date` pushed out by **730 days** — and rejects the save if any
-date present in the first response is missing from the second, or if a ticker set, `position` or
-`allocation` changed for a past date. `causality-check.mjs`:
-
-```js
-const base = (process.argv[2] ?? "http://127.0.0.1:8000").replace(/\/$/, "");
-const params = { book_size: 3, lookback_window: 60 };
-const start = "2024-01-01";
-const end = "2024-06-30";
-
-const extended = new Date(`${end}T00:00:00Z`);
-extended.setUTCDate(extended.getUTCDate() + 730);
-
-async function simulate(endDate) {
-  const url = new URL(`${base}/simulate`);
-  url.searchParams.set("start_date", start);
-  url.searchParams.set("end_date", endDate);
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-  });
-  if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 500)}`);
-  const body = await r.json();
-  if (!body || typeof body.signal !== "object") {
-    throw new Error("response has no top-level `signal` object");
-  }
-  return body.signal;
-}
-
-const canon = (v) =>
-  v && typeof v === "object" && !Array.isArray(v)
-    ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canon(v[k])]))
-    : v;
-
-const short = await simulate(end);
-const long = await simulate(extended.toISOString().slice(0, 10));
-
-let leaks = 0;
-for (const [date, positions] of Object.entries(short)) {
-  if (JSON.stringify(canon(long[date])) !== JSON.stringify(canon(positions))) {
-    console.error(`leak on ${date}`);
-    leaks += 1;
-  }
-}
-console.log(leaks === 0 ? `causal — ${Object.keys(short).length} dates unchanged` : `${leaks} date(s) changed`);
-process.exit(leaks === 0 ? 0 : 1);
-```
-
-```bash
-node causality-check.mjs http://127.0.0.1:8000
-```
-
-Two consequences of that probe: your endpoint must tolerate an `end_date` two years past the end
-of your data without erroring, and it must not revise a past decision when more data arrives.
-
-## What a failure looks like in a study
-
-A study never retries a trial. Once the bounded HTTP retries are exhausted, whatever went wrong
-prunes that trial and the study continues with the rest. Each pruned trial carries a classified
-failure in the study's errors panel — see [Studies](/docs/studies).
-
-| Kind | What your Express server did |
-|---|---|
-| `ENDPOINT_REJECTED_REQUEST` | Returned any 4xx — including the `413` from an exceeded body limit and the `404` from a path that does not match your routes |
-| `ENDPOINT_SERVER_ERROR` | Returned a 5xx: `500` immediately, `502`/`503`/`504` after the retries |
-| `ENDPOINT_TOO_SLOW` | Accepted the request and did not answer within the registered timeout. Never retried. |
-| `ENDPOINT_UNREACHABLE` | Left the connect or pool attempt to time out — a saturated accept queue |
-| `ENDPOINT_REFUSED` | Was not listening at that moment |
-| `ENDPOINT_DROPPED_CONNECTION` | Closed a pooled keep-alive socket mid-reuse — `keepAliveTimeout` under 30 s |
-| `EXTERNAL_BAD_RESPONSE` | Answered 200 with the wrong shape — `res.json(signal)` instead of `res.json({ signal })` |
-| `FITNESS_NOT_A_NUMBER` | Returned a NaN score |
-| `SIGNAL_TICKERS_NOT_IN_CLUSTER` | Emitted tickers outside the study's [asset group](/docs/asset-groups) |
-| `ENDPOINT_BLOCKED` | Published on a host that does not resolve, or resolves to a private address |
-
-`ENDPOINT_BLOCKED` is the only one caught before the first trial: the optimizer screens both
-external endpoints at preflight, so a bad address fails the study once instead of producing N
-identical prunes.
-
-## Production checklist
-
-| Check | Why it is on the list |
-|---|---|
-| `"type": "module"` in `package.json` | Otherwise the first `import` throws at startup |
-| `express.json({ limit })` mounted per route | The `100kb` default turns `/evaluate` into a stream of `413`s |
-| `server.keepAliveTimeout = 65_000` | Fintela reuses idle sockets for 30 s; Node's 5 s default closes them first |
-| `server.headersTimeout` above `keepAliveTimeout` | Keeps the headers timer off sockets that are only being held open for reuse |
-| Upstream timeouts shorter than the registered **Timeout (seconds)** | A read timeout is never retried |
-| Answer the validation window within 30 s | Validation ignores the stored timeout |
-| `MAX_IN_FLIGHT` at or above the registered **Max Concurrency** | The budget is what the dispatcher will actually send |
-| At least two workers, and heavy work off the event loop | One blocked thread turns every queued request into a prune |
-| Shed with `503`, never `400` | Only `429`, `502`, `503` and `504` are retried |
-| No authentication that can reject Fintela | No credentials are sent; a `401` prunes every trial |
-| `GET /health` returning 2xx | Required before every daily extend of a [live portfolio](/docs/live-trading) backed by an external strategy, on a 5 s timeout |
-| `{"fitness": NaN}` sent as a raw string | `res.json({ fitness: NaN })` serializes to `null` |
-| Allocations above 0, at most 1, summing to at most `1.0 + 1e-6` per date | Each is a hard validator rule |
-| Only tickers from the study's asset group | Anything else fails the trial |
-| No strategy parameter named `tickers` | It collides with the universe key |
-| A publicly routable address | Private and loopback hosts are refused at save time and at call time |
-| Structured logs of the query string and body of every call | The errors panel gives you a class, not your request |
-
-The contracts themselves, in full, are in [External strategies](/docs/external-strategies) and
-[External fitness](/docs/external-fitness); the trade-offs against running Python inside Fintela
-are in [Execution modes](/docs/execution-modes). The endpoint tables for the registration payloads
-above are in [Strategies API](/docs/api-strategies) and [Fitness API](/docs/api-fitness), and the
-status codes in [Error reference](/docs/api-errors).
+| Endpoint blocked | The address you registered doesn't resolve to somewhere Fintela can reach from the public internet |
+| Endpoint refused | Your service wasn't accepting connections at that moment — make sure it's running continuously |
+| Endpoint too slow | Your service took longer to answer than the Timeout you set |
+| Endpoint unreachable | Fintela couldn't even open a connection in time — often a sign your service is overloaded |
+| Connection dropped | Your service closed a connection Fintela was trying to reuse — see [Staying responsive](#staying-responsive) above |
+| Endpoint error | Your service ran into a problem of its own while answering |
+| Request rejected | Your service turned the request down outright — check for anything that might be asking for authentication Fintela can't provide |
+| Unexpected response | Your service answered, but not in the shape Fintela expects for a signal or a score |
+| Tickers outside asset group | Your strategy's signal named tickers that aren't part of the study's [asset group](/docs/asset-groups) |
+
+Fintela checks that both your strategy's and your fitness function's addresses are reachable
+before a study's very first trial runs, so a bad address fails the whole study once, clearly —
+rather than quietly failing every trial one by one and leaving you looking at zero completed
+trials with no explanation.
+
+## Checklist before going live
+
+- Your service answers quickly and consistently, comfortably within the Timeout you've registered
+- Your service stays up continuously, with enough spare capacity to keep pace with the Max
+  Concurrency you've set
+- A fitness request carrying a full simulated trading history isn't rejected for being too large
+- An outcome that genuinely can't be scored comes back correctly marked as such, never as a
+  stand-in number
+- Your strategy's signal follows the allocation rules in
+  [External strategies](/docs/external-strategies) — valid positions, valid allocations, and only
+  tickers from the study's asset group
+- Your service accepts requests without requiring authentication of its own, since Fintela sends
+  none
+- The address you've registered is hard to guess and points somewhere reachable from the public
+  internet
+- If you're backing a [live portfolio](/docs/live-trading), your strategy answers its daily
+  health check reliably, well within its short time limit — a live extend won't run without it
+
+For the underlying capability in full — what Fintela stores, how addresses are checked, the exact
+rules a signal or a score has to follow, and how a live portfolio uses your service day to day —
+see [External strategies](/docs/external-strategies) and [External fitness](/docs/external-fitness).
+For the trade-offs against writing your logic directly inside Fintela's own editor instead, see
+[Execution modes](/docs/execution-modes).

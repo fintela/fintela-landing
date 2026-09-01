@@ -4,64 +4,50 @@ section: Workflows
 sectionOrder: 5
 order: 2
 published: true
-updated: 2026-08-20
-summary: Read a completed study: rank candidates, compare portfolios, and judge whether a result is real.
+updated: 2026-09-01
+summary: How to read a completed study — rank candidates, compare portfolios, and judge whether a result is real.
 keywords: results, analysis, trials, ranking, compare, equity curve, overfitting, robustness, promote, pivot table
 ---
 
-A finished study leaves one candidate portfolio — a **trial** — for every parameter set it evaluated, and none of it interprets itself. The top of any ranking is by construction the luckiest row for whichever metric you happened to sort by, and the metric the search optimized was measured on data every trial was fitted to. This page is the reading order: where results surface when a run ends, how to rank and shortlist candidates, which numbers survive being compared and which quietly do not, how to use the robustness surfaces to decide whether a result is real, and what to do with the survivors. The mechanics of each screen live on the pages linked from here; this page is about the sequence and the judgement.
+A finished study leaves you with one candidate portfolio — a **trial** — for every parameter combination it tested, and none of it interprets itself. The top of any ranking is, by construction, the luckiest row for whatever metric you happened to sort by, and the metric the search optimized for was measured on the same data every trial was fitted to. This page is the reading order: where your results show up when a study finishes, how to rank and shortlist candidates, which numbers are safe to compare and which quietly aren't, how to use the robustness checks to decide whether a result is real, and what to do with the survivors. The exact controls on each screen are covered on the pages linked from here — this page is about the sequence and the judgment calls.
 
 ## When a study is actually finished
 
-A study reads **Completed** once every task of its run is terminal and the `optimize` stage succeeded. Three follow-up analyses run after `optimize`, in this order, and each one powers a different part of this workflow. Normally all three finish inside the same task, before the study turns Completed — but roughly a quarter of studies get at least one of them out of band, *after* the study already reads Completed.
+A study shows as **Completed** once every trial in its run has finished successfully. Right after that, three more analyses run automatically, always in the same order, and each one powers a different part of this workflow: robustness scoring first, then family clustering, then hyperparameter importance. Normally all three finish within moments of the study completing — but for roughly a quarter of studies, one of them lands a little later, after the study already shows as Completed.
 
-```text
-queued → provisioning → data_loading → strategy → fitness → preflight → optimize
-                                                                            │
-        ┌───────────────────────────────────────────────────────────────────┘
-        ▼
-   robustness   ──►  Robustness tab · per-candidate verdicts · PBO, DSR, SR₀
-        │
-        ▼
-    families    ──►  Families tab · family dots · concentration check
-        │
-        ▼
-  importances   ──►  Hyperparameter Importances · overfitting-divergence panel
-```
-
-| Stage | What it produces | Until it lands |
+| Analysis | What it gives you | Before it's ready |
 |---|---|---|
-| `optimize` | every trial, its metrics at every stage, the rankings | nothing to rank |
-| `robustness` | study PBO and the per-candidate overfitting verdicts | the **Robustness** tab and every verdict chip are empty |
-| `families` | the behavioural clustering artifact | no family dots, no **Families** tile, no concentration warning, no representative mode |
-| `importances` | the fANOVA / MDI artifact | no **Hyperparameter Importances**, no overfitting-divergence panel |
+| Trial results & rankings | every trial's metrics, ready to sort and compare | there's nothing yet to rank |
+| Robustness scoring | the study's overfitting score (PBO) and a verdict for every candidate | the **Robustness** tab and every verdict badge sit empty |
+| Family clustering | groups of candidates that behave the same way | no family colors, no **Families** tile, no concentration warning, no representative mode |
+| Hyperparameter importance | which settings actually drove performance, plus an overfitting check | no **Hyperparameter Importances** panel |
 
-The last three are **secondary**: a failure there produces a completed-with-warnings verdict, not a failed study, and the trial results stay usable. The study page says which case you are in — **Finishing secondary analysis** (*"The optimization is complete. {{stages}} are still being computed and will appear here automatically."*) while one is still running, and **Secondary analysis incomplete** (*"This study completed and its results are usable. {{count}} follow-up analyses could not be produced."*) when one failed. See [study lifecycle](/docs/study-lifecycle) for the full stage contract.
+The last three are secondary: if one of them fails, the study still shows as completed (just with a note), and your trial results stay fully usable. The study page tells you which case you're in — **Finishing secondary analysis** while one is still running, and **Secondary analysis incomplete** if one failed outright but everything else is ready to use. See [study lifecycle](/docs/study-lifecycle) for the full picture of a study's stages.
 
 > [!NOTE] Results exist before the study ends
-> Trials are persisted in batches while the optimizer runs, so the ranking fills in progressively. You can rank, compare and even promote from a study that is still `RUNNING` — you are simply reading an incomplete search.
+> Trials save as the optimizer runs, so the ranking fills in progressively. You can rank, compare, and even promote candidates from a study that's still running — you're just reading a search that isn't finished yet.
 
-> [!WARNING] A Completed study can sit below 100 % progress
-> Progress counts trials in a terminal state against `n_trials`. A finite parameter grid that was exhausted early legitimately completes short. Completion is signalled by **status**, never by progress reaching 1.0.
+> [!WARNING] A completed study can sit below 100% progress
+> Progress is counted against the number of trials you asked for. If your search space was small enough to exhaust early, the study legitimately completes short of that number. Trust the **Completed** status, not the progress bar.
 
-## Where the results open
+## Where to find your results
 
-Three doors lead to the same data, and which one you take decides which question you land on.
+There are three ways in, and each drops you at a slightly different starting point.
 
-| Entry point | Goes to | Lands on |
-|---|---|---|
-| **View** in the [studies](/docs/studies) registry row menu | `/analysis/portfolios?studyId=<id>` | the ranked candidates |
-| The notification `Study "<name>" completed` | `/analysis/portfolios/study/<id>` | the study's own analysis |
-| The **Portfolios Dashboard** / **Optimization Dashboard** section tabs | either route | wherever you were last |
-
-The notification bell routes by kind, and the split is deliberate — an alert only deep-links to the analysis workspace when there are trials on disk to look at.
-
-| Notification kind | Opens |
+| How you got there | Where you land |
 |---|---|
-| `study_completed`, `study_80_percent`, `study_stopped` | `/analysis/portfolios/study/<id>` |
-| `study_running`, `study_failed` | `/studies` |
+| **View** on a study's row in the [studies](/docs/studies) list | that study's ranked candidates |
+| Clicking a "study completed" notification | that study's own results, opened directly |
+| The **Portfolios Dashboard** or **Optimization Dashboard** tabs | wherever you left off last |
 
-A `study_stopped` notification is suppressed when the person who requested the stop is the study's own creator.
+Notifications only take you into the analysis screens when there's actually something to look at:
+
+| Notification | Takes you to |
+|---|---|
+| Study completed, study 80% done, or study stopped | that study's results, directly |
+| Study started, or study failed | your [studies](/docs/studies) list — there's nothing to analyze yet |
+
+If you're the one who stopped a study yourself, you won't get a "stopped" notification for it — you already know.
 
 Three screens then divide the work:
 
@@ -69,15 +55,15 @@ Three screens then divide the work:
 |---|---|---|
 | **Portfolios Dashboard** | which candidates are best, and how do the best ones differ | [portfolios dashboard](/docs/portfolios-dashboard) |
 | **Optimization Dashboard** | what did the search actually find, and can I believe it | [optimization dashboard](/docs/optimization-dashboard) |
-| **Portfolio Analysis** | what did this one candidate do, day by day and trade by trade | [portfolio detail](/docs/portfolio-detail) |
+| **Portfolio detail** | what did this one candidate do, day by day and trade by trade | [portfolio detail](/docs/portfolio-detail) |
 
 ## Rank the candidates
 
-### The landing ranking is not a recommendation
+### The default ranking is not a recommendation
 
-The dashboard opens on the metric named `fitness`, the stage `overall`, `Top N` of `10`, and automatic order (best-first for the metric's own direction). That is a starting position, not a verdict — `fitness` is the study's own objective and `overall` spans the whole curve, training window included.
+The dashboard opens ranked by `fitness`, over the **Overall** period, showing your **Top 10**, best-first. That's a starting position, not a verdict — fitness is the study's own objective, and Overall spans the whole curve, training window included.
 
-The search itself was steered by something narrower still: the optimizer settles every trial with its **train** fitness, so every trial you are looking at was selected on training data alone. The validation, out-of-sample and overall fitness values were all computed and persisted alongside it, and none of them was ever fed back to the sampler. Your first move on any new study is therefore to change the period, not the metric.
+The search itself was steered by something narrower still: the optimizer judged every trial on its **training-period** performance alone. Validation, out-of-sample, and overall performance were all calculated too and saved alongside every trial — they just never fed back into which parameter combinations got tried next. Your first move on any new study should be to change the time period you're looking at, not the metric.
 
 ### Pick the period before the metric
 
@@ -85,262 +71,261 @@ The search itself was steered by something narrower still: the optimizer settles
 
 | `Rank by` | What the window is | What ranking by it tells you |
 |---|---|---|
-| `Overall` | the whole curve, not date-anchored; always offered | a summary that includes the data the trial was fitted to |
-| `Train` | the study's configured training window | reproduces the search's own preference order |
-| `Val` | the configured validation window | the first held-out read — but choosing a winner here means you are now selecting on it |
-| `OOS` | the configured out-of-sample window; offered only when the study's served periods include it | the closest available proxy for live behaviour |
-| `RLP` | the day after the last configured period through the last equity bar; present only when equity genuinely advanced past the last configured period | real forward performance, for studies enrolled in daily updates |
-| Rolling windows | `MTD`, `1M`, `QTD`, `3M`, `6M`, `YTD`, `1Y`, `3Y`, `5Y`, anchored to the curve's last equity date | regime checks — how a candidate behaved in a specific recent stretch |
-| `Custom` | a trailing window ending at the study's last equity date | the same, over a window you choose |
+| `Overall` | the whole curve, not date-anchored; always available | a summary that includes the data the trial was fitted to |
+| `Train` | the study's training window | reproduces the search's own preference order |
+| `Val` | the study's validation window | the first honestly held-out read — though picking a winner here means you're now selecting on it too |
+| `OOS` | the study's out-of-sample window; offered only when the study covers one | the closest available proxy for how a candidate would behave live |
+| `RLP` | real-life performance — the days after your study period through today, for candidates on daily updates | genuine forward performance, not a backtest at all |
+| Rolling windows | `MTD`, `1M`, `QTD`, `3M`, `6M`, `YTD`, `1Y`, `3Y`, `5Y`, anchored to today | regime checks — how a candidate behaved in a specific recent stretch |
+| `Custom` | a trailing window you choose, ending today | the same, over a window you pick |
 
-The optimizer persists `fitness` at `train`, `validation`, `out_of_sample` and `overall` — a `real_life_performance` row is added later, by the portfolio updater, only for portfolios on daily updates. That makes one combination especially useful: **rank by `fitness` at `OOS`**. It re-scores every trial with the study's own objective, on data the search never saw.
+Fitness gets calculated for the training, validation, out-of-sample and overall periods automatically for every trial. Once a candidate is enrolled in daily updates, a real-life-performance figure builds up too. That makes one combination especially useful: **rank by `fitness` at `OOS`**. It re-scores every trial with the study's own objective, on data the search never got to see.
 
 > [!TIP] Read the same ranking twice
-> Rank by `Train`, then by `OOS`, and watch what moves. A candidate that holds its rank across both is a different animal from one that only wins in training — and the **In-sample vs out-of-sample rank** chart on the study's Robustness tab plots exactly that reversal for every trial at once.
+> Rank by `Train`, then by `OOS`, and watch what moves. A candidate that holds its rank across both is a different animal from one that only wins in training — and the **In-sample vs out-of-sample rank** chart on the study's Robustness tab plots that exact reversal for every trial at once.
 
 ### Top N is a cut, not a filter
 
-`Top N` is the ranking depth requested from the server. It has no upper clamp on this screen, and it is the **only** row control the Portfolios Dashboard offers — there is no minimum-Sharpe box, no maximum-drawdown box, no "exclude candidates with fewer than N trades".
+`Top N` is simply how many rows you pull into the ranking. It has no upper cap on this screen, and it's the **only** row control the Portfolios Dashboard offers — there's no minimum-Sharpe box, no maximum-drawdown box, no "exclude candidates with fewer than N trades."
 
-Hard filters live on **Rank & Build** (`/analysis/portfolio-groups/rank`), the cross-study screener documented under [portfolio groups](/docs/portfolio-groups). It adds, above the same ranking:
+Real filters live on **Rank & Build**, the cross-study screener documented under [portfolio groups](/docs/portfolio-groups). On top of the same ranking, it adds:
 
 | Control | What it constrains |
 |---|---|
-| `Metric threshold` | one metric with an operator — `>`, `<` or `Between` — and `Min` / `Max` bounds |
-| `Risk Manager` | trials carrying a risk manager of a given kind: `Built-in`, `Internal (Python)`, `External (HTTP)` or `Declarative` |
-| `Studies` | an explicit multi-study scope rather than all-or-one |
+| `Metric threshold` | one metric with a condition — greater than, less than, or between — and the bounds you set |
+| `Risk Manager` | trials using a specific kind of risk manager: `Built-in`, `Internal`, `External`, or `Declarative` |
+| `Studies` | an explicit set of studies rather than all of them or just one |
 | `Asset Group` | the asset groups the candidate studies were built on |
-| `Universe` | tickers — *"Narrows to studies whose runnable universe includes any of these tickers."* |
+| `Universe` | tickers — narrows to studies whose tradable universe includes any of the ones you list |
 
-A live candidate counter reports **{{count}} candidates** matching the current filters, so you can see a threshold bite before you build anything.
+A live counter shows how many candidates match your current filters, so you can see a threshold bite before you build anything.
 
 ### Ranking across studies
 
-Setting `Study` to `All studies` ranks every non-draft study's trials together. Two consequences are structural rather than incidental:
+Setting `Study` to `All studies` ranks every non-draft study's trials together, with two consequences worth knowing:
 
-- **Fitness metrics cannot rank across studies.** The option is disabled with the caption `Not available with fitness metrics (fitness is study-specific)`. Two studies with different objectives produce fitness numbers that are not on the same scale.
-- **Everything study-scoped stands down.** The provenance strip, the family features, the Strategies tab and the `Optimization Dashboard` tab all go quiet, because there is no single study to attribute results to.
+- **Fitness metrics can't rank across studies.** The option is disabled, with a note that fitness is study-specific. Two studies with different objectives produce fitness numbers that aren't on the same scale, so ranking by fitness only makes sense within one study.
+- **Everything tied to a single study steps aside.** Study-specific context — the parameter details, the family groupings, the Strategies tab, and the Optimization Dashboard tab — all go quiet, because there's no single study left to attribute results to.
 
 ### Collapse duplicates before you compare
 
-A parameter sweep does not produce N distinct strategies; it produces N parameter sets, many of which trade almost identically. The clustering artifact groups trials by the pairwise correlation of their full-curve daily returns, and that grouping is what turns a top-10 list into a shortlist worth comparing.
+A parameter sweep doesn't produce N distinct strategies — it produces N parameter combinations, many of which trade almost identically. Fintela groups trials by how similar their day-to-day returns actually are, and that grouping is what turns a top-10 list into a shortlist actually worth comparing.
 
 | Symptom | Where it shows | What it means |
 |---|---|---|
-| Every card carries the same coloured family dot | ranking cards | your top 10 is one strategy in ten costumes |
-| `Concentration risk` chip on **Advanced options** | section header | the requested top-N collapsed into too few families |
-| **Your top performers collapse into one family — concentration / overfitting risk.** | diversity banner | at least three ranked candidates, all in one family |
-| **Your best results are largely redundant — consider diversifying.** | diversity banner | at least four ranked, and distinct families at most `ceil(n / 4)` |
-| `Families` tile shows fewer families than checked candidates | comparison strip | the same, for your current selection |
+| Every card carries the same colored family dot | ranking cards | your top 10 is one strategy in ten costumes |
+| A concentration-risk note under **Advanced options** | section header | your requested Top N collapsed into too few distinct behaviors |
+| **Your top performers collapse into one family — concentration / overfitting risk.** | diversity banner | at least three ranked candidates all in one family |
+| **Your best results are largely redundant — consider diversifying.** | diversity banner | four or more ranked, with too few distinct families among them |
+| The **Families** tile shows fewer families than candidates you've checked | comparison strip | the same, for your current selection |
 
-Turning on representative mode (`Show 1 per family`) rewrites the list as one card per family. `Medoid` is the default and picks the most typical trial; the other five methods pick the family's best on fitness, Sharpe, OOS Sharpe, return, or lowest drawdown. Use `Best OOS Sharpe` when the point of the exercise is to keep one survivor per behaviour.
+Turning on **Show 1 per family** rewrites the list as one card per family. `Medoid` (the default) picks the most typical trial from each family; the other options instead keep each family's best on fitness, Sharpe, OOS Sharpe, return, or lowest drawdown. Use `Best OOS Sharpe` when your goal is to keep one representative per distinct behavior.
 
-> [!CAUTION] Family grouping is not in the URL
-> Representative mode, the method and the granularity *k* are local component state on the Portfolios Dashboard. A shared link restores the ranking and the selection, not the grouping. The Optimization Dashboard's **Families** tab does persist its granularity, as `?clusters_k=`.
+> [!CAUTION] Family grouping isn't part of a shared link
+> Representative mode, the grouping method, and how finely candidates are split into families are just settings on your screen. A link you share restores the ranking and your selection, but not this grouping — whoever opens it will need to turn it back on. The Optimization Dashboard's **Families** tab does remember its grouping setting when shared.
 
 ### An empty ranking is a diagnosis
 
-The empty state names the cause instead of shrugging. The full message list is on the [portfolios dashboard](/docs/portfolios-dashboard) page; the short version:
+The empty state names the cause instead of leaving you guessing. The full message list is on the [portfolios dashboard](/docs/portfolios-dashboard) page; the short version:
 
 | Cause | Fix |
 |---|---|
-| A trade-category metric with nothing stored | the study has no closed trades, or the four trade aggregates are still pending the daily metrics run |
-| A benchmark metric on a study with no benchmark | pick a metric that does not need a baseline, or set a benchmark and re-run |
-| A promoted custom metric with no values | custom metrics are scored daily — wait for the next run |
-| The metric exists, but not in this stage | the message lists the stages that do have it: `Available in: {{stages}}.` |
+| You picked a trade-level metric but the study has no closed trades | wait for the study to close trades, or for the next daily metrics run to catch up |
+| You picked a metric that needs a benchmark, on a study with none set | pick a metric that doesn't need one, or set a benchmark and re-run |
+| You picked a custom metric your organization publishes, but it has no values yet | custom metrics are scored once a day — check back after the next run |
+| The metric exists, but not for this period | the message lists which periods it's actually available in |
 
 ## Compare a shortlist
 
-Checking cards builds the selection that every comparison surface reads. One rule governs it: **a ranking you have not curated is auto-selected whole.** The screen opens with the entire top-N checked, and any change to the ranking's identity — study, metric, stage, order, `Top N`, custom frames — re-seeds it from the new rows. The moment you toggle a card, use select-all, or press `Clear`, the selection is pinned for as long as those filters stand. Family grouping deliberately does not count as a ranking change.
+Checking candidates builds the shortlist every comparison view reads from. One rule governs it: **a ranking you haven't touched is auto-selected in full.** The screen opens with your entire Top N checked, and changing anything about the ranking itself — the study, the metric, the period, the order, `Top N`, or a custom date range — resets the selection to match the new list. The moment you check or uncheck a card, select all, or press `Clear`, your selection stays put for as long as those settings don't change. Turning family grouping on or off doesn't count as a ranking change, so it won't reset your picks.
 
-Once a shortlist is checked, pick the surface that answers the question you actually have:
+Once you've got a shortlist checked, pick the view that answers the question you actually have:
 
-| Question | Surface |
+| Question | Where to look |
 |---|---|
 | Did these candidates behave differently at all? | the combined equity overlay, plus the `Dispersion` tile in the `Comparison` strip |
-| Which is best on metric X in period Y? | `Comparison tables` → `Pivot` (every metric × every stage, sortable by any column) |
-| How does one candidate score across *all* stages? | `Comparison tables` → `Metrics` (the pivot transposed) |
+| Which is best on metric X in period Y? | `Comparison tables` → `Pivot` (every metric by every period, sortable by any column) |
+| How does one candidate score across *all* periods? | `Comparison tables` → `Metrics` (the same table, flipped) |
 | What separates them, parameter by parameter? | the `Parameters` table |
 | Did a risk manager do the work rather than the strategy? | the `Risk Manager Configuration` table, and `Portfolio lineage` on a candidate's Performance tab |
-| Are they the same strategy in disguise? | family dots, the `Families` tile, and the `Strategies` tab |
-| How ugly did the ride get? | `Risk charts` — drawdown, volatility, rate of change and Sharpe, as time series or histograms |
+| Are they really the same strategy in disguise? | family dots, the `Families` tile, and the `Strategies` tab |
+| How rough was the ride? | `Risk charts` — drawdown, volatility, rate of change and Sharpe, as time series or histograms |
 
-Two details worth knowing before you read a comparison table: the pivot's heat is computed **per column** over that column's own min–max, and it is inverted for exactly two metrics — `max_drawdown` and `volatility`. Every other column is shaded as though higher were better, `tracking_error` included. And a candidate's whole-study context — the parameters that produced it, its trades, its holdings — is one click away on [portfolio detail](/docs/portfolio-detail); the comparison tables are for the diff, not the depth.
+Two things worth knowing before you read a comparison table: the color-coding in the pivot table is scaled per column, from that column's lowest to highest value among your selection — and it's flipped for exactly two metrics, `max_drawdown` and `volatility`, so a lower number still shows green. Every other column shades as though higher were better, `tracking_error` included, so glance at the metric name before you trust the color. And a candidate's full context — the parameters that produced it, its trades, its holdings — is one click away on [portfolio detail](/docs/portfolio-detail); the comparison tables are for spotting differences, not for depth.
 
 ## Which numbers to trust
 
-Every metric here comes from one catalog with a fixed unit and direction — see [metrics reference](/docs/metrics-reference) for the definitions. What follows is only the set of ways a correct number is read wrongly.
+Every metric here comes from one shared catalog with a fixed unit and direction — see [metrics reference](/docs/metrics-reference) for what each one means. What follows is just the list of ways a correct number gets misread.
 
-### Numbers that do not survive a change of period
+### Numbers that don't survive a change of period
 
-Three metrics grow with the length of the window they are measured over, and the catalog flags them `requires_normalization`.
+Three metrics grow simply with the length of the window they're measured over, so comparing them across periods of different length is misleading:
 
-| Metric | Why comparing stages misleads |
+| Metric | Why comparing periods misleads |
 |---|---|
-| `total_return` | a three-year training window will out-return a six-month out-of-sample window on almost any strategy |
-| `max_drawdown_duration` | counted in **trading days below the previous peak**; a longer window has more of them to offer |
-| `recovery_factor` | `total_return / max_drawdown`, so it inherits the same period dependence |
+| `total_return` | a three-year training window will out-return a six-month out-of-sample window on almost any strategy, just by having more time to compound |
+| `max_drawdown_duration` | counted in trading days spent below the previous peak — a longer window simply has more days to offer |
+| `recovery_factor` | total return divided by max drawdown, so it inherits the same dependence on period length |
 
-Compare these across candidates *within* one stage, and use `compound_annual_growth_rate` when you need to compare across stages of unequal length. The signal badges on a candidate's Performance tab already time-normalise exactly these three before they compare stages — the comparison tables do not.
+Compare these across candidates *within* one period, and use `compound_annual_growth_rate` (CAGR) when you need to compare across periods of unequal length. The signal badges on a candidate's Performance tab already adjust for this when comparing periods — the raw comparison tables do not.
 
-`recovery_factor` carries a second trap: it is computed **without** an absolute value, so a losing candidate reports a negative recovery factor rather than a small positive one. That is deliberate — the metric is higher-is-better, and a −40 % run must not tie with a +40 % run that had the same drawdown — but it means the column cannot be read as a magnitude. A zero drawdown yields no value at all rather than infinity.
+`recovery_factor` has a second quirk worth knowing: it's calculated without taking an absolute value, so a losing candidate shows a *negative* recovery factor rather than a small positive one. That's deliberate — recovery factor is higher-is-better, and a −40% run should never tie with a +40% run that had the same drawdown — but it means you can't read the column as a plain magnitude. A candidate with zero drawdown shows no value at all, rather than an infinite one.
 
-### Numbers that do not survive a change of study
+### Numbers that don't survive a change of study
 
 | Number | What breaks |
 |---|---|
-| `fitness` | it is the study's own objective. Two studies' fitness values are not comparable, which is why `All studies` disables while a fitness metric is selected |
-| A promoted custom metric | scoped to one organization and computed only at `train`, `validation` and `out_of_sample` — never at `real_life_performance` |
-| `?metric=` in a URL | a 1-based position in an alphabetically sorted list, not a stable key. A link copied from a screenshot can point at a different metric after the catalog changes. The API's `metric_name` is the durable reference |
-| Trial numbers | scoped to a study and colliding across studies, which is why every label reads `Trial N · <study name>` |
+| `fitness` | it's the study's own objective — two studies' fitness values simply aren't comparable, which is why ranking `All studies` together disables fitness metrics |
+| A custom metric your organization publishes | scored only for training, validation and out-of-sample periods — never for real-life performance |
+| A bookmarked or shared link to a specific metric | if new metrics get added to the catalog over time, an old link's metric can drift, since it references a position in an alphabetical list rather than a name. If a shared link ever looks like it's showing the wrong metric, just reselect it |
+| Trial numbers | scoped to their own study — two different studies can both have a "Trial 12," which is why every label reads `Trial N · study name` rather than just the number |
 
-### Numbers that do not mean what the chart beside them means
+### Numbers that don't mean what the chart beside them means
 
-- **The rolling Sharpe chart is not the `sharpe_ratio` metric.** The chart plots window rate-of-change over intra-window volatility, unannualized and with no risk-free term. A chart reading 0.4 next to a metric reading 1.8 is not a contradiction. The same applies to every rolling curve — see [visualizations](/docs/visualizations).
-- **Percent metrics are 0–1 fractions on the wire**, rendered ×100. Read an API response accordingly.
-- **`volatility`, `var_95` and `cvar_95` are already annualized server-side.** Never re-annualize them.
-- **`win_rate` counts days; `trade_win_rate` counts closed round-trips.** The same split separates `profit_factor` from `trade_profit_factor`. They will not agree and are not meant to.
-- **The `P&L` column on the Transactions tab is a money value rendered through a signed-percentage formatter.** Read it as the raw P&L figure, not as a percentage of anything.
+- **The rolling Sharpe chart is not the `sharpe_ratio` metric.** The chart plots windowed rate-of-change over intra-window volatility, unannualized and with no risk-free rate subtracted. A chart reading 0.4 next to a metric reading 1.8 isn't a contradiction — they're measuring different things. The same caveat applies to every rolling curve; see [visualizations](/docs/visualizations).
+- **`volatility`, `var_95` and `cvar_95` are already annualized.** Never annualize them again yourself.
+- **`win_rate` counts days; `trade_win_rate` counts closed round-trip trades.** The same split separates `profit_factor` from `trade_profit_factor`. They won't agree with each other, and they're not meant to.
+- **The `P&L` column on the Transactions tab is a dollar figure, formatted with a plus or minus sign the way a percentage would be.** Read it as money, not as a percentage of anything.
 
 ### Direction traps
 
-`beta`, `correlation` and `r_squared` carry the direction `informational` — deliberately, because a high R² is the goal for an index replicator and a red flag for a market-neutral book. None of the three can be an optimization objective, and no surface will call one of them "better".
+`beta`, `correlation` and `r_squared` are deliberately labeled "informational" rather than better-or-worse — a high R² is the goal for an index replicator and a red flag for a market-neutral book. None of the three can be an optimization target, and no screen will ever call one of them "better."
 
-One direction trap is worth stating on its own, because it changes what a headline says:
+One direction trap is worth calling out on its own, because it can quietly change what a headline number tells you:
 
-> [!WARNING] "Best trial" uses the *study's* direction, not the metric's
-> The **Best trial** card and the evolution chart's best marker resolve "best" from the study's own optimization direction (`MAXIMIZE` or `MINIMIZE`, falling back to the fitness function's direction). The filter bar's metric does not enter into it. Point the filter bar at a lower-is-better metric such as `max_drawdown` on a `MAXIMIZE` study and the card crowns the candidate with the *deepest* drawdown. The ranking cards on the Portfolios Dashboard are unaffected — they sort by the metric's own direction.
+> [!WARNING] "Best trial" follows the *study's* direction, not the metric's
+> The **Best trial** card and the evolution chart's best marker pick a winner using the study's own optimization goal (maximize or minimize), not whatever metric you have selected in the filter bar. Point the filter bar at a lower-is-better metric like `max_drawdown` on a study set to maximize, and the card will crown the candidate with the *deepest* drawdown. The ranking cards on the Portfolios Dashboard are unaffected — they always sort by the selected metric's own direction.
 
 ## Judging whether a result is real
 
-Two verdicts exist and they are computed differently. The per-candidate verdict is **stored**, once, at study finalization. The study-level verdict is **derived on read**, from the stored study PBO and the distribution of the per-trial verdicts. Neither is available until the `robustness` stage lands.
+Two verdicts exist, and they're built differently. The per-candidate verdict is fixed once, when the study finishes. The study-level verdict is recalculated fresh each time you view it, from the study's overfitting score and the spread of per-trial verdicts. Neither is available until robustness scoring has finished running.
 
-| Verdict | Subject | Where |
+| Verdict | Applies to | Where you see it |
 |---|---|---|
-| Study-level | the whole search | the study's **Robustness** tab, the **Overview** tab's summary card, and the header's `Overfit` KPI with `PBO {{value}}` beneath it |
+| Study-level | the whole search | the study's **Robustness** tab, the **Overview** tab's summary card, and the header's Overfit indicator |
 | Per-candidate | one trial | that candidate's **Robustness** tab, and the verdict chip beside `Metrics Comparison` on its Performance tab |
 
 ### The per-candidate verdict
 
-Four outcomes, classified in order — the first match wins.
+Four possible outcomes, checked in order — the first match wins.
 
-| Order | Verdict | Condition |
+| Order | Verdict | When it applies |
 |---|---|---|
-| 1 | `uncertain` | fewer than **30** out-of-sample observations, or a non-finite deflated Sharpe, or a non-positive cross-trial Sharpe variance, or an effective trial count of 1 or less |
-| 2 | `overfit_risk` | the train→OOS degradation test is flagged, **or** study PBO is above `0.5`, **or** the deflated Sharpe is below `0.90` |
-| 3 | `borderline` | the deflated Sharpe is below `0.95` |
-| 4 | `well_trained` | everything else |
+| 1 | **Insufficient Data** | fewer than 30 out-of-sample daily returns to work with, or the underlying statistics come out undefined |
+| 2 | **Overfit Risk** | performance degrades too sharply from training to out-of-sample, or the study's overall overfitting probability (PBO) is above 50%, or the deflated Sharpe ratio is below 0.90 |
+| 3 | **Borderline** | the deflated Sharpe ratio is below 0.95 |
+| 4 | **Well Trained** | none of the above triggered |
 
-Labels differ by surface for the same stored value: `uncertain` renders as **Insufficient Data** on a candidate's Robustness tab and as **Uncertain** on the study's. `overfit_risk` renders **Overfit Risk** and **Overfit risk** respectively. Scripting against the API uses the stored `uncertain` / `overfit_risk` values.
+The exact wording can differ slightly by screen — a candidate's own Robustness tab and the study's Robustness tab phrase the same underlying verdict a little differently — but they always mean the same thing.
 
 ### The study-level verdict
 
-Derived client-side, not stored — from the study's PBO and the distribution of its per-trial verdicts, in this order:
+Built fresh each time you look, from the study's overfitting probability (PBO) and the spread of its per-trial verdicts, in this order:
 
-| Order | Result | Condition |
+| Order | Result | When it applies |
 |---|---|---|
-| 1 | `uncertain` | there is no robustness data for the study |
-| 2 | `overfit_risk` | study **PBO above 0.5** — this dominates, whatever the individual trials say |
-| 3 | `uncertain` | no trial carries a verdict |
-| 4 | `well_trained` | at least half the scored trials are `well_trained` |
-| 5 | `borderline` | `well_trained` plus `borderline` together reach half |
-| 6 | `overfit_risk` | more than half are `overfit_risk` |
-| 7 | `uncertain` | none of the above |
+| 1 | Uncertain | there's no robustness data for the study yet |
+| 2 | Overfit Risk | the study's PBO is above 50% — this overrides everything else, no matter what the individual trials say |
+| 3 | Uncertain | no trial carries a verdict yet |
+| 4 | Well Trained | at least half the scored trials are Well Trained |
+| 5 | Borderline | Well Trained and Borderline trials together reach half |
+| 6 | Overfit Risk | more than half the trials are Overfit Risk |
+| 7 | Uncertain | none of the above |
 
-A high PBO overriding healthy individual verdicts is the case worth internalising: it means the *selection procedure* overfits even where a given trial's own out-of-sample record looks fine.
+A high PBO overriding otherwise-healthy individual verdicts is the case worth remembering: it means your *selection process* — testing many parameter combinations and picking the best — overfits the data, even where any single candidate's own out-of-sample record looks fine on its own.
 
 ### What has to be true before a verdict exists
 
 | Figure | Requirement |
 |---|---|
 | Any confident per-candidate verdict | at least 30 out-of-sample daily returns |
-| Study PBO | at least 2 dense trials and at least 40 days of common history |
-| Any of it at all | a study that reached the `robustness` stage |
+| Study PBO | at least 2 meaningfully different trials, sharing at least 40 days of common history |
+| Any robustness data at all | the study needs to have finished robustness scoring |
 
-When scores are simply absent, the Robustness tab says so — *"No robustness analysis available for this portfolio yet. Scores are computed when a study finishes — re-run the study (or its finalization) to populate them."* — and distinguishes that from a failed query, so a broken deploy never reads as an unscored study.
+When scores simply aren't ready yet, the Robustness tab says so directly rather than showing a blank screen or an error — and it's careful to tell that apart from an actual loading problem, so a hiccup never gets mistaken for "this study just isn't scored."
 
-### Reading the surfaces, in order
+### Reading the screens, in order
 
-1. **Study Robustness tab.** Start with `PBO` and `Luck threshold (SR₀)`. PBO above 0.5 is a stop sign for the whole search. Then **Trial Sharpe distribution vs luck**: trials at or below SR₀ have an in-sample Sharpe indistinguishable from chance. Then **In-sample vs out-of-sample rank** — points on the diagonal persist, a downward spread is rank reversal.
-2. **Per-candidate Robustness tab**, for each shortlisted candidate. The `Deflated Sharpe (OOS)` gauge breaks at exactly the verdict cutoffs (red below 90 %, amber 90–95 %, green at 95 % and above), and `Skill vs. luck` puts that candidate's OOS Sharpe next to SR₀ on one annualized axis. Read `Train → OOS degradation` alongside `Val → OOS degradation`: training is selection-inflated, so only the second isolates genuine decay.
-3. **Hyperparameter Importances**, on the study's Overview tab. The **Overfitting divergence** panel is the one to read here: *"Parameters important in train but not in validation drove selection overfitting; an effect whose direction flips out of sample is a spurious-signal flag."* A parameter flagged **Effect direction flips out of sample** is a parameter your search learned backwards.
-4. **Families**, last. If the whole shortlist sits in one family, everything above described one strategy several times and your effective sample size is smaller than the trial count suggests.
+1. **Study Robustness tab.** Start with `PBO` and `Luck threshold (SR₀)`. A PBO above 50% is a stop sign for the whole search. Then **Trial Sharpe distribution vs luck**: trials at or below SR₀ have an in-sample Sharpe indistinguishable from chance. Then **In-sample vs out-of-sample rank** — points on the diagonal hold up, a downward spread means candidates are reshuffling out of sample.
+2. **Per-candidate Robustness tab**, for each shortlisted candidate. The `Deflated Sharpe (OOS)` gauge breaks at exactly the verdict cutoffs (red below 90%, amber 90–95%, green at 95% and above), and `Skill vs. luck` puts that candidate's OOS Sharpe next to SR₀ on one scale. Read `Train → OOS degradation` alongside `Val → OOS degradation`: training performance is inflated by the search's own selection, so only the second one isolates genuine decay.
+3. **Hyperparameter Importances**, on the study's Overview tab. The **Overfitting divergence** panel is the one to read here: it flags parameters that mattered in training but not in validation — a sign your search learned something that doesn't hold up. A parameter flagged as flipping direction out of sample is one your search learned *backwards*.
+4. **Families**, last. If your whole shortlist sits in one family, everything above described one strategy several times over, and your effective sample size is smaller than the trial count suggests.
 
 > [!NOTE] The per-metric signal badges are not the verdict
-> `High Risk`, `Controlled Risk`, `Train≫OOS`, `Val Weak`, `OOS Strong`, `Overall Best`, `Weak` and `Stable` on a candidate's Performance tab are client-side comparisons between stages. They are diagnostics. The statistically grounded answer is the Robustness tab's verdict, and only that.
+> `High Risk`, `Controlled Risk`, `Train≫OOS`, `Val Weak`, `OOS Strong`, `Overall Best`, `Weak` and `Stable` on a candidate's Performance tab are simple on-screen comparisons between periods. They're useful diagnostics, but the statistically grounded answer is always the Robustness tab's verdict.
 
 ### The shape of a result worth keeping
 
-| Signal | Reading |
+| Signal | What it tells you |
 |---|---|
-| Verdict `Well Trained`, study PBO at or below 0.5 | the out-of-sample edge survives the selection-bias correction |
-| OOS Sharpe clears SR₀ | the result beats what the best of this many trials would reach with zero skill |
-| `Val → OOS degradation` not significant | the decay is not the kind selection inflation explains |
-| `OOS autocorrelation` below 0.2 in magnitude | the annualized Sharpe — and these tests — are not biased by serial correlation |
-| The candidate's family holds a minority of trials | you found a behaviour, not a corner of the parameter grid |
-| Its rank holds when you switch `Rank by` from `Train` to `OOS` | the ordering is not an artifact of the fitting window |
+| Verdict `Well Trained`, study PBO at or below 50% | the out-of-sample edge survives the selection-bias correction |
+| OOS Sharpe clears SR₀ | the result beats what the luckiest of this many trials would reach with zero real skill |
+| `Val → OOS degradation` not significant | the decay isn't the kind selection bias would explain |
+| `OOS autocorrelation` below 0.2 in magnitude | the annualized Sharpe — and these tests — aren't distorted by serial correlation |
+| The candidate's family holds a minority of trials | you found a genuine behavior, not a lucky corner of the parameter grid |
+| Its rank holds when you switch `Rank by` from `Train` to `OOS` | the ordering isn't an artifact of the fitting window |
 
-Failing several of these does not make a candidate worthless; it makes it a hypothesis rather than a result. Failing them while carrying the best `fitness` in the study is the classic shape of an overfitted winner.
+Failing several of these doesn't make a candidate worthless — it makes it a hypothesis rather than a proven result. Failing them while carrying the best `fitness` in the study is the classic shape of an overfitted winner.
 
 ## Promote or discard
 
 ### What promotion actually is
 
-Promotion turns a trial — a study artifact — into a **managed portfolio**: a durable, study-independent copy taken as one isolation snapshot inside a single transaction. It copies the strategy code and parameters, the concrete trial parameters, the runnable universe, the fitness configuration, the risk-manager snapshot and the historical seed, plus the trial's holdings, equity and orders into a parallel data plane. It survives deletion of the source study, and it is the only object a [portfolio group](/docs/portfolio-groups) can hold. See [promoted portfolios](/docs/promoted-portfolios) for what freezes and what stays live.
+Promotion turns a trial into a **managed portfolio**: a permanent, independent copy that survives on its own, separate from the study that produced it. It captures a full snapshot at that moment — the strategy and its parameters, the runnable universe, the fitness settings, the risk-manager configuration, and the historical starting point — along with the trial's holdings, equity history and trade record. It survives if you later delete the source study, and it's the only kind of object a [portfolio group](/docs/portfolio-groups) can hold. See [promoted portfolios](/docs/promoted-portfolios) for exactly what freezes at promotion and what keeps updating afterward.
 
-Promotion is **idempotent** — re-promoting returns the existing `managed_portfolio_id`, which is why the `Promoted` badge is cosmetic. The batch endpoint is **partial-success**: it reports what succeeded and what failed, so a mixed outcome is normal and both halves must be read. Quota is charged for the whole batch up front, so a batch larger than the remaining managed-portfolio allowance promotes nothing.
+Promoting the same trial twice doesn't create a duplicate — you'll just get back the copy you already made, which is why the **Promoted** badge simply stays on rather than toggling. When you promote several candidates at once, each one succeeds or fails on its own, so a mixed outcome is normal — check both halves of the result rather than assuming an all-or-nothing outcome. Your promotion allowance is reserved for the whole batch up front, so a batch bigger than what you have remaining promotes nothing at all — trim it and try again.
 
 ### Before you promote
 
-| Check | Why |
+| Check | Why it matters |
 |---|---|
-| The `robustness` stage has landed | promoting before a verdict exists means promoting without one |
-| You have looked at `OOS` or `RLP`, not just `Overall` | otherwise you are promoting the fitting window's winner |
-| The candidate is not one of five siblings from the same family | promote the family's representative, not five copies of it |
-| Its parameters are not at the edge of the searched range | an optimum on a bound usually means the bound, not the optimum, was the constraint — check the `Parameter Impact` scatter |
-| The risk-manager health notice on the study's Overview tab, and the `Risk-manager execution log` on the candidate's Risk Analytics tab, are clean | a manager that switched itself off mid-run leaves a `COMPLETED` study full of plausible-looking portfolios, and nothing else flags it |
+| Robustness scoring has finished | promoting before a verdict exists means promoting blind, with no read on whether the result is real |
+| You've looked at `OOS` or `RLP`, not just `Overall` | otherwise you're promoting the training window's winner, not a genuinely tested result |
+| The candidate isn't one of several near-identical siblings | promote the family's representative, not five copies of the same behavior |
+| Its parameters aren't sitting at the very edge of the range you searched | a best result exactly at a boundary usually means the boundary was the limiting factor, not that you found a true optimum — check the `Parameter Impact` chart |
+| The risk-manager health notice on the study's Overview tab, and the risk-manager activity log on the candidate's Risk Analytics tab, are both clean | a risk manager that quietly stopped working mid-run leaves a completed study full of portfolios that look fine but weren't actually protected, and nothing else will flag it |
 
 ### What promotion refuses
 
-| Rejection | Reason |
+| It won't let you promote... | Because... |
 |---|---|
-| An `EXTERNAL`-execution strategy | managed daily updates support `INTERNAL` strategies only, so the copy could never extend — see [execution modes](/docs/execution-modes) |
-| A meta-portfolio carrying a `sector_cap` or `country_cap` risk manager | those act on per-ticker sector and country metadata that a portfolio-group pseudo-ticker does not have |
-| A trial that is not in your organization, or whose study was deleted | there is nothing left to snapshot |
-| A batch of more than 50 distinct ids, or an empty one | hard limits on the batch endpoint — duplicates are collapsed before the count, and both refusals are `400` |
+| a strategy running in External mode | managed daily updates only support strategies that run inside Fintela, since a copy of code running on your own systems can't be kept extending automatically — see [execution modes](/docs/execution-modes) |
+| a meta-portfolio using a sector-cap or country-cap risk manager | those act on per-holding sector and country data that a portfolio group's combined view doesn't have |
+| a trial outside your organization, or one whose study has been deleted | there's nothing left to copy |
+| a batch of more than 50 candidates, or an empty selection | a hard limit on how many you can promote at once — duplicate picks are collapsed before that count is checked |
 
-Both hard rejections also run on the idempotent path, so a copy promoted before the guards existed is refused rather than silently reused.
+These checks apply even to a candidate you already promoted once, so if it would now be rejected under a rule that didn't exist when you first promoted it, re-promoting it is blocked rather than just handing you back the old copy.
 
 ### Discarding
 
-There is no "discard this trial" action anywhere in the interface, and that is deliberate rather than missing.
+There's no "discard this trial" button anywhere in the interface, and that's deliberate rather than missing.
 
 | What you might want | What actually exists |
 |---|---|
-| Delete one bad trial | `DELETE /portfolios` exists but requires the `root:all` permission, and no screen in this feature calls it |
-| Get a trial out of your way | Uncheck it, or lower `Top N` — both are view state, not deletion |
-| Throw away a whole failed search | Delete the study. It soft-deletes immediately and a background worker permanently purges its portfolios, then its trials, then the study row |
-| Keep the good result and drop the study | Promote first. A promoted portfolio is a copy and survives the study's deletion intact |
+| Delete one bad trial | there's no such action available in this workflow |
+| Get a trial out of your way | uncheck it, or lower `Top N` — both just change what you're looking at, not what exists |
+| Throw away a whole failed search | delete the study. It disappears from your list right away, and everything under it — its portfolios, then its trials, then the study itself — is permanently cleaned up shortly after |
+| Keep the good result and drop the study | promote it first. A promoted portfolio is an independent copy and survives the study being deleted |
 
-The honest discard is simply not promoting: an unpromoted trial costs nothing, occupies no quota and disappears with its study. Deleting a study is not a recycle bin — there is no retention window, no restore endpoint and no undelete.
+The honest way to discard a candidate is simply not to promote it: an unpromoted trial costs you nothing, uses none of your quota, and disappears along with its study. Deleting a study is not a recycle bin, though — there's no waiting period, no restore option, and no undo.
 
-## What this surface will not tell you
+## What this page won't tell you
 
-- **There is no pareto front or multi-objective view.** A study optimizes one objective in one direction. `NSGA-II` is selectable as a *sampler* — it changes the search algorithm, not the number of objectives or the screens you get. See [sampler selection](/docs/sampler-selection).
-- **Nothing refreshes on a timer.** No polling, no websocket, no auto-refresh anywhere in the portfolios data layer, and refetch-on-focus is off. Numbers update on navigation and remount.
-- **Parameter importances are not defined for rolling or custom windows.** They decompose the variance of the study's own objective, which only exists over the study's own periods. Pick `Overall`, `Train`, `Val`, `OOS` or `RLP`.
-- **Scalings are not an optimization concept.** A scaling is a scale-in or scale-out inside one trade, on a candidate's Transactions tab. There is no study-level scalings view.
-- **`Export hyperparameters` only produces a file for `Train` or `Validation`.** The button is never disabled; with any other stage selected, clicking it does nothing.
-- **Rolling-window rows can be missing for old studies.** The nine rolling windows are written by whoever wrote the equity curve; a study that predates that arrangement has named-stage values and no window values, and ranking by a rolling window will find nothing for it.
+- **There's no pareto front or multi-objective view.** A study optimizes exactly one objective, in one direction. You can choose `NSGA-II` as your sampler (see [sampler selection](/docs/sampler-selection)) — that changes the search algorithm exploring parameter combinations, not the number of objectives you're optimizing or the screens available to you.
+- **Nothing on this page refreshes itself.** There's no auto-refresh and no live updates anywhere in this workflow. Numbers update when you navigate to the page or reload it.
+- **Hyperparameter importance isn't available for rolling or custom windows.** It measures which parameters drove the study's own objective, and that objective is only defined over the study's own periods — `Overall`, `Train`, `Val`, `OOS`, or `RLP`.
+- **Scaling isn't a study-level concept.** Scaling in or out of a position happens within a single trade, and you'll find it on a candidate's Transactions tab. There's no study-wide view of scaling activity.
+- **`Export hyperparameters` only produces a file for `Train` or `Validation`.** The button stays clickable regardless — with any other period selected, clicking it simply does nothing.
+- **Rolling-window figures can be missing on older studies.** The rolling windows were added at a point in time; a study run before that only has values for the named periods, and ranking by a rolling window on one of them will come up empty.
 
 ## Where to go next
 
 - [portfolios dashboard](/docs/portfolios-dashboard) — every control on the ranking screen, in full.
-- [optimization dashboard](/docs/optimization-dashboard) — the four per-study sub-views and the promotion API.
-- [portfolio detail](/docs/portfolio-detail) — one candidate's six tabs, including its Robustness statistics.
+- [optimization dashboard](/docs/optimization-dashboard) — the study-level views, and how to promote from them.
+- [portfolio detail](/docs/portfolio-detail) — one candidate's tabs, including its robustness statistics.
 - [metrics reference](/docs/metrics-reference) — every metric's definition, unit, direction and formula.
 - [visualizations](/docs/visualizations) — what each chart plots and how to read it.
 - [study lifecycle](/docs/study-lifecycle) — stages, statuses, stopping, resuming and deletion.
-- [promoted portfolios](/docs/promoted-portfolios) and [portfolio groups](/docs/portfolio-groups) — where a promoted candidate goes.
+- [promoted portfolios](/docs/promoted-portfolios) and [portfolio groups](/docs/portfolio-groups) — where a promoted candidate goes next.
 - [portfolio manager](/docs/portfolio-manager) — book-level analysis, once you have groups.
-- [api trials and portfolios](/docs/api-trials-portfolios) — the same rankings and metrics, programmatically.
+- [api trials and portfolios](/docs/api-trials-portfolios) — pull the same rankings, trials and results into your own systems or dashboards.

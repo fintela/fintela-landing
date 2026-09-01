@@ -4,283 +4,208 @@ section: Features
 sectionOrder: 7
 order: 1
 published: true
-updated: 2026-08-20
-summary: A notebook workspace for authoring and testing strategies, fitness functions and risk managers.
-keywords: laboratory, notebook, kernel, session, workspace, editor, sdk, files, catalog, lab
+updated: 2026-09-01
+summary: An interactive Python notebook workspace for exploring data and testing strategies, fitness functions and risk managers before you save them for real.
+keywords: laboratory, notebook, python, session, workspace, editor, sdk, files, catalog, lab
 ---
 
-The Laboratory is Fintela's authoring workbench: one page that puts a private file tree, a live
-Python kernel and the editors for [strategies](/docs/strategies),
-[fitness functions](/docs/fitness-functions) and [risk managers](/docs/risk-managers) side by side.
-You open a notebook, run cells against a real kernel that keeps its variables between runs, pull
-curated market data through the built-in `lab` SDK, and — when the code works — promote it straight
-into a registry resource without leaving the page. It is additive: every standalone registry page
-still works, and the Lab embeds those same editors rather than forking them.
+The Laboratory is Fintela's interactive workbench for building trading logic. It brings together
+your own private files, a live Python notebook, and the editors for
+[strategies](/docs/strategies), [fitness functions](/docs/fitness-functions) and
+[risk managers](/docs/risk-managers) — all on one screen. Open a notebook, run cells against a live
+Python session that remembers your variables between runs, pull in curated market data with a
+couple of lines of code, and once your logic works, turn it straight into a strategy or fitness
+function without leaving the page. Nothing about this replaces the standalone Strategies, Fitness
+Functions and Risk Managers pages — the Lab simply gives you the same editors alongside a
+scratchpad to experiment in first.
 
 ## Where the Laboratory lives
 
-| Item | Value |
-|---|---|
-| Route | `/laboratory` |
-| Feature key | `laboratory` |
-| Nav label | `Laboratory` |
-| Sidebar placement | the **More Options** flyout, not the visible Registry section |
-| Entitlement lock | `laboratory` |
-| Onboarding tour | id `laboratory`, two steps, skipped on mobile, suppressed while the feature is locked |
-
-The route also mounts `/laboratory/view/:id` and `/laboratory/edit/:id`, because every registry
-feature gets those paths from the shared routing machinery. The Laboratory **ignores both params** —
-it manages open resources as in-memory tabs, so all three paths render the identical shell.
+You'll find the Laboratory under the **More Options** flyout in the sidebar, alongside the other
+Registry pages, rather than in the main Registry list itself. See [navigation](/docs/navigation)
+for how that flyout works. The Laboratory isn't part of the mobile navigation bar — on a phone
+you'll find Portfolios, Markets, Asset Groups, Fitness Functions, Strategies and Studies there, but
+not the Lab.
 
 > [!WARNING]
-> `/laboratory/edit/:id` is not a deep link. Opening it gives you the Lab with no tab open, exactly
-> like `/laboratory`. To open a specific resource, click it in the Explorer.
+> Bookmarking or sharing a link to a specific notebook or resource inside the Lab won't take you
+> back to that exact tab — it opens the Lab with nothing open, same as the plain Laboratory link.
+> To get back to something you were working on, open the Lab and click it again in the Explorer.
 
-The Laboratory entry is registered in the Registry feature set (so its route resolves) and in the
-"More Options" set (so the sidebar renders it inside the flyout instead). See
-[navigation](/docs/navigation) for how that flyout behaves. There is no Laboratory entry in the
-mobile bottom navigation, which is hand-maintained and lists only Portfolios, Markets, Asset Groups,
-Fitness Functions, Strategies and Studies.
+## Access and the Laboratory lock
 
-## Access and the laboratory lock
+The Laboratory is a paid feature. On an account that hasn't unlocked it, the Lab still shows up in
+the sidebar — dimmed, with a lock icon and a tooltip reading `Locked — buy tokens to unlock` — so
+you always know it exists and how to get it, rather than having it disappear entirely. Opening the
+page shows you the real workbench, blurred out behind an overlay:
 
-`laboratory` ships inside the default `locked_features` array, so on a non-activated organization
-the feature is locked out of the box. Locked is not hidden: the nav entry stays in the flyout and
-stays clickable, dimmed with a lock glyph, tooltip `Locked — buy tokens to unlock` and badge
-`Locked`. Opening the page renders the real workbench blurred, `inert` and `aria-hidden` behind a
-frozen query client, with a centred panel:
-
-| Element | Text |
+| Element | What you see |
 |---|---|
 | Title | `Feature locked` |
-| Body | `Buy tokens to unlock this feature.` |
-| CTA | `Buy tokens` → `/account?section=tokens` |
+| Message | `Buy tokens to unlock this feature.` |
+| Button | `Buy tokens` — takes you to your account's token page |
 | Caption | `This is a preview — your real data appears once unlocked.` |
 
-Only **starting a compute session** is gated at the API level. `POST /lab-sessions` is the single
-Laboratory endpoint that calls the entitlement guard, and it answers HTTP 402:
+Only **running code** is behind that lock. You can browse your files, the Explorer, and the public
+catalog, and you can share or fork resources, whether or not the Laboratory is unlocked — the
+paywall only stops you from starting a live compute session, since that's the part that costs
+tokens to run. If you try to start a session on a locked account, you're told plainly:
+`This feature is available on paid accounts. Buy tokens to unlock it.`
 
-```json
-{
-  "message": "This feature is available on paid accounts. Buy tokens to unlock it.",
-  "error": "feature_locked",
-  "feature": "laboratory",
-  "upgrade": "purchase_tokens"
-}
-```
-
-Stopping, polling and heartbeating a session are deliberately left open on every tier. A live
-session is metered per minute, so locking someone out of ending one would make them burn their own
-tokens. The resource tree, the public catalog, share, fork and every `/lab-files/*` route carry no
-entitlement check either.
+Ending, checking on, or keeping alive a session you already started is never blocked, even on a
+locked account — a running session bills you per minute, so you should always be able to stop it.
 
 ### Permissions
 
-Role checks are per endpoint, not per page. There is no single role that "opens the Lab".
+Inside your organization, a handful of plain rules govern who can do what in the Lab:
 
-| Endpoint | Permission required |
-|---|---|
-| `GET /laboratory/tree` | none — resolves your organization and user from the token |
-| `GET /laboratory/public` | returns only the slices you hold `strategy:read` / `fitness:read` / `risk_manager:read` on |
-| `PATCH /laboratory/:resource_type/:id/share` | `{type}:update` **and** full organization scope on the row |
-| `POST /laboratory/:resource_type/:id/fork` | `{type}:create`, plus the matching creation quota |
-| `/lab-files/*` | none — every query is filtered by your organization **and** your user id |
-
-A missing role returns HTTP 403 `Missing {permission}:update permission` or
-`Missing {permission}:create permission`. An unrecognised `:resource_type` returns HTTP 404
-`Unknown resource type '{x}'`.
+- Anyone in your organization can see everything in the shared **Resources** list and the public
+  catalog they have read access to.
+- Sharing a resource publicly, or turning sharing off, requires the same edit permission and
+  organization-wide scope you'd need to edit that resource anywhere else in Fintela.
+- Forking a public resource into your organization requires create permission for that resource
+  type, and counts against your normal creation limits for strategies, fitness functions, or risk
+  managers.
+- Your private **My Workspace** files (folders, notebooks, and scripts) are visible only to you —
+  not even to other members of your own organization.
 
 ## The workbench layout
 
+The Laboratory screen is split into three panels:
+
 ```text
 ┌─────────────┬──────────────────────────────────────────┬────────────┐
-│  EXPLORER   │  tab bar          [session chip]  [New ▾] │  DOCK      │
-│  (288 px)   ├──────────────────────────────────────────┤ (260–560,  │
-│             │                                          │  def. 340) │
-│ My Workspace│   notebook  ·  text file  ·  or an        │ Variables  │
-│  folders    │   embedded registry editor               │ Data &     │
-│  notebooks  │                                          │  Resources │
-│  files      │                                          │ SDK        │
-│             │                                          │            │
-│ Resources   │                                          │            │
-│  Strategies │                                          │            │
-│  Fitness    │                                          │            │
-│  Risk Mgrs  │                                          │            │
+│  EXPLORER   │  open tabs      [session status]  [New ▾] │  DOCK      │
+│             ├──────────────────────────────────────────┤            │
+│ My Workspace│   notebook · text file · or a strategy,   │ Variables  │
+│  folders    │   fitness function or risk manager editor │ Data &     │
+│  notebooks  │                                            │  Resources │
+│  files      │                                            │ SDK        │
+│ Resources   │                                            │            │
+│  Strategies │                                            │            │
+│  Fitness    │                                            │            │
+│  Risk Mgrs  │                                            │            │
 └─────────────┴──────────────────────────────────────────┴────────────┘
 ```
 
-With no tab open the centre shows a welcome pane: `Welcome to the Laboratory`, subtitle
-`Build, edit, and compile your strategies, fitness functions and risk managers — all in one place.`,
-a primary `New notebook` button, secondary `Strategies` / `Fitness Functions` / `Risk Managers`
-buttons, and the hint `Pick a resource from the explorer, or create a new one to get started.`
+- **Explorer** (left) — your personal files and folders, plus every strategy, fitness function and
+  risk manager your organization can author.
+- **Workbench** (centre) — one tab per open notebook, text file, or resource editor, with a status
+  chip showing whether your compute session is ready and a `New ▾` menu for starting something new.
+- **Dock** (right) — the Variables view, curated data and your resources, and a reference for the
+  built-in `lab` toolkit; you can resize it or collapse it out of the way.
 
-Notebook and text-file tabs stay mounted when you switch away — cells, Monaco view state and an
-in-flight cell stream all survive. Resource-editor tabs are remounted on switch.
+With nothing open, the centre pane shows a welcome screen with a `New notebook` button and
+shortcuts into Strategies, Fitness Functions and Risk Managers, plus a hint to pick something from
+the Explorer or start fresh.
 
-Tab badges are the first two characters of the group label (`ST`, `FI`, `RI`) for resource tabs,
-`NB` for notebooks and `TXT` for text files. A create tab is titled `New`; the close icon is
-tooltipped `Close`. The `New ▾` menu at the right of the tab bar offers `New notebook`, then a
-divider, then `Strategies`, `Fitness Functions`, `Risk Managers`.
+Notebooks and text files keep your place when you switch away and back — your cells, scroll
+position, and any code still running stay put. Switching away from a strategy, fitness function or
+risk manager editor and back reloads it fresh.
 
 ## The Explorer
 
-The 288 px left rail is headed `Explorer` and carries a globe button (`Public catalog`), a refresh
-button (`Refresh`) and a search box placeholdered `Search resources…`. One query filters both
-sections: the resource groups drop non-matching rows, and the workspace tree prunes to matches plus
-the ancestor folders needed to reach them, forcing those folders open. A failed load shows
-`Couldn't load your resources.`
+The Explorer is headed by a globe icon (opens the public catalog — see below), a refresh button,
+and a search box. Typing in the search box filters both your workspace and the shared Resources
+list at once — matching folders are opened automatically so you can see where the result lives.
 
 ### My Workspace
 
-Your private folder / notebook / file tree, headed `My Workspace`. It is scoped to **you**, not to
-your organization: every query filters on your organization *and* your user id, so a node id alone
-never reaches another member's file. Empty state: `No files yet. Create a notebook or folder to get
-started.` A load failure shows `Couldn't load your workspace.`
+This is your own private area — folders, notebooks and scripts that belong to you and nobody else
+in your organization, not even an admin. Use the `+` button or a folder's menu to create a new
+folder, notebook, or plain file; every item's menu also lets you rename, move, or delete it.
 
-The `+` button (`New…`) and each folder's row menu offer `New folder`, `New notebook`, `New file`.
-Every node's menu adds `Rename`, `Move`, `Delete`.
-
-| Create action | Dialog title | Prefilled name |
-|---|---|---|
-| Folder | `New folder` | `New folder` |
-| Notebook | `New notebook` | `Untitled.ipynb` |
-| File | `New file` | `script.py` |
-
-The dialog has a `Name` field, a `Folder` picker whose root option reads `/ (root)`, and
-`Cancel` / `Create` buttons. Nodes sort folders first, then case-insensitively by name.
-
-| Dialog | Copy |
+| Create | What you get |
 |---|---|
-| Move | title `Move "{{name}}"`, select `Destination folder`, buttons `Cancel` / `Move` |
-| Delete a leaf | title `Delete?`, body `Delete "{{name}}"? This can't be undone.` |
-| Delete a folder | title `Delete?`, body `Delete folder "{{name}}" and everything inside it? This can't be undone.` |
+| Folder | An empty folder you can organize things into |
+| Notebook | A new notebook named `Untitled.ipynb`, ready for its first cell |
+| File | A plain script named `script.py` |
 
-The move destination list excludes the node itself and its entire subtree, so a folder can never be
-moved inside itself. Deleting a folder soft-deletes the whole subtree and the response reports how
-many nodes went with it.
-
-Success toasts: `Folder created`, `File created`, `File renamed`, `File moved`, `File deleted`.
+Moving an item lets you pick any folder except the one you're moving, or one of its own
+subfolders — you can't nest a folder inside itself.
 
 > [!CAUTION]
-> Deleting a folder deletes everything inside it. There is no undo and no trash view in the Lab.
+> Deleting a folder deletes everything inside it — every notebook and file it contains. There's no
+> undo and no trash to recover from, so double check before you confirm.
 
 ### Resources
 
-Below the workspace, headed `Resources`, sits a read-only aggregation of everything **your
-organization** can author, in this fixed order:
+Below your workspace, the **Resources** section lists everything your whole organization can
+author — [strategies](/docs/strategies), [fitness functions](/docs/fitness-functions) and
+[risk managers](/docs/risk-managers) — grouped exactly like the standalone registry pages. Items
+you created carry a small "created by you" marker, and each one can be toggled to share it with
+other organizations through the public catalog.
 
-| Group | Resource type | Registry route for the same rows |
-|---|---|---|
-| `Strategies` | `strategy` | `/strategy` |
-| `Fitness Functions` | `fitness` | `/fitness` |
-| `Risk Managers` | `risk_manager` | `/risk-managers` |
+Built-in risk managers that ship with Fintela can't be opened for editing here, since there's no
+code behind them to edit.
 
-There are three authoring types, not four. Several code comments still say "all four" — the fourth
-was Data Pipelines, which has been retired along with its database tables.
+> [!NOTE]
+> To keep the Lab responsive, each list shows your most recently updated items first and stops at
+> 2,000 rows per type — if your organization has more than that, the oldest ones simply won't
+> appear in the Explorer (they're still available from the full [registries](/docs/registries)
+> pages).
 
-Each group header carries a count chip and a `+` button tooltipped `New`. An empty group reads
-`Nothing here yet`; a row with no name renders `Untitled`. Rows you created carry a person glyph
-tooltipped `Created by you` and a globe glyph that toggles public sharing (`Share publicly` /
-`Stop sharing`).
+## Compute sessions
 
-Built-in risk managers are filtered out server-side — they have no editable body. If one does reach
-an editor tab you get `This risk manager can't be edited here.`
+Opening the Laboratory starts a personal compute session automatically — a private, live Python
+environment reserved for you, separate from everyone else's. While it's warming up, you'll see a
+short loading screen (`Preparing your Laboratory…`) that tells you whether it's still starting up
+or provisioning your session. You don't have to wait for it: `Continue without waiting` lets you
+browse the Explorer and your files right away, since only running code actually needs the live
+session.
 
-The tree is organization-scoped, ordered by `updated_at` descending, and capped at 2000 rows per
-type; a slice that hits the cap is silently truncated to the most recently updated rows.
+### Session status
 
-## Compute sessions and the kernel
+The status chip in the tab bar tells you where things stand:
 
-Opening `/laboratory` requests a session immediately. A session is one dedicated AWS Fargate task
-running a persistent `ipykernel`, reachable only from inside the VPC and proxied by the backend.
-
-While the session warms up the page is replaced by a boot screen:
-
-| Element | Copy |
+| Status | What it means |
 |---|---|
-| Title | `Preparing your Laboratory…` |
-| Subtitle while `requested` / `creating` | `Starting your compute session. This takes a few seconds.` |
-| Subtitle while `provisioning` | `Provisioning your kernel…` |
-| Escape button | `Continue without waiting` |
+| Starting… | Your session is being requested and set up |
+| Provisioning… | Almost ready — your Python environment is coming online |
+| Lab ready | You can run cells |
+| Idle | Your session is alive but has been quiet for a while |
+| Stopping… | Shutting down after you (or the idle timer) ended it |
+| Stopped | No live session — running a cell will request one again |
+| Failed | Something went wrong; check the message and try again |
 
-The escape button appears after 6 seconds, or immediately if the session errors (the error text is
-shown verbatim in a warning alert). The Explorer, the file workspace and the registry editors all
-work without a live kernel — only running code needs one.
+The chip updates on its own, so you don't need to refresh the page to see when your session
+becomes ready.
 
-### Session states
+### One session at a time, and how it ends
 
-| Status | Chip label | Chip colour |
-|---|---|---|
-| `creating` | `Starting…` | info |
-| `requested` | `Starting…` | info |
-| `provisioning` | `Provisioning…` | info |
-| `ready` | `Lab ready` | success |
-| `idle` | `Idle` | default |
-| `stopping` | `Stopping…` | warning |
-| `stopped` | `Stopped` | error |
-| `failed` | `Failed` | error |
+You only ever have one live session per organization at a time. Reopening the Lab in another tab,
+or refreshing the page, reconnects you to that same session rather than starting a second one and
+doubling your bill.
 
-`creating` is a client-side pseudo-status shown before the create call returns an id; the database
-stores the other seven. An open notebook adds its own kernel chip **only while the session is not
-`ready`** — `Kernel starting…` (for `creating`, `requested` and `provisioning`), `Kernel idle`,
-`Kernel stopping…`, `Kernel stopped`, `Kernel failed`. Once the kernel is up the chip disappears
-rather than saying so; the `Lab ready` chip in the tab bar is the positive signal.
-
-The page polls every 2 seconds while starting and every 30 seconds once `ready` or `idle`, and stops
-polling on `stopped` or `failed`. A realtime event on the `lab_sessions` topic wakes the poll early
-on any transition; the event carries no payload of its own.
-
-### One session per user, and how it ends
-
-A unique index on `(organization_id, user_id)` over the live statuses means **one live session per
-user, per organization**. Requesting another returns the existing one — remounting the page or
-opening a second tab never spawns a duplicate kernel. Creation answers HTTP 202 Accepted while the
-task warms up.
-
-| Trigger | Behaviour |
+| This happens | Here's what you should know |
 |---|---|
-| Idle timeout | `idle_deadline_at` is set to 15 minutes ahead on create, and pushed 15 minutes forward again on every heartbeat and every kernel call. Once it passes on a `ready` or `idle` session the manager tears the task down. |
-| Heartbeat | The page sends one every 60 seconds while the session is not `stopped` or `failed`. |
-| `End session` | The stop icon next to the chip records intent only; the manager owns the `ready → stopping → stopped` transitions. The chip latches on `Stopping…` for up to 15 seconds so it does not flicker back to `Lab ready`. |
-| Never became ready | A session still `requested` or `provisioning` an hour after creation is failed outright with `last_error` set to `timed out before ready`. |
-| Out of tokens | The meter flags the session for teardown and sets `last_error` to `stopped: insufficient tokens`. |
-
-Closing the browser tab does **not** stop the session — teardown is left to the idle timeout.
+| You stop touching it | After about 15 minutes with no activity — no cell run and no open Lab tab checking in — your session shuts down on its own. |
+| You click `End session` | Your session begins shutting down right away rather than waiting for the idle timer. |
+| You close the browser tab | This does **not** stop your session by itself — it keeps running (and billing) until the idle timeout catches it, so it's worth ending it explicitly. |
+| It never comes up | If a session gets stuck starting for about an hour, it's marked as failed automatically so it doesn't run up a bill doing nothing. |
+| You run out of tokens | Your session is shut down and you'll see a message that it stopped for insufficient tokens. |
 
 > [!TIP]
-> Click `End session` when you finish. A live kernel bills per minute whether or not you are running
-> cells, and the idle timeout only fires 15 minutes after your last activity.
+> Click `End session` when you're done for the day. A live session bills per minute whether or not
+> you're actively running cells, and the automatic idle shutdown only kicks in 15 minutes after
+> your last activity.
 
 ### What a session costs
 
-A live session is metered per minute against reason `lab_session`, priced from the task's real
-Fargate cost:
-
-```text
-fargate_$/min = ((cpu_units / 1024) · $ per vCPU-hour
-               + (memory_mib / 1024) · $ per GB-hour) / 60
-
-tokens/min    = (fargate_$/min ÷ (1 − margin_gross)) ÷ token_usd
-```
-
-The rates live in the database and are tunable with a single `UPDATE`, no deploy. If a config row is
-missing the documented defaults apply: `$0.040480` per vCPU-hour, `$0.004445` per GB-hour, a gross
-margin of `0.80` and `$0.05` per token. The meter ceils the *cumulative* total rather than each
-minute, so a sub-1-token-per-minute rate is never over-charged, and it charges only the delta,
-committing the charge and the billing cursor in one transaction.
-
-Once the session is `ready` and the task's size is known, the status chip shows a caption
-`~{{n}} tok/h`, tooltipped
-`Estimated token cost per hour, derived from this kernel's Fargate size`. Read your rate there
-rather than computing it — the numbers above are recalibratable at runtime. See
-[tokens and billing](/docs/tokens-and-billing) for how the ledger works.
+A live session is billed per minute in tokens, at a rate based on how much compute power it uses.
+Once your session is ready, the status chip shows an estimated rate — something like `~40 tok/h` —
+treat that number as your live rate, since it's recalculated automatically rather than fixed. See
+[tokens and billing](/docs/tokens-and-billing) for how token spending is tracked across the
+platform.
 
 ## Notebooks
 
-A notebook is a list of Monaco cells, each either `code` (Python) or `markdown`. Cells run against
-the session's persistent kernel, so variables defined in one cell are available in the next.
+A notebook is a sequence of cells you run one at a time (or all together), each either **code**
+(Python) or **markdown** (notes and formatting). Cells share the same running session, so a
+variable you create in one cell is still there in the next — you don't need to redefine anything as
+you build up an analysis.
 
-A brand-new notebook opens seeded with:
+A brand-new notebook starts you off with a working example:
 
 ```python
 # Fintela Laboratory — variables persist across cells.
@@ -291,388 +216,265 @@ px.tail()
 
 ### Toolbar
 
-| Control | Disabled when |
+| Button | What it does |
 |---|---|
-| `Run all` | a cell is running, or the session is not `ready` |
-| `Interrupt` | no cell is running |
-| `Add cell` | never |
-| `Clear outputs` | never |
+| `Run all` | Runs every code cell top to bottom (skipping markdown cells); disabled while a cell is already running or your session isn't ready yet |
+| `Interrupt` | Stops whatever cell is currently running |
+| `Add cell` | Adds a new empty cell |
+| `Clear outputs` | Wipes the results shown under every cell, without touching your code |
 
-`Run all` walks the cells top to bottom, skipping markdown cells, and stops early if you interrupt.
-`Interrupt` aborts the in-flight stream and asks the kernel to interrupt; the backend gives that
-call 10 seconds and answers `{"status":"noop"}` when the kernel is not up.
+The right side of the toolbar shows a save indicator — `Saving…`, `Saved`, or a
+`Couldn't load — retry` link if your notebook failed to load.
 
-The right side of the toolbar shows a `Save to Workspace` button for a scratch notebook, or a save
-chip for a file-backed one — `Loading notebook…`, `Saving…`, `Saved`, or a clickable
-`Couldn’t load — retry` on a failed content load.
+### Working with cells
 
-### Per-cell controls
+Each cell has its own small toolbar:
 
-The 40 px gutter carries, top to bottom:
-
-| Control | Tooltip | Notes |
-|---|---|---|
-| Run | `Run cell` | code cells only; needs a ready session, no cell already running, and loaded content |
-| Edit / Render | `Edit` when rendered, `Render` while editing | markdown cells only |
-| Index | the raw cell status: `idle`, `running`, `done`, `error` | shows `M` on markdown cells, otherwise the 1-based index, colour-coded by status |
-| Move up | `Move up` | disabled on the first cell |
-| Move down | `Move down` | disabled on the last cell |
-| Type toggle | `Convert to code` or `Convert to Markdown` | glyph `{}` or `M↓` |
-| Compile | `Compile to a resource` | code cells only, disabled on an empty cell |
-| Delete | `Delete cell` | disabled when one cell remains |
-
-An empty rendered markdown cell reads `Empty Markdown cell — double-click to edit.` The footer hint
-reads `Variables persist across cells while your session is live. Shift+Enter runs and advances.`
+| Control | What it does |
+|---|---|
+| Run | Runs just this cell (code cells only) |
+| Edit / Render | Switches a markdown cell between editing and its formatted view |
+| Status indicator | Shows the cell's number and whether it's idle, running, finished, or errored |
+| Move up / down | Reorders cells |
+| Convert | Switches a cell between code and markdown |
+| Compile | Turns this cell's code into a new strategy or fitness function (code cells only) |
+| Delete | Removes the cell (you always need at least one) |
 
 | Shortcut | Action |
 |---|---|
-| `Shift+Enter` | Run the cell and move on, appending a new cell if it was the last |
-| `Ctrl/Cmd+Enter` | Run the cell without advancing |
+| `Shift+Enter` | Run the cell and move to the next one, adding a new cell if you're at the end |
+| `Ctrl/Cmd+Enter` | Run the cell without moving on |
 
 ### Cell output
 
-Output streams back over SSE as typed frames while the cell runs.
+Results appear beneath a cell as soon as they're available, rather than waiting for the whole cell
+to finish — printed output and computed values stream in live while the code runs. If your code
+raises an error, you'll see a clean traceback instead of raw output. Very long output is trimmed
+automatically after a few hundred lines so a runaway print loop doesn't flood the page, with a note
+that older output was truncated.
 
-| Frame | Rendered as |
-|---|---|
-| `stdout` | monospace preformatted text (both `stdout` and `stderr` streams) |
-| `result` | monospace preformatted text, from the value's `text/plain` representation |
-| `error` | an outlined error alert, ANSI escapes stripped, preferring the traceback |
-| `done` | terminal; the backend guarantees one even if the kernel never sends it |
+If you try to run a cell before your session is ready, you're told the session isn't ready yet
+rather than the cell silently failing.
 
-The output area scrolls at 320 px. A cell keeps its last 400 output frames; once it overflows, the
-older ones are dropped and the remainder is prefixed with `… (output truncated) …`.
+### Turning a cell into a strategy or fitness function
 
-If the session is not ready, execute and inspect answer HTTP 409:
-
-```json
-{ "error": "session_not_ready", "status": "provisioning" }
-```
-
-### Compiling a cell into a resource
-
-The rocket button on a code cell opens a two-item menu: `Compile to a Strategy` and
-`Compile to a Fitness function`. Either opens a **new create-mode editor tab** seeded with that
-cell's code, with `execution_type` set to `internal`, no data sources selected and — for a strategy
-— `lookback_mode` set to `is_window`. Nothing is saved until you save it in that editor.
+Every code cell has a **Compile** button that opens a menu with two options:
+`Compile to a Strategy` and `Compile to a Fitness function`. Either one opens a brand-new editor
+tab, pre-filled with that cell's code, ready for you to fill in the rest (name, data sources,
+parameters) and save. Nothing is created or saved until you save it yourself in that editor —
+compiling just gets you started.
 
 > [!NOTE]
-> There is no "compile to a risk manager". The menu offers exactly two targets.
+> There's no compile option for risk managers — only strategies and fitness functions can be
+> created this way from a notebook cell.
 
 ## Text files
 
-Any non-notebook node opens in a Monaco text editor with a language chip, the same save chip set,
-and — for `.py` files only — a `Run in kernel` button and an interrupt icon. Running executes the
-**whole file as one cell** on the same persistent kernel; results appear under an `Output` header
-with a `Clear outputs` button.
+Opening anything other than a notebook — a plain script, notes, or a data file — gives you a text
+editor with syntax highlighting matched to its file type. Python files (`.py`) also get a
+`Run in kernel` button that runs the entire file as one block against your live session, with the
+results shown underneath.
 
-| Extension | Language |
+| File type | Highlighting |
 |---|---|
-| `.py` | `python` |
-| `.md`, `.markdown` | `markdown` |
-| `.json` | `json` |
-| `.csv` | `plaintext` |
-| `.sql` | `sql` |
-| anything else | `plaintext` |
+| `.py` | Python |
+| `.md` / `.markdown` | Markdown |
+| `.json` | JSON |
+| `.csv` | Plain text |
+| `.sql` | SQL |
+| anything else | Plain text |
 
-Only `python` gets the run button. A `.sql` file is highlighted, not executed — the kernel has no
-database reach.
+Only Python files can actually be run — a `.sql` file is highlighted for readability, but the Lab's
+session has no database connection to run a query against.
 
-## Saving, autosave and limits
+## Saving, autosave, and limits
 
-A notebook or file is either **scratch** (unsaved, held only in the browser) or **file-backed**
-(bound to a workspace node). `Save to Workspace` turns a scratch notebook into a file-backed one:
-it opens the name dialog seeded with `Untitled.ipynb`, creates the node, and rebinds the open tab
-to it.
+A new notebook or file starts out as a **scratch** document — it exists only in your browser until
+you save it. Click `Save to Workspace` to give it a name and turn it into a real file in
+My Workspace.
 
-Once a document is file-backed it autosaves. Edits debounce for **1.5 seconds**, then a single
-in-flight `PUT /lab-files/:id/content` carries the last known server timestamp as an optimistic
-concurrency token. If the row moved on elsewhere the save gets a 409, the client refreshes its token
-from the server and retries, so your own edits win; if the refresh fails, saving pauses until your
-next edit.
+Once a document is saved, it **autosaves** automatically a couple of seconds after you stop
+typing — you never need to remember to hit save. If the same file was changed somewhere else in the
+meantime (say, from another browser tab), the Lab reloads the latest version and retries your save
+on top of it, so your edits aren't silently lost.
 
-Working state also mirrors to `sessionStorage` on a 600 ms debounce so a full reload does not lose
-an unsaved draft. Only code and text are mirrored — cell outputs and run status never are — and the
-mirror is capped at roughly 1.5 MB, evicting server-recoverable documents before scratch drafts.
+Your unsaved work also survives a page reload or a browser crash: whatever you were typing is kept
+locally in your browser until it's properly saved, though this only covers your code and text —
+cell output and run status are not preserved this way.
 
-| Limit | Value |
+| Limit | What it means for you |
 |---|---|
-| Notebook / file payload | 2 MB, measured on the serialized notebook JSON or the raw text |
-| Names | case-insensitive unique per folder, per user, including the root |
-| Resource tree | 2000 rows per type |
-| Public catalog | 2000 rows per type |
-| Per-cell wall clock | 300 seconds by default; the kernel interrupts the cell and emits `cell exceeded the 300s budget` |
-| Backend stream deadline | 3600 seconds, a safety net for a wedged connection, not a per-cell limit |
-| Concurrency | one cell at a time per kernel; one live session per user per organization |
+| Notebook or file size | Up to 2 MB per document |
+| Names | Must be unique within a folder (case doesn't matter) |
+| Items in a list | Explorer and public catalog each show up to 2,000 items per resource type |
+| Time per cell | A cell that runs longer than 5 minutes is stopped automatically |
+| Running code at once | One cell runs at a time per session; you have one session at a time |
 
 > [!WARNING]
-> A file-backed document stays read-only until its content has loaded. That is deliberate: typing
-> into a placeholder would mark it dirty and let autosave push the empty placeholder over your real
-> file.
+> A file stays read-only for a moment right after you open it, while its content is still loading.
+> That's intentional — it stops autosave from overwriting your real file with a blank placeholder
+> before the content arrives.
 
 ## The right-hand dock
 
-Three icon tabs, collapsible to a 44 px rail via `Collapse panel`. The dock is drag-resizable
-between 260 px and 560 px and defaults to 340 px. Its open state, tab and width ride the same
-`sessionStorage` mirror as your open documents, so they survive a reload but not a new browser
-tab. It auto-opens once, to Variables, the first time you open a notebook, and never reopens
-itself after you close it.
+The dock on the right holds three views — Variables, Data & Resources, and the SDK reference — and
+can be collapsed or resized to suit how much room you want for your code. It remembers which tab
+and width you last used. The first time you open a notebook, it opens automatically to Variables so
+you know it's there; after that, it stays out of the way until you open it yourself.
 
 ### Variables
 
-A live view of the kernel namespace, refreshed automatically after every cell run and on demand via
-`Refresh`. Each row is the variable name in monospace, a type chip, and a one-line summary.
+A live list of everything currently defined in your session, refreshed automatically after every
+cell run (or on demand with `Refresh`). Each row shows a variable's name, its type, and a short
+summary of its value — handy for keeping track of what you've computed without scrolling back
+through old cells.
 
-| State | Copy |
-|---|---|
-| Kernel ready, nothing run yet | `Run a cell — your variables will appear here.` |
-| Kernel not ready | `Start the kernel to inspect variables.` |
-
-Introspection skips modules, callables and names starting with an underscore, so the list is data
-only. Clicking a row inserts the name into the focused notebook cell (toast
-`Inserted into the cell`); with no notebook focused it copies instead (`Copied to clipboard`). The
-copy icon is tooltipped `Copy name`.
+Clicking a variable inserts its name into whichever notebook cell you're editing; with no cell
+selected, it copies the name to your clipboard instead.
 
 ### Data & Resources
 
-Headed `Data & Resources`, with two sections. `Curated data` lists the datasets the `lab` SDK can
-load, each with an `Insert` button that drops a ready-to-run snippet into the focused cell. Today
-that is a single entry:
+This tab has two parts. **Curated data** lists the datasets you can pull into a notebook — click
+`Insert` next to one and a ready-to-run snippet drops into your current cell. Today that's:
 
-| Title | Description |
+| Dataset | What you get |
 |---|---|
-| `Adjusted prices` | `Split/dividend-adjusted daily close panel (rows = dates, columns = tickers) as a pandas DataFrame. Dates are required; ≤ 500 tickers.` |
+| Adjusted prices | A daily closing-price table (dates as rows, tickers as columns), already adjusted for splits and dividends, for up to 500 tickers |
 
-`Your resources` lists your organization's building blocks grouped by type, capped at the first 20
-rows per group; clicking one opens it as an editor tab.
+**Your resources** lists your organization's strategies, fitness functions and risk managers so you
+can jump straight into editing one without going back to the Explorer.
 
 ### SDK
 
-Headed `SDK`, subtitle ``The `lab` object is available in every notebook.`` Each entry shows the
-signature, a summary, its parameters, its return type and an `Insert` button. This reference is
-static and works with or without a live kernel.
+A quick reference for everything the built-in `lab` toolkit can do — each entry shows how to call
+it, what it returns, and an `Insert` button to drop a working example into your cell. This
+reference works even before your session is ready, so you can browse it while you wait.
 
-## The lab SDK and curated data
+## The lab toolkit and curated data
 
-Every kernel starts with the SDK preloaded as `lab`. The kernel itself runs with database
-credentials scrubbed out of its environment: `lab.data` calls a loopback broker in the trusted
-parent process, authorised by a per-process capability token, which runs the query and streams the
-result back. User code can never issue raw SQL.
+Every notebook starts with a small toolkit called `lab` already loaded, so you can pull real market
+data into a cell without setting up any connection or credentials yourself.
 
-| Call | Returns |
+| Call | What it gives you |
 |---|---|
-| `lab.data.prices(tickers, start, end)` | `pandas.DataFrame — dates × tickers, forward-filled adjusted close.` |
-| `lab.data.datasets()` | `list[str] — currently ["prices"].` |
+| `lab.data.prices(tickers, start, end)` | A pandas DataFrame of daily adjusted close prices, dates as rows and tickers as columns |
+| `lab.data.datasets()` | The list of datasets currently available (today, just `prices`) |
 
-| Parameter | Type | Meaning |
-|---|---|---|
-| `tickers` | `list[str]` | `Ticker codes, e.g. ["AAPL", "MSFT"]. Up to 500.` |
-| `start` | `str` | `Inclusive start date, "YYYY-MM-DD". Required.` |
-| `end` | `str` | `Inclusive end date, "YYYY-MM-DD". Required.` |
+| Parameter | What to pass |
+|---|---|
+| `tickers` | A list of ticker codes, e.g. `["AAPL", "MSFT"]` — up to 500 |
+| `start` | The first date you want, as `YYYY-MM-DD` |
+| `end` | The last date you want, as `YYYY-MM-DD` |
 
 ```python
 px = lab.data.prices(["AAPL", "MSFT"], start="2024-01-01", end="2024-06-30")
 px.tail()
 ```
 
-The `prices` panel reuses the platform's canonical adjusted-close path, so what you see in a
-notebook matches what a strategy receives at run time byte for byte. Zeros become `NaN`, and each
-column is forward-filled only up to its own last observed value — leading and trailing gaps stay
-`NaN`.
+This is the same price data your strategies and fitness functions see when they actually run — what
+you explore in a notebook matches production exactly, so a signal that works here will behave the
+same way live. A couple of details worth knowing: a price of zero is treated as missing rather than
+real, and gaps in the middle of a ticker's history are filled forward from its last known price —
+but gaps at the very start or end of your date range are left as missing, since there's nothing to
+fill them from.
 
-### Hard bounds
+### Limits on what you can pull
 
-Every load is bounded. There is no unbounded read: a full backtest belongs in a
-[study](/docs/studies), not in a notebook.
+To keep the Lab fast and responsive for everyone, every data request has to stay within a few
+bounds — this is meant for exploring an idea, not for running a full historical backtest (that's
+what a [study](/docs/studies) is for):
 
-| Bound | Value | Message on violation |
-|---|---|---|
-| Dataset allow-list | `("prices",)` | `unknown dataset '{d}'; available: ['prices']` |
-| At least one ticker | — | `at least one ticker is required` |
-| Ticker cap | 500 | `too many tickers ({n}); the max is 500` |
-| Dates mandatory | — | `start and end dates are required — unbounded loads are not allowed` |
-| Date ordering | — | `end must be on or after start` |
-| Requested window | tickers × days ≤ 2 000 000 | `requested window (~{n} cells) exceeds the 2000000 cap; narrow the date range or ticker set` |
-| Rows returned | 2 000 000 | `query would return more than 2000000 rows; narrow the date range or ticker set` |
-
-A bound violation surfaces as an HTTP 400 from the broker, which the SDK re-raises as
-`lab.data load failed (400): …`. Any other failure is flattened to `data load failed`, with the
-traceback kept server-side.
-
-### What is installed
-
-The kernel image installs the same curated user runtime as validation, optimization and live
-execution, so a notebook and a deployed strategy run against an identical stack.
-
-| Library | Version |
+| Limit | Rule |
 |---|---|
-| `numpy` | 2.2.3 |
-| `pandas` | 2.2.3 |
-| `scipy` | 1.16.1 |
-| `scikit-learn` | 1.6.1 |
-| `statsmodels` | 0.14.6 |
-| `ta` | 0.11.0 |
-| `cvxpy` | 1.9.2 |
+| Dataset | Only `prices` is available today |
+| Tickers | At least one, and no more than 500 |
+| Dates | Both a start and end date are required — you can't request an unbounded history |
+| Date order | The end date must be on or after the start date |
+| Total size | Tickers × days can't exceed 2,000,000 data points |
 
-Fintela's own compute packages — the universe resolver, the strategy primitives, the lookback DSL
-and the extra-data loader — are installed alongside them. The numerical libraries are pinned to a
-single thread inside the kernel.
+If a request goes over one of these limits, you'll get a clear message telling you which limit was
+hit and how to narrow your request — for example, shortening the date range or trimming your ticker
+list.
+
+### What's available inside a notebook
+
+Your notebook's Python environment ships with the same well-known data and numerical libraries used
+everywhere else in Fintela — pandas, NumPy, SciPy, scikit-learn, statsmodels, technical-analysis
+helpers, and an optimization library — plus Fintela's own building blocks for working with asset
+universes and lookback windows. That means code you write and test in the Lab runs against the
+exact same stack your strategies and fitness functions use once deployed, so there are no surprises
+when you move from exploring to production.
 
 ## Publishing and forking through the public catalog
 
-The globe button in the Explorer header opens the cross-organization catalog.
+Click the globe icon in the Explorer to open the **Public catalog** — resources other
+organizations have chosen to share, that you can copy into your own organization to use as a
+starting point. You'll only see the resource types you already have access to.
 
-| Element | Copy |
+### Sharing your own work
+
+On any strategy, fitness function or risk manager you created, toggle the globe icon to publish it
+to the catalog (or take it back down again). Publishing something makes its logic visible to other
+Fintela customers, so only share what you're comfortable putting in front of others.
+
+### Forking someone else's
+
+Click `Fork` on a catalog item to copy it into your own organization. It becomes fully
+independent — later changes the original author makes never affect your copy, and changes you make
+never affect theirs. Forking counts toward your organization's usual creation limits for that
+resource type, so it can be blocked if you've already hit your plan's limit.
+
+| Resource | What comes across when you fork it |
 |---|---|
-| Title | `Public catalog` |
-| Subtitle | `Resources other organizations have shared. Fork one to copy it into your org.` |
-| Loading | `Loading the catalog…` |
-| Empty | `No public resources yet.` |
-| Fork button | `Fork` |
-| Fork count chip | `{{count}} fork` / `{{count}} forks` |
-| Your own row | `Published by you`, with no Fork button |
+| Strategy | Its description, logic, parameters, lookback settings, named tickers, and data-source selections |
+| Fitness function | Its description, logic, parameters, and data-source selections |
+| Risk manager | Its description, kind, logic, parameters, and data-source selections |
 
-Rows are grouped by the same three types, in the same order as the Explorer, and you only see the
-groups you hold read permission on.
+If a forked resource pointed at a [portfolio group](/docs/portfolio-groups) that belongs to the
+original author's organization, that reference is dropped rather than copied across — you'll need
+to point it at one of your own.
 
-### Publishing
-
-The globe glyph on a row you created toggles `shared_publicly`. Publishing needs `{type}:update`
-**and** full organization scope on the row — being a member of the organization is not enough. If
-the row is not found in your organization the call returns HTTP 406
-`{resource_type} {id} not found for this organization`.
-
-### Forking
-
-`Fork` copies the resource into your organization by value and returns HTTP 201. The copy is
-independent: later edits by the author never propagate. Forking counts against your creation quota
-for that type, so it can be refused with the same plan-limit response as creating one from scratch
-(`You've reached your plan limit`).
-
-| Type | What travels | What does not |
-|---|---|---|
-| `strategy` | description, execution type and details (the code), parameters, lookback mode and lookback code, named tickers, and the data-source selection | the validation asset group — it names a row owned by the source organization |
-| `fitness` | description, execution type and details, parameters, and the data-source selection | — |
-| `risk_manager` | description, kind, execution details, params, parameters, the lookback warmup code, and the data-source selection | — |
-
-The copied data-source selection is filtered first: [portfolio group](/docs/portfolio-groups)
-references the target organization does not own are stripped out rather than smuggled across as
-dangling ids. The new row records which resource it was forked from.
-
-The copy is named `Fork of {name}`, then `Fork of {name} (2)` and upward if that is taken. The
-success toast reads `Copy created in your Lab`.
+Your copy is automatically named "Fork of" followed by the original name (with a number appended if
+you already have one by that name).
 
 > [!NOTE]
-> Two people forking the same resource into the same organization at the same instant can race the
-> unique name index; the loser gets a 500 and succeeds on retry.
+> In the rare case two people fork the same resource into the same organization at the exact same
+> moment, one of them may need to just try again.
 
 ## Authoring registry resources here
 
-Opening a strategy, fitness function or risk manager from the Explorer mounts the **same editor as
-its standalone registry page**, with the page chrome hidden. There is no Lab-specific fork of those
-editors, so everything documented for each registry — the code editor, the data-source picker,
-parameters, validation — applies unchanged inside the Lab. Saving in the Lab saves the real row.
+Opening a strategy, fitness function or risk manager from the Explorer gives you the exact same
+editor you'd get from its standalone page — just without the surrounding page chrome. Everything
+documented for that editor (the code editor, data-source picker, parameters, validation) works
+exactly the same way inside the Lab, and saving here saves the real thing, not a draft copy.
 
-That means the Laboratory is a workflow convenience, not a separate authoring model. Use it when you
-want a scratchpad next to the editor; use the standalone pages at `/strategy`, `/fitness` and
-`/risk-managers` when you want the full registry table, filters and row actions. See
-[registries](/docs/registries) for those, and [execution modes](/docs/execution-modes) for how
-Internal and External resources differ.
-
-> [!NOTE]
-> External-mode resources can be *edited* here like any other row, but the Lab's kernel is not
-> involved in running them — an External strategy runs on your own infrastructure. See
-> [external strategies](/docs/external-strategies) and [external fitness](/docs/external-fitness).
-
-## API surface
-
-All paths are relative to the API base. Every route requires a bearer token.
+In other words, the Laboratory is a convenient way to work, not a separate way of building things.
+Use it when you want a scratchpad open next to your editor; use the standalone
+[Strategies](/docs/strategies), [Fitness Functions](/docs/fitness-functions) and
+[Risk Managers](/docs/risk-managers) pages when you want the full list, filters, and row actions.
+See [registries](/docs/registries) for those pages, and [execution modes](/docs/execution-modes)
+for how resources that run inside Fintela differ from ones that run on your own systems.
 
 > [!NOTE]
-> Every successful JSON body is wrapped in a `data` envelope — the shapes below are what sits
-> *inside* `{"data": …}`. Error bodies are not wrapped: they are `{"message": …, "kind": …}`, and
-> the two hand-written rejections (`402 feature_locked`, `409 session_not_ready`) are their own
-> flat objects. The SSE `execute` stream is neither — it emits raw frame objects.
-
-### Sessions
-
-```http
-POST   /lab-sessions                      202 Accepted — create or reuse your live session
-GET    /lab-sessions/:id                  200 — poll status; the only route that carries
-                                                estimated_tokens_per_hour
-POST   /lab-sessions/:id/stop             200 — record teardown intent
-POST   /lab-sessions/:id/heartbeat        200 — push the idle deadline 15 minutes out
-POST   /lab-sessions/:id/interrupt        200 — best effort; {"status":"noop"} if the kernel is down
-POST   /lab-sessions/:id/inspect          200 — {"variables":[{name,type,summary}]}
-POST   /lab-sessions/:id/execute          body {cell_id, code} → SSE stream of cell frames
-```
-
-A session object is `{session_id, status, kernel_ready, created_at}` plus the optional
-`ready_at`, `idle_deadline_at`, `last_error` and `estimated_tokens_per_hour`. `kernel_ready` is
-true exactly when `status` is `ready`.
-
-`execute` is the only Laboratory route on the streaming router, exempt from the 55-second request
-timeout. Execute, inspect and interrupt all resolve the kernel by `(session, organization, user)`,
-so you cannot run code in another member's kernel even inside the same organization.
-
-### Workspace files
-
-```http
-GET    /lab-files/tree                    200 — your nodes, no payloads
-POST   /lab-files/folders                 body { parent_id, name }                        → 201
-POST   /lab-files/nodes                   body { parent_id, name, kind,
-                                                 content?, text_content? }                → 201
-GET    /lab-files/:id                     200 — node plus its content or text
-PUT    /lab-files/:id/content             body { content?, text_content?,
-                                                 expected_updated_at? }  → 200 { id, updated_at }
-PATCH  /lab-files/:id/rename              body { name }                                   → 200
-PATCH  /lab-files/:id/move                body { parent_id }  (null moves to the root)    → 200
-DELETE /lab-files/:id                     200 — { deleted: n }
-```
-
-`kind` on `POST /lab-files/nodes` must be `notebook` or `file`; folders use their own endpoint.
-Notebook `content` is opaque JSON to the backend — the cell shape is a client contract.
-
-| Failure | Status | Message |
-|---|---|---|
-| Node not found or not yours | 404 | `Lab file not found` |
-| Name already used in that folder | 409 | `A file with that name already exists here` |
-| Stale `expected_updated_at` | 409 | `The file changed since you last loaded it. Reload and retry.` |
-| Payload on a folder, or a bad parent | 406 | `Invalid parent folder for this operation` |
-| Move into own subtree | 406 | `Cannot move a folder into its own subtree` |
-| Unknown `kind` | 406 | `Invalid node kind '{kind}': expected 'notebook' or 'file'` |
-| Over 2 MB | 400 | `Content exceeds the 2 MB limit` |
-
-### Resources, sharing and forking
-
-```http
-GET    /laboratory/tree                     200 — { items[], counts_by_type }, org-scoped
-GET    /laboratory/public                   200 — { items[], counts_by_type }, cross-org
-PATCH  /laboratory/:resource_type/:id/share body { shared_publicly: bool }
-                                            → 200 { resource_type, id, shared_publicly }
-POST   /laboratory/:resource_type/:id/fork  201 — { resource_type, id, forked_from_id }
-```
-
-A tree item is `{resource_type, id, name, created_at, updated_at, created_by, owned_by_me,
-shared_publicly}`; `id` is stringified on the wire even though the underlying keys are integers.
-A catalog item swaps `created_by` / `shared_publicly` for `description` and `fork_count`.
-
-`:resource_type` is one of `strategy`, `fitness`, `risk_manager`. Anything else returns 404.
+> A resource that runs on your own infrastructure can still be *edited* here like any other row —
+> but the Lab's compute session never actually runs it. See
+> [external strategies](/docs/external-strategies) and
+> [external fitness](/docs/external-fitness) for how that works.
 
 ## What the Laboratory does not do
 
-- **It does not deep-link.** `/laboratory/view/:id` and `/laboratory/edit/:id` render the plain
-  shell; open tabs are in-memory only.
-- **It does not share your workspace.** `My Workspace` is per-user. Only the `Resources` section is
-  organization-wide.
-- **It does not reach the database.** The kernel has no credentials and no SQL surface — only the
-  bounded `lab.data` broker.
-- **It does not compile to a risk manager.** Only Strategy and Fitness are compile targets.
-- **It does not host Data Pipelines.** That surface is retired and its tables are dropped. A
-  strategy, fitness function or risk manager now selects its built-in data sources directly in its
-  own editor. `/data-pipelines` and every sub-path under it redirect flatly to
-  `/analysis/data-explorer` — the sub-path and query string are not preserved — and the
-  [Data Explorer](/docs/data-explorer) is itself locked behind `data_explorer`, so an old bookmark
-  can land a free-tier account on a paywall rather than on a working page.
-- **It does not run studies.** A notebook is for exploration under hard data caps; batch work goes
-  through [studies](/docs/studies) and the [end-to-end workflow](/docs/end-to-end-workflow).
+- **It doesn't remember where you were.** Links to a specific notebook or resource always open the
+  Lab fresh, with nothing selected — reopen what you need from the Explorer.
+- **It doesn't share your private files.** My Workspace belongs to you alone; only the Resources
+  section is visible to your whole organization.
+- **It doesn't give notebooks unrestricted data access.** You can only pull the curated, bounded
+  datasets described above — not arbitrary queries against Fintela's data.
+- **It doesn't compile cells into risk managers.** Only strategies and fitness functions can be
+  created this way.
+- **It doesn't include Data Pipelines anymore.** That feature has been retired — a strategy,
+  fitness function or risk manager now picks its data sources directly inside its own editor. An
+  old bookmark to Data Pipelines redirects you to the [Data Explorer](/docs/data-explorer) instead,
+  which is itself a separately unlockable feature.
+- **It isn't where you run a full backtest.** A notebook is for quick exploration under the data
+  limits above; batch testing across history belongs in a [study](/docs/studies) — see the
+  [end-to-end workflow](/docs/end-to-end-workflow) for how the pieces fit together.

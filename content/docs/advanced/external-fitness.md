@@ -4,630 +4,413 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 5
 published: true
-updated: 2026-08-20
-summary: Score trials with a fitness function you own and host.
-keywords: external fitness, evaluate endpoint, scoring, self-hosted, fitness_params, nan_fitness, timeout, ssrf
+updated: 2026-09-01
+summary: Score every trial using scoring logic you write and host on your own systems, instead of inside Fintela.
+keywords: external fitness, self-hosted scoring, custom fitness function, fitness parameters, timeout, security
 ---
 
-An external fitness function is an HTTP endpoint you own that turns one simulated period into
-one number. Fintela stores the URL and two HTTP-client settings and nothing else — no code, no
-data, no credentials. Every time a trial needs scoring, Fintela POSTs the period-sliced
-simulation result to `{your-endpoint}/evaluate` and reads a single `fitness` number back. Your
-language, your dependencies, your private benchmarks and your scoring logic stay on your
-servers.
+An external fitness function lets you score every trial using logic that lives entirely on your
+own systems, instead of writing it inside Fintela's editor. You keep full control over the
+scoring model, its dependencies, and any private benchmarks or proprietary logic you'd rather not
+expose — Fintela only needs to know where to reach your service and how long to wait for an
+answer. Every time a trial needs a score, Fintela sends it the simulated trading results for that
+period and reads back a single number.
 
-## What Fintela stores
+## What you configure
 
-For an external fitness function the entire stored configuration is the `execution_details`
-object:
+Setting up an external fitness function only asks for three things: the web address of your
+service, how long Fintela should wait for a reply, and how many trials it's allowed to score for
+you at the same time. That's it — Fintela never asks for your code, your data, or any
+credentials, and nothing about how your service works internally is ever transmitted to or
+stored by Fintela.
 
-```json
-{
-  "endpoint": "https://api.example.com/fitness",
-  "timeout": 30,
-  "max_concurrency": 4
-}
-```
+Everything else you fill in — the function's name, its description, and the parameters you
+declare — is just information Fintela uses to make the function selectable and configurable
+inside a study. None of it reveals anything about your actual scoring logic.
 
-Everything else on the record — its name, description and declared parameters — is metadata
-Fintela needs to bind the function to a study. Nothing about your implementation is transmitted
-or retained.
+This is the practical trade-off against [internal execution](/docs/execution-modes): with an
+internal fitness function, you write your scoring logic as Python directly inside Fintela's
+editor, and it runs inside Fintela. With an external one, Fintela never sees your logic at all —
+the cost is that you're responsible for keeping your own service running, fast, and correct.
 
-That is the practical reason to choose External over Internal: with
-[Internal execution](/docs/execution-modes) you paste Python into Fintela's editor and it runs
-in Fintela's sandbox against a fixed `(simulation, data, **params)` signature. With External,
-Fintela never sees the scoring logic. The trade is that you own uptime, latency and correctness
-of your own service.
+> [!NOTE] Your service only sees the simulated results, not the underlying market data
+> An internal fitness function can also read the price data behind a study, plus anything
+> produced by data sources you've attached to it. An external fitness function doesn't get any of
+> that — it only receives the simulated trading results for the period being scored and the
+> parameter values you've configured. If your scoring logic needs price history or other
+> reference data, you'll need to supply it from your own systems.
 
-> [!NOTE] Your endpoint receives the simulation and nothing else
-> An internal fitness function also receives `data` — the price panel of the study's fitness
-> asset group — plus any pipeline outputs it declares. An external one receives neither. The
-> optimizer loads the fitness asset group only on the internal branch, and the external
-> evaluator posts exactly two things: the simulation period in the body and your parameters in
-> the query string. If your score needs prices or reference data, fetch them on your side.
+## Setting up an external fitness function
 
-## Registering the endpoint
+Create the fitness function from the [Fitness Functions](/docs/fitness-functions) registry, then
+choose **External** from the toggle at the top of the editor. A third option, **Rule-based**, is
+shown but not yet available.
 
-Create the fitness function from the Fitness Functions registry, then pick **External** on the
-segmented control in the editor header. The third option, **Rule-based**, is permanently
-disabled — "Rule-based fitness functions are coming soon." — and a direct API write with that
-execution type is rejected with "Rule-based (declarative) fitness functions are not supported
-yet."
+### The three settings
 
-### Endpoint fields
+Once you choose External, the editor shows just three fields — there's no code editor, because
+your logic doesn't live in Fintela:
 
-The external centre zone of the editor has exactly three fields, and there is no code editor.
+| Field | What it's for | Default |
+|---|---|---|
+| **Endpoint** | The web address of your service. Required. | — |
+| **Max Concurrency** | How many trials your service can be asked to score at the same time. | 4 |
+| **Timeout (seconds)** | How long Fintela waits for your service to answer before giving up on that call. | 30 |
 
-| Field | Label | Input | Default | Validation |
-|---|---|---|---|---|
-| `endpoint` | **Endpoint** | text, placeholder `https://api.example.com/fitness` | empty | required — "Endpoint is required" |
-| `max_concurrency` | **Max Concurrency** | number, `min=1`, `step=1` | `4` | "Must be ≥ 1" |
-| `timeout` | **Timeout (seconds)** | number, `min=1`, `step=1` | `30` | "Must be ≥ 1" |
+The address you enter is a base address — Fintela adds a fixed path to it when calling your
+service, so a plain domain or path prefix is all you need to register.
 
-`endpoint` is a **base URL**. Fintela appends `/evaluate` to it, so
-`https://api.example.com/fitness` is called at `https://api.example.com/fitness/evaluate`.
+If you enter an address starting with `http://` instead of `https://`, the editor shows a warning
+that the request and the reply will travel unencrypted. It's only a warning — it won't stop you
+from saving — but see [Plain http works, but isn't private](#plain-http-works-but-isnt-private)
+below for what that actually costs you.
 
-On the wire `timeout` is a number of seconds (a float) and `max_concurrency` is an integer. The
-editor only checks that each is at least 1; it does not require an integral timeout.
+### Internal or external is a one-time choice
 
-Typing a plain `http://` URL shows a warning-coloured helper text under the field:
-
-> Unencrypted (http://) — the request and your endpoint's reply travel in cleartext. Fine for
-> testing; use https:// in production.
-
-That message is advisory only. It never sets a field error and never disables Save. What is
-actually enforced is covered under "Endpoint address rules" below.
-
-### Execution type is fixed at creation
-
-The Internal/External control is enabled only in create mode; on an existing fitness function
-both options are disabled, and the agent bridge refuses the field with "An existing resource's
-execution type cannot be changed." There is no conversion path — to move a fitness function
-from Internal to External, create a new one.
+You choose Internal or External when you first create a fitness function, and it can't be changed
+afterward — both options are locked once the function exists. If you want to move a scoring
+approach from one execution mode to the other, create a new fitness function rather than trying
+to convert an existing one.
 
 ### Declaring parameters
 
-The **Parameters** rail section works the same way for both modalities. Each declaration
-becomes one key in the query string Fintela sends.
+Parameters work the same way whether a fitness function is internal or external. Each one you
+declare becomes a value you can tune, and it's passed to your service every time a trial is
+scored.
 
-| Field | Label | Notes |
-|---|---|---|
-| Name | `Parameter name` | The query-string key. |
-| Type | `Type` | `Integer` or `Float` only. |
-| Test value | `Test value`, helper `Any value in your planned range.` | Used by validation, and prefilled into the promote-to-metric dialog. The optimizer never reads it, and the sandbox does not seed from it — its parameter fields start at `0`. |
-| Description | `Description (optional)` | Free text. |
-
-The panel's caption states the limit outright: `Supported types: integer & float — strings and
-booleans are not allowed.` There is no categorical dtype for fitness, and a fitness parameter
-carries **no bounds, range, step or choices** — the four fields above are the whole record.
-
-In a study the values are pinned once, in the study's `fitness_params` map. The study builder
-says so: *"Objective parameters are constants: the same value is used in every trial, and the
-search never explores them."*
-
-`POST /studies` and `PATCH /studies/{study_id}` check the map against the declarations and
-answer **406 Not Acceptable** when they disagree:
-
-| Condition | Message |
+| Field | What it's for |
 |---|---|
-| Name sets differ | `This study's fitness parameters don't match the fitness function.` followed by ` Missing: a, b.` and/or ` Not expected: x.` |
-| A value is not a number | `Value for fitness parameter {name} must be a number.` |
-| An `integer` parameter has a fractional value | `Value {value} for integer fitness parameter {name} must be integral.` |
+| **Parameter name** | The label your service will receive this value under. |
+| **Type** | Integer or Float — that's the full list; there's no text or true/false parameter for a fitness function. |
+| **Test value** | A representative value used when you test the endpoint, and pre-filled if you later promote this function into a portfolio metric. It isn't used to guide the search itself. |
+| **Description** | Optional notes for yourself or your team. |
 
-## Endpoint address rules
+Unlike strategy parameters, a fitness parameter has no range, step, or set of choices — just a
+name, a type, a test value, and an optional description. Within a study, the value for each
+parameter is fixed: it's set once when the study is created and used unchanged for every trial.
+As the study builder puts it, objective parameters are constants — the search explores your
+strategy's parameters, never your fitness function's.
 
-Fintela screens the endpoint twice — once when you save it, and again before it opens a
-connection. Both screens are about *addresses*, not TLS. They are the same screens the
-[external strategy](/docs/external-strategies) path uses.
+When you create or edit a study, Fintela checks the parameter values you've set against what the
+fitness function declares, and stops you if they don't line up — for example, if a parameter is
+missing, an extra one is supplied, or a value isn't the right kind of number for its declared
+type.
 
-### The save-time screen
+## Which addresses Fintela will call
 
-`POST /fitness` and `PUT /fitness` reject the payload before it reaches the database. The screen
-makes no network call, so an endpoint that is not up yet still saves.
+To protect the platform and everyone using it, Fintela only calls addresses that are genuinely
+public on the internet — never a private network, an internal address, or anything on your own
+local machine. This check happens twice: once when you save the fitness function, and again every
+time your service is actually about to be called. It applies the same way to
+[external strategies](/docs/external-strategies).
 
-| Rejected | Message |
+### Checked when you save
+
+When you save an external fitness function, Fintela checks that the address is well-formed and
+points somewhere public — without making a network call to it, so an address that isn't live yet
+can still be saved. It's rejected if:
+
+- it contains stray spaces or unusual characters
+- it isn't a valid web address at all
+- it uses a scheme other than `http://` or `https://`
+- it has no host at all
+- the host is `localhost` (or a variant of it)
+- the host is a raw IP address that isn't publicly reachable
+
+### Checked again every time it's used
+
+Right before Fintela actually calls your service, it re-checks where that address currently
+points — including every destination it could resolve to. If any of them turns out to be a
+private, internal, or otherwise non-public address, the call is refused before it's made. An
+address that points to more than one destination, some public and some not, is refused too.
+
+An address that can't be resolved to anything at all is refused with a message asking you to
+check the spelling and that its DNS is set up correctly.
+
+Fintela never follows redirects, so a public address can't be used to bounce a call toward an
+internal target.
+
+### Plain http works, but isn't private
+
+Both checks above accept `http://` and `https://` equally — encryption isn't part of the address
+check, and requiring `https://` would lock out any service reachable only by a bare public IP
+address. What's enforced is that the address is public, not that it's encrypted.
+
+That said, the choice has a real cost with plain `http://`: the entire simulated trading result
+you're being asked to score — positions, trades, performance metrics — travels across the network
+unencrypted, and so does the score you send back. It's your service and your call to make, but
+make it knowingly.
+
+## What your service receives
+
+Every time your service is called, it receives two things: the parameter values you configured
+for the study, and the simulated trading results for the specific period being scored.
+
+### The trading results for the period
+
+| What's included | What it tells you |
 |---|---|
-| Leading, trailing or embedded whitespace or control characters | `EXTERNAL endpoint must not contain whitespace or control characters` |
-| Unparseable URL | `EXTERNAL endpoint is not a valid URL ({error}): '{endpoint}'` |
-| Any scheme other than `http` or `https` | `EXTERNAL endpoint must use http:// or https:// (got 'ftp').` |
-| No host | `EXTERNAL endpoint must include a host` |
-| Host `localhost` or `*.localhost` | `EXTERNAL endpoint host must not be loopback/localhost` |
-| A literal IP that is not publicly routable | `EXTERNAL endpoint host {ip} must be a publicly routable address, not a private, loopback, link-local or reserved one` |
+| Equity | The account's value, day by day, across the window. |
+| Holdings | What positions were open on each day — ticker, long or short, and how much of the portfolio each represents. |
+| Orders | Every order placed inside the window. |
+| Trades | Completed and still-open trades, with entry and exit details, size, return, and duration. |
+| Metrics | Performance metrics already computed by Fintela for exactly this window — see below. |
 
-All six return **HTTP 406 Not Acceptable** with `kind: "not_acceptable"`.
+There's one windowing rule worth knowing well:
 
-Alternate IPv4 spellings are normalised before classification, so `http://2130706433/`,
-`http://0x7f.1/` and `http://127.1/` are all rejected as loopback. There is **no port
-allowlist** — a public host on any port is accepted.
+> [!CAUTION] Trades that straddle the edge of a window are left out, not trimmed
+> A trade only appears in the results if it started inside the window, and either is still open
+> or also closed inside the window. A position that was open before the window started, or that
+> closes after it ends, is left out of the list entirely — it isn't clipped to fit. If your
+> scoring logic depends on trades, a short evaluation window can legitimately hand you no trades
+> at all, so make sure your logic handles that gracefully.
 
-### The call-time screen
+Performance metrics like maximum drawdown are handed to you already calculated — read them
+directly rather than recomputing them from the equity curve, since that's the same number Fintela
+displays next to your score.
 
-Before the first connection from any caller, the host is resolved and **every** address it
-resolves to is classified. If any one of them is private, loopback, link-local, reserved,
-multicast or unspecified — including IPv4-mapped IPv6 forms — the call is refused before a
-socket exists. A host that answers with both a public and a private record is refused.
+### The performance metrics included
 
-Every refusal message opens with the same prefix, `Your endpoint address is not allowed:`, and
-then names the reason:
+The metrics you receive cover the same categories shown throughout the platform:
 
-```text
-Your endpoint address is not allowed: the host '10.0.0.5' is a private, loopback or
-otherwise internal address. Fintela only calls publicly routable addresses.
-```
-
-An unresolvable host produces `Your endpoint address is not allowed: the host '{host}' does not
-resolve to any IP address. Check the spelling and that its DNS record is published.`
-
-Redirects are never followed, so a public URL cannot bounce Fintela's egress into an internal
-target.
-
-### `https` is never required
-
-Both screens accept `http` and `https` alike. TLS was never the SSRF control —
-`https://10.0.0.5` is exactly as internal as `http://10.0.0.5` — and requiring it would lock out
-every endpoint that is a bare public IP with no domain and therefore no publicly trusted
-certificate. What is enforced is a publicly routable host. Plain `http` costs you
-confidentiality, not access, and for fitness that cost is concrete: the whole simulation result
-crosses the network in cleartext.
-
-## The request Fintela sends
-
-Every caller sends the same request. Parameters travel in the **query string**; the simulation
-period travels in the **JSON body**.
-
-```http
-POST /evaluate?risk_free=0.02&drawdown_weight=1.5
-Content-Type: application/json
-
-{
-  "equity": {
-    "2024-01-02": 100420.5,
-    "2024-01-03": 100612.1
-  },
-  "holdings": {
-    "2024-01-02": [
-      { "ticker": "AAPL", "side": "L", "allocation": 0.5 },
-      { "ticker": "MSFT", "side": "L", "allocation": 0.5 }
-    ]
-  },
-  "orders": [
-    {
-      "ticker_code": "AAPL",
-      "order_date": "2024-01-02",
-      "action": "Buy",
-      "position_side": "L",
-      "quantity": 10,
-      "resulting_quantity": 10,
-      "source": "strategy",
-      "event_id": null
-    }
-  ],
-  "trades": [
-    {
-      "ticker_code": "AAPL",
-      "position_side": "L",
-      "entry_date": "2024-01-02",
-      "exit_date": "2024-01-30",
-      "entry_quantity": 10,
-      "avg_entry_price": 180.5,
-      "avg_exit_price": 192.3,
-      "avg_return_percentage": 0.065,
-      "total_return_percentage": 0.065,
-      "total_pnl": 118.0,
-      "scalings": [],
-      "total_duration_days": 28,
-      "allocated_money": 1805.0,
-      "invested": 1805.0,
-      "metrics": { "mae": -0.03, "mfe": 0.09 }
-    }
-  ],
-  "metrics": {
-    "total_return": 0.12,
-    "sharpe_ratio": 1.42,
-    "max_drawdown": -0.08
-  }
-}
-```
-
-> [!WARNING] External strategies are the inverse
-> An [external strategy](/docs/external-strategies) receives its dates in the query string and
-> its parameters in the body. External fitness flips both halves. Read your parameters from
-> `request.query_params` (or FastAPI's `Query(...)`), never from the JSON body, and if you
-> maintain both endpoints do not copy the handler.
-
-Query-string values are serialized by the HTTP client, so **every parameter reaches you as a
-string** — parse it before you use it. Integer coercion happens only on the internal path, so a
-parameter declared `integer` whose stored value is `15.0` arrives as `15.0`, not `15`.
-
-### The simulation period
-
-The body is a flat object with exactly five keys. There is no envelope.
-
-| Key | Type | Contents |
-|---|---|---|
-| `equity` | object | `YYYY-MM-DD` → equity value, for dates inside the window. |
-| `holdings` | object | `YYYY-MM-DD` → array of `ticker`, `side` (`L` or `S`) and `allocation`, for dates inside the window. |
-| `orders` | array | Orders whose `order_date` falls inside the window. Fields: `ticker_code`, `order_date`, `action`, `position_side`, `quantity`, `resulting_quantity`, `source`, `event_id`. |
-| `trades` | array | Trades scoped by entry — see the caution below. |
-| `metrics` | object | The platform metrics already computed for exactly this window. |
-
-Two windowing rules are worth reading twice.
-
-> [!CAUTION] Trades are excluded at the boundary, not clipped
-> A trade is in `trades` only when `start_date <= entry_date` **and** either it is still open
-> (`exit_date` is `null`) or `exit_date <= end_date`. A position that straddles the edge of the
-> window is dropped from the list entirely. If your score is trade-based, a short window can
-> legitimately hand you an empty `trades` array — guard for it.
-
-`metrics` is precomputed for you. Read `max_drawdown` from there rather than re-deriving it from
-`equity`: the number you read is the number Fintela displays next to your score.
-
-### What is inside metrics
-
-At runtime `metrics` carries the platform metric catalogue for that window. Any individual value
-may be `null`.
-
-| Category | Keys |
+| Category | Examples |
 |---|---|
-| Return | `total_return`, `compound_annual_growth_rate` |
-| Risk | `volatility`, `max_drawdown`, `average_drawdown`, `max_drawdown_duration`, `ulcer_index`, `var_95`, `cvar_95` |
-| Risk-adjusted | `sharpe_ratio`, `sortino_ratio`, `calmar_ratio`, `martin_ratio`, `omega_ratio`, `profit_factor` |
-| Recovery | `recovery_factor` |
-| Distribution | `skewness`, `excess_kurtosis`, `tail_ratio`, `win_rate`, `payoff_ratio` |
-| Trade aggregate | `trade_win_rate`, `trade_profit_factor`, `avg_trade_duration`, `expectancy` |
+| Return | Total return, annualized growth rate |
+| Risk | Volatility, maximum drawdown, value-at-risk |
+| Risk-adjusted | Sharpe ratio, Sortino ratio, Calmar ratio, profit factor |
+| Distribution | Win rate, payoff ratio, skewness |
+| Trade-level | Trade win rate, average trade duration, expectancy |
 
-When the study has a baseline, nine benchmark-relative metrics are merged in **before** your
-endpoint is called: `beta`, `alpha`, `information_ratio`, `treynor_ratio`, `up_capture`,
-`down_capture`, `correlation`, `tracking_error`, `r_squared`. Without a baseline they are absent.
+If the study has a benchmark attached, you also receive benchmark-relative metrics — beta, alpha,
+correlation, and similar comparisons — before your service is even called. Without a benchmark,
+those are simply left out rather than sent as empty values.
 
-> [!WARNING] The validation fixture is not byte-identical to the runtime body
-> Validation posts a synthetic simulation, and a few of its nested field names differ from what
-> a real study sends. `metrics` carries `cagr` in the fixture and
-> `compound_annual_growth_rate` at runtime. `orders[].action` is `"BUY"` / `"SELL"` in the
-> fixture and `"Buy"` / `"Sell"` / `"Skipped"` at runtime. `trades[].metrics` is
-> `max_favorable_excursion` / `max_adverse_excursion` / `volatility_during_trade` in the
-> fixture and `mae` / `mfe` at runtime. The fixture's `orders[]` also omit `source` and
-> `event_id` entirely. Read every nested key defensively, with a default, and do not branch on
-> a value's casing.
+> [!TIP] Build in sensible defaults
+> The sample data used to test your endpoint when you save it is a reasonable stand-in for a real
+> trading period, but it won't cover every metric or edge case a live study will produce. Have
+> your scoring logic fall back gracefully — with a sensible default — for any value that might
+> occasionally be missing, rather than assuming every field will always be present.
 
-The reverse trap exists too: the fixture's `metrics` contains only `cagr`, `sharpe_ratio`,
-`max_drawdown`, `volatility`, `total_return` and the nine benchmark keys. A score that reads
-`sortino_ratio` or `ulcer_index` will find nothing during validation and work in a real study.
+## What your service needs to return
 
-## The response Fintela expects
+Your service should answer with a single number — your fitness score — under the label
+`fitness`. Any other information you include in the reply is simply ignored; only that one value
+is read.
 
-Answer `200` with a JSON object carrying a top-level `fitness` key whose value is a number.
+> [!CAUTION] The score must be labeled `fitness`, exactly
+> If your reply uses a different label — `score`, `value`, `result`, or anything else — Fintela
+> won't recognize it, and testing the endpoint will fail with a message telling you the reply
+> needs a `fitness` value.
 
-```json
-{
-  "fitness": 1.42
-}
-```
+When you test the endpoint before saving, Fintela also checks that the value you return is
+actually a number, so make sure the test values you declare for your parameters produce a real
+score rather than triggering an edge case — see
+[When a period can't be scored](#when-a-period-cant-be-scored) for what to do instead when a
+period genuinely has no valid score.
 
-Any extra top-level keys are ignored. Only `fitness` is read.
+## How your score is used
 
-> [!CAUTION] The key is `fitness`, not `score`
-> `response.json()["fitness"]` is the only thing every caller reads. A body keyed `score`,
-> `value` or `result` is a contract violation, and at validation it is rejected with `Endpoint
-> response must be a JSON object with a 'fitness' key`.
+For every trial, Fintela calls your service up to four times — once for the training window, once
+for validation, once for the whole equity curve, and once more for an out-of-sample window if the
+study has one.
 
-Validation additionally requires the value to be a number — `'fitness' must be a number, got
-{type}`. Make sure the test values you declare produce a real score there; the NaN path below is
-for run time.
-
-## Where your score goes
-
-Per trial, the optimizer calls your endpoint **three times**, or **four** when the study defines
-an out-of-sample window:
-
-| Call | Window |
+| Call | Covers |
 |---|---|
-| Train | `train_start_date` → `train_end_date` |
-| Validation | `validation_start_date` → `validation_end_date` |
-| Overall | The whole equity curve |
-| Out-of-sample | `oos_start_date` → `oos_end_date`, only when the study has one |
+| Train | The portion of history used to search for good parameters. |
+| Validation | A separate window used to sanity-check results. |
+| Overall | The full simulated period. |
+| Out-of-sample | A later window the search never sees, if the study defines one. |
 
-**Optuna's objective value is the train-period score.** Every stage's score is written back as
-that stage's `fitness` metric and shown on the study and portfolio pages, but only the train
-score steers the search.
+Only the **train** score actually steers the search — it's the number the optimizer is trying to
+maximize or minimize. The other three are still calculated, recorded, and shown on the study and
+portfolio pages, but they don't influence which parameters get tried next.
 
-Direction is a study setting, not a fitness setting. The study builder's **Optimization
-objective** control offers `Maximize` and `Minimize`, and its hint reads: *"Whether the
-optimizer maximizes or minimizes the fitness. Defaults to the metric's natural direction; set at
-creation and frozen after launch."* For an external fitness function the inferred default is
-**maximize**. There is one objective and one direction — Fintela has no multi-objective mode.
+Whether the optimizer is trying to maximize or minimize your score is a setting on the study
+itself, not on the fitness function — you choose it once, in the study builder, when the study is
+created, and it can't be changed afterward. If you don't set it explicitly, Fintela defaults to
+maximizing for an external fitness function. A study optimizes for exactly one objective; there's
+no way to balance several fitness functions against each other in the same search.
 
-### NaN and non-finite scores
+### When a period can't be scored
 
-| Situation | Effect |
+Sometimes a period genuinely can't be scored — an empty window, a portfolio with no trades, a
+metric your logic can't compute. Fintela has a defined way to handle that:
+
+| Situation | What happens |
 |---|---|
-| Train, validation or overall score is NaN | The trial is **pruned** with the failure reason `nan_fitness`. |
-| Out-of-sample score is NaN | Recorded as missing. The trial still completes. |
-| An exception during the out-of-sample call only | Swallowed; the score is recorded as missing. |
-| A trial's window has no results in `period_metrics` | Pruned with `period_metrics_out_of_bounds: [...]`. |
+| The train, validation, or overall score isn't a valid number | The trial is discarded as unscoreable, and the study continues with the rest. |
+| Only the out-of-sample score isn't a valid number | Recorded as missing; the trial still completes normally. |
+| Your service raises an error only during the out-of-sample call | The out-of-sample score is recorded as missing; the trial still completes. |
 
-A trial pruned on `nan_fitness` is shown in the errors panel as **Fitness wasn't a number**:
+A discarded trial shows up in the study's errors panel labeled **Fitness wasn't a number**, with a
+note to guard against dividing by zero and against empty periods.
 
-> Your fitness function returned "not a number", so this trial couldn't be scored. Guard against
-> dividing by zero and against empty periods.
+> [!TIP] When a period genuinely can't be scored, say so — don't fake a number
+> Returning "not a number" is the correct, supported way to tell Fintela a configuration isn't
+> scoreable: the trial is discarded cleanly and shown as such. Returning an artificially huge or
+> tiny number instead makes an unscoreable trial look comparable to real ones, which quietly
+> distorts the search.
 
-> [!TIP] Return NaN deliberately, not a magic number
-> NaN is the supported way to say "this configuration is not scoreable" — it prunes the trial
-> cleanly and is reported as such. Returning a huge negative number instead makes the trial
-> comparable when it should not be, and skews the search.
+## Testing your endpoint before you save
 
-## Validating the endpoint
+Before saving, Fintela tests your service for you: it makes one call using sample simulated data
+and the test values you declared for each parameter, and only opens the save dialog once that
+call succeeds. You'll need a test value on every parameter you've declared before you can run it.
 
-Pressing Save in the editor submits an async validation job to
-`POST /validate/external/fitness`, which answers `202 Accepted` with
-`{"job_id": ..., "status": "pending"}`; the editor polls the job and only opens the naming and
-confirmation dialog once it passes. Before the request goes out, the editor requires a **test
-value on every declared parameter** ("All parameters must have test values for validation").
+Unlike an external strategy, an external fitness function isn't checked for anything related to
+timing or look-ahead — there's nothing to check, since it's scoring a period that's already
+finished simulating, not making trading decisions inside it.
 
-The submitted payload is just `{ "endpoint": ..., "test_params": ... }`. The compiler then makes
-**one** call to `{endpoint}/evaluate` with the synthetic simulation in the body and the test
-values in the query string, with a fixed **30-second** timeout, one attempt plus two retries on
-transient connection failures, and redirects disabled.
+### Why validation might fail
 
-Unlike an external strategy, an external fitness function gets **no data-leakage probe and no
-causality gate**: there is nothing causal about scoring a period that has already been
-simulated, so the endpoint is called once, not twice.
-
-### Validation failures
-
-| `error_type` | Cause | Message |
-|---|---|---|
-| `endpoint_error` | Refused by the address screen | `Your endpoint address is not allowed: …` |
-| `endpoint_error` | Non-2xx response | `Endpoint returned HTTP {status}: {first 500 characters of the body}` |
-| `endpoint_error` | Transport failure | A diagnosis-specific message — TLS version mismatch, untrusted certificate, DNS, refused connection, or timeout |
-| `invalid_response` | Body is not JSON | `Endpoint response is not valid JSON` |
-| `invalid_response` | No top-level `fitness` key | `Endpoint response must be a JSON object with a 'fitness' key` |
-| `invalid_output` | `fitness` is not a number | `'fitness' must be a number, got {type}` |
-
-A successful validation carries back the score your endpoint returned, so a passing validation
-is proof that the address, the shape and the arithmetic all hold.
-
-> [!NOTE] External saves carry no validation receipt
-> Internal fitness functions cannot be saved without a fresh, matching server-side validation
-> receipt. External ones have no such gate: the only server-side check on the write path is the
-> endpoint address screen. The editor still runs validation before saving, but a direct API
-> write does not require it.
-
-## Where your endpoint is called from
-
-Five independent callers reach your `/evaluate`, with different clients and different budgets.
-
-| Caller | When | Calls |
-|---|---|---|
-| Compiler validation | Save / Validate in the editor | 1 per validation |
-| Fitness sandbox | "Run a backtest" from the registry | 1 per run, over the whole period |
-| Optimizer | While a study runs | 3 per trial, 4 with an out-of-sample window |
-| Portfolio updater | Daily extend of a live portfolio | 2 per extend — the real-life-performance window and overall |
-| Metrics updater | Each metrics run, when the function is promoted to a portfolio metric | 1 per portfolio and stage cell |
-
-The sandbox run is billed as a `sandbox_run` token charge before the job is spawned; see
-[Tokens and billing](/docs/tokens-and-billing). Its result card is labelled **Fitness Score** and
-shows the number to six decimals.
-
-On the live-portfolio path a failed call is **not** fatal to the extend: the stage's `fitness`
-value is recorded as NaN and the update continues. That path also reads the **current** fitness
-record, not the version a study was pinned to, so editing the endpoint of a fitness function
-behind a live portfolio takes effect on the next extend.
-
-### Timeouts, retries and connections
-
-| Caller | Timeout | Retries | Retried on |
-|---|---|---|---|
-| Compiler validation | fixed **30 s** — the stored `timeout` is ignored | 1 attempt + **2** retries, linear backoff 1 s then 2 s | connect error, connect timeout, read timeout, pool timeout, protocol error |
-| Fitness sandbox | the stored `timeout` (60 s if the record carries none) | 1 attempt + **3** retries, full-jitter exponential backoff, base 1 s, ceiling 8 s | connect error, connect timeout, pool timeout, protocol error, and HTTP 429/502/503/504 |
-| Optimizer | the stored `timeout` | same as the sandbox | same as the sandbox |
-| Portfolio updater | the stored `timeout` | same as the sandbox | same as the sandbox |
-
-Raising **Timeout (seconds)** does not lengthen the validation timeout. If your endpoint cannot
-answer a synthetic six-month simulation within 30 seconds, it will not survive a study either.
-
-A **read timeout is deliberately not retried** by the sandbox, optimizer or updater: the request
-was accepted, so retrying only doubles the load on an already-slow service. Only the validation
-client retries read timeouts.
-
-Connection behaviour is fixed and small: the sandbox, optimizer and updater clients each hold at
-most **2 connections**, with a keep-alive expiry of **30 seconds**. Set `timeout_keep_alive` to
-at least 30 s on your server (uvicorn defaults to 5 s), or Fintela will periodically reuse a
-socket your server has already closed.
-
-## Max concurrency and study fan-out
-
-**Max Concurrency is not a connection limit.** Every client pool is hard-coded to 2 connections
-regardless of what you set. It is the *worker budget* the dispatcher gives a study that has an
-external component.
-
-| Situation | Budget |
+| What went wrong | What you'll see |
 |---|---|
-| Study has no external component | Not used — the study gets its default task layout |
-| Only the fitness is external | the fitness function's `max_concurrency` |
-| Strategy and fitness both external, different endpoints | `min(strategy, fitness)` |
-| Strategy and fitness both external, same endpoint | `min(strategy, fitness) / 2`, floored, minimum 1 |
-| `max_concurrency` missing or not positive | That component stops constraining the budget; if no external component is left with a valid one, the study falls back to the internal layout |
+| The address isn't allowed | The address-check message described above. |
+| Your service returned an error | The status your service returned, plus the start of its response. |
+| Your service couldn't be reached at all | A specific message — an expired certificate, a DNS problem, a refused connection, or a timeout. |
+| The reply wasn't valid JSON | A message saying the response isn't valid JSON. |
+| The reply had no `fitness` value | A message saying the response needs a `fitness` key. |
+| The `fitness` value wasn't a number | A message saying `fitness` must be a number. |
 
-Two endpoints count as the same when their URLs match after trimming, dropping a trailing slash
-and lowercasing.
+A validation that passes hands back the actual score your service returned — so a successful test
+is proof that the address, the format, and the number your logic produces all check out.
 
-The budget becomes a **single** optimizer task whose worker pool is that size, and the optimizer
-then caps the per-batch fan-out at **32** — a budget above 32 buys no extra fan-out. It does
-still set the memory floor for that task: 4 GiB at a budget of 8 or below, 8 GiB up to 32,
-16 GiB above that. A study whose sizing model predicts more than the floor gets more.
+> [!NOTE] Saving doesn't require passing a fresh test
+> Internal fitness functions can't be saved without a fresh, matching validation. External ones
+> aren't held to that — the editor still runs the test before saving in the normal flow, but a
+> save made another way, such as through your own tooling against Fintela's API, only has to pass
+> the address check above.
 
-> [!TIP] Size it to your server, not to your ambition
-> Each optimizer worker holds one in-flight `/evaluate` request. A budget higher than your
-> service can accept turns into a burst of simultaneous connections and shows up as refused
-> connections on pruned trials. Serve the endpoint with at least two workers, then set Max
-> Concurrency to what those workers can actually hold.
+## When Fintela calls your service
 
-## Failure semantics in a study
+Your service can be called from a few different places in the product, each with its own rhythm:
 
-A study never retries a trial. Once the bounded HTTP retries above are exhausted, whatever went
-wrong **prunes that trial** — the study keeps going with the remaining trials, and each pruned
-trial carries a classified failure you can read in the study's errors panel.
-
-| Kind | Trigger | What the user is told |
-|---|---|---|
-| `ENDPOINT_BLOCKED` | Refused by the address screen | Fintela can only call endpoints on publicly routable addresses. This endpoint's host doesn't resolve, or it resolves to a private or internal address. Publish it on a public address (or a hostname that resolves to one) and relaunch. |
-| `ENDPOINT_REFUSED` | Connection refused | Your endpoint refused the connection — it wasn't accepting requests at that moment. Keep it running continuously and serve it with at least two workers. |
-| `ENDPOINT_TOO_SLOW` | Read timeout | Your endpoint accepted the request but didn't answer in time. Make it faster, add workers, or raise its timeout. |
-| `ENDPOINT_UNREACHABLE` | Connect or pool timeout | Fintela couldn't open a connection to your endpoint in time — it's overloaded or unreachable. Check that it's online, add workers, or raise its timeout. |
-| `ENDPOINT_DROPPED_CONNECTION` | Keep-alive socket closed mid-reuse | Your endpoint closed the connection while Fintela was reusing it. Set its keep-alive timeout to at least 30 seconds. |
-| `ENDPOINT_SERVER_ERROR` | HTTP 5xx after retries | Your endpoint returned an error of its own. Check its logs for the failing request. |
-| `ENDPOINT_REJECTED_REQUEST` | HTTP 4xx | Your endpoint rejected Fintela's request. Check its address, its authentication, and the request body it expects. |
-| `EXTERNAL_BAD_RESPONSE` | 200 with the wrong shape | Your endpoint replied in the wrong format. |
-| `FITNESS_NOT_A_NUMBER` | `nan_fitness` | Your fitness function returned "not a number", so this trial couldn't be scored. Guard against dividing by zero and against empty periods. |
-
-`ENDPOINT_BLOCKED` is the one failure Fintela catches before the first trial: the optimizer
-screens the fitness endpoint while it is setting the study up, so a bad address fails the study
-once with a clear verdict instead of producing N identical prunes and an opaque "0 complete
-trials".
-
-The prune reason recorded on a bad-response trial states the contract exactly:
-
-```text
-Your external fitness endpoint returned a response that is not the expected shape: it must be
-JSON with a top-level "fitness" number. (KeyError: 'fitness')
-```
-
-> [!NOTE] The summary copy for a bad response is written for strategies
-> `EXTERNAL_BAD_RESPONSE` is one classification shared with external strategies, and the panel's
-> generic body sentence names a top-level `"signal"` object. For a fitness function the
-> authoritative text is the trial's own reason string above, which names `"fitness"`.
-
-## Authentication and secrets
-
-**Fintela sends no credentials to your endpoint.** There is no API-key field, no header
-configuration, no bearer token, no request signing and no shared secret in the external fitness
-record — the stored configuration is the three keys at the top of this page and nothing more.
-Requests arrive with a JSON content type and no `Authorization` header.
-
-The one lever the contract leaves you is the URL itself: a hard-to-guess path segment survives
-into every call, because Fintela appends `/evaluate` to whatever base path you registered
-(`https://api.example.com/f/7f3c…` is called at `https://api.example.com/f/7f3c…/evaluate`).
-
-An endpoint that answers unauthenticated calls with a 401 or 403 will prune every trial as
-`ENDPOINT_REJECTED_REQUEST`, so a scheme Fintela cannot satisfy is not an option.
-
-> [!WARNING] Cleartext over plain http
-> On an `http://` endpoint the entire simulation result — every position, every trade, every
-> metric — crosses the network unencrypted, and so does the score you return. That is your call
-> to make about your own infrastructure, but make it knowingly.
-
-## Reference implementation
-
-The whole contract in one handler. Parameters arrive as query parameters; the simulation period
-arrives as the body.
-
-```python
-from fastapi import FastAPI, Query, Response
-
-app = FastAPI()
-
-# Fintela parses the reply with Python's json module, which accepts a bare NaN
-# literal — but most serializers will not emit one (Starlette's JSONResponse
-# serializes with allow_nan=False), so write it by hand.
-NOT_SCOREABLE = Response('{"fitness": NaN}', media_type="application/json")
-
-@app.post("/evaluate")
-def evaluate(
-    simulation: dict,
-    risk_free: float = Query(0.02),
-    drawdown_weight: float = Query(1.5),
-):
-    metrics = simulation.get("metrics") or {}
-    trades = simulation.get("trades") or []
-
-    sharpe = metrics.get("sharpe_ratio")
-    drawdown = metrics.get("max_drawdown")
-
-    # Degenerate cases are real: an empty window, a portfolio with no trades,
-    # a metric the engine could not compute. NaN prunes the trial cleanly.
-    if sharpe is None or drawdown is None or not trades:
-        return NOT_SCOREABLE
-
-    return {"fitness": sharpe - drawdown_weight * abs(drawdown) + risk_free}
-```
-
-The same shape in Node:
-
-```js
-import express from "express";
-
-const app = express();
-app.use(express.json({ limit: "64mb" }));
-
-app.post("/evaluate", (req, res) => {
-  const riskFree = Number(req.query.risk_free ?? 0);
-  const { metrics = {}, trades = [] } = req.body;
-
-  const sharpe = metrics.sharpe_ratio;
-  const drawdown = metrics.max_drawdown;
-
-  if (sharpe == null || drawdown == null || trades.length === 0) {
-    // Same reason as above: JSON.stringify turns NaN into null, and a null
-    // `fitness` prunes the trial with an opaque error, not a clean nan_fitness.
-    return res.type("application/json").send('{"fitness": NaN}');
-  }
-
-  res.json({ fitness: sharpe - Math.abs(drawdown) + riskFree });
-});
-
-app.listen(8000, () => {});
-```
-
-Register it over the API — note that `parameters` is an array of declarations, and that the
-response is `201 Created` with the new id inside a `data` envelope:
-
-```json
-{
-  "name": "drawdown_penalised_sharpe",
-  "description": "Sharpe with a configurable drawdown penalty.",
-  "execution_type": "external",
-  "execution_details": {
-    "endpoint": "https://api.example.com/fitness",
-    "timeout": 30,
-    "max_concurrency": 4
-  },
-  "parameters": [
-    { "parameter_name": "risk_free", "dtype": "float", "test_value": 0.02 },
-    { "parameter_name": "drawdown_weight", "dtype": "float", "test_value": 1.5 }
-  ],
-  "data_sources": []
-}
-```
-
-Test the endpoint before registering it:
-
-```bash
-curl -X POST "https://api.example.com/fitness/evaluate?risk_free=0.02&drawdown_weight=1.5" \
-     -H "Content-Type: application/json" \
-     -d '{"equity":{"2024-01-02":100000},"holdings":{},"orders":[],"trades":[],"metrics":{"sharpe_ratio":1.2,"max_drawdown":-0.1}}'
-```
-
-Full walkthroughs live in [Python · FastAPI](/docs/python-fastapi) and
-[Node.js · Express](/docs/node-express); the full endpoint tables are in
-[Fitness API](/docs/api-fitness) and [Error reference](/docs/api-errors).
-
-## What external fitness does not get
-
-Honest limits, all of them enforced rather than stylistic.
-
-| Not available | Why |
+| When | How often |
 |---|---|
-| The `data` price panel | The optimizer loads the study's fitness asset group only for internal fitness. Your endpoint receives the simulation period and your parameters, nothing else. |
-| Pipeline outputs / injected kwargs | The **Data sources** rail section still renders in the editor for an external fitness function, but the external evaluator posts only the simulation period — nothing it resolves ever reaches your endpoint. |
-| The Python code editor, the Reference dialog and live as-you-type validation | There is no code on Fintela's side. |
-| The output-sample preview panel | Internal only. External validation returns just the score it received. |
-| Restore from version history | Versions are recorded for both, but restoring a snapshot into the editor is offered only for internal fitness. |
-| A `/health` probe | Only external *strategies* are health-checked before a live extend. A live portfolio calls your `/evaluate` directly. |
-| Categorical parameters, bounds or ranges | A fitness parameter is a name, a dtype of `integer` or `float`, an optional description and a test value. In a study it is a constant. |
-| Rule-based (declarative) fitness | Rejected server-side: "Rule-based (declarative) fitness functions are not supported yet." |
+| You press Save or test the endpoint in the editor | Once per test. |
+| You run **Run a backtest** from the Fitness Functions registry | Once, over the whole period you're testing against. |
+| A study is running | Up to four times per trial, as described above. |
+| A live portfolio updates | A couple of times per update — the recent-performance window and the overall one. |
+| A metrics run, after you've promoted this function into a portfolio metric | Once per portfolio and stage being recalculated. |
 
-External execution is not unique to fitness. See [Execution modes](/docs/execution-modes) for the
-full matrix, [External strategies](/docs/external-strategies) for the strategy contract — which
-inverts the query-string/body split — and [Fitness functions](/docs/fitness-functions) for the
-registry itself.
+Running a backtest from the registry uses a token, the same way other on-demand runs do — see
+[Tokens and billing](/docs/tokens-and-billing). Its result is labeled **Fitness Score** on the
+run's result card.
+
+For a live portfolio, a failed call to your service isn't treated as fatal — that stage's score is
+simply recorded as missing and the update continues. Live portfolios also always use the current
+version of your fitness function, not whatever version the study was originally built with, so if
+you update your service's address, the change takes effect on the portfolio's next update.
+
+### Keeping it reliable
+
+Fintela retries a failed call to your service a small number of times before giving up on that
+particular scoring request, but a request that's slow to answer — rather than one that fails
+outright — generally isn't retried, to avoid piling more load onto a service that's already
+struggling. The **Timeout** you configure applies to studies, live portfolios, and backtest runs;
+testing the endpoint when you save always uses a fixed 30-second limit regardless of what you've
+set.
+
+Keep your service running continuously with enough spare capacity to answer more than one request
+at a time — an endpoint that's only up occasionally, or that can only handle one request before
+the next has to queue, will show up as failed or slow trials during a study.
+
+## Setting Max Concurrency
+
+**Max Concurrency** isn't about how many network connections your service can technically hold
+open — it's the number of trials Fintela is allowed to send your service at the same time during
+a study.
+
+| Situation | Concurrency used |
+|---|---|
+| A study has no external components at all | Not relevant — this setting isn't used. |
+| Only the fitness function is external | Your fitness function's Max Concurrency. |
+| Both the strategy and fitness function are external, on different services | Whichever of the two is lower. |
+| Both are external and point at the same service | Whichever is lower, split in half (rounded down, minimum of 1) — since one service is now handling both jobs at once. |
+
+There is also a practical ceiling on how much parallelism any single study can use, so setting Max
+Concurrency far above what your service can actually handle buys nothing — it only risks a burst
+of simultaneous requests your service can't keep up with.
+
+> [!TIP] Size it to your service, not to your ambitions
+> Every parallel worker running the study holds one request open against your service at a time.
+> Setting Max Concurrency higher than your service can actually accept just turns into refused
+> connections and failed trials. Make sure your service can handle more than one request at once,
+> then set this to what it can comfortably sustain.
+
+## How failures show up during a study
+
+A study never retries a trial on its own — once Fintela's own retries against your service are
+exhausted, whatever went wrong is recorded against that trial, and the study moves on to the
+rest. Each failed trial carries a specific reason you can read in the study's errors panel:
+
+| Situation | What you'll see |
+|---|---|
+| Your address isn't public and reachable | A message explaining Fintela can only call publicly reachable addresses, and asking you to publish your service on one and relaunch. |
+| Your service refused the connection | A message telling you it wasn't accepting requests at that moment — keep it running continuously with enough capacity. |
+| Your service accepted the request but didn't answer in time | A message suggesting you make it faster, add capacity, or raise the timeout. |
+| Fintela couldn't reach your service at all in time | A message suggesting you check it's online, add capacity, or raise the timeout. |
+| The connection dropped mid-request | A message asking you to keep connections open a bit longer on your side. |
+| Your service returned an error of its own | A message pointing you to your own service's logs. |
+| Your service rejected the request | A message asking you to check the address and whatever your service expects from the request. |
+| Your service replied in the wrong shape | A message saying the reply wasn't in the expected format. |
+| Your service returned "not a number" | The message described under [When a period can't be scored](#when-a-period-cant-be-scored). |
+
+If your address isn't reachable at all, Fintela catches that once, up front, when the study is
+being set up — so a bad address fails the study clearly and immediately, instead of quietly
+failing every single trial one by one.
+
+> [!NOTE] The generic wrong-shape message is shared with strategies
+> If your service replies in the wrong shape, the general explanation shown may reference a
+> "signal," which is the term used for external strategies. For a fitness function, the specific
+> reason recorded on the trial — mentioning `fitness` — is the one that actually applies.
+
+## Authentication and security
+
+Fintela sends your service no credentials of any kind — no API key, no login header, no signed
+request, no shared secret. There's no field for one in the setup, either; the only configuration
+stored is the address, the timeout, and the concurrency limit described earlier.
+
+The one protection you have is the address itself: if you register your service at a
+hard-to-guess address rather than a predictable one, that address stays intact in every call
+Fintela makes to it.
+
+If your service requires its own authentication and rejects unauthenticated calls, every trial
+will fail — Fintela has no way to satisfy a login requirement, so your service needs to accept
+calls from Fintela without one.
+
+> [!WARNING] Plain http sends everything in the clear
+> On an `http://` address, the entire simulated result you're being asked to score — every
+> position, every trade, every metric — crosses the network unencrypted, and so does the score
+> you send back. That's a decision about your own service's security, but make it deliberately.
+
+## Building your service
+
+Turning your scoring logic into something Fintela can call is normally a short piece of
+engineering work for whoever manages your infrastructure — it just needs to accept the trading
+results described above and answer with a `fitness` number. If you or your team are building it
+yourselves, the technical integration guides for [Python · FastAPI](/docs/python-fastapi) and
+[Node.js · Express](/docs/node-express) walk through exactly what the service needs to do, and
+the [Fitness API](/docs/api-fitness) and [Error reference](/docs/api-errors) pages cover the full
+technical contract for registering and calling a fitness function directly.
+
+## Limitations to know about
+
+A few things are only available to fitness functions you write inside Fintela's own editor
+(internal execution), not to external ones:
+
+| Not available externally | Why |
+|---|---|
+| The underlying price data | An external service only receives the simulated trading results and your parameters — never the raw market data behind the study. |
+| Extra data sources you've attached | The Data Sources section still appears in the editor, but nothing it produces is sent to an external service — only the simulated results are. |
+| Fintela's in-editor code editor and live validation | There's no code on Fintela's side to edit or validate — your logic lives entirely on your own service. |
+| The sample-output preview | Only available for internal fitness functions; external validation just shows you the score your service returned. |
+| Restoring an older version into the editor | Versions are still recorded for external fitness functions, but restoring a saved version back into the editor is only offered for internal ones. |
+| A dedicated health check before going live | Only external strategies get checked with a dedicated health probe before a live update. A live portfolio calls your fitness service directly. |
+| Ranges, bounds, or multiple-choice parameters | A fitness parameter is just a name, a type, an optional description, and a test value — and its value stays fixed for the whole study. |
+| Rule-based (declarative) fitness functions | Not available yet. |
+
+External execution isn't unique to fitness functions — see
+[Execution modes](/docs/execution-modes) for the full picture across the platform,
+[External strategies](/docs/external-strategies) for how the same idea works for trading logic,
+and [Fitness Functions](/docs/fitness-functions) for the registry itself.

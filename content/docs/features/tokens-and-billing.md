@@ -4,617 +4,464 @@ section: Features
 sectionOrder: 7
 order: 2
 published: true
-updated: 2026-08-20
-summary: What consumes tokens, how usage is metered, and how plans and entitlements gate features.
-keywords: tokens, billing, ai tokens, usage, quota, entitlements, plan, locked features, stripe, usage dashboard, 402
+updated: 2026-09-01
+summary: How Fintela's token-based billing works — what uses tokens, how your balance is tracked, and which features unlock once your organization is on a paid plan.
+keywords: tokens, billing, ai tokens, usage, quota, plan limits, locked features, purchase tokens, usage dashboard, upgrade
 ---
 
-Fintela is prepaid. You buy tokens, and every piece of compute you run debits them from an
-organization-level balance. There are no subscriptions, no seats and no invoices — tokens are the
-only billing method in the product. Separately from what you may *spend*, an entitlement policy
-decides what your organization may *do*: nine feature keys and eight creation quotas that stay
-closed until the organization has bought tokens and still holds a positive balance. This page
-covers both axes: what costs tokens, where the meters live, and exactly what a lock looks like.
+Fintela runs on a prepaid token model. You buy tokens, and everything you run in Fintela draws
+down from your organization's balance — there are no seats, no monthly subscription tiers, and no
+invoices to reconcile. Tokens are the only way compute is billed. Separately from what you spend,
+your organization's plan determines what you're *allowed to do*: a set of features and creation
+limits stay locked until your organization has bought tokens and still holds a balance. This page
+covers both sides — what costs tokens, where to watch your balance, and exactly what you'll see
+when something is locked or your balance runs out.
 
 ## Two token currencies
 
-The two balances are separate ledgers with separate purchase flows, separate chips, separate
-Account cards and separate refusal codes. Neither can pay for the other.
+Fintela tracks two separate balances, each with its own purchase flow, its own indicator in the
+header, its own card on your Account page, and its own "insufficient balance" message. Neither can
+be used to pay for the other.
 
 | | Fintela Tokens | Fintela AI Tokens |
 |---|---|---|
-| Pays for | Compute: optimizations, sandbox runs, simulations, scheduled updates, lab sessions | [Fintelligent](/docs/fintelligent) turns and AI context packs |
-| Balance column | `organizations.token_balance` | `organizations.ai_token_balance` |
-| Ledger | `developers.token_ledger` | `developers.ai_token_ledger` |
-| Billing model | Prepaid — charged before the work starts | Post-paid — metered after the turn has streamed |
-| Refusal code | `insufficient_tokens` | `insufficient_ai_tokens` |
-| Account anchor | `/account?section=tokens` | `/account?section=ai-tokens` |
+| Pays for | Compute: optimizations, sandbox test runs, portfolio simulations, scheduled daily updates, [Laboratory](/docs/laboratory) sessions | [Fintelligent](/docs/fintelligent) conversations and the extra context it pulls in (news, insider activity, analyst data, and more) |
+| Billing timing | Prepaid — charged before the work starts | Metered after the fact — charged once a conversation turn finishes |
+| Where to manage it | Account → Tokens | Account → AI Tokens |
 
-Both ledgers are append-only. A database trigger rejects `UPDATE` and `DELETE` on
-`token_ledger`, so corrections are new rows with reason `manual_adjustment` or
-`reconciliation_fix`, never edits.
+Your transaction history for both currencies is a permanent record. Corrections never edit a past
+entry — they show up as a new entry, such as an adjustment or a reconciliation fix, so your history
+always tells the full story of how your balance got where it is.
 
-Every new organization is provisioned once with **250 Fintela Tokens** (`TRIAL_TOKEN_GRANT`) and
-**200 Fintela AI Tokens** (`AI_TRIAL_TOKEN_GRANT`), both written as `trial_grant` ledger rows.
+Every new organization starts with **250 Fintela Tokens** and **200 Fintela AI Tokens** on the
+house, so you can try Fintela before you buy.
 
 > [!NOTE]
-> The trial is one per person, not one per organization. `developers.trial_grants` records
-> identity fingerprints derived from your account at the moment the organization is created; a
-> second organization created by the same human claims nothing. And a `trial_grant` is not a
-> purchase — holding granted tokens never activates the paid tier.
+> The free trial allowance is one per person, not one per organization — creating a second
+> organization under the same identity doesn't grant a second free allowance. And receiving the
+> trial tokens doesn't put you on a paid plan by itself; see [Plans, tiers and
+> activation](#plans-tiers-and-activation) below for what actually unlocks the full product.
 
 ## What consumes Fintela Tokens
 
-Prices live in `developers.token_cost_config`, one row per operation, and are recalibrated by SQL
-with no deploy. The engine computes
-`ceil(base_cost × Σ(weight × input) × n_trials)`, with a floor of 1 token; a row with no weights at
-all bills a flat `base_cost`, and an operation whose `base_cost` is `0` is free and writes no ledger
-row at all.
+Prices are set per operation and are occasionally recalibrated as the platform evolves. Most
+charges scale with the size of the job you're running — the number of trials in a study, the
+number of portfolios you're refreshing — with a minimum charge of 1 token; a few actions are
+simply free.
 
-| Operation | Ledger reason | Charged when | Current price |
-|---|---|---|---|
-| `optimization` | `optimization` | A [study](/docs/studies) is launched, or created with launch-now | `ceil(0.3 × n_trials)` |
-| `study_update` | `study_update` | The portfolio dispatcher re-runs a study subscribed to daily updates | `ceil(0.3 × n_trials)` |
-| `basket_update` | `basket_update` | The portfolio dispatcher refreshes a [portfolio group](/docs/portfolio-groups) with daily updates on | `ceil(1 × n_portfolios)` — 1 token per portfolio refreshed |
-| `sandbox_run` | `sandbox_run` | A strategy, fitness-function or risk-manager sandbox run is submitted | 1 flat |
-| `basket_simulate` | `basket_simulate` | A portfolio-group simulation is submitted | 1 flat |
-| `pipeline_preview` | `pipeline_preview` | `POST /data-sources/preview` — the data-source preview behind the strategy editor and the [Data Explorer](/docs/data-explorer) catalog | 1 flat |
-| `alloc_[method]` | `advanced_allocation` | A portfolio group is saved with a paid allocation method — a one-time unlock per group and method | 50 / 50 / 75 / 100 / 150 (see below) |
-| `lab_session` | `lab_session` | Every minute a [Laboratory](/docs/laboratory) kernel session is alive | Derived from the task's Fargate size |
+| What you're doing | When you're charged | How the cost scales |
+|---|---|---|
+| Running a [study](/docs/studies) (optimization) | When you launch the study, or create it with launch-now | Scales with the number of trials you run |
+| Daily updates on a study | Each time a study you've subscribed to daily updates is automatically re-run | Scales with the number of trials in that update |
+| Daily updates on a [portfolio group](/docs/portfolio-groups) | Each time a portfolio group with daily updates turned on is refreshed | 1 token per portfolio refreshed |
+| Sandbox run | Each time you test a strategy, fitness function, or risk manager in the sandbox | Flat 1 token |
+| Portfolio-group simulation | Each time you simulate a portfolio group | Flat 1 token |
+| Data source preview | Each time you preview a data source while building a strategy or browsing the [Data Explorer](/docs/data-explorer) | Flat 1 token |
+| Advanced allocation method | A one-time charge when you save a portfolio group using a paid allocation method | 50–150 tokens depending on the method (see below) |
+| [Laboratory](/docs/laboratory) session | For every minute a session stays open | Scales with the compute size your session is using |
 
-Paid allocation methods and their one-time unlock price: `metric_proportional` 50,
-`mean_reversion` 50, `metric_responsive` 75, `volatility_target` 100, `risk_parity` 150. The basic
-methods (`equal_weight`, `manual`) have no price row and are free. The charge lands at
-configuration-save time and commits in the same transaction as the group — never during a live
-rebalance, so a balance can never block or alter one.
+Two of the built-in allocation methods — Equal Weight and Manual — are free to use. The more
+advanced methods carry a one-time unlock charge per portfolio group, applied the moment you save
+the group with that method selected: Metric Proportional and Mean Reversion cost 50 tokens, Metric
+Responsive costs 75, Volatility Target costs 100, and Risk Parity costs 150. That charge is locked
+in at save time — it never touches a rebalance that's already running live, so your balance can
+never interrupt one.
 
-Laboratory sessions are the only time-metered operation. The rate is computed from the live
-Fargate rates in `developers.compute_cost_rates` for the kernel's CPU and memory:
-
-```text
-fargate_$/min = ((cpu_units/1024) × $vcpu_hr + (memory_mib/1024) × $gb_hr) / 60
-tokens/min    = (fargate_$/min ÷ (1 − margin_gross)) ÷ token_usd
-```
-
-`margin_gross` is seeded at `0.80` and `token_usd` at `0.05`, both on the `lab_session` config
-row. The meter ceils the *cumulative* total and charges only the delta since the last billed
-minute, so a sub-1-token/minute rate is not rounded up six times an hour. The rate is derived from
-the task's actual cpu/memory, so it exists only once the task has been placed: the Laboratory
-session chip shows it next to **Lab ready** as **`~{{n}} tok/h`**, with the tooltip *"Estimated
-token cost per hour, derived from this kernel's Fargate size"*.
+Laboratory is the only operation billed by time rather than by action — you pay for every minute a
+session stays open. The rate depends on how much compute power your session is configured with, so
+it's only known once your session has actually started; you'll see it next to **Lab ready** in the
+session chip, shown as **~{{n}} tok/h**, so you always know roughly what an hour of that session
+will cost. Billing is metered continuously in small increments, so a low per-minute rate is never
+rounded up in big jumps.
 
 ### Studies prepay, then get a refund
 
-A study is charged for the `n_trials` it *might* run, in one ledger row keyed to its own study id.
-Autostop, grid exhaustion and early stops routinely end it sooner, so the status updater sweeps
-studies that finished in the last 7 days and credits back `charged − actual`, where `actual` is
-re-priced through the same config row and the same formula off the trials that actually reached
-`COMPLETE`. The refund row carries reason `refund` and idempotency key `[study_id]:refund`, so it
-is written exactly once.
+When you launch a study, Fintela charges you up front for the number of trials it *might* run. In
+practice, a study often finishes sooner than that — autostop, exhausting the search grid, or an
+early stop can all end it before every planned trial runs. When that happens, Fintela automatically
+credits back the difference between what you were charged and what the study actually used,
+typically within a few days of the study completing.
 
-The confirmation dialog says as much: **"Charged up front; any over-estimate is refunded
-automatically on completion."** See [study lifecycle](/docs/study-lifecycle) for what the trial
-states mean.
+The confirmation dialog says as much when you launch: **"Charged up front; any over-estimate is
+refunded automatically on completion."** See [study lifecycle](/docs/study-lifecycle) for what the
+different trial states mean.
 
 ### Operations that cost nothing
 
-| Reason | Status |
+| This... | ...costs |
 |---|---|
-| `agent_chat` | Priced at `base_cost 0`, and no code path charges it. A Fintelligent turn costs **zero** compute tokens — it debits AI tokens instead |
-| `backtest` | A price row exists but nothing charges it today |
-| `portfolio_update` | Superseded by `basket_update` and `study_update`. Kept in the ledger's reason list for historical rows only |
-| `replication_kit` | The feature was removed; its price row was deleted, so it can never be billed |
+| A Fintelligent chat turn | Nothing in Fintela Tokens — it's billed from your AI token balance instead |
+| Backtests | Currently free |
+| Replication kit | This feature has been retired and is no longer offered or billed |
 
-The token analytics dashboard knows an **Agent Chat** category and builds its category list from the
-reasons actually present in the data, so — because `agent_chat` is never charged — that category
-never appears at all. Fintelligent spend lives in the AI-token ledger, which that dashboard does not
-read.
+Because a Fintelligent turn never touches your compute-token balance, you won't find an "Agent
+Chat" category in your Fintela Token usage dashboard — that spend shows up on the AI-token side
+instead.
 
 ## What consumes Fintela AI Tokens
 
-AI tokens are metered post-paid. A chat turn's usage is only known once it has streamed, so the
-debit can never block the turn you are in — it caps at the available balance, driving it to zero
-but never negative, and the pre-turn gate blocks the *next* turn once the balance is depleted.
+AI tokens are billed after the fact: the true cost of a Fintelligent turn is only known once it has
+finished streaming back to you, so the charge is applied right after — it never withholds your
+answer while it's being calculated. If your balance runs low mid-turn, that turn still completes;
+it simply can't take your balance below zero, and it's the *next* turn that gets blocked once
+you've run out.
 
-**1 AI Token = $0.01.** Rates live in `developers.ai_token_cost_config('ai_chat').multipliers`,
-expressed as AI tokens per 1,000,000 model tokens:
+**1 AI Token = $0.01.** Usage is metered from how much the assistant actually reads and writes for
+your conversation:
 
-| Input class | Current rate |
+| What's being billed | Relative cost |
 |---|---|
-| Prompt, cache hit | 1.8125 |
-| Prompt, cache miss | 217.5 |
-| Output | 435 |
+| Reusing context sent very recently in the same conversation | Cheapest |
+| New context you send that wasn't recently reused | About 120× the reused rate |
+| The assistant's response | Roughly double the new-context rate — the priciest part of a turn |
 
-Cache-miss is derived as `input_tokens − cache_read_tokens`, with the hit count clamped into
-`[0, input]`. There is no cache-write tier. The result is ceiled per turn, so any positive usage
-costs at least 1 AI token and a zero-usage turn is free. The same rates apply whichever model
-served the request.
+Every turn with any usage at all costs at least 1 AI token; a turn that used nothing is free. The
+same pricing applies no matter which underlying model answers you.
 
-Flat AI-token charges for assembling extra context, levied separately from the usage debit:
+On top of the usage charge, pulling extra context into a conversation carries its own flat charge:
 
-| Operation | Ledger reason | What it buys | Current price |
-|---|---|---|---|
-| `ctx_pack_news_sentiment` | `ai_context_pack` | News and sentiment context for AI Ideas | 20 |
-| `ctx_pack_news` | `ai_context_pack` | Live news put into a prompt (`GET /news?projection=agent`) | 25 |
-| `ctx_pack_insider` | `ai_context_pack` | Insider-activity context | 15 |
-| `ctx_pack_analyst` | `ai_context_pack` | Analyst-estimate context | 15 |
-| `ctx_pack_corporate_actions` | `ai_context_pack` | Corporate-actions context | 10 |
-| `ctx_pack_macro_rates` | `ai_context_pack` | Macro and rates context | 10 |
-| — | `ai_hypotheses` | The AI Ideas generation itself, metered from reported usage | usage-based |
+| Context added | What it gives the assistant | Typical cost |
+|---|---|---|
+| News & sentiment | Recent news and sentiment for AI Ideas | 20 AI tokens |
+| Live news | Current news headlines pulled into your prompt | 25 AI tokens |
+| Insider activity | Recent insider trading activity | 15 AI tokens |
+| Analyst estimates | Analyst estimate context | 15 AI tokens |
+| Corporate actions | Corporate-actions context | 10 AI tokens |
+| Macro & rates | Macro and interest-rate context | 10 AI tokens |
+| AI Ideas generation itself | The idea generation, on top of any packs it pulls in | Billed from actual usage |
 
-The five packs other than `ctx_pack_news` are billed once per AI-Ideas generation that selects
-them, on top of that generation's `ai_hypotheses` usage debit. `ctx_pack_news` is different: it is
-charged on the news route itself, only on the
-agent projection, and its idempotency key is bucketed by the org, the sorted ticker set, the
-resolved window and the UTC hour — so the same question asked twice inside an hour is served warm
-and billed once. A digest that covered no tickers is free. Reading the news feed in Markets or the
-Portfolio Manager is **not** billed: this is a charge for putting news into a prompt, not for
-reading it.
+Most of these packs are charged once per AI Ideas generation that uses them. Live news is a little
+different: it's billed on the underlying lookup itself, and if the same question about the same
+tickers comes up again within the hour — from you or a teammate — it's served from what was already
+fetched and billed only once for that hour. A digest that turns up no relevant tickers is free.
+Browsing news normally in Markets or the Portfolio Manager is never billed — this charge only
+applies to pulling news into an AI prompt, not to reading it yourself.
 
-Inside a Fintelligent conversation each assistant bubble can carry a token caption. It shows the
-raw model total as **`{{formatted}} raw-tokens`** and, on the live stream only, the billed amount
-as **`{{formatted}} AI tokens`**. The billed figure is not persisted, so it disappears when you
-reload the conversation and only the raw total remains.
+Inside a Fintelligent conversation, each response can show a small token caption: the raw number of
+model tokens used, and — while the response is actively streaming — the billed AI-token amount.
+The billed figure isn't saved with the conversation, so reloading the page still shows the raw
+total but not the billed one.
 
 ## Where your balance appears
 
-| Surface | What it shows |
+| Where | What you'll see |
 |---|---|
-| Header chip (`Toll` icon) | Live Fintela Token balance. Tooltip **"Fintela Tokens — click to manage"**. Turns filled red at 0. Hidden below the `sm` breakpoint |
-| Header chip (`AutoAwesome` icon) | Live AI-token balance. Tooltip **"Fintela AI Tokens — click to manage"**. Turns filled red at 0. Also hidden below `sm` |
-| Depleted banner | Square-cornered red alert under the header: **"Tokens depleted — compute is paused (backtests, optimizations and daily updates). Daily updates resume automatically after a purchase."** with a **Buy tokens** action |
-| Low-balance snackbar | Dismissible bottom-centre warning: **"Token balance is running low."**, same CTA |
-| Account → Tokens | The **Fintela Tokens** and **Fintela AI Tokens** cards, side by side |
-| Registry toolbars | A `used/limit` quota meter, free tier only |
+| Header — Tokens icon | Your live Fintela Token balance. Click it to jump to Account → Tokens. Turns red at zero |
+| Header — AI Tokens icon | Your live AI Token balance, same behavior |
+| Depleted banner | A red banner under the header saying compute is paused — backtests, optimizations, and daily updates — with a **Buy tokens** button. Daily updates resume automatically once you top up |
+| Low-balance notice | A dismissible notice warning your balance is running low, with the same **Buy tokens** button |
+| Account → Tokens | Your Fintela Tokens and Fintela AI Tokens cards, side by side |
+| Registry pages (Studies, Strategies, etc.) | A used/limit meter, shown only while your organization is on the free tier |
 
-The low-balance threshold is 20% of the most recent purchase amount, or a flat 50 tokens if the
-organization has never purchased. A balance of exactly 0 is treated as *depleted*, not *low*, so
-only the red banner shows.
+You're warned once your balance drops below roughly 20% of your last purchase (or below 50 tokens
+if you've never purchased). A balance of exactly zero is treated as fully depleted rather than just
+low, so at that point you'll see the red banner instead of the warning.
 
-Both chips deep-link to the Account page and scroll to the matching card. Balances poll every 30
-seconds with a 15-second stale time and refetch on window focus. A confirmed purchase additionally
-posts on the `fintela:tokens` / `fintela:aiTokens` broadcast channels, so every other tab in the
-same browser drops its balance, its history and its entitlements at once. A failed balance read
-fails soft —
-the chip simply disappears rather than showing a wrong number; the backend meters atomically
-regardless of what the client believes.
+Both header indicators link straight to the matching card on your Account page. Your balance
+refreshes automatically on a regular interval and whenever you switch back to the tab, and a
+completed purchase updates every open tab in your browser right away — no refresh needed. If your
+balance can't be loaded for any reason, the indicator simply disappears rather than showing a wrong
+number; what you're actually charged is always accurate regardless of what's displayed.
 
 ### Transaction history
 
-Both Account cards render a **Transaction history** table with the columns **Date**, **Type**,
-**Reference**, **Tokens** (or **AI tokens** on the AI card) and **Balance**. Credits are prefixed
-with `+` and coloured green; a missing reference renders as `—`. Empty states are **"No token
-activity yet."** and **"No AI usage yet."**; the failure state is **"Couldn't load transaction
-history."** A **Load more** button pages through the ledger with a keyset cursor, 50 rows at a time.
+Both your Fintela Tokens and Fintela AI Tokens cards include a **Transaction history** table with
+the date, type, a short reference (such as which study or purchase it relates to), the amount, and
+your running balance after each entry. Credits — purchases, refunds, your trial grant — are shown
+in green with a plus sign. If you haven't used anything yet you'll see "No token activity yet" or
+"No AI usage yet"; if history fails to load you'll see a message saying so. A **Load more** button
+pages back through your full history.
 
-`Type` labels for the Fintela Token ledger:
+Transaction types you may see on your Fintela Token history: Purchase, Backtest, Optimization,
+Daily update, Basket backtest, Sandbox run, Fintelligent chat, Replication kit, Refund, Trial
+grant, Adjustment, and Reconciliation.
 
-| Reason | Label |
-|---|---|
-| `purchase` | Purchase |
-| `backtest` | Backtest |
-| `optimization` | Optimization |
-| `portfolio_update` | Daily update |
-| `basket_simulate` | Basket backtest |
-| `sandbox_run` | Sandbox run |
-| `agent_chat` | Fintelligent chat |
-| `replication_kit` | Replication kit |
-| `refund` | Refund |
-| `trial_grant` | Trial grant |
-| `manual_adjustment` | Adjustment |
-| `reconciliation_fix` | Reconciliation |
-
-And for the AI-token ledger: `purchase` → Purchase, `ai_chat` → **Fintelligent AI usage**,
-`refund` → Refund, `trial_grant` → Trial grant, `manual_adjustment` → Adjustment,
-`reconciliation_fix` → Reconciliation.
+On your AI Token history: Purchase, Fintelligent AI usage, Refund, Trial grant, Adjustment, and
+Reconciliation.
 
 > [!WARNING]
-> The label maps have not kept up with the ledgers. Reasons the database allows but the tables do
-> not translate — `basket_update`, `study_update`, `advanced_allocation`, `lab_session`,
-> `pipeline_preview`, `chargeback`, `chargeback_reversed`, `migration_grant` on the compute side,
-> and `ai_hypotheses`, `ai_context_pack`, `chargeback`, `chargeback_reversed` on the AI side —
-> render as their raw reason string.
+> A handful of transaction types — such as daily portfolio updates, advanced allocation unlocks,
+> and Laboratory sessions — can appear in your history under a technical-looking name rather than a
+> friendly label. The amount and balance columns are always accurate even when the label looks
+> unfamiliar.
 
 ### Cost confirmation before you spend
 
-Launching a study opens a confirmation dialog headed by the action name. It shows **"Estimated
-cost"** (or **"Estimated cost (recurring, per day)"** for a recurring toggle), the number in
-`N tokens`, **"Current balance: N"**, and, for one-off actions, the refund note. If the estimate
-exceeds your balance it adds **"Insufficient balance for this action."** and disables **Confirm**.
+Launching a study opens a confirmation dialog before anything is charged. It shows the estimated
+cost (or, for a recurring study, the estimated cost per day), your current balance, and — for a
+one-off study — a reminder that any over-estimate is refunded automatically. If the estimated cost
+is more than you have available, the dialog says so and disables **Confirm** until you top up.
 
-The generic estimate comes from `POST /tokens/estimate`, which is advisory only — enforcement
-re-estimates and deducts atomically at the choke point. A study launch overrides it with the
-study-aware quote, because the generic estimate cannot see the universe or the machine size the
-study needs.
+This estimate is a preview to help you decide before you commit. The actual charge is calculated
+and deducted at the moment the study runs, using the same pricing logic, so what you're billed
+always matches what actually happened.
 
 ## Buying tokens
 
-Purchasing is **owner-only**, and that is enforced on the server: every payment route rejects a
-non-owner with `403 Only the organization owner can purchase tokens.` Owners and admins can see
-the Tokens container on the Account page; only the Owner sees the purchase grid inside it.
+Only the organization **Owner** can buy tokens. Owners and Admins can both see the Tokens section
+on the Account page, but the purchase options are visible only to the Owner.
 
-The flow is a one-time Stripe Checkout session, never a subscription:
+Buying tokens is a one-time purchase through Fintela's secure checkout — never a recurring
+subscription:
 
-1. The card lists active prices from the token product, each showing `N tokens` and the formatted
-   price, with a **Buy** button.
-2. **Buy** creates a Checkout session stamped with `purpose: token_purchase`, the token amount,
-   your Keycloak subject and your organization name, then redirects.
-3. Checkout returns to `/account?tokens=success` (or `?ai_tokens=success`). The card strips the
-   parameter from the URL and shows **"Confirming your purchase — the balance updates as soon as
-   the payment is processed."** while it polls the balance up to 12 times, 1.5 s apart.
-4. The `checkout.session.completed` webhook credits the ledger with reason `purchase`, keyed on
-   the session id so retries credit exactly once.
+1. You'll see a list of available token packages, each showing how many tokens you get and the
+   price, with a **Buy** button next to each.
+2. Clicking **Buy** takes you to a secure checkout page.
+3. After checkout, you're brought back to your Account page, where a **"Confirming your
+   purchase — the balance updates as soon as the payment is processed"** message appears while your
+   new balance is applied — this normally takes just a few seconds.
+4. Once confirmed, the tokens are added to your balance and show up in your transaction history as
+   a Purchase.
 
-Purchase-section failure copy: **"Couldn't load token packages. Check that the Stripe service is
-reachable and that a token product is configured."**, **"No token packages are configured yet."**,
-**"Couldn't start checkout. Please try again."** The AI card mirrors these against the AI token
-product.
+If something goes wrong loading the available packages or starting checkout, you'll see a plain
+error message asking you to try again — this is rare and usually resolves on retry.
 
-The Checkout session enables promotion codes. Partner and internal organizations are activated
-through a 100%-off coupon that writes a real `purchase` ledger row — there is no bypass list and
-no per-organization override anywhere in the system.
+Some partner and internal organizations receive their tokens through a discount code applied at
+checkout rather than paying full price, but every purchase — discounted or not — is recorded the
+same way in your transaction history.
 
 ## The usage dashboard
 
-`/account/usage-dashboard`, reached from the **Fintela Usage Dashboard** button on the Members
-card (Owner only). Header: eyebrow **Organization**, title **Fintela Usage Dashboard**, subtitle
-**"What every member has created and launched across the platform."**, and a **Back to Account**
-action.
+Owners can open the **Fintela Usage Dashboard** from the Members section of the Account page to see
+what everyone in the organization has created and spent, in one place.
 
-Two tabs. **Activity** is Owner-only; **Tokens** opens to owners and admins, and an admin who is
-not the owner is forced onto it. Anyone else is redirected to `/account`, and both APIs
-independently return 403.
+The dashboard has two tabs. **Activity** — what members have built — is visible to the Owner only.
+**Tokens** — what's been spent — is open to both Owners and Admins.
 
-The **Tokens** tab fetches once per (range, granularity) and re-pivots client-side, so the category
-and member filters never trigger a refetch.
+The Tokens tab lets you filter and re-slice the same data instantly:
 
-| Control | Values |
+| Control | Options |
 |---|---|
-| Date range | Defaults to the last 12 months, in your browser's timezone |
-| Granularity | **Daily**, **Weekly**, **Monthly** (default) |
-| Breakdown | **By category**, **By member** |
-| Categories | Multi-select over the reasons present in the data |
-| Member | **All members**, or one member; system-attributed rows appear as **System** |
+| Date range | Defaults to the last 12 months |
+| Granularity | Daily, Weekly, or Monthly (default) |
+| Breakdown | By category, or by member |
+| Categories | Choose one or more spending categories |
+| Member | All members, one specific member, or **System** for automated activity like daily updates |
 
-KPI cards: **Balance**, **Consumed**, **Purchased**, **Granted**, **Net change**, **Top category**,
-plus a **Depleted** marker. Charts: **Consumption over time**, **Acquired vs consumed** (subtitle
-*Budget utilization*), **Usage by category**, **Top consumers**, and a **Member × category**
-heatmap. Empty charts read **"No data for selected filters."**
+At the top you'll find summary figures: Balance, Consumed, Purchased, Granted, Net change, Top
+category, and a Depleted marker where it applies. Below that: a chart of consumption over time,
+acquired vs. consumed tokens (how your budget is being used), spending by category, your
+top-spending members, and a member-by-category breakdown. If there's nothing to show for your
+current filters, the chart says so.
 
-**Acquired vs consumed** is organization-wide and ignores the category and member filters; **Top
-consumers** and the heatmap honour the category filter but not the member filter.
+The acquired-vs-consumed chart and the top-consumers/heatmap charts reflect the whole organization
+or a subset of your filters, so don't be surprised if narrowing one filter doesn't change every
+chart on the page.
 
-The **Activity** tab is a different dataset entirely — what members created, not what they spent —
-with totals labelled Asset Groups, Strategies, Fitness, Studies and **Studies Launched**, a
-**Summary** / **Trends** toggle, and the empty state **"No activity yet"** / **"Once members create
-asset groups, strategies, fitness functions or studies, their contributions will show up here."**
+The **Activity** tab shows a different picture entirely — what your team has built rather than what
+it's spent: counts of asset groups, strategies, fitness functions, studies, and studies launched,
+with a summary view and a trends view.
 
 ## When you run out
 
-Nothing you built is deleted. Compute stops, and it resumes by itself once the balance is positive
-again. The one thing that is actively torn down is a **live Laboratory session**: it is metered per
-minute, so a tick that cannot be paid for flags the session for teardown rather than letting it run
-unpaid.
+Nothing you've built is ever deleted because your balance hit zero. Compute simply pauses, and it
+picks back up automatically the moment your balance is positive again. The one exception is a
+**live Laboratory session** — because it's billed by the minute, a session that can no longer be
+paid for is shut down rather than left running unpaid.
 
-| Condition | HTTP | `error` | What happens |
-|---|---|---|---|
-| Balance below the cost | `402` | `insufficient_tokens` | The action is refused, with `required` and `available` in the body |
-| AI balance at or below zero | `402` | `insufficient_ai_tokens` | The next Fintelligent turn is refused; `available` in the body |
-| Open chargeback on the org | `402` | `payment_disputed` | Every compute deduct is refused, and so is the next Fintelligent turn |
-| Rolling spend cap crossed | `429` | `spend_cap_exceeded` | The balance is fine — the org is spending too fast. Clears as the window slides |
-
-Verbatim messages, as the API returns them:
-
-| `error` | `message` |
+| Situation | What happens |
 |---|---|
-| `insufficient_tokens` | Insufficient tokens: this action costs {required} tokens but only {available} are available. |
-| `insufficient_ai_tokens` | Insufficient AI tokens: your Fintela AI Token balance is depleted. Purchase more to keep using Fintelligent. |
-| `payment_disputed` | This organization is on hold while a payment dispute is resolved. Contact support — purchasing more tokens will not lift the hold. |
-| `spend_cap_exceeded` | This organization has reached its spending limit of {cap} tokens per {window_hours}h ({spent} already used in that window). New compute will resume as the window rolls forward; contact support to raise the limit. |
+| Your Fintela Token balance is too low for an action | The action is blocked, and you're shown the cost versus what you have available |
+| Your AI Token balance has run out | Your next Fintelligent message is blocked until you top up |
+| A payment dispute is open on your account | All compute and Fintelligent are paused until the dispute is resolved — see below |
+| Your organization is spending unusually fast | New compute briefly pauses to protect against runaway spend, and resumes on its own as the surge passes |
 
-`insufficient_tokens` opens a dialog titled **Not enough tokens**: *"This action costs N tokens but
-your organization has M available."* followed by *"Buy a token package to continue — paused daily
-updates resume automatically after the purchase."*, with **Close** and **Buy tokens**.
-`insufficient_ai_tokens` opens **Not enough AI tokens**, which deep-links to
-`/account?section=ai-tokens` instead.
+If a study or a portfolio group's daily update can't be paid for, it isn't cancelled — that update
+is simply skipped for the day and resumes automatically on the next scheduled run once your balance
+allows it.
 
-Scheduled work degrades gracefully rather than failing: a portfolio group or study whose update
-cannot be paid for is simply skipped on that tick and picked up on a later one — a stateless pause
-that auto-resumes after a purchase.
+Running out of tokens opens a **Not enough tokens** dialog showing the cost of the action versus
+what your organization has available, with a prompt to buy a token package — paused daily updates
+resume automatically once you do. Running out of AI tokens opens a similar **Not enough AI tokens**
+dialog that takes you straight to the AI Tokens section of your Account page.
 
 > [!CAUTION]
-> A dispute freeze is not a balance problem and buying more tokens will not lift it. It is set by
-> the `charge.dispute.created` webhook and holds one flag that both currencies read: compute
-> deducts are refused outright, and Fintelligent's pre-turn gate refuses before a new turn starts.
-> The post-paid AI debit deliberately still records usage already incurred. When the dispute closes
-> in your favour the clawed-back tokens are credited back and the freeze is released.
+> A payment dispute freeze is different from simply running low, and buying more tokens will not
+> lift it on its own. If a card payment you made is disputed, all compute and Fintelligent are
+> paused until the dispute is resolved, regardless of your balance. Fintelligent usage already
+> incurred before the freeze stays recorded as normal. If the dispute is resolved in your favor, any
+> tokens held back are credited to your balance and the freeze is lifted. Contact support if you
+> believe this has happened in error.
 
-The spend-velocity cap is per organization, stored on `organizations.spend_cap_tokens` and
-`spend_cap_window_hours`, and defaults to **100,000 tokens per rolling 24 hours**. It counts
-deducts only — credits, refunds and clawbacks never widen the budget — and a value of 0 or less
-disables it. The 429 body carries `retry_after_seconds`.
+Every organization also has a safety limit on how fast it can spend — by default, up to 100,000
+tokens in any rolling 24-hour period. This only counts money actually spent, never purchases,
+refunds, or credits, so it can't be tripped by buying tokens or receiving a refund. If you hit it,
+new compute briefly pauses and automatically resumes as the 24-hour window rolls forward; contact
+support if your organization legitimately needs a higher limit.
 
 ## Plans, tiers and activation
 
-There are exactly two tiers, `free` and `activated`. There is no plan picker, no plan name and no
-per-organization override anywhere in the system — the entire policy is a **single global row** in
-`developers.entitlement_policy`, whose primary key is constrained so a second row is impossible.
+Fintela has exactly two tiers: **Free** and **Activated**. There's no plan picker and no plan names
+to choose between — your organization is automatically on whichever tier its purchase and balance
+history puts it on.
 
-| Column | Meaning | Shipped value |
-|---|---|---|
-| `mode` | Which predicate activates an organization | `active_balance` |
-| `enforcement` | How hard the guards bite: `off`, `shadow`, `enforce` | `enforce` |
-| `locked_features` | Which feature keys are closed on the free tier | all nine |
-| `version` | Bumped by a trigger on every write, echoed in the API | 1 |
-
-Under the shipped `active_balance` mode you are **activated** when the organization has at least
-one `purchase` row on either ledger **and** still holds a positive balance in either currency. The
-alternative `lifetime_purchase` mode drops the balance condition and is monotonic, but it is not
-what ships.
+Under the current rule, your organization is **Activated** once it has made at least one token
+purchase, in either currency, **and** still holds a positive balance in at least one of the two.
+Holding AI tokens alone is enough to keep you activated, and so is holding compute tokens alone.
 
 > [!IMPORTANT]
-> Buying tokens buys usage, not a permanent licence. Under the shipped default, an organization
-> that pays and later spends down to zero **re-locks** — the free-tier limits and locks come back
-> until it tops up. Holding AI tokens alone is enough to stay activated.
+> Buying tokens buys usage, not a permanent upgrade. If your organization spends its balance all
+> the way down to zero after purchasing, it drops back to Free-tier limits and locks until it tops
+> up again.
 
-Nothing is deleted when that happens. Limits are read **at create only** — never on read, update,
-delete or stop — so every strategy, study, portfolio group and promoted portfolio you built stays
-readable and runnable. You simply cannot add more, and the locked surfaces close again. That rule
-is also what guarantees a lock can never trap you inside a live position; see
+Dropping back to Free doesn't delete anything. Feature access and creation limits are only checked
+at the moment you try to *create* something new or use a locked feature — never on things you've
+already built. Every strategy, study, portfolio group, and promoted portfolio you've created stays
+fully readable and runnable; you simply can't add more until you top up, and the locked pages close
+again. This is also what guarantees a lock can never strand you inside a live position — see
 [live trading](/docs/live-trading).
 
-The policy row is cached in each backend replica for 60 seconds, so an `UPDATE` propagates
-fleet-wide within a minute with no deploy. The `ENTITLEMENTS_ENFORCE` environment variable can only
-ever *lower* the row's enforcement level, never raise it. With enforcement at `off` or `shadow`,
-`GET /entitlements/me` reports no locks and no limits at all — because the backend is not applying
-any, and drawing meters for restrictions nobody enforces would be worse than drawing nothing.
+Changes to plan limits and locked features take effect for everyone within about a minute and
+without any downtime, so an adjustment to the rules shows up quickly across the whole platform.
 
 > [!NOTE]
-> Every number on this page is a *current default*, not a constant. Quotas, ceilings and the locked
-> list are one editable SQL row and are recalibrated without a release.
+> Every limit, price, and locked feature on this page is the *current default* — Fintela's team
+> recalibrates these over time as the platform grows, so treat specific numbers here as
+> representative rather than permanently fixed.
 
 ## Locked features
 
-Nine keys, and the product ships with **all nine locked**. The vocabulary is deliberately open: an
-unrecognised key is inert, so a typo fails open rather than closing a surface the API still serves.
+Nine features are gated behind the paid tier, and by default all nine start out locked for a Free
+organization:
 
-| Key | What it gates | Enforced at |
-|---|---|---|
-| `markets` | The [Markets](/docs/market) tab's precomputed data | Middleware in front of the market-data routes |
-| `data_explorer` | The [Data Explorer](/docs/data-explorer) terminal | Middleware in front of the Data Explorer read handlers |
-| `laboratory` | Starting a [Laboratory](/docs/laboratory) kernel session | `POST /lab-sessions` only |
-| `developer_api` | Minting or rotating a developer API key | `GET /configuration` when no active key exists, and the rotate handler |
-| `broker_paper_trading` | Connecting a broker and creating, launching or activating an operation | Connection create, Alpaca OAuth start, tracking create and launch, operation create, launch and status change |
-| `seed_export` | Extracting a portfolio or portfolio-group seed | `get_portfolio_seed`, `get_basket_seed` |
-| `ai_ideas` | AI context packs and basket idea generation | The AI-Ideas narration handler |
-| `daily_updates` | Subscribing a study to recurring recompute | The study daily-updates patch handler |
-| `bulk_studies` | Deriving a batch of studies in one request | `POST /studies/risk-manager-optimization`, the only batch-creating route today |
+| Feature | What it unlocks |
+|---|---|
+| Markets | The [Markets](/docs/market) tab's precomputed market data |
+| Data Explorer | The [Data Explorer](/docs/data-explorer) terminal |
+| Laboratory | Starting a [Laboratory](/docs/laboratory) session |
+| Developer API | Creating or rotating a personal access key for the read-only [Developer API](/docs/api-overview) |
+| Broker & paper trading | Connecting a broker account and creating, launching, or activating a trading operation |
+| Seed export | Extracting a portfolio or portfolio-group seed |
+| AI Ideas | AI-generated context and portfolio idea generation |
+| Daily updates | Subscribing a study to recurring, scheduled recompute |
+| Bulk studies | Creating a batch of studies in one request |
 
-Two things worth knowing about the edges. Stopping, heartbeating and polling a Laboratory session
-stay open on every tier — locking someone out of stopping a per-minute meter would make them burn
-their own tokens. And *reading* an existing developer API key is always allowed; only minting a new
-one is gated, so a packaging change can never cut you off from a credential you already hold. See
-[API authentication](/docs/api-authentication).
+A couple of things worth knowing at the edges: stopping, checking on, or waiting on a Laboratory
+session you already started always stays available on every tier — you should never be locked out
+of stopping a session that's billing you by the minute. And reading a developer API key you've
+already generated is always allowed; only *creating a new one* is gated, so a plan change can never
+cut you off from a credential you're already using. See [API
+authentication](/docs/api-authentication) for more on developer access keys.
 
-There is deliberately **no `live_trading` key.** Live trading is covered twice over — every
-connection-creating path is gated by `broker_paper_trading`, and live is off platform-wide behind
-a separate switch.
+There's deliberately no separate lock on live trading itself — every path that lets you connect a
+broker is already covered by the broker & paper trading lock above, and live trading also has its
+own platform-wide toggle on top of that.
 
-Only four of the nine have a page of their own, and so a locked overlay: `markets`,
-`data_explorer`, `laboratory` and `developer_api`. Of those, three carry a padlock in the sidebar —
-Markets under Analysis, Data Explorer and Laboratory under **More Options** — because the API Docs
-entry is hidden from the drawer even though its route stays mounted. The remaining five have no
-navigation entry at all; they surface as a 402 at the moment you attempt the action.
+Four of these — Markets, Data Explorer, Laboratory, and Developer API — have their own page in the
+app, so visiting them shows a locked preview and a small padlock badge next to them in the sidebar.
+The other five don't have a dedicated page; you'll only encounter their lock at the moment you try
+to use them.
 
 ## Creation quotas
 
-Eight counted resources, checked at create time only. A batch request is checked for the whole
-batch rather than per item, so a bulk create is rejected outright instead of half-fulfilled.
+On the Free tier, eight kinds of resources are capped, and the limit is checked only at the moment
+you try to create a new one — a bulk-create request is checked against the whole batch, so a large
+batch is rejected up front rather than half-created:
 
-| Quota key | Resource | Current limit | Counted as |
-|---|---|---|---|
-| `strategies` | [strategies](/docs/strategies) | 2 | Not soft-deleted |
-| `studies` | [studies](/docs/studies) | 2 | Not soft-deleted |
-| `fitness` | [fitness functions](/docs/fitness-functions) | 2 | Not soft-deleted |
-| `data_clusters` | [asset groups](/docs/asset-groups) | 2 | All rows — this table hard-deletes |
-| `risk_managers` | [risk managers](/docs/risk-managers) | 2 | Not soft-deleted |
-| `baskets` | [portfolio groups](/docs/portfolio-groups) | 1 | Not soft-deleted |
-| `managed_portfolios` | [promoted portfolios](/docs/promoted-portfolios) | 5 | All rows — this table hard-deletes |
-| `members` | members | 1 | Active users only |
+| Resource | Free-tier limit |
+|---|---|
+| [Strategies](/docs/strategies) | 2 |
+| [Studies](/docs/studies) | 2 |
+| [Fitness functions](/docs/fitness-functions) | 2 |
+| [Asset groups](/docs/asset-groups) | 2 |
+| [Risk managers](/docs/risk-managers) | 2 |
+| [Portfolio groups](/docs/portfolio-groups) | 1 |
+| [Promoted portfolios](/docs/promoted-portfolios) | 5 |
+| Team members | 1 |
 
-Creating, duplicating and forking all count. So do the derived creations: promoting a portfolio
-counts against `managed_portfolios`, forking from the Laboratory counts against whichever of
-strategies, fitness or risk managers it produced, and deriving an asset group from a study or a
-grouping counts against `data_clusters`.
+Creating, duplicating, and forking all count against these limits — including indirect creations,
+like promoting a portfolio (counts against promoted portfolios) or forking from the Laboratory
+(counts against strategies, fitness functions, or risk managers, depending on what you forked).
 
-`GET /entitlements/me` reports `used`, `limit` and a server-computed `can_create` for each. A
-`limit` of `null` means unlimited — never `-1`, never `0`. An organization that was already over a
-cap before the cap existed reports `used > limit` with `can_create: false`: nothing is taken away,
-it just cannot add more, and deleting one makes room immediately.
+If you're already over a limit — for example, your plan changed after you'd already created several
+items — nothing you built is removed. You just can't create more until you either delete something
+to make room or top up your balance.
 
-The Studies, Strategies, Fitness and Asset Groups registries render a `used/limit` meter and bar in
-their toolbar, tinted amber past 80% and red once reached, with the tooltip **"{{used}} of
-{{limit}} {{resource}} used — buy tokens to create more"**. The meter renders nothing for an
-activated organization. Pressing **Create** at the cap intercepts and opens the quota dialog rather
-than disabling the button.
+On affected registry pages (Studies, Strategies, Fitness, Asset Groups) you'll see a used/limit
+meter in the toolbar that turns amber as you approach the cap and red once you hit it, with a
+tooltip explaining that you can buy tokens to create more. This meter disappears entirely once your
+organization is activated. Trying to create something at the cap opens an explanatory dialog
+instead of simply doing nothing.
 
 ## Ceilings and the daily assistant cap
 
-Ceilings bound a parameter rather than counting objects, and unlike quotas the trial ceiling
-*clamps* instead of refusing — silently shrinking a run and saying so beats rejecting a form you
-have already filled in.
+A few settings cap how big a single action can be, rather than how many things you can create — and
+unlike the quotas above, hitting one of these doesn't reject your request outright. Instead,
+Fintela quietly scales your request down to what's allowed and tells you so, rather than making you
+redo a form you already filled in.
 
-| Ceiling | Current value | Behaviour |
+| Ceiling | Free-tier limit | What happens |
 |---|---|---|
-| `max_trials_per_study` | 250 | A free-tier study requesting more is clamped down before pricing |
-| `max_universe_tickers` | 100 | Reported by the API, but no handler currently enforces it |
-| `max_agent_messages_per_day` | 10 | Counted from billed `ai_chat` ledger rows in the last 24 hours |
+| Trials per study | 250 | A study requesting more trials is automatically capped before you're charged |
+| Universe size | 100 tickers | The limit is documented as a guideline for how large a universe you should use |
+| Fintelligent messages per day | 10 | Counts only messages that were actually billed |
 
-The assistant cap is a frequency bound, not a spend bound — absolute spend is already bounded by
-the AI-token balance. It is counted from *billed* turns, so a turn that failed before billing does
-not count against you. In the chat composer it surfaces from three messages left: below that
-threshold the panel shows **"{{remaining}} of {{limit}} messages left today"**, and once spent the
-composer is disabled with placeholder **"You've used all of today's messages"**, tooltip **"Daily
-limit reached. It resets tomorrow."**, and a **Buy tokens** button in place of the counter.
+The daily Fintelligent cap limits how often you can chat per day — separate from your AI token
+balance, which limits how much you can spend overall. It only counts messages that were
+successfully billed, so a message that failed before it could be charged doesn't use up your daily
+allowance.
 
-> [!WARNING]
-> The daily assistant cap is enforced in the client only. No backend guard reads
-> `max_agent_messages_per_day` — it is reported by `GET /entitlements/me` and honoured by the chat
-> panel. Treat it as a UI convention, not a security boundary.
+In the chat window, once you're down to your last three messages for the day, you'll see a running
+count of how many are left. Once you've used them all, the message box is disabled with a note that
+your daily limit resets tomorrow, along with a **Buy tokens** button.
 
 ## What a locked page looks like
 
-A locked feature is **not hidden**. Wherever it had a [navigation](/docs/navigation) entry, that
-entry stays, it still navigates, and the page still renders — behind a blurred, inert, data-free
-preview.
+A locked feature isn't hidden from you. If it has an entry in the [navigation](/docs/navigation)
+menu, that entry stays right where it is, you can still click into it, and the page still opens.
+What you'll see instead of your real data is a preview:
 
-- The route wrapper renders **nothing** until the entitlement answer is known, so there is no flash
-  of unlocked content and no burst of requests.
-- The page's real structure renders behind an `inert aria-hidden` layer inside a frozen query
-  client, so **no data is fetched**. You see headers, layout and empty chart frames — never your
-  own numbers, and never someone else's.
-- The overlay is `blur(8px) saturate(0.7)` (4 px below the `sm` breakpoint), falling back to an
-  88%-opaque background where backdrop filters are unsupported.
-- On top sits an outlined panel with a padlock, the lock copy, a **Buy tokens** button pointing at
-  `/account?section=tokens`, and a footnote.
-- The navigation entry gains a small padlock and a tooltip in both rail states.
+- The page loads its normal layout — headers, panels, empty chart frames — so you can see what the
+  feature looks like, but no real data is fetched or shown. You'll never see your own numbers, or
+  anyone else's, behind a lock.
+- The whole preview sits behind a soft blur, so it clearly reads as a preview rather than a broken
+  page.
+- On top, a panel with a padlock icon explains that the feature is locked, with a **Buy tokens**
+  button that takes you straight to Account → Tokens.
+- The navigation entry itself gets a small padlock badge with an explanatory tooltip.
 
-Every string, from `common.json`:
+The most common messages you'll see on a locked page:
 
-| Key | English |
+| Message | What it means |
 |---|---|
-| `lock.title` | Feature locked |
-| `lock.body` | Buy tokens to unlock this feature. |
-| `lock.cta` | Buy tokens |
-| `lock.previewNote` | This is a preview — your real data appears once unlocked. |
-| `lock.navTooltip` | Locked — buy tokens to unlock |
-| `lock.badge` | Locked |
-| `lock.quota.title` | You've reached your plan limit |
-| `lock.quota.body` | Your plan includes {{limit}} {{resource}} and you already have {{used}}. |
-| `lock.quota.keepUsing` | Your existing {{resource}} keep working normally. |
-| `lock.quota.delete` | You can also delete one to make room. |
-| `lock.quota.meter` | {{used}} of {{limit}} |
-| `lock.agent.capPlaceholder` | You've used all of today's messages |
-| `lock.agent.capTooltip` | Daily limit reached. It resets tomorrow. |
-| `lock.agent.remaining` | {{remaining}} of {{limit}} messages left today |
+| Feature locked | Buy tokens to unlock this feature |
+| This is a preview — your real data appears once unlocked | You're looking at an empty preview, not your actual data |
+| You've reached your plan limit | Your plan includes a certain number of this resource, and you already have that many |
+| Your existing items keep working normally | Nothing you built is affected — you just can't add more |
+| You can also delete one to make room | An alternative to buying more tokens, if you'd rather free up a slot |
 
-Quota resources are named in product language, not database language: `fitness` reads *fitness
-functions*, `data_clusters` reads *asset groups*, `baskets` reads *portfolio groups*, and
-`managed_portfolios` reads *promoted portfolios*.
+On these screens, resources are described in the same everyday language used throughout the
+product — you'll see "asset groups" and "portfolio groups," for example, spoken about the way you
+already know them.
 
-## The 402 contract
+## Lock and limit messages
 
-Entitlement refusals share HTTP `402 Payment Required` with balance refusals and are told apart by
-the machine-readable `error` field. Every billing and entitlement refusal body bypasses the standard
-`data` envelope and is returned as top-level JSON — see [API errors](/docs/api-errors) for the
-normal shape.
+When an action is blocked, Fintela shows you one clear, specific message rather than a generic
+error — and if more than one thing is wrong at once, it prioritizes the most important one: a
+payment dispute takes precedence over a locked feature, which takes precedence over a quota limit,
+which takes precedence over a low balance, which takes precedence over the organization-wide
+spending-speed limit. Only one such message is shown at a time, so a new issue replaces the
+previous one rather than stacking on top of it.
 
-```json
-{
-  "error": "feature_locked",
-  "feature": "markets",
-  "message": "This feature is available on paid accounts. Buy tokens to unlock it.",
-  "upgrade": "purchase_tokens"
-}
-```
-
-```json
-{
-  "error": "quota_reached",
-  "quota": "strategies",
-  "used": 2,
-  "limit": 2,
-  "requested": 1,
-  "message": "Your plan includes 2 strategies and you already have 2. Existing ones keep working — buy tokens to create more, or delete one to make room.",
-  "upgrade": "purchase_tokens"
-}
-```
-
-`quota_reached` is a separate code from `feature_locked` because it has a second remedy that costs
-nothing — delete something — and it carries `used` and `limit` so the client can say so.
-
-Client handling, in fork order: `payment_disputed` → `feature_locked` → `quota_reached` →
-`insufficient_tokens` → `spend_cap_exceeded` → generic error. A dispute is checked first
-specifically so it can never reach a buy-tokens affordance.
-
-`feature_locked` raises a dialog titled **Feature locked** whose body is the backend's `message`
-**verbatim** — it is deliberately not re-worded locally, because Fintelligent quotes the same
-sentence back to you mid-conversation. `quota_reached` raises **You've reached your plan limit**,
-which leads with reassurance (`keepUsing`, `delete`) before the ask. Both offer **Close** and **Buy
-tokens**. Only one dialog is held at a time; a later refusal replaces an earlier one.
+A locked-feature message always uses the same wording wherever you encounter it — including inside
+a Fintelligent conversation, if that's what hits the lock — so the explanation stays consistent no
+matter where you run into it. A quota message leads by reassuring you that what you've already
+built keeps working, before asking you to buy more or delete something.
 
 > [!IMPORTANT]
-> The dialog fires on **writes only**. The interceptor that raises it skips `GET` and `HEAD`,
-> because a 402 on a background read — a poll or a prefetch behind a locked overlay — would
-> interrupt someone who never asked for anything. A read that 402s fails silently.
+> These messages only interrupt you when you actively try to do something — launch a study, save a
+> portfolio group, start a session. Fintela never pops up a lock message while it's quietly
+> checking your status in the background, so simply browsing a locked preview page won't throw an
+> error at you.
 
 > [!NOTE]
-> A `feature_locked` or `quota_reached` refusal on a *write* also invalidates your entitlement
-> snapshot: the global mutation error handler refetches `/entitlements/me` before it raises the
-> dialog, so a client whose picture of the rules is provably stale corrects itself on the next
-> render. Nothing else pushes it. Otherwise the snapshot refreshes on a 60-second stale time, on
-> window focus, and on a purchase — in the buying tab and, via broadcast channel, in every other tab
-> of the same browser. A purchase made in a *different* browser or on another device can therefore
-> take up to a minute, or one window focus, to clear the lock here.
+> Whenever you hit a lock or a quota limit while trying to save or create something, Fintela
+> immediately re-checks your plan status behind the scenes, so if your organization's status just
+> changed, the app corrects itself right away rather than showing a stale message. Otherwise, your
+> plan status refreshes automatically about once a minute, whenever you switch back to the tab, and
+> instantly across every open tab the moment a purchase completes. A purchase made from a different
+> browser or device may take up to a minute, or one tab switch, to be reflected here.
 
-The client fails **open** in every other direction. If `/entitlements/me` errors, it falls back to
-a fully permissive snapshot: an outage must never paywall a paying customer, because the 402 at the
-API is the real boundary. The one exception is a `401`, which is rethrown and retried — treating
-"ask again once you have a token" as "entitled to everything" is exactly how the entire lock system
-would silently disable itself.
-
-Server-side the posture matches. A failed policy read reuses the last good snapshot, or falls back
-to enforcement `off`. A failed tier resolution or quota count allows the action. A database problem
-degrades to an unlocked product, never to a paywalled one.
-
-## Endpoints
-
-All of these resolve your organization from the JWT. None of them accept an organization
-parameter, so there is no cross-organization view.
-
-```http
-GET /entitlements/me
-GET /tokens/balance
-GET /tokens/transactions?limit=50&cursor=LAST_ID
-POST /tokens/estimate
-GET /tokens/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD&tz=IANA&granularity=day|week|month
-GET /ai-tokens/balance
-GET /ai-tokens/transactions?limit=50&cursor=LAST_ID
-GET /organizations/me/usage-dashboard?from=YYYY-MM-DD&to=YYYY-MM-DD&tz=IANA
-```
-
-| Endpoint | Access | Notes |
-|---|---|---|
-| `GET /entitlements/me` | Any authenticated user | No permission check — everyone may read what their own organization is entitled to |
-| `GET /tokens/balance` | Any authenticated user | `{ balance, tokens_depleted_at }` |
-| `GET /tokens/transactions` | Any authenticated user | Newest first, keyset paged. `limit` default 50, max 200 |
-| `POST /tokens/estimate` | Any authenticated user | Body `{ operation, params }`. Advisory only. An unknown operation returns `406` |
-| `GET /tokens/analytics` | Owner or admin | Otherwise `403 Only organization owners and admins can view token analytics` |
-| `GET /ai-tokens/balance` | Any authenticated user | `{ balance, tokens_depleted_at }` |
-| `GET /ai-tokens/transactions` | Any authenticated user | Same paging contract as the compute ledger |
-| `GET /organizations/me/usage-dashboard` | Owner only | Otherwise `403 Only the organization owner can view the usage dashboard` |
-
-For the analytics and dashboard endpoints, `to` defaults to today, `from` to twelve months before
-`to`, and `tz` to `UTC`. A `from` later than `to` returns HTTP `400` with the message
-"`from` must be on or before `to`". `GET /tokens/analytics` additionally validates its own two
-parameters — an unrecognised `granularity` or an implausible `tz` returns `400`; the usage-dashboard
-endpoint has no granularity parameter and does not validate `tz`.
-
-`POST /tokens/estimate` takes a body, not a query string:
-
-```json
-{
-  "operation": "optimization",
-  "params": { "cpu": 1.0, "data": 1.0, "time": 1.0, "mem": 0.0, "n_trials": 1000 }
-}
-```
-
-and answers, inside the standard `data` envelope,
-`{ "operation": "optimization", "estimated_cost": 300, "balance": 1250 }` — because
-`ceil(0.3 × 1000)` is 300.
-
-There are no public write endpoints for either ledger. Credits and reversals travel over internal,
-shared-key routes used by the Stripe service and the reconciler; consumption is only ever debited
-in-process at a choke point. The purchase routes on the Stripe service —
-`GET /payments/token-packages`, `POST /payments/create-token-checkout`,
-`GET /payments/ai-token-packages`, `POST /payments/create-ai-token-checkout` — are all owner-gated.
+If Fintela can't confirm your plan status for any reason, it always fails on the side of letting you
+continue rather than blocking you unfairly — the real check happens at the moment you actually try
+to spend or create something, so this can never let you bypass what you're actually charged.

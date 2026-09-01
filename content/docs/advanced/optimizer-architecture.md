@@ -4,414 +4,279 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 6
 published: true
-updated: 2026-08-20
-summary: How the optimization engine, simulation engine and storage actually fit together.
-keywords: architecture, optimizer, simulation engine, dispatcher, workers, ecs, parallelism, persistence, optuna, internals
+updated: 2026-09-01
+summary: What actually happens when you launch a study — how Fintela runs your trials in parallel, tracks progress and health, recovers from failures automatically, and what you can and can't control.
+keywords: architecture, optimizer, parallelism, workers, trials, progress, health, failure recovery, memory, samplers, limits
 ---
 
-Launching a study does not hand your work to a single machine. It writes one row, and a chain of
-independent services picks it up from there: a singleton dispatcher claims the queued study and
-launches on-demand Fargate tasks for it, each task runs an Optuna ask/tell loop over a batched
-Rust simulation engine, and a second singleton reconciles what the container actually did back
-onto the study. None of these services calls another over HTTP — Postgres carries every piece of
-shared state between them, which is why a crashed component loses work but never loses state.
+When you launch a study, Fintela doesn't run it on a single machine and hope for the best. Your
+study is queued, then automatically assigned however many parallel workers it needs, split into
+batches of trials, and simulated at speed with Fintela's own backtesting engine. Every trial,
+portfolio and metric is saved to your study's permanent record continuously as it completes — never
+held only in memory until the end — which is why a worker that stumbles loses at most its
+current batch, never anything already finished. This page walks through what actually happens: how
+a study gets picked up, how many trials run at once and why, how progress and health are tracked,
+how Fintela recovers automatically when something goes wrong, and what you can and can't control
+yourself.
 
-## The moving parts
+## What happens when you launch a study
 
-| Component | Where it runs | Role |
+| Stage | What Fintela is doing | What you see |
 |---|---|---|
-| `backend` | Long-running ECS service behind the ALB | Owns `/studies/*`, flips the study to `QUEUED`, charges tokens, serves every read the SPA makes |
-| `optimization-dispatcher` | Long-running ECS worker, `desired_count: 1`, 256 CPU units / 512 MiB | Claims `QUEUED` studies, decides the task layout and size, calls ECS `RunTask` |
-| Optimizer task | On-demand Fargate task, task-definition family `fintela-train`, 16384 CPU units / 49152 MiB by default | `train.py` + `optimizer_runner.py` — the actual optimization loop |
-| `fintela_simulation_engine` | Rust extension module **inside** the optimizer task | Batched backtest over the whole trial batch |
-| `status-updater` | Long-running ECS worker, `desired_count: 1`, 256 CPU units / 512 MiB | Polls ECS per task, aggregates task rows into the study, autostops, escalates OOMs, refunds tokens |
-| `portfolio-dispatcher` / `portfolio-updater` | Worker + on-demand task | Extend the study's portfolios daily, after it finishes and only if `daily_updates_enabled` |
-| Aurora Postgres | — | The only shared state, and Optuna's own storage backend |
+| Queued | Your study is waiting for its share of compute; tokens for your trial budget are already set aside | Status: `Queued` |
+| Starting up | Workers are being assigned and started for your study | Status flips to `Running` the moment the first one is live |
+| Running trials | Each worker samples parameter combinations, simulates them with your strategy and risk managers, and scores them with your fitness function | Progress and Health update continuously |
+| Wrapping up | Fintela confirms every worker has finished and finalizes your study's status | Status settles on `Completed`, `Failed`, or `Stopped` |
+| Daily updates (optional) | If you turned on daily recompute, portfolios promoted from this study extend automatically once new market data arrives | See [study lifecycle](/docs/study-lifecycle) |
 
-> [!NOTE] The `simulation-engine` HTTP service is not on this path
-> There is a separate Rust HTTP service called `simulation-engine` (container port 7777,
-> `POST /simulate`, `POST /simulate/periods`, `POST /curve/*`). Inside the platform its only
-> caller is `strategy-sandbox`, which runs the one-off backtest behind strategy validation. The
-> optimizer never calls it: it links the same engine crate in-process as the Rust extension
-> module `fintela_simulation_engine`.
+> [!NOTE] The same engine powers quick tests and full studies
+> The simulation logic behind a single backtest in the strategy or fitness sandbox is the exact
+> same engine that runs every trial inside a full optimization study. A strategy that behaves a
+> certain way when you test it will behave the same way once it's part of a study — the only
+> difference is how many combinations get tried.
 
-## Runtime topology
+## From launch to finish, at a glance
 
-```text
-  Browser (SPA)
-      │  POST /studies/:id/launch                GET /events  (SSE, org-scoped)
-      ▼                                                ▲
-  ┌────────────────────────────────────────────────────┴─────────┐
-  │ backend                                                      │
-  │  · CAS study_runtime_status: SAVED → QUEUED                  │
-  │  · opens the `queued` stage in the same transaction          │
-  │  · NOTIFY optimization_dispatch                              │
-  └───────────────┬──────────────────────────────────────────────┘
-                  │        Aurora Postgres — the only inter-service channel
-                  ▼
-  ┌────────────────────────────────┐      ┌───────────────────────────────┐
-  │ optimization-dispatcher        │      │ status-updater                │
-  │ singleton (advisory lock)      │      │ singleton loop                │
-  │  · LISTEN optimization_dispatch│      │  · DescribeTasks per task     │
-  │  · timed poll as the safety net│      │  · task rows → study row      │
-  │  · vCPU-quota admission        │      │  · autostop · OOM escalation  │
-  │  · compute_layout → N tasks    │      │  · refunds · notifications    │
-  └───────────────┬────────────────┘      └───────────────┬───────────────┘
-                  │ ECS RunTask (fintela-train)           │ ecs:StopTask
-                  ▼                                       │
-  ┌───────────────────────────────────────────────┐       │
-  │ optimizer task — one per slice of n_trials    │◄──────┘
-  │  train.py           load data, build panel    │
-  │  optimizer_runner   Optuna ask/tell batches   │
-  │   ├ ProcessPool(batch_size)  signals  ────────┼──► your endpoint POST /simulate
-  │   ├ fintela_simulation_engine (Rust, rayon)   │       (EXTERNAL strategy only)
-  │   ├ ProcessPool(batch_size)  fitness  ────────┼──► your endpoint POST /evaluate
-  │   └ writer thread  register_batch             │       (EXTERNAL fitness only)
-  └───────────────┬───────────────────────────────┘
-                  │ trials · portfolios · equity · metrics
-                  ▼
-        developers.*  +  public.entity_metrics
-```
+1. You launch a study (or create one with **launch now**). It's queued instantly and your tokens
+   are set aside for the trial budget you asked for.
+2. Fintela picks it up — normally within milliseconds, occasionally after a short wait if your
+   organization already has studies using all their available compute.
+3. Workers start and immediately begin drawing trials from your budget.
+4. As each batch of trials finishes, its results — trades, portfolios, equity curves, metrics —
+   are saved to your study right away, not held until the very end.
+5. Once every worker has finished, Fintela finalizes your study's status and, if it ended early or
+   ran into trouble, records why.
+6. If you enabled daily updates, any portfolios you promote from this study begin extending
+   automatically from that point on.
 
-## Dispatch: from QUEUED to a running task
+## Getting picked up: from Queued to Running
 
-`POST /studies/:id/launch` (and `POST /studies` with `launch_now: true`, which calls the same
-code) does three things in one transaction — compare-and-swap `study_runtime_status` from `SAVED`
-to `QUEUED`, clear the previous run's `finished_at` / `stop_requested_at` / `failure_message` /
-`failure_diagnostic`, and open the `queued` lifecycle stage. After the commit it issues
-`NOTIFY optimization_dispatch`.
+The moment you launch, your study's status changes to `Queued` and Fintela is signaled to start it
+right away — in practice, a launch is normally picked up within milliseconds.
 
-The dispatcher holds a dedicated `LISTEN` connection for that channel — deliberately not drawn
-from its work pool — and falls back to a timed poll (`POLL_INTERVAL_SECS`, a required setting)
-whenever no notification arrives. So a launch is normally picked up in milliseconds, and a missed
-`NOTIFY` costs at most one poll interval.
+> [!WARNING] Resuming or an automatic memory retry don't get the same instant pickup
+> Resuming a finished study, and the automatic retry that follows a worker running out of memory,
+> both put your study back into `Queued` — but neither triggers the instant wake-up a fresh launch
+> gets. Those studies wait for Fintela's next regular check instead, which is still frequent, just
+> not immediate.
 
-> [!WARNING] Resume and OOM-retry do not send a wake-up
-> `POST /studies/resume` and the automatic OOM escalation both set the study back to `QUEUED`
-> without a `NOTIFY`. Those studies wait for the dispatcher's next periodic tick, not for
-> milliseconds.
+### Why a study might wait
 
-Exactly one dispatcher may run. It takes `pg_try_advisory_lock(hashtext('optimization-dispatcher-singleton'))`
-at startup and exits if it cannot get it; it re-checks that the lock session is still alive on
-every tick and exits if it is not, so ECS restarts it rather than letting two instances
-double-launch a study.
+Fintela only has so much compute capacity available at any moment, shared across every
+organization running studies at the same time. If that capacity is fully committed, your study
+waits in line — oldest queued study first — until room frees up. You're not charged anything extra
+for waiting: tokens for a study are set aside the moment you launch it, whether it starts running
+immediately or a few minutes later.
 
-### Admission control
+> [!TIP] Resuming picks up where you left off, not from scratch
+> If you resume or relaunch a study that already ran some trials, Fintela doesn't recompute your
+> whole trial budget from zero — trials that already reached a result don't need to run again.
+> Only what's actually left gets scheduled, which is part of why a resumed study can finish faster
+> than its added trial count alone would suggest.
 
-Each tick selects every study `WHERE last_status = 'QUEUED' AND desired_status = 'RUNNING' AND
-deleted_at IS NULL`, oldest first by `study_runtime_status.created_at`, then gates on account vCPU
-headroom:
+### How many workers your study gets
 
-| Quantity | How it is computed |
+| Your study | Workers assigned |
 |---|---|
-| `available_vcpus` | `quota.limit − quota.utilization` |
-| Quota read | Fargate On-Demand vCPU when `USE_FARGATE_QUOTA` is truthy, otherwise the legacy EC2 Standard quota. Default is **off**. A quota error **fails open** |
-| Reserve | `VCPU_HEADROOM_RESERVE`, default `100.0` |
-| `launchable_studies` | `floor((available_vcpus − reserve) / (VCPUS_PER_TASK × TASKS_PER_STUDY))` |
+| Strategy and fitness function are both Internal | However many Fintela's scheduler decides your trial budget needs — automatically, with no setting to adjust it |
+| Either the strategy or the fitness function is External | Exactly one worker; the concurrency inside it follows the limits described in [execution modes](/docs/execution-modes) |
 
-If `launchable_studies` is zero or negative the tick dispatches nothing and logs the reserve it is
-protecting. Studies are prepaid at launch, so no tokens are deducted here; a queued study on a
-zero-balance org is logged as an estimate gap and still dispatched.
+The two experimental quantum samplers, QAOA and Q-Kernel, always run on a single worker too, since
+each keeps an internal model that can't be split across machines — see
+[sampler selection](/docs/sampler-selection). And Fintela never over-provisions a small study: a
+20-trial study won't be handed the same worker count as a 2,000-trial one, so you're not paying for
+idle capacity on a modest search.
 
-Before splitting trials the dispatcher subtracts work that already reached a result:
-`already_dispatched` counts **distinct trials in `COMPLETE` or `PRUNED`**, and
-`effective_n_trials = max(n_trials − already_dispatched, 0)`. `FAIL` trials are genuinely
-unfinished and are re-run. When `effective_n_trials` is `0` the study is skipped — and, if it is
-still `QUEUED` while at least one task row carries an `ecs_task_arn`, promoted to `RUNNING` on the
-spot, which is the self-heal for a dispatcher that died between `RunTask` and the promotion write.
+Once your worker count is decided, your trial budget is split evenly across them, so each one
+carries roughly the same share of the work.
 
-### Task layout
+### How big each worker is
 
-`compute_layout` decides how many ECS tasks a study gets and how wide each task's worker pool is.
-A study counts as **external** when `strategies.execution_type = 'EXTERNAL'` **or**
-`fitness.execution_type = 'EXTERNAL'` — mixing the two is allowed.
+You don't choose how much compute power each worker gets — Fintela sizes it automatically based on
+your study's execution type and, for internal studies, on what you selected when setting the study
+up. If a worker runs low on memory partway through, Fintela can also step it up to a larger size
+automatically and retry, rather than letting your study fail outright — see
+[How Fintela recovers from failures](#how-fintela-recovers-from-failures) below.
 
-| Study composition | ECS tasks | `OPTIMIZER_POOL_SIZE` per task |
-|---|---|---|
-| Strategy and fitness both `INTERNAL` | `TASKS_PER_STUDY`, or `studies.max_tasks_override` when set | `0` sentinel — the task falls back to `os.cpu_count()` |
-| Any `EXTERNAL` component | **exactly 1** | the concurrency budget below |
+Your study's status flips from `Queued` to `Running` the moment its first worker is confirmed
+live — not merely requested — which is also the moment Progress and Health start showing real
+numbers instead of a placeholder.
 
-The budget for an external study is `min(k_strategy, k_fitness)` when both sides are external,
-otherwise whichever side is external, where `k` is that row's declared `max_concurrency`. If both
-endpoints normalize to the same URL (trimmed, trailing `/` stripped, lower-cased) the budget is
-**halved**, floored, minimum 1 — strategy and fitness phases share one server. A `max_concurrency`
-that is null or `<= 0` on an `EXTERNAL` row is treated as unbounded and ignored — if neither side
-declares a usable one the layout falls back to the internal sentinel — and the dispatcher logs
-`⚠ Study '{}': EXTERNAL strategy has missing/invalid max_concurrency ({:?}); treating as unbounded.`
+## How your trials actually run
 
-Two further adjustments apply:
+Once a worker starts, it loads everything your study needs — market data for your Asset Group,
+your strategy, your risk managers, your fitness function — and works through your trial budget one
+batch at a time rather than one trial at a time.
 
-- **Non-distributed samplers.** `QAOA` and `QKERNEL` declare `supports_distributed: false`, so the
-  backend stores `max_tasks_override = 1` at creation. They always run in a single task with their
-  own in-process surrogate. See [sampler selection](/docs/sampler-selection).
-- **Adaptive task count (internal studies only).** A fully-internal study never needs more tasks
-  than `ceil(effective_n_trials / batch)`, where `batch` is `studies.task_worker_cap` clamped to
-  `VCPUS_PER_TASK`, or `VCPUS_PER_TASK` itself. The cap only ever **shrinks** the count.
+Inside a single worker, several trials run at once. For internal studies, that concurrency scales
+with the size of the machine assigned to your study. For external studies, it's capped by your
+declared **Max Concurrency** — and never more than 32 trials at a time regardless of what you set,
+the same ceiling described in [execution modes](/docs/execution-modes).
 
-Trials are then split evenly: `base = effective_n_trials / effective_tasks`, and the first
-`remainder` tasks get one extra.
+Your sampler adapts automatically to however many workers and simultaneous trials your study ends
+up with — TPE and NSGA-II both adjust their internal behavior so parallel workers don't waste
+trials proposing near-duplicate combinations. You don't configure any of this yourself; see
+[sampler selection](/docs/sampler-selection) for what each sampler does with parallelism.
 
-### Task size
+### How a batch of trials moves from idea to result
 
-Every task gets a `study_task_status` row (`trials_count`, `cpu_units`, `memory_mib`, `run_seq`)
-**before** `RunTask`, so a launch that fails still leaves a record. The container receives its
-whole configuration as environment variables:
+Trials move through your study in batches rather than one at a time. To keep workers busy, Fintela
+pipelines the work: while one batch is being saved, the next batch is already being sampled and
+simulated. That overlap is why a study doesn't slow to a crawl as more results accumulate.
 
-| Variable | Value |
+Each trial in a batch goes through the same steps:
+
+1. Your sampler draws a new combination of parameters.
+2. Your strategy turns it into a trading signal.
+3. That signal is simulated against market data, along with any risk managers you've attached.
+4. Your fitness function scores the result.
+5. A successful trial is saved as a completed portfolio; anything that couldn't be evaluated is
+   recorded as skipped or failed, with a reason.
+
+> [!NOTE] Internal code runs in its own isolated space
+> If your strategy, fitness function or risk manager runs inside Fintela (Internal mode), its code
+> executes in an isolated environment that only has access to what it actually needs — your
+> parameter values and the data your data sources feed in. It has no access to Fintela's own
+> internal systems or credentials.
+
+If your search space is small enough to enumerate completely, Fintela replaces your sampler with
+an organized sweep instead — trying every combination exactly once and coordinating cleanly across
+however many workers you have. See [sampler selection](/docs/sampler-selection) for exactly when
+this kicks in. It's also why a study can finish `Completed` with fewer completed trials than the
+budget you requested: once every combination has been tried, there's nothing left to run.
+
+### Where the speed comes from
+
+| Level | What controls it |
 |---|---|
-| `STUDY_ID` | `developers.studies.study_id` — what the task actually resolves by |
-| `STUDY_NAME` | The study **key** (`studies.study_name`), Optuna's own handle. Never the display name |
-| `N_TRIALS` | This task's slice, not the study budget |
-| `TASKS_PER_STUDY` | The study's task count for this run |
-| `OPTIMIZER_POOL_SIZE` | This task's pool width, or the `0` sentinel |
-| `OPTIMIZER_TOTAL_WORKERS` | Fleet-wide worker count, used to build the sampler |
-| `VCPUS_PER_TASK` | The dispatcher's view of the task's vCPUs, cross-checked in the task |
-| `DB_HOST`, `DB_PORT`, `SECRET_ARN` | Storage connection |
+| Across studies running at once | Your organization's available compute capacity, shared with whatever else is running |
+| Across workers within one study | Your execution type, sampler, and trial budget — decided automatically |
+| Across trials within one worker | The size of the assigned machine (internal), or your Max Concurrency and the 32-trial ceiling (external) |
+| Inside a single trial's simulation | Fintela's simulation engine, built to use the whole worker's compute for each trial |
+| Saving results vs. running the next batch | Overlapped automatically, so saving results never blocks new trials from starting |
 
-Fargate CPU/memory overrides depend on execution type:
+### How Fintela avoids running out of memory
 
-| Path | Rule |
-|---|---|
-| Internal | Uses the shape the backend persisted in `studies.task_memory_mib` when it charged the study, but only when it is a ladder rung **above** the default `49152` MiB — that is, `73728`, `98304` or `122880`. CPU is pinned at `16384` units. Anything else is ignored and the task definition is inherited |
-| External | Ladder on the pool budget — `≤ 8 → 4096` MiB, `≤ 32 → 8192` MiB, else `16384` MiB — then raised to the modelled peak and to any escalated size, with CPU floored at 1024 units. Setting **both** `EXTERNAL_OPTIMIZER_CPU` and `EXTERNAL_OPTIMIZER_MEMORY` pins a fixed size instead |
+Larger batches of trials use more memory — mainly driven by how many simulated days and positions
+each trial holds, not by your underlying price data. To keep workers from crashing partway through,
+Fintela does two things automatically:
 
-The first task that reaches ECS flips the study to `RUNNING`, closes the `queued` stage, and opens
-one `provisioning` stage per task, keyed by that task's id. A `provisioning` stage closes
-`SUCCEEDED` when ECS first reports the container `RUNNING` — the one moment anything observes that
-it came up — or `FAILED` immediately if `RunTask` was rejected.
+- **Before a worker starts**, it estimates how much memory a batch will need and starts with a
+  conservative batch size for the machine it's on.
+- **While the worker runs**, it watches how much memory each completed batch actually used and
+  adjusts the size of the next batch accordingly — starting deliberately small and adapting from
+  there.
 
-## Inside an optimizer task
-
-`train.py` resolves the study by `STUDY_ID` and reads the Optuna key off that row — if the id does
-not resolve it aborts rather than falling back to a name lookup, which has no org scoping and no
-`deleted_at` filter. It then loads market data for the asset group, builds the engine panel, constructs the
-signal generator and fitness evaluator, and then hands control to `BatchOptimizationRunner`.
-
-Its pool width is decided once:
-
-| Condition | `batch_size` |
-|---|---|
-| `OPTIMIZER_POOL_SIZE > 0`, external study | `min(pool, 32)` — the absolute external fan-out ceiling |
-| `OPTIMIZER_POOL_SIZE > 0`, internal study | `min(pool, os.cpu_count())` |
-| Sentinel `0` | `os.cpu_count()` |
-
-For internal studies the task also guards against a cgroup/host-core leak: it aborts if
-`os.cpu_count()` is more than twice `VCPUS_PER_TASK`, and warns on any smaller mismatch.
-
-The fleet-wide worker count is `OPTIMIZER_TOTAL_WORKERS` when set, else `batch_size ×
-TASKS_PER_STUDY`. It is what the sampler is built with — `TPE` turns on `constant_liar` when it is
-greater than 1, and `NSGA-II` sizes its population to `max(50, n_workers)`.
-
-Storage is Optuna's own RDB backend pointed at the same database:
-`postgresql://…/fintela?options=-csearch_path=developers`. That is why `developers.studies` **is**
-Optuna's `studies` table.
-
-### The batch loop
-
-The loop is pipelined. Compute and persistence of consecutive batches overlap, and Optuna itself
-is only ever touched from the main thread.
-
-```python
-with ProcessPoolExecutor(max_workers=batch_size, initializer=init_worker) as pool, \
-     ThreadPoolExecutor(max_workers=1, thread_name_prefix="persist") as writer:
-    while asked < n_trials:
-        current_batch = min(governor.next_batch(), n_trials - asked)
-
-        # ask -> sample -> signal -> simulate -> fitness. No DB writes.
-        ready = objective.prepare_batch(study, current_batch, pool)
-        asked += current_batch
-
-        # Settle the PREVIOUS batch, whose DB write overlapped this batch's compute.
-        if pending is not None:
-            _drain(objective, study, pending)
-            pending = None
-
-        # Hand this batch's persistence to the writer thread and go round again.
-        if ready:
-            pending = (ready, writer.submit(objective.register_batch, ready))
-```
-
-- `prepare_batch` calls `study.ask()` once per trial, stamps `owner_task_arn` on each, samples
-  strategy and risk-manager parameters, generates signals in the process pool, runs the batched
-  simulation, and evaluates fitness in the same pool. It performs **no** database writes.
-- `register_batch` runs on the single `persist` thread and touches only the portfolio tables, so
-  it needs no lock against the study object.
-- `settle_batch` runs back on the main thread and issues every `study.tell` — `COMPLETE` with the
-  train fitness on a successful registration, `PRUNED` for the whole batch otherwise.
-
-`init_worker` runs once per pool worker: it scrubs data-plane credentials out of the worker's
-environment before any user-supplied code can read them, then publishes the shared signal
-generator so the price panel is never pickled per trial.
-
-Finite search spaces get special handling. When the space is enumerable, the runner swaps the
-chosen sampler for Optuna's `GridSampler` with a **fixed `seed=0`**, so sibling tasks build an
-identical shuffle and partition the grid disjointly by globally unique trial number. Duplicate
-configurations are settled as `PRUNED` with a `grid_duplicate` reason and excluded from both sides
-of the health ratio. A task stops early once the study's distinct configuration count reaches the
-grid size — which is why a study can finish `COMPLETED` with `completed_trials < n_trials`.
-`QAOA` and `QKERNEL` opt out of all of it and run their full budget.
-
-### Where the parallelism actually is
-
-| Level | Mechanism | What controls it |
-|---|---|---|
-| Across studies | The dispatcher launches queued studies until vCPU headroom runs out | Account vCPU quota, `VCPU_HEADROOM_RESERVE` |
-| Across tasks in one study | `n_trials` is split across tasks that share one Optuna storage | `TASKS_PER_STUDY`, `studies.max_tasks_override`, the adaptive cap. **Internal studies only** |
-| Across trials in a batch | One `ProcessPoolExecutor` per task, reused across every batch | `batch_size` |
-| Inside one simulation call | The Rust engine releases the GIL and runs `par_iter` across the batch's payloads | Task vCPUs |
-| Persistence vs compute | One writer thread overlaps a batch's database write with the next batch's compute | Fixed at one in-flight registration |
-
-### Memory guards
-
-A study's memory is dominated by what the parent process holds per batch — seeds and simulation
-results scaling with `batch × sim_days × positions_per_date` — not by the price panel. Two guards
-cover that:
-
-| Guard | When | Effect |
-|---|---|---|
-| Pre-fork clamp | After the Rust engine is built, before the pool forks | Lowers `batch_size` from a model of per-worker cost. Reserve fraction `OPTIMIZER_MEMGUARD_RESERVE`, default `0.12`. Writes `panel_cells`, `effective_workers`, `memguard_clamped_to` and `predicted_peak_mib` onto the task row |
-| Memory governor | Every batch | Sizes the next batch from the last one's observed peak, never above the clamp. The first batch is deliberately narrow; `OPTIMIZER_RAMP_START=0` opts out. Under pressure it drains the pending registration before starting new compute |
-
-`study_task_status.peak_memory_mib` is stamped every batch and on a sampler timer with a
-`GREATEST(...)` update, so a task killed mid-batch still leaves a lower bound behind.
+If memory does get tight, the worker finishes saving whatever batch is already in flight before
+requesting more work, rather than piling on more compute while pressure is high. And even if a
+worker is stopped abruptly, the memory it was using up to that point is recorded, so Fintela can
+react appropriately if your study needs to retry on a bigger allocation.
 
 ## The simulation engine
 
-The engine is a Rust crate exposed to Python as `fintela_simulation_engine`. `get_batched_simulation`
-hands it the whole batch at once and it:
+Whether you're running a single backtest in the strategy sandbox or a full optimization study, the
+same simulation engine does the work — so a strategy that behaves a certain way in a quick backtest
+behaves the same way once it's part of a full study, with the only difference being how many
+combinations get simulated.
 
-1. Prepares the price panel **once** for the batch — tensor, zeros-to-NaN, forward fill,
-   rate-of-change — instead of once per trial.
-2. Releases the GIL and maps `simulate_one` across the payloads with rayon.
-3. Converts one result at a time into Python, so the parent never holds a serde tree and a Python
-   object graph for the whole batch simultaneously.
+For speed, a whole batch of trials is prepared together — price data is processed once per batch
+rather than once per trial — and every trial in the batch is then simulated at once, using
+whatever compute the worker has available. Results are converted back into your study one trial at
+a time, which keeps memory use predictable even for large batches.
 
-Failures are **per payload**, not per batch: a bad trial comes back as
-`{"error": "…", "payload_index": N}` and only that trial is failed. Two exceptions to that
-rule are handled explicitly in the optimizer:
+If something goes wrong in one trial's simulation, it's isolated to that trial — a bad
+configuration doesn't take down the rest of the batch. Two situations are handled a little
+differently:
 
-- If the per-tick risk-manager watchdog preempts the whole call, the batch is retried once. If the
-  retry is preempted too, every trial in it is `PRUNED` — an absence, not a failure, so it leaves
-  both sides of the health ratio.
-- A `NaN` metric cannot be serialized, so that result becomes an error envelope and the trial is
-  recorded as failed.
+- If a risk manager's own logic runs long enough to trip an internal safety timeout mid-batch,
+  Fintela retries the whole batch once. If it's interrupted again, every trial in that batch is
+  recorded as skipped rather than failed, since none of them were actually evaluated.
+- A trial whose result can't be turned into a valid number is recorded as a failure.
 
-Risk managers run inside the engine per tick, including `EXTERNAL` HTTP ones. See
-[risk managers](/docs/risk-managers).
+Risk managers — including external ones — are evaluated once for every simulated trading day
+inside each trial, not once per trial. See [risk managers](/docs/risk-managers).
 
-For external strategies and fitness functions the optimizer posts from the pool workers with a
-tiny per-worker connection pool (2 connections, 30 s keep-alive), retrying `ConnectError`,
-`ConnectTimeout`, `PoolTimeout`, `RemoteProtocolError` and HTTP `429 / 502 / 503 / 504` up to 4
-attempts total with full-jitter backoff capped at 8 s. Endpoints are SSRF-screened before the
-first connection. Details in [external strategies](/docs/external-strategies) and
-[external fitness](/docs/external-fitness).
+If your study uses an external strategy or fitness function, Fintela calls out to your endpoint the
+same way it would for a backtest: automatically retrying on connection hiccups or server errors,
+but never on an endpoint that's simply slow to respond. See [execution modes](/docs/execution-modes)
+for the exact rules, and [external strategies](/docs/external-strategies) /
+[external fitness](/docs/external-fitness) for how to build one.
 
-## Where state lives
+## Where your results live
 
-Every service reads and writes the same database. Nothing is cached between them.
+Every trial, portfolio and result your study produces is saved directly and permanently to your
+account — there's no separate cache or staging area that could ever drift out of sync with what you
+see in the app. A few things follow from that:
 
-| Table | Written by | Holds |
-|---|---|---|
-| `developers.studies` | backend; status-updater on an OOM escalation | Optuna's own `studies` table plus Fintela columns — `n_trials`, `task_memory_mib`, `task_size_escalations`, `autostop_min_health`, `daily_updates_enabled` |
-| `developers.trials` | Optimizer, via Optuna | One row per `ask()`. State is `WAITING`, `RUNNING`, `COMPLETE`, `PRUNED` or `FAIL` |
-| `developers.trial_params` | Optimizer | One row per sampled parameter: name, value, distribution JSON |
-| `developers.trial_values` | Optimizer | The train fitness the sampler learns from |
-| `developers.trial_system_attributes` | Optimizer, status-updater | `owner_task_arn`, `failure_reason`, `failure_diagnostic` |
-| `developers.portfolios` | `register_batch` | One row per surviving trial — `seed`, `risk_manager_configs`, `risk_manager_state`, `parent_portfolio_id` |
-| `developers.equity` | `register_batch` | Per-date portfolio value |
-| `developers.portfolio_snapshots` | `register_batch` | Holdings, orders and trades as one compact JSONB row per trial |
-| `developers.portfolio_metrics`, `public.entity_metrics` | `register_batch` | Per-stage portfolio metrics and per-entity windowed metrics, benchmark-relative values already merged |
-| `developers.risk_manager_execution_log` | `register_batch` | Per-risk-manager firing records |
-| `developers.study_runtime_status` | backend, dispatcher, status-updater | `last_status`, `desired_status`, `run_seq`, timestamps, failure. **The single source of truth for study state** — there is no status mirror on `developers.studies` |
-| `developers.study_task_status` | dispatcher, optimizer, status-updater | Per-task `ecs_task_arn`, `cpu_units`, `memory_mib`, `run_seq`, `last_heartbeat`, `peak_memory_mib`, `oom_observed_at`, failure |
-| `developers.study_stages` | backend, dispatcher, optimizer, the three finalizers, status-updater | One row per (study, run, stage) with status, timings, attempts, origin and diagnostic |
+- **Results save in complete batches, never partially.** You'll never see a batch of trials
+  half-written to your study — a batch either finishes saving in full, or Fintela retries it, so
+  what's visible is always internally consistent.
+- **Your study's status comes from one single place.** `Queued`, `Running`, `Completed`, `Failed`
+  and `Stopped` are always read from the same source, so the Studies registry and a study's own
+  results page can never disagree about where it stands.
+- **Your study moves through a fixed set of stages** — queued, starting up, data loading,
+  strategy, fitness, optimization, and then two after-the-fact analyses (robustness and parameter
+  importances) that don't block your results even if they fail. See
+  [study lifecycle](/docs/study-lifecycle) for the full breakdown of what each stage means for your
+  results.
 
-A whole batch of portfolios is registered in **one** transaction, retried atomically on a
-disconnect-class error, so a batch is either fully persisted or not at all.
+## How Fintela recovers from failures
 
-The lifecycle stages, in execution order, are `queued`, `provisioning`, `data_loading`,
-`strategy`, `fitness`, `preflight`, `optimize`, `robustness`, `families`, `importances`. The last
-three are **secondary**: they run after the study's primary deliverable already exists, so a
-failure there degrades the analysis without failing the study. See
-[study lifecycle](/docs/study-lifecycle).
-
-## Worker failure and recovery
-
-| Failure | Detected by | Outcome |
-|---|---|---|
-| `RunTask` rejected | Dispatcher, inline | Task row set `STOPPED` with a launch diagnostic; its `provisioning` stage closes `FAILED`. If every task failed, the status-updater marks the study `FAILED` on its next tick |
-| Task stops with a non-zero exit, or with no exit code at all | status-updater `DescribeTasks` | The stop is classified into a structured diagnostic and copied onto the task row, then aggregated onto the study |
-| ECS no longer knows the task | status-updater, `TaskNotFound` | Task closed as `STOPPED` with a "run lost" diagnostic if it had started; closed silently if it never started |
-| Fatal Python error in the task | The task's own handler | `failure_message` and `failure_diagnostic` are `COALESCE`d onto its task row (never overwriting an autostop message), the running stage closes `FAILED`, and it reaps **only its own** `RUNNING` trials to `FAIL`, scoped by `owner_task_arn` |
-| Out-of-memory kill | status-updater classifies the stop and stamps `oom_observed_at` / `oom_task_arn` | If trials remain, the study climbs one memory rung (`49152 → 73728 → 98304 → 122880` MiB), the dead task's orphaned trials are reaped, the OOM tasks' `failure_message` is cleared, `run_seq` is bumped and the study returns to `QUEUED`. Bounded to **3** escalations by `chk_studies_task_size_escalations`. Escalations cost no tokens |
-| One trial's simulation payload errors | `prepare_batch` | That trial alone becomes `FAIL`; its siblings continue |
-| `register_batch` raises | `_drain` → `settle_batch` | The batch is `PRUNED` with one classified diagnostic and the run continues |
-| Trial health falls below `studies.autostop_min_health` | status-updater, once at least 10 settled trials exist | Stamps `Autostop triggered: health X% dropped below threshold Y% (n/m trials failed)` on the task rows and sets `desired_status = 'STOPPED'`; the next phase issues ECS `StopTask` |
-| Trials left `RUNNING` on a finished study | status-updater | Reaped to `FAIL` with an "abandoned" diagnostic once every task of the study is terminal |
-
-Two consequences are worth stating plainly:
-
-> [!CAUTION] A stopped or crashed run keeps everything it already wrote
-> Trials that reached `COMPLETE` are durable, with their portfolios, equity curves and metrics
-> already persisted. Only the in-flight batch is lost. That is also why the dispatcher's
-> `already_dispatched` count is what a relaunch subtracts.
-
-> [!WARNING] `FAILED` studies are not resumable
-> `POST /studies/resume` accepts only `COMPLETED` and `STOPPED` studies. A failed study has to be
-> duplicated and relaunched.
-
-Heartbeats are coarse. `study_task_status.last_heartbeat` is written by the dispatcher at launch
-and refreshed by the status-updater whenever ECS reports a **status change** — not by the
-optimizer on a timer. The lifecycle payload marks a study stale when it is `RUNNING` and more than
-300 s have passed since the newest `last_heartbeat` of its current run — or, when no task has one
-yet, since `started_at`.
-
-Once a study reaches `COMPLETED`, `STOPPED` or `FAILED`, the status-updater refunds the difference
-between the launch-time estimate and the cost of the trials that actually reached `COMPLETE`,
-priced through the same formula that produced the charge. The refund is written under an
-idempotency key of the study id plus `:refund`, so it is replay-safe, and only studies that
-finished within the last 7 days are considered. See [tokens and billing](/docs/tokens-and-billing).
-
-## How results reach the UI
-
-Nothing is pushed from an optimizer task to your browser. Trials become visible because they are
-already in Postgres and the SPA refetches through the backend.
-
-| Channel | What it carries |
+| What can go wrong | What happens to your study |
 |---|---|
-| `GET /studies/status`, `/studies/progress`, `/studies/health` | The three live indicators, per study id |
-| `GET /studies/lifecycle` | Execution status, `display_status`, the full stage timeline, heartbeat staleness, elapsed time, ETA, progress, health and completed trials in one payload |
-| `GET /studies/errors`, `/studies/overfitting`, `/studies/clustering`, `/studies/param-importances` | Failure dashboard and the three post-run analyses |
-| `GET /events` | Server-Sent Events, org-scoped, **data-free**. Envelopes only name a topic, so the client always refetches through its own authenticated endpoints |
+| A worker fails to start | It's marked failed with a reason on file; if every worker for the run failed to start, your study is marked `Failed` |
+| A worker stops unexpectedly | The stop is diagnosed and recorded so you can see why on the failure dashboard |
+| Fintela loses track of a worker | It's closed out and marked accordingly, without inventing a reason it can't support |
+| A worker hits a fatal error in your strategy or fitness code | That worker's own in-flight trials are marked failed; any other workers running your study are unaffected |
+| A worker runs out of memory | Fintela automatically retries your study on a larger allocation (up to three step-ups) instead of failing it outright — remaining trials pick up where the study left off, and you're not charged again for what already ran |
+| One trial's simulation errors | Only that trial fails; the rest of the batch, and the rest of your study, continue |
+| A batch fails to save | The batch is recorded as skipped and the study continues rather than stalling |
+| Too many trials are failing | If health drops below the threshold you set, the study stops itself early rather than continuing to spend your token budget |
+| Trials never come back after your study finished | They're recorded as abandoned once every worker for the study has stopped |
 
-The event stream is a hint, not a transport. The backend publishes a `studies` event on create,
-launch, stop, delete and resume; the status-updater publishes one `studies` event with action
-`progress` per organization that has a `QUEUED` or `RUNNING` study, on every reconcile tick. The stream sends a
-`ping` keep-alive every 15 s and is fail-open — with no cache backplane configured nothing is
-published and polling alone stays correct.
+> [!CAUTION] A stopped or crashed study keeps everything it already produced
+> Trials that finished before things went wrong are safe — their portfolios, equity curves and
+> results are already saved and won't disappear. Only the batch that was in flight at the moment is
+> lost. That's also why resuming or relaunching a partially finished study only computes what's
+> left, not everything from scratch.
 
-Polling cadence adapts to both:
+> [!WARNING] Failed studies can't be resumed
+> Resume only works on studies that finished normally or that you stopped yourself. A study that
+> failed has to be duplicated and relaunched instead.
 
-| Query | `staleTime` | Refetch |
-|---|---|---|
-| status / progress / health | 5 s | Every 5 s while any study is `QUEUED`, `RUNNING` or `PENDING`; widened to 30 s while the realtime stream is connected; stopped once everything is terminal |
-| lifecycle | 5 s | The same live cadence while any study is `QUEUED` or `RUNNING`, then 60 s while a secondary stage is still owed (bounded to 30 minutes past `finished_at`), then stopped |
-| `/studies/metadata`, `/studies` | 60 s | No polling |
-| `/samplers` | Infinite | Never |
+If a running study goes quiet — no update from any of its workers for a few minutes — Fintela flags
+it internally as stale, though there's no dedicated badge for this beyond the **Last heartbeat**
+timestamp already shown on the study's Overview. See [study lifecycle](/docs/study-lifecycle) for
+more on how stalls and orphaned trials are cleaned up.
 
-Two definitions the UI depends on:
+Once a study finishes — however it ends — Fintela compares what you were charged at launch against
+the actual cost of the trials that completed, and automatically refunds the difference. This
+applies to any study that finished within the last 7 days. See
+[tokens and billing](/docs/tokens-and-billing).
 
-- **Progress** is `min(executed_trials / n_trials, 1)`, where `executed_trials` counts trials in a
-  **terminal** state. The optimizer writes every row of a batch up front via `ask()`, so a row's
-  existence means "requested", never "finished". It is clamped because a sibling task's in-flight
-  batch can settle after the budget is already covered.
-- **Health** is `1 − failed_trials / total_trials`. `grid_duplicate` and engine-artifact prunes are
-  excluded from **both** numerator and denominator.
+## How you see your study's progress
 
-Both are `null` when their denominator is zero, and the registry's progress column takes its value
-only from `/studies/progress` — it deliberately does not fall back to the metadata payload's
-`completed_trials / n_trials`, because the two disagree exactly for the mid-batch studies people
-are watching.
+Nothing is pushed to your browser trial by trial as your study runs. Instead, results land in your
+study record the moment they're ready, and the app keeps its view of your study current by checking
+in — you don't need to refresh the page yourself.
+
+| What you're viewing | How often it refreshes |
+|---|---|
+| Status, Progress and Health badges | About every 5 seconds while any study is active, tapering off once everything is finished |
+| The full lifecycle / stage view | The same live cadence while running, then checks back periodically for up to 30 minutes after finishing in case a background analysis is still catching up |
+| Study list and metadata | About once a minute |
+| Sampler list | Loaded once per session |
+
+A lightweight live-update signal also tells the app "something changed on this study, go refetch" —
+it never carries your actual data, only a hint, so nothing sensitive travels over it. If that
+signal is ever unavailable, the app simply falls back to checking in periodically, with no visible
+difference to you.
+
+**Progress** and **Health** are explained in full under [study lifecycle](/docs/study-lifecycle) —
+in short, Progress is the share of your trial budget that's been resolved one way or another, and
+Health is the share of resolved trials that actually succeeded. The Progress you see in the Studies
+registry always reflects live numbers, never a snapshot that could be a minute old, which matters
+most for a study you're actively watching mid-run.
 
 The per-study results surface itself lives on the portfolios analysis page, reached from the
 study's **View** row action. See [analyzing results](/docs/analyzing-results) and
@@ -419,17 +284,18 @@ study's **View** row action. See [analyzing results](/docs/analyzing-results) an
 
 ## Limits
 
-- **You cannot choose how many tasks a study gets.** Task count comes from the dispatcher's
-  configuration, the execution type, the sampler and the trial budget. There is no per-study
-  worker knob in the UI or the API.
-- **An external component collapses a study to one task.** The single-task layout is what
-  guarantees your server sees exactly `max_concurrency` in-flight requests and keeps the sampler
-  coordinated in one process. Distributed execution and external endpoints are mutually exclusive
-  — see [execution modes](/docs/execution-modes).
-- **The external fan-out is capped at 32** inside the task regardless of what `max_concurrency`
-  declares, so a mis-sized value cannot bury your endpoint in refused connections.
-- **There are no webhooks and no push of trial data.** The only real-time channel is a data-free
-  SSE topic; everything else is a polled read.
-- **The stage timeline can lie about wall clock.** A stage with `origin = out_of_band` or
-  `backfill` was recorded by a different machine on a different queue, so its duration is rendered
-  as unknown rather than as a measured time.
+- **You can't choose how many workers a study gets.** Worker count comes from your execution type,
+  your sampler, and your trial budget — decided automatically. There's no worker-count setting
+  anywhere in the study builder or the API.
+- **An external strategy or fitness function collapses a study to one worker.** That single-worker
+  layout is what guarantees your endpoint sees exactly the concurrency you declared and keeps your
+  sampler coordinated in one place. Distributed execution and external endpoints are mutually
+  exclusive — see [execution modes](/docs/execution-modes).
+- **The external fan-out is capped at 32 trials at once**, regardless of what Max Concurrency you
+  declare, so a mis-sized value can't flood your endpoint with connections.
+- **There's no way to get push notifications or webhooks for trial-level events.** The one
+  real-time signal is a lightweight "something changed" hint; everything you see is otherwise kept
+  fresh by the app checking in on its own schedule.
+- **A stage's recorded duration can be unreliable in specific cases.** When the underlying work
+  happened out of the normal flow — for example, a background analysis catching up after your
+  study already completed — Fintela shows that stage's duration as unknown rather than guessing.

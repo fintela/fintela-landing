@@ -4,589 +4,517 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 1
 published: true
-updated: 2026-08-20
-summary: Monitor and manage every active portfolio — the ranked table, its filters, and what each column means.
-keywords: portfolios, dashboard, monitoring, ranked table, filters, sharpe, drawdown, active portfolios, real-time
+updated: 2026-09-01
+summary: Rank, compare, and act on your portfolios — the ranked list, its filters, and what each control does.
+keywords: portfolios, dashboard, ranking, filters, sharpe ratio, drawdown, comparison, promote, portfolio groups, strategy families
 ---
 
-The Portfolios Dashboard at `/analysis/portfolios` is where you rank one study's trials — or every
-study's trials at once — against a single metric over a single stage, compare the winners side by
-side, and act on them: promote a trial into the Portfolio Groups, build a portfolio group from a
-selection, or derive risk-manager-optimized variants. Everything on the screen is driven by the URL,
-so any view you reach is a link you can share. The rankings and the card figures are read from
-stored per-portfolio metric rows; only the custom-timeframe ranking and the comparison strip are
-computed on request, from stored equity.
+The Portfolios Dashboard is where you rank the trials from one study — or every study at once —
+against a single performance metric, compare your top candidates side by side, and act on them
+directly: promote a trial into Portfolio Groups for live trading, build a new Portfolio Group from a
+handful of favorites, or spin off risk-manager-optimized variants. Everything you set up here — the
+study, the metric, your selection, even which advanced tab you're on — lives in the page's web
+address, so any view you land on is a link you can bookmark or hand to a colleague.
 
-## Where the dashboard sits
+## Where to find the dashboard
 
-`/analysis/portfolios` is the landing route of the **Portfolios** feature (`portfolios-analysis`),
-which appears in the sidebar's Analysis section. The feature mounts a shared layout that renders the
-section tabs above every page in the section.
+You'll find `Portfolios Dashboard` in the sidebar's Analysis section. It's the landing tab of a
+three-tab group that also includes the `Optimization Dashboard` (a deep dive into one study at a
+time) and, once you drill into a specific portfolio, `Portfolio Analysis` (that portfolio's six-tab
+detail view).
 
-| Section tab | Route | What it shows |
-|---|---|---|
-| `Portfolios Dashboard` | `/analysis/portfolios` | the ranking and comparison dashboard — this page |
-| `Optimization Dashboard` | `/analysis/portfolios/study/:studyId` | one study's optimization analysis |
-| `Portfolio Analysis` | `/analysis/portfolios/:portfolioId…` | one portfolio's six detail tabs |
+| Tab | What it shows |
+|---|---|
+| `Portfolios Dashboard` | The ranking and comparison view — this page |
+| `Optimization Dashboard` | One study's full optimization analysis |
+| `Portfolio Analysis` | One portfolio's detail tabs |
 
-`Portfolio Analysis` is hidden until you drill into a portfolio. It then stays revealed until you
-dismiss it with its close control, labelled `Close Portfolio Analysis`. On the two dashboard routes
-the open portfolio rides in `?analysis=` carrying the portfolio id; on a detail route the path names it, and the param is
-deliberately absent. A `?analysis=` value that is not a positive integer resolves to "no tab" rather
-than a tab pointing at nothing.
+`Portfolio Analysis` only appears once you've opened a specific portfolio from a ranking card or a
+chart. It stays available until you close it with its own close control, and opening a different
+portfolio just swaps what it's showing.
 
-The six detail tabs behind `Portfolio Analysis` are documented separately in
-[portfolio detail](/docs/portfolio-detail). The Optimization Dashboard's four sub-views are covered
-in [optimization dashboard](/docs/optimization-dashboard); this page documents only the shell that
-hosts them.
+The six tabs behind `Portfolio Analysis` are covered in [portfolio detail](/docs/portfolio-detail);
+the Optimization Dashboard's four views are covered in
+[optimization dashboard](/docs/optimization-dashboard) — this page focuses on the ranking and
+comparison view itself.
 
 ### Access
 
-Every endpoint this surface reads — portfolios, trades, orders and the metric catalogue — requires
-the single backend permission `portfolios:read`. Without it the API answers
-`403 Missing permission 'portfolios:read'`; the SPA still mounts the route and renders the shell.
+Using this dashboard requires portfolio-viewing access on your account — standard for any trading or
+analysis role. If you land on the page and see no data, ask your organization's administrator to
+confirm that access is turned on for you.
 
 > [!NOTE]
-> There is no entitlement lock on this feature. It is never blurred behind a "Buy tokens" overlay,
-> and the `permission` field declared on the frontend feature definition is inert metadata — access
-> control is enforced by the API, not by hiding the tab.
-
-`DELETE /portfolios` requires `root:all`. Nothing in this feature calls it.
+> There's no paywall or token-purchase prompt gating this feature — every account with portfolio
+> access sees the full dashboard.
 
 ## The filter bar
 
-The Metric / Study / Top N / Rank by bar is rendered *inside* each dashboard tab rather than once in
-the layout, so the Portfolios Dashboard and the Optimization Dashboard keep independent filter state.
-Switching between the two tabs restores each tab's last filter slice
-(`metric`, `topN`, `order`, `stage`, `ct_frames`, `portfolio_ids`) from an in-session memory;
-`studyId` and `analysis` are shared across tabs and re-attached explicitly. That memory is
-module-level, so a full page reload drops it and the URL alone decides.
+The Metric / Study / Top N / Rank by controls sit at the top of both the Portfolios Dashboard and the
+Optimization Dashboard, and each tab remembers its own settings independently — switch between them
+and each restores the filters you last had there. A full page reload, though, resets filters to
+whatever the link you loaded specifies (or the defaults, if none).
 
 ### Metric
 
-A dropdown labelled `Metric` with an inline search box (placeholder `Search…`, accessible name
-`Search metrics`). Fitness metrics are listed first, then a divider, then every other metric. Search
-matches the metric's label and its catalogue description. No match renders a disabled `No matches`.
+A searchable dropdown lets you choose what you're ranking on — start typing to filter by name or
+description. Fitness metrics (the objective your study was optimized for) are listed first, followed
+by every other available metric — returns, risk, and benchmark-relative measures. If nothing matches
+your search, it tells you so rather than showing an empty list.
 
-Each option shows the metric name on line one and, on line two, either an unavailability reason, a
-stage hint, or the catalogue description.
+Some options are temporarily unavailable, with a note explaining why:
 
-| Second-line caption | When it appears | Option state |
-|---|---|---|
-| `No closed trades, or pending the daily metrics run` | catalogue category `trade`, no stored rows for this study | disabled |
-| `Needs a benchmark — this study has none` | category `benchmark`, study has no benchmark ticker | disabled |
-| `Not computed for this study yet` | category `benchmark`, benchmark exists but nothing stored | disabled |
-| `No values for this study yet (computed daily)` | a promoted-fitness custom metric with no stored rows | disabled |
-| `No data for this study` | any other metric with no stored rows | disabled |
-| `No data in the selected stage` | the metric has rows, but not in the active stage | still selectable |
+| What you'll see | What it means |
+|---|---|
+| No closed trades, or pending the daily metrics run | The study hasn't closed any trades yet, or today's metrics calculation hasn't run |
+| Needs a benchmark — this study has none | This metric compares against a benchmark, and the study wasn't set up with one |
+| Not computed for this study yet | A benchmark is configured, but the comparison hasn't been calculated yet |
+| No values for this study yet (computed daily) | A custom metric based on your study's fitness function, still awaiting its first daily calculation |
+| No data for this study | Nothing has been recorded for this metric on this study |
+| No data in the selected stage | The metric has data, just not for the stage you're currently viewing — you can still pick it |
 
-Disabling only happens when a single study is selected *and* the availability map has loaded and is
-non-empty. In `All studies` mode, while loading, and for a freshly launched study with no stored
-metrics at all, every option stays enabled.
+Grayed-out options only appear once Fintela has finished checking what's available for the study
+you've picked. While that check is running, or when you're comparing across every study at once,
+every metric stays selectable.
 
-The dashboard opens on `fitness`. Metric ids in the URL are **1-based alphabetical positions** over
-the deduplicated union of the `/metrics` catalogue and the benchmark metric names — not catalogue
-ids. A `?metric=7` in a bookmark is not stable across additions to the catalogue.
+The dashboard opens on the `Fitness` metric by default.
+
+> [!TIP]
+> If new metrics get added to the platform after you bookmark a specific one, a saved link could open
+> on a different metric than you intended. If a shared link ever lands on an unexpected metric, just
+> reselect the one you want.
 
 ### Study
 
-A searchable dropdown labelled `Study`, listing your organisation's non-draft studies by display
-name. Studies whose last status is `SAVED` (drafts) are filtered out entirely. With no studies at
-all, the control is wrapped in the tooltip `No studies available`.
+A searchable dropdown lets you pick which study to rank trials from, listing your organization's
+studies by name (studies still in draft, and not yet run, aren't included). With no studies at all,
+the control lets you know none are available yet.
 
-The first, pinned option is `All studies` — the cross-study mode, written as `?studyId=all`. It is
-disabled while a fitness metric is selected, and carries the inline caption
-`Not available with fitness metrics (fitness is study-specific)`. It is also disabled when there are
-no studies.
+At the top of the list sits `All studies` — ranks trials across every study at once, side by side.
+This mode isn't available while you're ranking by a Fitness metric, since fitness is specific to one
+study's objective; the option is grayed out with an explanation why. It's also unavailable when there
+are no studies yet.
 
-With no `?studyId=` in the URL, the dashboard seeds the highest (most recent) non-draft study id.
+If you land on the dashboard without a study already chosen, it opens on your most recently created
+one.
 
 > [!NOTE]
-> In `All studies` mode there is no single study to attribute results to, so the provenance strip,
-> the clustering-driven family features and the Strategies sub-tab all stand down, and the
-> `Optimization Dashboard` section tab renders grey and non-interactive.
+> In `All studies` mode, a few things that only make sense for a single study switch off: the
+> strategy-family view, the Strategies tab, and the `Optimization Dashboard` tab — which analyzes one
+> study's runs and can't operate across many studies at once.
 
 ### Top N
 
-A numeric field labelled `Top N`, minimum `1`, default `10`, seeded into `?topN` on first load. It is
-the ranking depth requested from the server.
+A number field labeled `Top N` controls how many trials come back in the ranking. It defaults to
+`10` and accepts any depth of `1` or more.
 
 ### Rank by
 
-A caption reading `Rank by` (rendered uppercase) beside one grouped selector with three groups.
+Choose what time window the ranking is calculated over, grouped into three sets of options.
 
-**`Study stages`** — the classic stages, each with its identity colour dot.
+**Study stages** — the standard phases of a strategy's lifecycle:
 
-| Option | `?stage=` value | Offered when |
-|---|---|---|
-| `Overall` | `overall` | always |
-| `Train` | `train` | the study's served periods include it |
-| `Val` | `validation` | the study's served periods include it |
-| `OOS` | `out_of_sample` | the study's served periods include it |
-| `RLP` | `real_life_performance` | the study's served periods include it |
+| Stage | Shown when |
+|---|---|
+| `Overall` | always |
+| `Train` | the study includes a training period |
+| `Val` | the study includes a validation period |
+| `OOS` (out-of-sample) | the study includes an out-of-sample period |
+| `RLP` (real-life performance) | the study includes live-trading history |
 
-In `All studies` mode all five are offered; studies lacking a stage simply contribute no rows.
+In `All studies` mode, all five are always offered — a study that doesn't have a particular stage
+simply contributes no rows for it.
 
-**`Rolling windows`** — offered only when the equity date axis on show spans the lookback.
+**Rolling windows** — trailing performance windows, offered once there's enough price history behind
+your currently checked portfolios to cover them:
 
-| Option | `?stage=` value | Lookback |
-|---|---|---|
-| `MTD` | `mtd` | calendar month to date |
-| `1M` | `trailing_1m` | 30 days |
-| `QTD` | `qtd` | calendar quarter to date |
-| `3M` | `trailing_3m` | 90 days |
-| `6M` | `trailing_6m` | 180 days |
-| `YTD` | `ytd` | calendar year to date |
-| `1Y` | `trailing_1y` | 365 days |
-| `3Y` | `trailing_3y` | 1095 days |
-| `5Y` | `trailing_5y` | 1825 days |
+| Window | Covers |
+|---|---|
+| `MTD` | Month to date |
+| `1M` | Trailing 30 days |
+| `QTD` | Quarter to date |
+| `3M` | Trailing 90 days |
+| `6M` | Trailing 180 days |
+| `YTD` | Year to date |
+| `1Y` | Trailing 1 year |
+| `3Y` | Trailing 3 years |
+| `5Y` | Trailing 5 years |
 
-The three calendar windows have no lookback and appear as soon as there is any date axis.
+The three calendar windows (`MTD`, `QTD`, `YTD`) show up as soon as there's any price history at all;
+the fixed-length windows only appear once there's enough history behind your selection to fill them.
 
-**`Custom trailing window`** — one option labelled `Custom` (or, once applied, the window's own
-label). Selecting it opens a popover with a number field `Last` (minimum 1, step 1), a `Unit` select
-offering `Days` / `Weeks` / `Months` / `Years`, and an `Apply` button. Applying writes
-`?stage=custom_timeframe` and a `?ct_frames=` entry of the form `start~end~1~Last N Unit`, with the window anchored to
-the **last date on the axis**, not to today.
+**Custom window** — pick your own trailing period: enter a number and a unit (`Days`, `Weeks`,
+`Months`, or `Years`) and apply it. The window is anchored to the most recent date in the data you're
+viewing, not to today's calendar date.
 
 > [!WARNING]
-> The date axis that gates the rolling and custom windows is published by the view you are on, and it
-> is scoped to that route. On the Portfolios Dashboard it is the union of equity dates for the
-> **currently checked portfolios** (`GET /portfolios/dates`), so widening or clearing the selection
-> can change which windows are on offer. The Optimization Dashboard route publishes no axis at all,
-> so its `Rank by` bar offers the classic study stages only.
+> Which rolling and custom windows are on offer depends on which portfolios you currently have
+> checked — widening or narrowing your selection can add or remove window options. On the
+> `Optimization Dashboard` tab, only the standard study stages are offered; rolling and custom windows
+> aren't available there.
 
 ## What counts as an active portfolio
 
-Three different notions of "active" live on this screen. They are independent, and conflating them is
-the fastest way to misread the dashboard.
+Three different things on this screen can each be called "active," and it's worth keeping them
+straight — confusing them is the fastest way to misread the dashboard.
 
-| Notion | Where it lives | What it drives |
+| This... | Is controlled by | And determines |
 |---|---|---|
-| **The selection** — checked cards | `?portfolio_ids=` (CSV of ids) | the combined equity chart, the comparison strip, the risk charts, every comparison table, and every bulk action |
-| **The active ranking** — rows on show | derived from `?studyId` + `?stage` + `?metric` + `?order` + `?topN` | which cards render, in which order |
-| **The open portfolio** | `?analysis=` (a portfolio id), or the path on a detail route | which portfolio the revealed `Portfolio Analysis` tab points at |
+| **Your selection** — the portfolios you've checked | clicking checkboxes on cards | the combined equity chart, the comparison strip, the risk charts, every comparison table, and any bulk action |
+| **The ranking** — which cards are shown at all | your Study / Stage / Metric / Sort / Top N choices | which trials appear, and in what order |
+| **The open portfolio** | drilling into a card, or arriving via a direct link | which portfolio's `Portfolio Analysis` panel is showing |
 
-### How the selection is seeded and pinned
+A portfolio can sit at the top of the ranking without being part of your comparison, and vice versa if
+you've hand-picked something further down.
 
-A ranking you have not curated is auto-selected whole: the dashboard opens with every top-N card
-checked and every curve overlaid. Auto-selection is written with a history *replace*, so Back does
-not walk you through each re-seed.
+### How your selection starts — and when it locks in
 
-Any change to the ranking identity re-arms auto-selection — that is `studyId` (including the
-all-studies mode), `stage`, the metric name, the ranking order, `topN`, and the custom timeframes.
-Family grouping is deliberately **excluded**: regrouping reshapes rows that are already ranked, so
-toggling it never wipes a hand-picked selection.
+When you land on a fresh ranking, Fintela checks every card in it for you automatically, so the
+equity chart and comparison strip are populated with something useful right away.
 
-A deliberate gesture — toggling a card, using the select-all checkbox, or `Clear` — pins the
-selection for as long as those filters stand, including an empty one. Changing the metric or the
-study also clears `?portfolio_ids=` outright, and changing the metric additionally drops `?order=`
-back to automatic.
+The moment you make a deliberate choice — checking or unchecking a card, using the select-all box, or
+hitting `Clear` — your selection locks in and stops auto-updating, even if that leaves it empty. It
+stays locked as long as you don't change the study, stage, metric, sort order, ranking depth, or time
+window; change any of those and the dashboard re-seeds your selection from the new top-N
+automatically. Switching how trials are grouped into families is the one exception — it never
+disturbs a selection you've made by hand.
+
+Changing the metric or the study clears your selection outright and starts fresh; changing the metric
+also resets the sort direction back to automatic.
 
 ## Ranking cards
 
-The ranking is a single-column card carousel on the left of the hero row (fixed 660 px tall on
-desktop; on mobile it stacks above the chart and flows with the page).
+The ranking appears as a scrollable stack of cards on the left of the main view (it moves above the
+chart on smaller screens).
 
-Its header carries a tri-state checkbox — checked when every row is selected, indeterminate when some
-are — the title `Portfolio Ranking`, a `({{count}} selected)` caption, and a `Clear` button once a
-selection exists. Below the header, a right-aligned button reads `Ranked by` followed by the active
-metric and an up or down arrow; clicking it flips `?order=` between `asc` and `desc`.
+The header shows how many portfolios are currently selected, a checkbox that selects or clears
+everything at once, and — once you've selected something — a `Clear` button. A `Ranked by` control
+shows the active metric with an arrow you can click to flip between best-first and worst-first.
 
-With no explicit `?order=`, the ranking sorts best-first for the metric's own direction: ascending
-for a lower-is-better metric such as `max_drawdown`, descending otherwise.
+By default, the ranking sorts best-first for whatever you're ranking by: ascending for a metric where
+lower is better, such as max drawdown, and descending for everything else.
 
 ### Card anatomy
 
-| Element | Content | Notes |
-|---|---|---|
-| Checkbox | adds or removes the trial from the selection | stops the click from opening the card's link |
-| Rank | `#1`, `#2`, … | monospace, positional in the displayed list |
-| Family dot | coloured dot, tooltip `Fam.` followed by the family id | only when the study has a clustering artifact |
-| Trial label | `Trial N · ` followed by the study's display name | shows `Trial …` while the lookup loads |
-| Leader star | ★ | on rank 1 of the displayed list |
-| `Promoted` chip | tooltip `Already promoted to the Portfolio Groups` | when a managed portfolio already exists for this trial |
-| `+{n}` chip | tooltip `+{{count}} more in this family` | representative mode only |
-| ⋮ button | tooltip `More actions` | opens the row action menu |
-| Ranked value | the metric label and its formatted value | falls back to the caption `Value` when no metric is resolved |
-| Sparkline | 280 × 52 equity thumbnail | downsampled to about 48 points |
-| `Sharpe` | `sharpe_ratio` | plain ratio |
-| `Alpha` | `alpha` | rendered as a percentage |
-| `Beta` | `beta` | plain ratio |
+Each card in the ranking shows:
 
-The whole card is a link to the portfolio's detail page, carrying `?studyId=` for the row's own study
-(in `All studies` mode each row is attributed to the study the global ranking returned it from).
+| Element | What it tells you |
+|---|---|
+| Checkbox | add or remove this trial from your selection |
+| Rank | its position in the current ranking (`#1`, `#2`, …) |
+| Family badge | which strategy family it belongs to, when the study has been clustered |
+| Trial label | the trial number and the study it belongs to |
+| Star | marks the #1 ranked trial |
+| `Promoted` badge | this trial is already a managed portfolio in Portfolio Groups |
+| `+N` badge | in family view, how many more similar trials this card represents |
+| ⋮ menu | more actions for this trial |
+| Ranked value | the metric you're ranking by, and its value for this trial |
+| Sparkline | a small equity-curve preview |
+| Sharpe, Alpha, Beta | quick risk/return stats, shown from the most relevant stage available |
 
-The three stat values come from the active classic stage, falling back to `overall`, then
-`validation`, then `train` — so a rolling-window or custom-timeframe ranking still shows headline
-risk figures rather than dashes. Percent metrics render with one decimal, ratios with three, and
-day-valued metrics as whole days with a `d` suffix.
+Clicking anywhere on the card other than the checkbox or the menu opens that portfolio's detail page.
 
 ### Empty ranking messages
 
-When the ranking comes back empty, the card list explains why rather than showing a bare panel.
+If the ranking comes back with nothing to show, the dashboard explains why instead of leaving a blank
+panel:
 
-| Message | Cause |
+| Message | What's going on |
 |---|---|
-| `No portfolios to rank for this stage.` | generic fallback, no specific reason resolved |
-| `No closed trades to aggregate for this study, or its trade metrics are still pending the daily metrics run.` | a `trade` category metric with no stored rows |
-| `{{metric}} is measured against a benchmark, and this study has none.` | a benchmark metric on a study without a benchmark ticker |
-| `Benchmark metrics have not been computed for this study yet.` | a benchmark metric, benchmark present, nothing stored |
-| `This custom metric has no values for this study yet. Custom metrics are computed daily.` | a promoted-fitness metric with no stored rows |
-| `No data for {{metric}} in this study.` | any other metric with no stored rows |
-| `No data for this metric in the selected stage. Available in: {{stages}}.` | the metric has rows, but not in the active stage |
+| No portfolios to rank for this stage | generic — no more specific reason found |
+| No closed trades to aggregate, or metrics still pending the daily run | the study hasn't closed trades yet, or today's metrics calculation hasn't run |
+| This metric is measured against a benchmark, and this study has none | the metric needs a benchmark ticker the study doesn't have |
+| Benchmark metrics haven't been computed for this study yet | a benchmark exists, but the comparison hasn't run yet |
+| This custom metric has no values for this study yet | a fitness-based custom metric, still awaiting its first daily calculation |
+| No data for this metric in this study | nothing has been recorded for it |
+| No data for this metric in the selected stage — but available in other stages | switch stages to see it |
 
-These explanations are suppressed for `custom_timeframe`, which is computed on the fly from equity
-rather than read from stored rows.
+These explanations don't apply to a custom time window, since that's calculated live from price
+history rather than pulled from precomputed numbers.
 
 ### Row actions
 
-The ⋮ button opens a menu headed by the trial label.
+Open a card's ⋮ menu for more:
 
-| Item | Secondary line | Disabled when |
-|---|---|---|
-| `Promote` | `Add this trial to the Portfolio Groups as a managed portfolio` | — |
-| `Promoted` | `Already promoted to the Portfolio Groups` | always (the trial is already promoted) |
-| `Derive / Optimize RMs` | `Derive risk-manager-optimized variants of this portfolio` | replaced by `This portfolio already contains a Risk Manager` and disabled when the portfolio already carries a risk-manager configuration |
-| `Individual Dashboard` | `View detailed analytics for this portfolio` | — |
+| Action | What it does |
+|---|---|
+| `Promote` | Adds this trial to Portfolio Groups as a managed portfolio you can trade live |
+| `Promoted` | Shown instead of `Promote` once it's already there — nothing left to do |
+| `Derive / Optimize RMs` | Creates risk-manager-optimized variants of this portfolio |
+| `Individual Dashboard` | Opens this portfolio's full detail page — a real link, so middle-click and "open in new tab" both work |
 
-`Individual Dashboard` is a real link, so middle-click and "open in new tab" work. `Promote` calls
-`POST /portfolio_manager/managed/promote` and is idempotent server-side — the "already promoted"
-state exists so the UI never offers an action that would visibly do nothing. See
-[portfolio manager](/docs/portfolio-manager) for what promotion produces.
+Clicking `Promote` is always safe, even on something already promoted — the `Promoted` label just
+means the dashboard already knows there's nothing left to do. See
+[portfolio manager](/docs/portfolio-manager) for what promoting a trial actually sets up.
 
-The risk-manager check behind `Derive / Optimize RMs` reads the configurations already loaded for the
-current selection, so it is only authoritative for a checked card. The wizard re-verifies every
-source before it will submit — see the cleanliness rule under [risk managers](/docs/risk-managers).
+`Derive / Optimize RMs` is unavailable once a portfolio already has a risk manager configured — the
+dashboard checks this against your current selection, and double-checks again when you open the
+wizard, so nothing risks going stale. See the rules under [risk managers](/docs/risk-managers).
 
 ## Comparison strip
 
-Whenever at least one portfolio is checked, a card titled `Comparison` sits above the hero. Its
-subtitle is the window as `YYYY-MM → YYYY-MM`, and its info tooltip reads
-`How the selected portfolios performed over the current window (the live zoom, or the full range).`
+Check one or more portfolios and a `Comparison` summary appears above the main view, covering the
+date range shared by everything you've selected:
 
-| Tile | Value | Tooltip |
-|---|---|---|
-| `Selected` | count of checked portfolios | `Number of portfolios currently selected.` |
-| `Leader` | best `total_return`, signed percent | `Best total return in the selection over this window.` |
-| `Dispersion` | best minus worst `total_return`; `—` with fewer than two rows | `Spread between the best and worst total return — how differently the selected portfolios behaved.` |
-| `Median Sharpe` | median `sharpe_ratio`, two decimals, plain number | `Median Sharpe ratio across the selection over this window.` |
-| `Worst Drawdown` | minimum `max_drawdown`; painted red whenever non-zero | `Deepest maximum drawdown in the selection over this window.` |
-| `Families` | distinct behavioural families in the selection | `Distinct behavioral strategy families among the selection. Open the Strategies tab to explore them.` |
+| Tile | Shows |
+|---|---|
+| `Selected` | how many portfolios you've checked |
+| `Leader` | the best total return in your selection |
+| `Dispersion` | the gap between your best and worst performer (needs at least two selected) |
+| `Median Sharpe` | the median Sharpe ratio across your selection |
+| `Worst Drawdown` | the deepest drawdown anyone in your selection hit |
+| `Families` | how many distinct strategy families are represented (only shown when the study has been clustered) |
 
-`Families` appears only when the study has a clustering artifact. The window is the first to last
-date across the selection's equity curves, and the figures are computed on the fly by
-`GET /portfolios/metrics/window`.
+These figures are calculated fresh over whatever window you're currently viewing — the full history,
+or a zoomed-in range on the chart.
 
 ## Combined equity chart
 
-The right side of the hero overlays one equity curve per **checked** trial, in the same colour the
-card uses. With nothing checked it reads
-`Check one or more trials in the ranking to plot their equity curves here.`
+The right side of the main view overlays an equity curve for every portfolio you've checked, each one
+colored to match its card. With nothing checked yet, it prompts you to check a card to see a curve.
 
-The chart is titled `Equity Curve` with the subtitle
-`{{count}} trial curves overlaid · Check or uncheck a card to add or remove one`. Its header control
-is `View last` — a number field with the placeholder `All` and a unit select offering
-`Days` / `Weeks` / `Months` / `Years`.
+A `View last` control lets you zoom the chart to a recent window — days, weeks, months, or years —
+without changing your underlying selection; it defaults to your full history.
 
-Curves are fetched for the whole displayed ranking, not just the selection, so checking and
-unchecking cards costs no extra request. Only a selection reaching outside the ranking widens the
-fetch.
+The chart already has data loaded for the whole ranking behind the scenes, so checking and unchecking
+cards is instant — only selecting something outside the currently ranked list triggers a fresh load.
 
-## Bulk-promote bar
+## Promoting several portfolios at once
 
-A sticky bar appears at the top of the dashboard when **two or more cards are checked and you made a
-deliberate selection gesture**. It will not appear on a fresh load, even though the whole top-N is
-auto-checked.
+Deliberately check two or more portfolios yourself — not the ones auto-selected on a fresh load — and
+a bar appears at the top offering `Promote Selected (N)`: send every checked trial to Portfolio
+Groups in one action instead of one at a time. It doesn't appear just because the dashboard
+auto-selected your top N for you; you have to make the choice yourself first.
 
-It shows a rocket icon and `Promote Selected ({{count}})`, an optional success chip
-`{{count}} already promoted`, a text button `Clear`, and a contained `Promote Selected` button. The
-button's tooltip is `Promote every checked trial into the Portfolio Groups in one go`, or
-`Every checked trial is already promoted` when nothing remains to promote (in which case the button
-is disabled). A progress bar runs while the batch is in flight.
+If some of what you've checked is already promoted, the button tells you as much and only sends the
+rest; if everything is already promoted, the button disables itself rather than doing nothing. A
+progress indicator shows while the batch is underway.
 
-Already-promoted ids are dropped from the request rather than re-sent. The call is
-`POST /portfolio_manager/managed/promote/batch`, which is **partial-success**: it returns what
-succeeded and what failed, and the UI reports both — a green `{{count}} portfolios promoted` plus a
-warning `{{count}} trials could not be promoted` with the per-trial reasons. The selection is cleared
-only on success, so a failed batch can be retried without re-checking every card.
+Promoting a batch can partly succeed and partly fail — say, one trial hits a problem while the rest go
+through fine — so the dashboard reports both outcomes clearly: how many succeeded, how many didn't and
+why. Your selection only clears on full success, so a partial failure is easy to retry.
 
 ## Advanced analysis
 
-A permanently expanded section titled `Advanced analysis`, subtitled
-`Risk charts, comparison tables and behavioral strategies`. Despite its header styling it has no
-collapse control. Inside, a tab bar bound to `?ptab=`.
-
-| Tab | `?ptab=` value |
-|---|---|
-| `Risk charts` | `risk` — the default, and the fallback for any unrecognised value |
-| `Comparison tables` | `tables` |
-| `Strategies` | `estrategias` |
+Below the ranking and chart, an always-open `Advanced analysis` section holds three tabs: `Risk
+charts`, `Comparison tables`, and `Strategies`.
 
 > [!NOTE]
-> The Strategies tab's parameter value is the Spanish `estrategias` while its caption is English.
-> Shared URLs will show it.
+> A couple of status messages in the Strategies tab may occasionally appear in Spanish even when the
+> rest of your interface is in English — a known rough edge the team is tracking.
 
 ### Risk charts
 
-With nothing checked:
-`Select one or more portfolios in the ranking to see their risk charts.` With a selection, a
-two-column grid of four charts, each 420 px tall (240 px on mobile). Every chart toggles between a
-time series and a histogram with a bar-chart icon whose tooltip reads `Switch to Histogram` or
-`Switch to Time Series`.
+Check one or more portfolios to see four charts: `Drawdown`, `Volatility`, `Rate of Change`, and
+`Sharpe`. Each one toggles between a time-series view and a distribution histogram.
 
-| Chart | Time-series title / subtitle | Histogram title / subtitle | Units | Window control |
-|---|---|---|---|---|
-| Drawdown | `Drawdown` / `Peak-to-trough decline` | `Drawdown distribution` / `Histogram of rolling drawdown` | percent | none |
-| Volatility | `Volatility` / `Rolling volatility` | `Volatility distribution` / `Histogram of rolling volatility` | percent | `Window size`, default `14` |
-| Rate of change | `Rate of Change` / `Momentum (ROC)` | `Rate of Change distribution` / `Histogram of momentum (ROC)` | percent | `Window size`, default `14` |
-| Sharpe | `Sharpe` / `Risk-adjusted return` | `Sharpe distribution` / `Histogram of risk-adjusted return` | ratio | `Window size`, default `14` |
-
-Settings live behind a gear menu titled `Chart settings`. Histogram mode exposes `Bins` (default
-`30`) and `Density` (default off). The time-series charts draw study-period separators from the
-study's train-end, OOS-start and RLP-start dates, and render without their own date filter or legend.
+For the rolling-calculation charts (everything except Drawdown), a settings menu lets you change the
+calculation window (14 periods by default). Histogram mode adds a bin count (30 by default) and a
+density toggle (off by default). Time-series charts mark where your study's train, validation,
+out-of-sample, and live-trading periods begin, so you can see performance in context.
 
 > [!WARNING]
-> Window sizes and histogram settings here are local component state — they are **not** written to
-> the URL and do not survive a reload or a shared link. The Risk Analytics detail tab uses a
-> different default window (20), so the two surfaces will not agree out of the box.
+> Window-size and histogram settings here reset when you leave the page or reload — they aren't
+> captured in a shareable link. Also, the Risk Analytics tab on an individual portfolio's detail page
+> uses a different default window (20 instead of 14), so figures between the two views won't always
+> match unless you set them the same.
 
-All four series arrive in one request (`GET /portfolios/curves`), so they fill in together; each
-chart still carries its own `Retry` button, and pressing any of them refetches the whole bundle.
+All four charts load together, so if one fails, retrying any of them refreshes the whole set.
 
 ### Comparison tables
 
-A three-way toggle — `Metrics`, `Pivot`, `Table` — chooses the layout. It is local state and defaults
-to `Metrics`.
+A three-way toggle switches between `Metrics`, `Pivot`, and `Table` layouts (defaults to `Metrics`):
 
-**`Metrics`** renders a table titled `Portfolio Metrics — All Stages`.
+- **Metrics** — one row per metric, one column group per selected portfolio, broken down by stage
+  (`Train` / `Val` / `OOS` / `Overall` / `RLP`). Click any stage column to sort by it. Cells are
+  color-tinted against the best and worst values in the table — green near the top, red near the
+  bottom — with drawdown and volatility tinted in reverse, since lower is better there.
+- **Pivot** — the same comparison rotated so each portfolio is a row, with metrics × stages as
+  columns; click a portfolio's name to open its detail page.
+- **Table** — the same pivot layout, but for every portfolio in the study, not just your selection —
+  useful for scanning the whole field at once rather than just what you've checked.
 
-| Column | Content |
-|---|---|
-| `Metric` | one row per metric key present on the first selected portfolio, alphabetical |
-| *(group header)* | one group per selected portfolio, captioned with its trial label plus ` ★` for the leader |
-| stage sub-columns | one per stage that has data — `Train`, `Val`, `OOS`, `Overall`, `RLP` |
-
-Every stage sub-column is clickable and sorts the metric rows by that portfolio-and-stage cell;
-the active column shows ` ↓` or ` ↑`. Cells are heat-tinted against each metric's own min–max across
-the whole table: green in the top 15%, red in the bottom 15%. Only `max_drawdown` and `volatility`
-are inverted so that low reads as good — every other metric is tinted as if higher were better.
-
-**`Pivot`** renders `Portfolio Comparison — All Metrics × Stages`, subtitled
-`Rows = portfolios · Columns = metric × stage · Click column to sort`. Its first column is
-`Portfolio`, holding each trial label (plus ` ★` for the leader) as a link into the detail page with
-the tooltip `Open individual dashboard`. Header row one groups by metric, row two carries the same
-clickable stage sub-columns. While metrics load it shows `Loading metrics for all portfolios…`.
-
-**`Table`** is the same pivot table over **every portfolio in the selected study**, not just the
-selection. Its metrics are fetched lazily and only while this mode is active.
-
-In `Metrics` and `Pivot` modes two more tables render below.
-
-| Table | Title | Columns |
-|---|---|---|
-| Strategy parameters | `Parameters` | `Parameter`, then one column per selected portfolio headed by its trial label |
-| Risk-manager configuration | `Risk Manager Configuration` | `Risk Manager`, `Parameter`, then one column per selected portfolio headed by `P` plus the raw portfolio id |
-
-The parameters table lists strategy parameters only — risk-manager parameters are namespaced away
-into the second table, which renders nothing at all when no selected portfolio carries a risk
-manager.
+Below the `Metrics` and `Pivot` views, two more tables break out strategy parameters, and — when at
+least one selected portfolio has one configured — risk-manager settings, side by side for the
+portfolios you've selected. Handy for spotting exactly what's different between two strategies that
+performed differently.
 
 > [!NOTE]
-> The risk-manager table's per-portfolio headers are the only place on this screen that shows a raw
-> `portfolio_id`. Everywhere else the UI labels a trial as `Trial N · ` plus its study, because trial numbers collide
-> across studies and the raw id is an internal identity.
+> The risk-manager comparison table is the one place on this page that shows a raw portfolio ID rather
+> than a trial number, because trial numbers can repeat across different studies while portfolio IDs
+> are always unique.
 
 ### Strategies
 
-With a concrete study selected, this tab embeds the study's behavioural clustering map, sharing the
-dashboard's family granularity and highlighting the current selection (or, with nothing checked, the
-displayed ranking). Clicking a trial in the map toggles its selection. In `All studies` mode it
-reads `Select a study to see its strategy families.`
+With a single study selected, this tab shows a visual map of that study's strategy families,
+highlighting whatever you currently have checked (or the whole ranking, if nothing's checked). Click
+any point in the map to add or remove that trial from your selection. This view isn't available in
+`All studies` mode, since strategy families are specific to one study's clustering.
 
 ## Advanced options
 
-A second permanently expanded section, titled `Advanced options` and subtitled
-`Family grouping, concentration checks and bulk actions`. Its header carries a warning chip
-`Concentration risk` when the concentration check fires, and an outlined
-`{{count}} portfolios selected` chip whenever a selection exists.
+A second always-open section, `Advanced options`, covers grouping trials into strategy families, a
+concentration check, and bulk actions across your selection. Its header also shows how many
+portfolios you currently have selected, and flags a `Concentration risk` warning when it applies.
 
 ### Concentration warning
 
-When the study has a clustering artifact and the requested top-N collapses into too few behavioural
-families, a banner appears. It headlines
-`Your top {{n}} results span {{distinct}} distinct strategies` over the caption
-`{{strategies}} distinct strategies among {{trials}} trials`, and carries one of two warning chips:
+When a study has been clustered into strategy families, and your top-ranked results turn out to be
+dominated by just one or two of them, a warning banner appears — a sign your "best" trials might be
+overfitting rather than genuinely different strategies:
 
-- `Your top performers collapse into one family — concentration / overfitting risk.` when at least
-  three portfolios are ranked and they all sit in one family.
-- `Your best results are largely redundant — consider diversifying.` when at least four are ranked
-  and the distinct family count is at most `ceil(n / 4)`.
+- If your top 3 or more ranked trials all belong to the *same* family, you'll see a strong warning
+  about concentration and overfitting risk.
+- If your top 4 or more trials are dominated by a small number of families relative to how many
+  trials you're looking at, you'll see a softer "largely redundant, consider diversifying" warning.
 
-Its actions are `Show 1 per family` (when grouping is off), `View strategies` (switches to the
-Strategies tab) and `Study analysis` (opens `/analysis/portfolios/study/:id?tab=families`).
-
-The check always reasons about the **requested** `topN`, not the over-fetched pool that family
-grouping pulls, so the signal stays stable when you toggle grouping.
+From the banner you can switch to showing one representative per family, jump to the Strategies tab
+to explore the families visually, or open the full study analysis to dig further.
 
 ### Family grouping
 
-Available only when the study has a clustering artifact.
+When a study has been clustered, a toolbar lets you switch the ranking from showing every trial to
+showing one representative per strategy family — useful when your top results are dominated by
+near-duplicate variants of the same idea and you'd rather compare genuinely different strategies. A
+granularity control, shared with the Strategies tab, lets you choose how many families the clustering
+splits your trials into — fewer families for a broad view, more for finer distinctions.
 
-A toolbar toggles representative mode — tooltip `Show 1 per family` when off,
-`Show all trials` when on — exposes the granularity (K) selector shared with the Strategies tab, and,
-in representative mode, a method select.
+While showing one representative per family, you can choose how many to show for each — anywhere from
+one up to five, or every trial in the family — and how the representative itself is picked:
 
-| Method | Caption |
+| Method | Picks the trial with... |
 |---|---|
-| `Medoid` | `Most typical trial` |
-| `Best fitness` | `Highest fitness (→ Sharpe)` |
-| `Best Sharpe` | `Highest Sharpe in the family` |
-| `Best OOS Sharpe` | `Highest out-of-sample Sharpe` |
-| `Best return` | `Highest return in the family` |
-| `Lowest drawdown` | `Smallest max drawdown` |
-
-`Medoid` is the default. Below the toolbar sits the caption `Show per family:`, a `Group by family`
-toggle button, and a select offering `All`, `1 per family`, `2 per family`, `3 per family` and
-`5 per family`.
+| `Medoid` (default) | the most typical behavior in its family |
+| `Best fitness` | the highest fitness score |
+| `Best Sharpe` | the highest Sharpe ratio |
+| `Best OOS Sharpe` | the highest out-of-sample Sharpe ratio |
+| `Best return` | the highest total return |
+| `Lowest drawdown` | the smallest max drawdown |
 
 > [!WARNING]
-> Family grouping silently over-fetches so every family has candidates to draw from: at `1 per
-> family` the dashboard requests `K × topN` rows, and above that `max(topN, K × perFamily)`. The rank
-> numbers on the cards are positions in the *displayed* list, not in the raw ranking. Representative
-> mode also back-fills any family whose members all fell outside the fetched pool; those rows carry
-> no metric value and sort to the bottom.
+> In representative mode, the dashboard pulls in more candidates behind the scenes than your
+> requested Top N, so every family has something to choose from — so a card's rank number reflects
+> its position in what you're currently looking at, not necessarily its position in the full
+> underlying ranking. If a family has no member within that expanded pool, it can still show up as a
+> placeholder with no metric value, sorted to the bottom.
 
 ### Bulk actions
 
-| Control | Availability | Effect |
-|---|---|---|
-| `View recent batches` | always | opens the risk-manager optimization batch history (`GET /studies/rm-optimization-batches`) |
-| `Create portfolio group (N)` | a selection exists | opens the create dialog; tooltip `Build a Portfolio Group from the selected portfolios`. On success it navigates to the new group at `/analysis/portfolio-groups/baskets/:id` |
-| `Derive / Optimize RMs (N)` | a selection exists | opens the derivation wizard; tooltip `Create one risk-manager-optimization study per selected portfolio` |
+With one or more portfolios selected:
 
-`Derive / Optimize RMs` is disabled — with the tooltip
-`This portfolio already contains a Risk Manager` — only when **every** selected portfolio already
-carries a risk manager. A mixed clean-and-dirty selection still opens the wizard, where the dirty
-ones can be removed inline. The wizard itself is documented under
-[risk managers](/docs/risk-managers).
+| Action | What it does |
+|---|---|
+| `View recent batches` | See the history of risk-manager optimization runs you've started from this dashboard (always available) |
+| `Create portfolio group (N)` | Build a new Portfolio Group from your selected portfolios — opens the new group once it's created |
+| `Derive / Optimize RMs (N)` | Kick off a risk-manager-optimization study for each selected portfolio |
 
-## URL state
+`Derive / Optimize RMs` is disabled only when every selected portfolio already has a risk manager
+configured. If your selection is a mix — some already configured, some not — the wizard still opens,
+and you can remove the already-configured ones before submitting. See
+[risk managers](/docs/risk-managers) for what the wizard produces.
 
-| Parameter | Values | Default | Seeded into the URL? |
-|---|---|---|---|
-| `studyId` | a positive integer, or the literal `all` | most recent non-draft study | yes |
-| `metric` | picker id (1-based alphabetical position) | the id whose name is `fitness` | yes, once the metric catalogue has loaded |
-| `stage` | one of the 14 stage keys listed above, or `custom_timeframe` | `overall` | yes |
-| `order` | `asc` \| `desc` | absent means automatic — best-first for the metric's direction | no, deliberately |
-| `topN` | integer ≥ 1 | `10` | yes |
-| `portfolio_ids` | CSV of portfolio ids | auto-seeded from the ranking | written, not seeded |
-| `ct_frames` | `start~end~weight~label` entries joined by `\|` | — | no |
-| `ptab` | `risk` \| `tables` \| `estrategias` | `risk` | no |
-| `analysis` | a positive integer portfolio id | — | no |
+## Shareable links & saved views
+
+Every choice you make on this dashboard — which study, which metric, how deep the ranking goes, sort
+direction, which stage or time window, which portfolios you've selected, and which advanced-analysis
+tab you're on — is captured in the page's web address. That means:
+
+- Bookmarking the page saves your exact view.
+- Copying the address bar and sending it to a colleague shows them precisely what you're looking at.
+- Your browser's back button retraces your filter changes.
+
+| What's captured | Falls back to, if not set |
+|---|---|
+| Study, or `All studies` | your most recently created study |
+| Metric | `Fitness` |
+| Stage or time window | `Overall` |
+| Sort direction | automatic (best-first) |
+| Ranking depth (Top N) | `10` |
+| Selected portfolios | re-seeded from the ranking whenever key filters change |
+| Custom time window | none |
+| Advanced-analysis tab | `Risk charts` |
+| Open portfolio detail panel | none |
 
 ### Automatic corrections
 
-The dashboard rewrites the URL rather than letting the selector and the charts disagree.
+The dashboard won't let your filters land in a broken combination — it corrects course automatically
+and updates the link to match:
 
-- A `?stage=` the study does not have is clamped back to `overall` and written back.
-- A fitness metric combined with a rolling window — or with a custom timeframe containing one —
-  switches to the first non-fitness metric.
-- A metric with zero stored rows for the study switches to `sharpe_ratio` when available, otherwise
-  the first available non-fitness metric, with the notice
-  `"{{from}}" has no data for this study. Switched to "{{to}}".`
-- A fitness metric combined with `?studyId=all` leaves cross-study mode and selects the most recent
-  study.
+- If the stage you're viewing doesn't exist for the newly selected study, it falls back to `Overall`.
+- Combining a Fitness metric with a rolling or custom window isn't possible, since fitness is measured
+  per-stage rather than per-window, so the dashboard switches to the first non-fitness metric
+  available.
+- If the metric you're viewing turns out to have no data for this study, it switches to Sharpe ratio
+  (or the first available alternative) and tells you so.
+- Combining a Fitness metric with `All studies` mode isn't possible either, so the dashboard drops out
+  of `All studies` and picks your most recent study instead.
 
 > [!CAUTION]
-> Two of those notices are shipped as hardcoded Spanish strings and will appear untranslated in an
-> English interface: the custom-timeframe fitness fallback and the `All studies` fitness fallback.
-> The third, the no-data metric switch, is localised.
+> A couple of these switch-over notices currently display in Spanish regardless of your interface
+> language — a known issue the team is tracking.
 
 ## Refresh and data freshness
 
 > [!WARNING]
-> Nothing on this dashboard polls, streams or auto-refreshes. There is no `refetchInterval`, no
-> websocket and no server-sent events anywhere in the portfolios data layer, and refetch-on-focus is
-> switched off. Data refreshes when a query goes stale and something remounts or renavigates — not
-> on a timer.
+> This dashboard doesn't auto-refresh, poll, or stream live updates — nothing changes on screen just
+> because you're looking at it. Data updates when it's due for a refresh *and* you revisit the page or
+> change a filter that requires a reload.
 
-| Query | Stale after |
+Roughly, here's how long data sticks around before your next visit triggers a refresh:
+
+| Data | Refreshes after about |
 |---|---|
-| most portfolio reads — rankings, equity, metrics, parameters, trials, dates | 60 seconds |
-| metric availability per study | 5 minutes |
-| on-the-fly window metrics (the comparison strip) | 30 seconds |
-| the metric catalogue (`GET /metrics`) | 24 hours |
-| the managed-portfolio list behind the `Promoted` chips | 1 hour |
+| Most of what's on this dashboard — rankings, equity curves, metrics, parameters, trials, dates | a minute |
+| Which metrics are available for a study | 5 minutes |
+| The comparison strip's live-calculated figures | 30 seconds |
+| The full metric catalog in the picker | a day |
+| Which portfolios show the `Promoted` badge | an hour |
 
-The reads on the 60-second and 5-minute rows above never retry a client error — notably `429` from
-the per-organisation rate limit, since these batch reads are the application's cold-load burst.
-Transient network and 5xx failures still retry.
-
-Large id lists are split into chunks of **200 ids per request**. A chunk that fails is tolerated: the
-dashboard keeps every chunk that succeeded and only surfaces an error when all of them fail. A
-partial failure therefore renders partial data.
-
-Note also that the per-portfolio stage metrics behind the ranking are produced by a **once-daily**
-batch job, so a study whose trials finished after the last run will rank on whatever was stored at
-that point. Trade-category and promoted-fitness metrics in particular are computed by that run, which
-is why their unavailability captions mention it.
-
-## Optimization Dashboard shell
-
-`/analysis/portfolios/study/:studyId` is the second dashboard tab. The page itself is minimal: it
-renders the same filter bar, then the study analysis view for the study named in the path.
-
-Because the study id lives in the path here rather than the query, the filter bar reconciles the two:
-changing the study navigates to the new study's route (carrying a revealed `Portfolio Analysis` tab
-along), and picking `All studies` navigates back to the Portfolios Dashboard with `?studyId=all`,
-dropping `?tab=` and `?portfolio_ids=`.
-
-The four sub-views are selected with `?tab=` and, inside the portfolios section, are reached from the
-`Optimization Dashboard` tab's dropdown rather than a second tab bar.
-
-| Sub-view | `?tab=` value |
-|---|---|
-| `Overview` | `overview` |
-| `Robustness` | `robustness` |
-| `Families` | `families` |
-| `Parameters` | `parameters` |
-
-Older `?tab=` values still resolve, and the canonical value is written back into the URL.
-
-| Retired value | Resolves to |
-|---|---|
-| `clusters` | `families` |
-| `optimization` | `parameters` |
-| `importances` | `overview` |
-| `config` | `overview` |
-
-Anything unrecognised falls back to `overview`.
-
-The page renders the study header — identity, KPIs, run-state banners — plus its controls: stop the
-study, export a snapshot, export the best trial, export hyperparameters, and open contextual help.
-Stop is disabled unless the study is running, with the reason
-`Only running studies can be stopped.` A `Custom Timeframes` dialog is available for building
-weighted multi-window views.
-
-Every drill-down out of this view — a scatter point, a heatmap cell, a parallel-coordinates line, a
-cluster table row — opens the portfolio detail page with the study attached, which is what reveals
-the `Portfolio Analysis` tab.
-
-Its states are a spinner while identity and metadata load, the error alert
-`Failed to load study information.`, and the alert `Study not found.` for a missing or non-numeric
-study id.
+If you're loading a very large selection, it's fetched in batches behind the scenes. If one batch hits
+trouble, the dashboard keeps whatever loaded successfully and only shows an error if every batch
+fails — so a temporary hiccup shows partial data rather than nothing at all.
 
 > [!NOTE]
-> Breadcrumbs and the standalone sub-tab bar are suppressed inside `/analysis/portfolios` — the
-> section tabs above already carry that navigation. They appear only on the standalone studies route.
+> The per-portfolio numbers behind the ranking — returns, Sharpe, drawdown, and so on — are
+> recalculated once a day. If a trial finished running after today's calculation, its ranking numbers
+> reflect whatever was available as of the last run, not the very latest trade. This is also why
+> trade-based and custom-fitness metrics sometimes show as "pending" right after a study finishes.
+
+## The Optimization Dashboard tab
+
+Selecting a specific study and switching to the `Optimization Dashboard` tab takes you to that
+study's own analysis — the same filter bar you've been using, followed by a deep dive into that one
+study's trials. See [optimization dashboard](/docs/optimization-dashboard) for what its four views
+(`Overview`, `Robustness`, `Families`, `Parameters`) each show; this page covers only how you get
+there and back.
+
+Because this tab is tied to one specific study, changing the study while you're here takes you to
+that study's own Optimization Dashboard; picking `All studies` instead takes you back to the main
+Portfolios Dashboard in cross-study mode.
+
+> [!TIP]
+> Old bookmarked links that reference a tab name from an earlier version of the product still work —
+> they redirect automatically to the current equivalent.
+
+From here, drilling into any chart point, table row, or heatmap cell opens that portfolio's detail
+page with its study attached — which is also what reveals the `Portfolio Analysis` panel described
+above.
+
+The page header shows the study's identity, key stats, and run status, plus controls to stop the
+study (grayed out with the note "Only running studies can be stopped" when it isn't actively running),
+export a snapshot, export the best trial, export the study's parameters, and open contextual help. A
+`Custom Timeframes` dialog lets you build your own weighted, multi-window views of the study's
+performance.
+
+If something goes wrong loading the study, you'll see a plain error message rather than a blank
+screen; an invalid or missing study shows "Study not found."
 
 ## Related pages
 
 - [portfolio detail](/docs/portfolio-detail) — the six tabs behind `Portfolio Analysis`.
-- [optimization dashboard](/docs/optimization-dashboard) — what each of the four study sub-views shows.
-- [metrics reference](/docs/metrics-reference) — every metric in the picker, its unit and direction.
+- [optimization dashboard](/docs/optimization-dashboard) — what each of the four study views shows.
+- [metrics reference](/docs/metrics-reference) — every metric in the picker, what it means, and which direction is "good."
 - [studies](/docs/studies) — creating and running the studies this dashboard ranks.
-- [portfolio manager](/docs/portfolio-manager) and [portfolio groups](/docs/portfolio-groups) — where promoted trials land.
+- [portfolio manager](/docs/portfolio-manager) and [portfolio groups](/docs/portfolio-groups) — where promoted trials land, and how to manage them once they're there.
 - [analyzing results](/docs/analyzing-results) — how to read a ranking without fooling yourself.
-- [api trials and portfolios](/docs/api-trials-portfolios) — the endpoints behind this screen.
+- [api trials and portfolios](/docs/api-trials-portfolios) — pull your studies, trials, and portfolio results into your own tools or dashboards, if you'd rather work outside Fintela.

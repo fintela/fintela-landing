@@ -4,132 +4,114 @@ section: Registries
 sectionOrder: 3
 order: 3
 published: true
-updated: 2026-08-20
-summary: The Python signal logic a study optimizes — its deterministic function signature, parameters, and internal vs external execution.
-keywords: strategy, python, signal, parameters, editor, sandbox, internal, external, simulate, execution type, versions
+updated: 2026-09-01
+summary: How to define the trading logic a study optimizes — write it directly in Fintela's Python editor, or connect a service you run yourself.
+keywords: strategy, signal, parameters, python editor, internal, external, backtest, lookback, versions, execution mode
 ---
 
-A strategy is the registry object that produces a **signal**: a mapping of rebalancing date → ticker → `{position, allocation}`. Everything downstream — the simulation engine, the optimizer, the live portfolio updater — consumes that one dictionary. It is the only registry resource that is *executed code* rather than configuration, so it carries a fixed function contract, a declared parameter schema, a warmup declaration and a server-side validation gate that a save cannot bypass.
+A strategy is where you define the trading logic that a study will test and tune. Write it once — as Python code in Fintela's editor, or as a connection to logic running on your own systems — and everything downstream builds on it: backtests, optimization studies, and live trading all execute the same decision logic you defined here.
+
+Every strategy answers one question, for every date it runs: **which instruments do I hold, on which side, and at what weight?** That answer is called a **signal**, and producing one, correctly and consistently, is the one thing every strategy has to do — however you choose to build it.
 
 ## Overview and purpose
 
-A strategy answers one question: **on this date, which instruments do I hold, on which side, and at what weight?** It does not decide whether the result is good (that is a [fitness function](/docs/fitness-functions)), it does not decide which instruments exist (that is an [asset group](/docs/asset-groups)), and it does not sweep its own parameters (that is a [study](/docs/studies)).
+A strategy decides which instruments to hold, whether to go long or short, and how much weight to give each position. That's its entire job.
 
-### Where a strategy sits
+A strategy does **not** decide:
+
+- Whether a result is good — that's the job of a [fitness function](/docs/fitness-functions), which scores what your strategy produces.
+- Which instruments are even eligible to trade — that's defined by an [asset group](/docs/asset-groups).
+- Which parameter values to try — that's driven by a [study](/docs/studies), which sweeps your strategy's parameters across many trials.
+
+Keeping these responsibilities separate is what lets you reuse the same strategy across different universes, and test the same universe with different strategies, without rewriting anything.
+
+### Where a strategy fits in
 
 ```text
-  Asset Group          Strategy            Fitness Function
-  (the universe)   (declares params)      (scores a trial)
-        │                  │                      │
-        └──────────────────┼──────────────────────┘
-                           ▼
-                        Study
-        (assigns each parameter a range, a
-         choice subset, or a fixed value —
-         then runs N trials)
-                           │
-                           ▼
-        trial → signal → simulation → portfolio
+Asset Group (the universe)     Strategy (your logic)     Fitness Function (the score)
+         │                            │                            │
+         └────────────────────────────┼────────────────────────────┘
+                                       ▼
+                                    Study
+                    (assigns each parameter a range, a
+                     set of choices, or a fixed value,
+                     then runs many trials)
+                                       │
+                                       ▼
+                    trial → signal → simulated portfolio → results
 ```
 
-### What consumes a strategy
+### Where you'll use a strategy
 
-| Consumer | How it runs the strategy | Notes |
+| Where | What happens | Good for |
 |---|---|---|
-| Study / optimizer | Once per trial, with the sampled parameter values | A launched study stays pinned to the strategy version it started with |
-| Sandbox — "Run a backtest" | One-off, at values you type, over an asset group and date range | Costs **1 token** per run (`sandbox_run`) |
-| Compiler validation | Executes your code against a fixture panel before any save | See [Save flow and confirmation dialogs](#save-flow-and-confirmation-dialogs) |
-| Live trading / portfolio updater | Runs the saved code on the promoted portfolio's schedule | See [live trading](/docs/live-trading) |
+| A study | Runs your strategy once per trial, using that trial's sampled parameter values | Systematically optimizing your parameters |
+| Run a Backtest | Runs your strategy once, at values and over a date range you choose | Quickly sanity-checking an idea before committing it to a full study. Costs **1 token** per run |
+| Saving your strategy | Your code (or your endpoint) is checked automatically before Fintela accepts the save | Catching mistakes before they cost you a study |
+| Live trading | Runs your saved strategy on a promoted portfolio's schedule | Turning a validated idea into a running strategy |
 
-For how the pieces combine end to end, see [core concepts](/docs/core-concepts), the [end-to-end workflow](/docs/end-to-end-workflow) and the other [registries](/docs/registries). Strategies are read-only over the public API — creating and editing happens in the app; see [strategies API](/docs/api-strategies).
+A study always stays pinned to the exact version of the strategy it started with, so editing a strategy later never changes results you've already produced — see [Version history](#version-history).
 
-### Screens
-
-| Path | Screen |
-|---|---|
-| `/strategy` | Registry list — table or tile view |
-| `/strategy?mode=create` | Opens the create editor directly |
-| `/strategy/view/:id` | Read-only detail; the whole form is a disabled fieldset |
-| `/strategy/edit/:id` | Editor |
-| `/strategy/sandbox` | Sandbox with no strategy preselected |
-| `/strategy/sandbox/:id` | Sandbox with strategy `:id` preselected |
+For how all the pieces fit together end to end, see [core concepts](/docs/core-concepts), the [end-to-end workflow](/docs/end-to-end-workflow), and the other [registries](/docs/registries).
 
 > [!NOTE]
-> Public sharing and forking of strategies are **not** on `/strategy`. They live in the Laboratory (`/laboratory`), whose public-catalog dialog is where a shared resource is forked into your organization. The route is entitlement-locked on the free tier. See [Laboratory](/docs/laboratory).
+> Sharing and forking strategies happens in the [Laboratory](/docs/laboratory), not on this page. Open a strategy from the community catalog there to copy it into your own organization and make it yours. Available on paid plans.
 
-## Registry table view
+> [!TIP]
+> You can also read your strategies from your own tools and dashboards with a personal access key from your account settings. That access is read-only, so it can never change anything by accident, and it's rate-limited to keep the platform fast for everyone. See the [strategies API](/docs/api-strategies) reference for details.
 
-The list is the shared registry workbench: an insights band above the table, a search box, a filter panel, a column chooser, and a grid/tile toggle persisted in local storage.
+## The strategies list
 
-### Columns
+Open **Strategies** from the Registries menu to see every strategy in your organization — yours and your teammates'. Switch between a table view and a tile view; Fintela remembers your choice. If you haven't created a strategy yet, you'll see a prompt to create your first one.
 
-| Column | Header | Shown by default | Contents |
-|---|---|---|---|
-| `name` | **Name** | Yes | The strategy name — also the Python entry-point function name |
-| `description` | **Description** | Yes | A generated sentence describing the row — type, execution logic, declared parameters, advanced settings, version. Your stored text moves to the cell's hover tooltip, labelled **Author's note** |
-| `execution_type` | **Execution Type** | Yes | An outlined chip showing the raw value: `internal` or `external`, lowercase |
-| `author` | **Author** | Yes | `created_by_username` |
-| `created_at` | **Created At** | Yes | Creation timestamp |
-| `studies` | **Associated Studies** | No — column chooser | Count of studies referencing this strategy |
+An insights panel above the list summarizes your strategies by execution type and by how many studies use each one, so you can spot at a glance which strategies are proven and which are still experimental.
 
-> [!WARNING]
-> There is no **Version** column and no **Data sources** column on this table, despite those labels existing in the locale file. The latest version number is on the wire (`latest_version`) but is not rendered as a column. There is also no visibility or share toggle — the grid has no sharing control at all.
+### Columns and information shown
 
-### Filters and search
-
-| Control | Type |
-|---|---|
-| Name | Text |
-| Description | Text |
-| Execution Type | Multiselect |
-| Author | Multiselect |
-| Associated Studies | Number range |
-| Created At | Date range |
-
-The search box (placeholder **"Search strategies…"**) matches on name, stored description, the resolved description text and the author name, together — so a strategy is findable by its endpoint host, a parameter name or an injected data source, not only by what you typed into the Description field.
-
-Two views share the same data: a grid and a tile mosaic, toggled and remembered per registry in local storage. The tile shows the name as its title, the description as its subtitle, and execution type, author and creation date as facts. An always-visible insights band sits above the table, grouping rows by execution type and by study usage.
-
-### Chrome
-
-| Element | Exact string |
-|---|---|
-| Page title | Strategies |
-| Table aria-label | `strategy table` |
-| Create button | **New Strategy** — disabled without create permission |
-| Empty state title | No strategies yet |
-| Empty state body | Create your first strategy to start building portfolios. |
-| Loading skeleton columns | Name / Parameters / Created |
-| Error screen | Error loading strategy definitions |
-| Update toast | Strategy updated successfully |
-| Delete toast | Strategy deleted successfully |
-
-The `?` button opens the contextual docs panel with the `strategies` and `external-strategies` blocks.
-
-### Row action menu
-
-Left-click a row for the actions popover; right-click for the same list as a context menu at the pointer.
-
-| Action | What it does | Disabled when |
+| Column | Shown by default | What it tells you |
 |---|---|---|
-| **Run a backtest** | Navigates to `/strategy/sandbox/{id}` | Never |
-| **View** | Navigates to `/strategy/view/{id}` | Never |
-| **Edit** | Navigates to `/strategy/edit/{id}` | The strategy is used by at least one study, or your role cannot edit |
-| **Duplicate** | `POST /strategies/{id}/duplicate` — creates a copy you own | Your role cannot create |
-| **Delete** | Opens the confirmation dialog | The strategy is used by at least one study, or your role cannot delete |
+| Name | Yes | The strategy's name |
+| Description | Yes | An automatic summary — type, logic, parameters, and version. Hover to see any notes you wrote yourself |
+| Execution Type | Yes | Whether it runs inside Fintela (Internal) or on your own systems (External) |
+| Author | Yes | Who created it |
+| Created At | Yes | When it was created |
+| Associated Studies | Hidden — add it from the column chooser | How many studies currently use this strategy |
 
-A disabled **Edit** or **Delete** carries the tooltip: *"This item is currently used in a study and cannot be edited."*
+### Filtering and search
 
-### Bulk delete and confirmation
+Narrow the list by:
 
-There is exactly one bulk action, **Delete**, marked destructive. Single and bulk delete share the same confirmation copy:
+- Name and Description (text search)
+- Execution Type (Internal, External, or both)
+- Author
+- Associated Studies (a number range)
+- Created At (a date range)
 
-> Are you sure you want to delete the selected strategy? If any, associated data will also be deleted.
+The search box matches your typed text against the name, your stored description, the automatic summary, and the author together — so you can find a strategy by a parameter name buried in its summary, not only by its title.
+
+### Actions you can take on a strategy
+
+Click a row (or right-click for a context menu) to see what's available:
+
+| Action | What it does | When it's unavailable |
+|---|---|---|
+| Run a Backtest | Opens the sandbox with this strategy preloaded, so you can test it at values and over a date range you choose | Always available |
+| View | Opens a read-only copy of the strategy | Always available |
+| Edit | Opens the strategy in the editor | Once a study uses this strategy, or if your role can't edit |
+| Duplicate | Creates your own editable copy | If your role can't create strategies |
+| Delete | Removes the strategy, after you confirm | Once a study uses this strategy, or if your role can't delete |
+
+> [!TIP]
+> Edit and Delete lock as soon as a study starts using a strategy — this protects that study's results from changing under you. Duplicate the strategy instead if you want to keep building on it.
+
+### Deleting strategies
+
+Delete strategies one at a time, or select several and delete them together. Either way, you'll be asked to confirm — deleting a strategy also removes any data tied to it that isn't otherwise in use.
 
 > [!CAUTION]
-> Bulk delete issues **one `DELETE /strategies` request per selected row**, not one batched call. A partial failure is possible: some rows delete and others do not.
+> A bulk delete removes each selected strategy individually rather than as one all-or-nothing action. If something goes wrong partway through, some strategies may be deleted and others not — check the list afterward to confirm the result.
 
-### Permissions
+### Who can do what
 
 | Role | View | Edit | Create | Delete |
 |---|---|---|---|---|
@@ -138,294 +120,221 @@ There is exactly one bulk action, **Delete**, marked destructive. Single and bul
 | Manager | Yes | Yes | Yes | No |
 | Analyst | Yes | No | Yes | No |
 
-The free-tier quota is **2 strategies** (`max_strategies`), counted as non-deleted rows in your organization. It is enforced on **create only** — on `POST /strategies` and on duplicate. An organization already above the cap keeps everything working and simply cannot add more; deleting one frees a slot. A role failure (403) is returned before a quota failure (402).
+Free-tier organizations can have up to **2 strategies** at a time. The limit only applies when you try to add a new one — everything you already have keeps working. Delete a strategy you no longer need to free up a slot, or upgrade your plan for more room.
 
-## Creation wizard and advanced options
+## Creating and editing a strategy
 
-> [!IMPORTANT]
-> There is no multi-step wizard. The strategy editor is a single two-zone screen: a **center zone** (the Python editor for internal, the endpoint form for external, with the `required_lookback` snippet editor beneath it) and a **rail of collapsible sections** to its right. Name and description are not fields in the form — they are collected by a confirmation dialog at save time.
+There's no multi-step wizard — the strategy editor is one screen: your code (or your endpoint's address) in the center, and a panel of settings alongside it. You name your strategy at the very end, when you save it, not at the start.
 
-### Editor header and modality selector
+### Internal vs. external strategies
 
-| Mode | Title | Subtitle |
-|---|---|---|
-| create | Create Strategy | Define a new strategy implementation |
-| edit | Edit Strategy | Update definition and implementation details for this strategy |
-| view | View Strategy | Read-only view. Click Back to return to the list. |
+When you create a strategy, you choose how it runs, and this choice is permanent:
 
-A segmented control in the header offers three options:
-
-| Option | Value | State |
-|---|---|---|
-| **Internal** | `internal` | Selectable in create mode only |
-| **External** | `external` | Selectable in create mode only |
-| **Rule-based** | `declarative` | **Permanently disabled** — tooltip *"Rule-based strategies are coming soon."* |
+| Option | What it means |
+|---|---|
+| **Internal** | You write Python code directly in Fintela's editor. It runs inside Fintela's sandbox |
+| **External** | You point Fintela at a service you run and control — your logic, your infrastructure, your language of choice |
+| **Rule-based** | A preview of what's coming — building a strategy visually, without code. Not available yet |
 
 > [!WARNING]
-> An existing strategy can never change execution type. The control is disabled outside create mode, and the agent path refuses with *"An existing resource's execution type cannot be changed."* The server rejects any declarative strategy outright: *"Rule-based (declarative) strategies are not supported yet."*
+> Choose carefully: once a strategy is created, you can't switch it between Internal and External. If you need the other mode, duplicate it as a new strategy of that type instead.
 
-### Center zone — Internal
+Reasons to choose external: keep proprietary models, code, or data entirely on your own systems; use a language other than Python; reuse logic you've already built elsewhere. See [external strategies](/docs/external-strategies) for a full walkthrough of connecting your own service.
 
-A Monaco Python editor, 320px tall, word wrap on, minimap off. `Ctrl`/`Cmd`+`S` saves. While the code is still the untouched scaffold a banner reads *"Using template code. Edit the code below to switch to custom mode."*
+### Writing your strategy in the code editor (internal)
 
-Toolbar controls: a **Reset** to template button, a live validation chip, import/export code (tooltips *"Import a .py file"* / *"Download as .py"*), fullscreen (dialog **"Edit Code - {{name}}"**), a format action (tooltip *"Format code (black)"*, `POST /compiler/format`), **Reference** (opens the Strategy Reference dialog), and a gear icon (aria-label `validation settings`).
+The code editor supports the conveniences you'd expect: a save shortcut, code formatting, import/export of your file, and a fullscreen mode. Starting from a blank strategy gives you working template code to build from — a banner reminds you that you're still using it until you make a change.
 
-The chip's label is its status — **Unvalidated changes**, **Validating…**, **Valid** / **Valid · N warning(s)**, **Validation error** / **Error on line N**, **Paused**, **Timed out**, **Validator unavailable**. Clicking it jumps to the failing line; while auto-validation is paused it reads **Validate now** and clicking it runs one validation on demand.
+A status chip above the editor tells you where your code stands: unvalidated changes, validating, valid (with or without warnings), or an error with the line number to jump to. As you type, Fintela checks your code in the background against a sample of tickers, so you catch mistakes before you try to save. If you've set a large custom validation universe (more than 250 tickers), automatic checking pauses and you trigger a check manually instead, to keep the editor responsive.
 
-The editor also fetches `GET /compiler/contracts/strategy` and uses it to drive Monaco completion, hover help, and inline import-lint markers against the allowed-import list.
+A **Reference** button opens a quick guide to the function shape and rules covered in [The signal your strategy returns](#the-signal-your-strategy-returns) below.
 
-**Live validation** fires on a 2000 ms debounce straight to `POST /compiler/validate/internal/strategy` — internal strategies only, and only once an entry-point name has been parsed. It uses a 25-ticker sample for latency. If you set a custom validation universe with more than **250** tickers, auto-firing is suppressed and you press **Validate now** instead.
+### Connecting your own service (external)
 
-### Center zone — External
-
-| Field | Label | Type | Default |
-|---|---|---|---|
-| `endpoint` | **Endpoint** | Text, placeholder `https://api.example.com/strategy` | empty |
-| `max_concurrency` | **Max Concurrency** | Number, `min=1`, `step=1` | **4** |
-| `timeout` | **Timeout (seconds)** | Number, `min=1`, `step=1` | **30** |
-
-A plain `http://` endpoint shows an advisory helper — *"Unencrypted (http://) — the request and your endpoint's reply travel in cleartext. Fine for testing; use https:// in production."* — that never blocks the save.
-
-Below the fields sits an optional validation-universe picker, prefaced by: *"Optional: tickers sent to your endpoint's /simulate (as a `tickers` body key) at validation and in production — a universe-parametric endpoint can use them to scope its output. Endpoints that ignore it are unaffected."*
-
-### Parameters panel
-
-Parameters are the knobs a study optimizes. The panel header is **Parameters**, with the tooltip *"Parameters are injected into your strategy function after start_date and end_date. Integer, float and categorical (named string choices) types are supported."* **+ Add** appends a row; a new row defaults to type `Integer`.
-
-| Control | Label | Notes |
+| Setting | What it controls | Default |
 |---|---|---|
-| Name | **Parameter name** | Free text. Empty-named rows are dropped on save |
-| Type | **Type** | **Integer** / **Float** / **Categorical** |
-| Test value | **Test value** | Numeric field (`step` = `1` for integer, `any` for float); a select of the declared choices for categorical. Helper while empty: *"Any value in your planned range."* |
-| Choices | **Choices** | Categorical only. Free-form chips, placeholder *"Type a choice and press Enter"*, helper *"Declared labels the parameter can take. Studies explore a subset or pin one."*. Trimmed, de-duplicated, order preserved |
+| Endpoint address | The address of your service that Fintela calls | — |
+| Max Concurrency | How many requests Fintela can send your service at once | 4 |
+| Timeout (seconds) | How long Fintela waits for a response before giving up | 30 |
 
-Parameters are also **derived from your code**: editing the Python signature adds, removes and renames parameter rows automatically. Argument names that match an injected data source's runtime kwarg are filtered out, so a data source never becomes an optimizable parameter.
+If you enter a plain `http://` address, Fintela warns you that the connection isn't encrypted — fine for testing, but switch to `https://` before you go live.
 
-> [!NOTE]
-> The sub-caption under the header reads *"Supported types: integer & float — free-form strings and booleans are not allowed; use a categorical parameter for named options."* It hard-codes only two names while the dropdown offers three. **Categorical is fully supported.** The Parameters tab of the in-app Strategy Reference dialog is also out of date: it claims strings are unsupported and tells you to encode choices as integers, and it describes a "Window Size" flag the parameter form no longer has. Ignore both.
+You can also set an optional list of tickers to send along with each request, so your service can scope its logic to the exact instruments involved. If your own logic doesn't need this, it's safe to leave unset.
 
-#### Parameter validation rules
+### Parameters — the values a study can tune
 
-The backend normalizes `int`/`integer` → `integer` and `float`/`double` → `float`. These are the exact rejection messages:
+Parameters are the knobs a study experiments with — a lookback window, a threshold, a weighting scheme, anything you want Fintela to search over on your behalf.
 
-| Rule | Message |
+| Field | What it's for |
 |---|---|
-| Known dtype | `Parameter <n>: unsupported datatype "<x>" (expected integer, float, or categorical).` |
-| Categorical needs choices | ``Categorical parameter <n> must declare a non-empty `choices` list.`` |
-| At most 100 choices | `Categorical parameter <n> declares <k> choices (maximum is 100).` |
-| No blank choice | `Categorical parameter <n> has a blank choice.` |
-| No duplicate choice | `Categorical parameter <n> has duplicate choice "<c>".` |
-| Categorical test value is a declared choice | `Test value for categorical parameter <n> must be a string, got <v>.` / `Test value "<s>" for parameter <n> is not one of the declared choices [...].` |
-| Numeric params carry no choices | `` `choices` is only valid for categorical parameters; <n> has datatype "<x>". `` |
-| Numeric test value is a finite number | `Test value for parameter <n> must be a number, got <v>.` / `Test value for parameter <n> must be a finite number.` |
-| Integer test value is integral | `Test value <v> for integer parameter <n> must be integral.` |
+| Parameter name | For internal strategies, matches an argument in your Python function — Fintela keeps this list in sync automatically as you edit your code |
+| Type | Integer, Float, or Categorical (a named choice, like `"ema"` vs `"sma"`) |
+| Test value | One concrete value used whenever you preview or validate your strategy in the editor — see the warning below |
+| Choices | For Categorical parameters only: the list of values a study is allowed to pick from |
 
-### How parameters become the optimizer search space
+For internal strategies, you don't manage this list by hand — editing your function's arguments automatically adds, removes, and renames parameter rows to match. Only genuine tunable inputs show up here; any built-in data your strategy pulls in (see Advanced settings, below) is never treated as a parameter.
 
-A strategy declares only the **dtype** and, for categorical, the **choice set**. It declares no bounds, no step and no default — those fields do not exist on a strategy anywhere in the schema.
+#### Rules for parameters
 
-The search space is assigned by the [study](/docs/studies), which stores one spec per parameter:
+Fintela checks your parameters before letting you save:
 
-| Study spec | Shape | Meaning |
-|---|---|---|
-| Range | `{minimum, maximum}` | Numeric parameter swept between the bounds |
-| Choices | `{choices: [...]}` | A subset of the strategy's declared categorical choices |
-| Fixed | `{value}` | Pinned to one number, or one declared choice string |
+- Each parameter needs a recognized type — Integer, Float, or Categorical.
+- A Categorical parameter needs at least one choice (up to 100), with no blanks or duplicates.
+- Only Categorical parameters take a Choices list — Integer and Float parameters don't.
+- Every parameter needs a test value, matching its type: a whole number for Integer, any real number for Float, one of the declared choices for Categorical.
 
-Precedence when more than one key is present is `value` > `choices` > `minimum`/`maximum`.
+### How parameters become a study's search space
+
+A strategy only declares what *kind* of value each parameter accepts — not the range a study should try. That's set separately, when you build a [study](/docs/studies):
+
+| Study setting | What it means |
+|---|---|
+| Range | Try every value between a minimum and a maximum |
+| Choices | Try a subset of the values you declared for a Categorical parameter |
+| Fixed | Always use one specific value — no searching |
+
+If a study sets more than one of these for the same parameter, a fixed value wins first, then a chosen subset, then a range.
 
 > [!CAUTION]
-> **`test_value` is not a default.** It is editor metadata — the single concrete value your code is executed with during validation and live-validation. The optimizer never reads it. Pick a value from the middle of the range you plan to sweep; unrepresentative values prove the wrong thing.
+> Your parameter's **test value** is not a default. It's simply the number your code runs against whenever you preview or validate it in the editor — a study never uses it while searching. Pick something from the middle of the range you plan to explore, so what you're validating reflects realistic conditions.
 
-### Advanced options panel
+### Advanced settings
 
-The rail sections, in order:
+A few more settings live in the collapsible panel alongside your code:
 
-| Section | Default | Summary badge | Contents |
-|---|---|---|---|
-| **Parameters** | Expanded | Count of declared parameters | The parameter editor above |
-| **Data sources** | Expanded — **internal only** | Count of selected sources; error state when a source is missing required config | The built-in data injected as kwargs on top of the price panel |
-| **Advanced options** | Collapsed | Derived from its children | Container for the three below |
-| ↳ **Variables** | Collapsed, lazy | Number of selected sources, plus one if any parameters are declared | Live inspector of the exact runtime surface your function receives |
-| ↳ **Lookback** | Collapsed | **Custom function** or **Auto-synced** | The `required_lookback` declaration |
-| ↳ **Validation** | Expanded once Advanced is open; a validation error force-opens the whole Advanced group | — | Classified error, traceback, warnings, and the internal-only Output sample panel |
-| **Version History** | Collapsed, lazy — **edit mode only** | Number of versions | The append-only version list |
+- **Data sources** (internal only) — built-in data you can pull into your strategy alongside price history, such as sector and industry classifications, fundamentals, or index membership. Turn on only what you actually use.
+- **Variables** — a live preview of exactly what your function receives at run time: your enabled data sources plus your declared parameters.
+- **Lookback** — how much price history your strategy needs warmed up before its first real signal. Covered next.
+- **Validation** — the results of Fintela's automatic check of your code: any errors, warnings, and a sample of the positions it produced.
+- **Version History** (while editing) — every past version of this strategy.
 
-Every section carries a "why" popover. The Validation one is worth reading in full: *"Saving needs a passing run — we execute your code in the compiler sandbox, not just parse it."* … *"The backend won't accept a save without a recent passing run for this exact code. Edit it and it has to pass again."* … *"It also proves there's no look-ahead bias: we run a short window and a long one and reject the save if appending future data changes a past signal."*
+#### Warm-up period (lookback)
 
-#### Lookback declaration
+Most strategies need some history before their first signal means anything — a 50-day moving average, for instance, needs 50 days of prices behind it before it's meaningful. The **lookback** tells Fintela how many extra trading days of history to load before your simulation's start date, so your indicators are already warmed up on day one.
 
-Lookback is **always a Python function**, for internal and external strategies alike. The rail hint reads: *"Define a required_lookback(...) function in the editor. It takes your parameters as kwargs — a subset is fine — and returns an int between 1 and 5000."*
+You declare it as a small function of your own parameters:
 
 ```python
 def required_lookback(slow_ma, fast_ma, signal_window):
     return max(slow_ma, fast_ma) + signal_window
 ```
 
-The snippet editor renders in the center zone under the main editor (Monaco, Python, 220px). Its header carries either **Reset to auto-sync** (when the snippet is custom) or an **Auto-synced** chip: *"This lookback is generated from your parameters and stays in sync as you edit them. Edit it to customize — your code is kept and only the signature is realigned."*
+Fintela can generate this for you automatically and keep it in sync as you add or rename parameters, or you can customize it yourself — useful when your warm-up need isn't a simple function of your parameters.
 
-What the value does:
+What it affects:
 
-- The price panel is sliced starting `max_window - 1` trading days before your start date, so your indicators are warm on day one. Tickers with fewer than `max_window + 1` non-null values are dropped from that run.
-- It is evaluated on **every optimizer trial**, with that trial's sampled values.
-- At study-create time it is evaluated at **each parameter's maximum** to confirm the asset group has enough history.
-- After a successful validation the panel reports: *"Validated. With your test values, `required_lookback` returns **{{days}}** trading days — a study evaluates it again at each parameter's maximum."*
+- Fintela loads that many extra days of price history before your start date. Instruments without enough history are left out of that run.
+- It's recalculated for every trial in a study, using that trial's own parameter values.
+- When a study launches, Fintela also checks it at each parameter's maximum possible value, to confirm your chosen universe has enough history to support the widest case you might try.
 
-The snippet is compiled in a **narrower sandbox than your strategy body**: builtins `__import__, abs, bool, float, int, isinstance, len, max, min, pow, range, round, sum, Exception, TypeError, ValueError`, plus the globals `pd`, `np`, `math`, `datetime`. Do not assume the strategy sandbox's namespace here.
-
-**Per-source warmups.** `required_lookback` warms only the asset-group price panel (`data=`). A strategy that rolls a calculation over an injected source declares `required_lookback_<source_kwarg>`, and the editor scaffolds a per-reference variant with **Add default-cluster warmups**:
-
-```python
-def required_lookback(fast_ma):
-    return fast_ma                # asset group price panel (shallow)
-
-def required_lookback_default_clusters__etf_sleeve(etfs_roc, etfs_z):
-    return etfs_roc + etfs_z      # that default cluster (deep)
-```
+If your strategy uses a built-in data source beyond plain prices, you'll need a separate lookback declaration for that source too — the editor prompts you to add one if it's missing. Skipping this means that data arrives without enough history behind it, which can quietly distort your strategy's early results.
 
 > [!WARNING]
-> Every injected `default_clusters` reference **must** have its own warmup or the save is blocked: *"Every injected default cluster needs its own warmup. Add `required_lookback_default_clusters__<ref>` for: {{refs}}. Without it the cluster is loaded clipped to the simulation window, so anything rolled over it starts on NaN-starved values while the price panel looks fine."*
->
-> Windows applied in sequence **add**; windows applied in parallel take the **max**. Edit each returned window to match its calculation.
+> If your strategy chains several calculations that each need their own warm-up, add the days together for calculations that happen one after another, and use the largest for calculations that happen side by side.
 
 #### Validation settings
 
-Behind the gear icon (internal only), titled **Validation settings**:
-
-| Control | Behaviour |
+| Setting | What it controls |
 |---|---|
-| **Ticker sample size** | Slider `1…496` with marks `1 / 100 / 250 / All`, plus a numeric box clamped to the same range. **496 means "All"** and sends no sample size at all. Hint: *"Fewer tickers = faster validation. Use 496 for a thorough check before saving."* Disabled whenever a custom universe is set — *"Only available with the default universe (SPY holdings). A custom universe already defines the exact ticker list."* |
-| **Validation universe** | Three modes — **Default (SPY)** (*"Validate against the standard SPY fixture."*), **Asset group** (picker *"Select asset group"*), and **Tickers** (search field *"Search and add ticker"*), each with an optional **Date range (optional)** of **Start Date** / **End Date** |
+| Ticker sample size | How many tickers Fintela checks your strategy against while you type — fewer is faster, more is more thorough. The maximum setting runs a full check instead of a sample. Unavailable once you've set a custom validation universe, since that already defines the exact list |
+| Validation universe | What Fintela tests your code against: the default sample universe, a specific asset group, or a list of tickers you name yourself — optionally limited to a date range |
 
-The two universe modes bind differently:
+Choosing an **asset group** as your universe is just a note for your own reference: Fintela remembers it and suggests it first when you build a study, but it doesn't restrict which universe a study can actually use.
 
-| Mode | Stored as | Effect |
-|---|---|---|
-| **Asset group** | Provenance | *"Remembered as where this strategy was validated, and shown first when you pick a universe for a study. It does not restrict which group a study may use."* |
-| **Tickers** | Requirement | *"Saved as this strategy's universe: it will be marked as written for these instruments, and studies on a group that lacks them will warn."* |
+Naming specific **tickers** is different — it declares that this strategy is written for those instruments. If a study later runs it over a universe missing some of them, you'll see a warning; missing all of them blocks the study as incompatible. Leave both empty and your strategy is treated as universe-agnostic, with no such check at all.
 
-Named tickers are the **only** half the study compatibility gate reads. Compared case-insensitively against the study's runnable tickers: if **all** are missing the study is blocked as incompatible; if **some** are missing you get a warning listing them. Leave both empty and the strategy is universe-agnostic — no universe gate runs anywhere.
+A custom list of tickers is capped at 2,000.
 
-A custom validation universe is capped at **2000 tickers**. Beyond that the compiler returns 422 and never silently truncates.
+### Saving a strategy
 
-### Save flow and confirmation dialogs
+Before your strategy is saved, Fintela works through a series of checks and tells you exactly what to fix if something's wrong:
 
-The footer has **Cancel** (routed through the unsaved-changes guard) and a primary button labelled **Create strategy** in create mode or **Save changes** in edit mode, showing **Validating...** while a validation runs. The primary button is enabled once the code is non-empty (internal) or the endpoint is non-empty (external).
+1. Any unreviewed draft in the editor needs to be reviewed first.
+2. Your code (internal) or endpoint address (external) can't be empty.
+3. External settings like timeout and concurrency must be positive whole numbers.
+4. Every parameter needs a test value.
+5. Every Categorical parameter needs at least one choice, and its test value must be one of them.
+6. Any built-in data source that needs its own warm-up has one.
+7. Your code passes Fintela's automatic validation run.
 
-Pressing save runs these checks in order:
+Once everything checks out, you're asked to name your strategy and add a description — the only point where you set the name. Typing a name automatically formats it into a valid identifier (lowercase, spaces become underscores) and, for internal strategies, renames the entry point in your code to match. If the name is already taken, Fintela appends a number to keep it unique.
 
-| # | Check | Message on failure |
-|---|---|---|
-| 1 | No unreviewed editor draft | *"Review the draft before saving"* — keep it or discard it, then save |
-| 2 | Code / endpoint present | `Python implementation cannot be empty` / `Endpoint is required` |
-| 3 | External numbers are integers ≥ 1 | `Must be a positive integer` |
-| 4 | Every parameter has a test value | `All parameters must have test values for validation` |
-| 5 | Categorical parameters are complete | `Parameter "{{name}}" needs at least one choice` / `The test value of "{{name}}" must be one of its choices` |
-| 6 | Every injected default cluster has a warmup | The `defaultClusterWarmupRequired` message above |
-| 7 | The async validation job passes | `Validation failed. See details below.` — plus an inline Monaco marker at the failing line |
+If you're editing a strategy that studies already depend on, and your change genuinely affects its behavior, Fintela warns you first: any study that already launched keeps running against the version it started with, so your edit won't retroactively change results you already have.
 
-Then the naming dialog opens — **the only place a strategy is named**. Title **Confirm Action**; message *"Name your strategy to create it."* on create, *"Review the name and description before saving."* on edit. Fields **Name** and **Description**.
+A few things can stop a save:
 
-> [!IMPORTANT]
-> The name helper reads *"Lowercase identifier — also the Python function name."* Typing a name lowercases it, replaces spaces with `_`, and **renames the Python entry point in your code** — the compiler rejects a function whose `__name__` does not match the registry name. This drops the validation pin, so the save re-validates the exact bytes it is about to write. If the name is taken, the field shows *"Already in use — it will be saved as "{{name}}""*.
-
-Editing an internal strategy that studies already reference, when the code or the normalized parameter set actually changed, first shows the breaking-change dialog:
-
-> Saving creates a new version of "{{name}}". Studies that have already launched stay pinned to the version they ran with, so their results won't change.
-
-#### Save errors
-
-| Status | Meaning | Where it shows |
-|---|---|---|
-| **409** | `A strategy named "foo" already exists in your organization.` — only a race backstop: create and rename otherwise take the next free ordinal instead of failing | On the Name field |
-| **409** | `This strategy was changed by someone else while you were editing it. Reload it to see their version before saving yours.` | Also on the Name field — the editor routes every 409 there |
-| **406** | `This code has not been validated as a strategy. Validate it (POST /validate/internal/…) before saving.` | Inline; the pin is cleared |
-| **406** | `This code was validated, but not at the parameter values being saved (...). Causality and warmup are proven at the values the validation ran with, so validate again with these ones before saving.` | Inline |
-| **406** | `This code was validated over a custom date window. The causality checks only cover the period they ran on, so a receipt minted that way cannot authorize a save. Validate over the default window (a custom ticker list is fine) and save again.` | Inline |
-
-The 406s come from the **validation receipt gate**. Saving internal code requires a completed validation job from your organization, **less than one hour old**, whose digest matches `code + lookback_function_code + graph` and whose test-parameter point matches what you are saving. A receipt minted over a custom *date window* is refused; a custom *ticker list* is fine.
+- The name is already in use in your organization — rare, since Fintela normally resolves this for you automatically.
+- Someone else changed this strategy while you were editing it — reload it to see their version before saving yours.
+- Your code hasn't passed validation yet, or was validated at different parameter values or a different date window than what you're about to save. Run validation again with your final code and values, then save.
 
 ### Version history
 
-Versions are produced by a database trigger, append-only, newest first, and read via `GET /strategies/:id/versions`. A new strategy gets **v1** on insert — including on duplicate.
+Every meaningful save creates a new version, and past versions are never overwritten — you can always see what changed and when.
 
-| Change | Mints a version? |
+| Change | Creates a new version? |
 |---|---|
-| Execution type, execution details (code or endpoint config), parameters, lookback mode, lookback function code, data-source graph, soft delete | Yes |
-| Name only, description only | **No** |
-| Memory profile, universe binding (asset group or named tickers) | **No** |
+| Execution type, code or endpoint settings, parameters, lookback, data sources, or deleting the strategy | Yes |
+| Name or description only | No |
+| Memory settings, or which asset group/tickers it's validated against | No |
 
-One save is one version even though the row and its data-source graph are written as two statements: a second capture inside the same transaction updates the version it already minted instead of appending another.
+For internal strategies, you can **restore** any past version — it loads that version's code back into the editor as a draft for you to review and save, rather than reverting instantly. Restoring an old version therefore creates a new version too.
 
-**Restore** is available for internal strategies only. It loads the snapshot into the editor as an unsaved change — *"it never writes to the server, so you review it and save normally, which appends yet another version."*
-
-A launched study keeps running against the version it started with, so editing here never rewrites a result you already have. See [study lifecycle](/docs/study-lifecycle).
+A launched study always keeps running against the version of the strategy it started with, so editing a strategy here never changes a result you've already produced. See [study lifecycle](/docs/study-lifecycle) for more on how studies pin to a version.
 
 ## Execution modes
 
-There are exactly **two live execution modes**. A third — Rule-based / `declarative` — exists as a disabled scaffold in the UI and is rejected by the server. See also [execution modes](/docs/execution-modes) for the platform-wide comparison.
+Every strategy runs in one of two ways today. A third option — Rule-based — is visible in the editor as a preview of what's coming, but isn't available yet. See [execution modes](/docs/execution-modes) for how this choice compares across the platform.
 
 | | Internal | External |
 |---|---|---|
-| Where the code runs | Fintela's sandbox container | Your infrastructure |
-| Language | Python only | Any — Fintela only speaks HTTP |
-| Your private data | Not available; only declared data sources | Fully available; Fintela never sees it |
-| Stored as | `execution_details = {code}` | `execution_details = {endpoint, timeout, max_concurrency}` |
-| Data sources section | Yes | **No** |
-| Validation receipt required to save | **Yes** | No — the only server-side check is the endpoint screen |
-| Version history shows code / Restore | Yes | No |
-| Curated library list applies | Yes | No |
-| `required_lookback` function | Required | Required |
+| Where your logic runs | Inside Fintela's sandbox | On your own systems |
+| Language | Python only | Any language — Fintela just needs a web address to call |
+| Your private data | Only what you explicitly turn on as a data source | Fully private — Fintela never sees it |
+| Data sources panel | Available | Not available |
+| Checked automatically before saving | Yes | Only the address itself is checked |
+| Code visible in version history, with Restore | Yes | No — only the connection settings |
+| Curated Python library list | Applies | Doesn't apply — it's your own environment |
+| Warm-up (lookback) function | Required | Required |
 
-### Internal — the deterministic function signature
+### Internal strategies — how your code is called
 
-An internal strategy is **one top-level Python function**. The compiler finds it **by signature, not by name or position**: the first callable in your module whose parameters are a superset of `{data, start_date, end_date}`.
+Write one function. Fintela recognizes it by its arguments, not by its name or position in the file — the first function whose parameters include `data`, `start_date`, and `end_date` is the one that runs.
 
 ```python
 def your_strategy(
-    data,            # required — adjusted-close price DataFrame
-    start_date,      # required — str (YYYY-MM-DD)
-    end_date,        # required — str (YYYY-MM-DD)
+    data,            # required — price history for your universe
+    start_date,      # required — the simulation's start date
+    end_date,        # required — the simulation's end date
 
-    # Injected data sources — bound by exact parameter name, and passed
-    # only for sources you selected in the Data sources section
-    meta,            # pd.DataFrame                    sector / industry / type
-    fundamentals,    # dict[str, pd.DataFrame]         PE, beta, market cap …
-    groupings,       # dict[str, dict[str, set[str]]]  membership by date
+    # Any data sources you've turned on, matched by name
+    meta,            # sector / industry / instrument type
+    fundamentals,    # PE, beta, market cap, and similar figures
+    groupings,       # membership in named groups, by date
 
-    # Your declared optimizable parameters
+    # Your own declared parameters
     lookback,
     top_n,
 ):
-    ...                                # returns the signal dict
+    ...                                # build and return your signal
 ```
 
-At runtime the function is invoked **entirely by keyword**:
-
-```python
-signal = fn(data=processed_data, start_date=start_date, end_date=end_date,
-            **params, **extra_kwargs)
-```
-
-| Argument | Type | Meaning |
-|---|---|---|
-| `data` | `pandas.DataFrame` | Adjusted-close price matrix. Index = trading dates (`DatetimeIndex`), columns = ticker codes. Pre-sliced to include the lookback window before `start_date`. Unlisted tickers are `NaN` on dates before they existed |
-| `start_date` | `str` `YYYY-MM-DD` | Simulation start. Use it as the lower bound in your signal loop |
-| `end_date` | `str` `YYYY-MM-DD` | Simulation end. Use it as the upper bound |
-| *declared parameters* | `int`, `float` or `str` | One concrete value per trial. A categorical parameter arrives as the chosen **string** |
-| *declared data sources* | Varies by source | Bound by **exact parameter name** |
+| Argument | What it gives you |
+|---|---|
+| `data` | Price history for every instrument in your universe, already extended back to cover your lookback window. An instrument that didn't exist yet on a given date simply has no value there |
+| `start_date` / `end_date` | The window your signal should cover |
+| your declared parameters | One concrete value per trial — a Categorical parameter arrives as the text you chose for it |
+| your enabled data sources | Whatever extra data you turned on, matched to the argument with the same name |
 
 > [!CAUTION]
-> Consequences of keyword invocation, in order of how often they bite:
-> - **Argument order is irrelevant; names are the contract.**
-> - **A source you do not name in the signature is simply not passed.**
-> - **A `**kwargs`-only strategy binds nothing.** Strategies have no var-keyword branch — every injected source must be an explicit named parameter.
-> - **The function name must equal the registry name.** The naming dialog rewrites it for you.
-> - `data` has a real `DatetimeIndex`, while `default_clusters[ref]` is indexed by **ISO date strings**. Mixing them raises a `KeyError` whose entire message is a timestamp. The compiler emits a line-numbered cross-dtype warning about this.
+> A few things to keep in mind:
+> - Argument **names** matter, not their order — write them however makes sense to you.
+> - Any data source you don't name as an argument simply isn't passed to your function.
+> - Every value your function needs must be a named argument — there's no catch-all for extra data.
+> - Your function's name has to match your strategy's name; Fintela keeps these in sync automatically when you name your strategy at save time.
 
-### The signal you return
+### The signal your strategy returns
 
-Both modes must produce the same structure, and both are checked by the same validator.
+Whether your strategy runs inside Fintela or on your own service, it must produce the same shape of answer — a dictionary keyed by date, then by ticker:
 
 ```json
 {
@@ -439,7 +348,7 @@ Both modes must produce the same structure, and both are checked by the same val
 }
 ```
 
-A CI-validated example from the built-in catalog:
+A simple example, similar to one of the built-in template strategies:
 
 ```python
 def momentum_top_n(data, start_date, end_date, lookback=60, top_n=10):
@@ -461,183 +370,116 @@ def momentum_top_n(data, start_date, end_date, lookback=60, top_n=10):
     return out
 ```
 
-Every enforced rule, with its exact rejection message:
+Fintela checks whatever you return against the same rules, no matter how it was produced:
 
-| Rule | Message |
-|---|---|
-| Top level is a dict | `Output must be a dict, got <type>` |
-| At least one date | `Output dict is empty — strategy must return at least one date entry` |
-| Date key parses as `%Y-%m-%d` | `Date key '<d>' is not in YYYY-MM-DD format` |
-| Date value is a dict | `Value for date '<d>' must be a dict, got <type>` |
-| Ticker key is not None | `Ticker key is None on date '<d>' — check that your DataFrame has no columns with null names` |
-| Ticker key is a string | `Ticker key must be a string, got <type>` |
-| Trade is a dict | `Trade for ticker '<t>' on '<d>' must be a dict, got <type>` |
-| `position` present | `Trade for '<t>' on '<d>' missing key 'position'` |
-| `position` is `"L"` or `"S"` | `'position' for '<t>' on '<d>' must be 'L' or 'S', got '<v>'` |
-| `allocation` present | `Trade for '<t>' on '<d>' missing key 'allocation'` |
-| `allocation` is numeric | `'allocation' for '<t>' on '<d>' must be a number, got <type>` |
-| `allocation` is finite | `On date '<d>', an allocation resolved to <v> — allocations must be finite numbers. Check for division by zero or unbounded values in your position sizing logic.` |
-| `allocation` > 0 | `…allocations must be greater than zero. Ensure your position sizing logic never assigns a zero or negative weight…` |
-| `allocation` ≤ 1 | `…allocations must be at most 1 (100%). Check that your weights are normalized before returning the signal.` |
-| Allocations per date sum ≤ 1 | `On date '<d>', allocations sum to <x> (> 1.0, excess: <e>). Strategies must emit weights that fit in the unit budget. If you are dividing 1.0 across N tickers, prefer split_number_into_parts or [1.0/n]*n over manual per-ticker allocation.` |
+- The top level must be a dictionary keyed by date, in `YYYY-MM-DD` format, with at least one date.
+- Each date must map to a dictionary of tickers.
+- Each ticker must map to a trade with a `position` (`"L"` for long, `"S"` for short) and an `allocation` — a weight greater than 0 and no more than 1 (100%).
+- Allocations for a single date can't add up to more than 1; Fintela allows only tiny rounding differences.
+- A date you don't return at all isn't a rebalance — the portfolio simply stays as it was.
 
-The per-date sum tolerance is `1e-6`. The residual (`1 − Σ`) is held as **cash**. A date you omit from the signal is not a rebalance — the portfolio stays where it is.
+Anything you don't allocate on a given date is held as cash.
 
-### Allowed Python libraries — Internal only
+### Python libraries available in the editor
 
-Seven curated packages, pinned to the same versions in all four images that ever run your code: validation, sandbox preview, optimizer training and live updates.
+Internal strategies can use a set of pre-installed, curated Python packages — the same versions everywhere your code runs, so a strategy behaves identically whether you're validating it, previewing it, running a study, or trading live.
 
-| Package | Import root | Version | Summary | Caveat |
-|---|---|---|---|---|
-| `numpy` | `numpy` | 2.2.3 | Arrays & vectorised math (also pre-injected as `np`). | |
-| `pandas` | `pandas` | 2.2.3 | DataFrames & time series (also pre-injected as `pd`). | |
-| `scipy` | `scipy` | 1.16.1 | Scientific computing: stats, optimize, signal, interpolate. | |
-| `scikit-learn` | `sklearn` | 1.6.1 | Classical ML: regression, classification, clustering, preprocessing. | Pass `n_jobs=1` — the optimizer already runs trials in parallel. |
-| `statsmodels` | `statsmodels` | 0.14.6 | Econometrics & time series: OLS/GLS, ARIMA, cointegration tests. | |
-| `ta` | `ta` | 0.11.0 | Technical-analysis indicators (RSI, MACD, Bollinger, …), pure Python. | |
-| `cvxpy` | `cvxpy` | 1.9.2 | Convex optimization for portfolio construction (mean-variance, …). | Use a deterministic solver (e.g. `solver=cvxpy.CLARABEL`); the default SCS is stochastic and can make reruns diverge. |
+| Package | Import as | Version | What it's for |
+|---|---|---|---|
+| NumPy | `numpy` (also pre-loaded as `np`) | 2.2.3 | Arrays and vectorized math |
+| pandas | `pandas` (also pre-loaded as `pd`) | 2.2.3 | DataFrames and time series |
+| SciPy | `scipy` | 1.16.1 | Statistics, optimization, signal processing |
+| scikit-learn | `sklearn` | 1.6.1 | Regression, classification, clustering |
+| statsmodels | `statsmodels` | 0.14.6 | Econometrics and time-series modeling |
+| ta | `ta` | 0.11.0 | Technical-analysis indicators (RSI, MACD, Bollinger Bands, …) |
+| cvxpy | `cvxpy` | 1.9.2 | Convex optimization for portfolio construction |
 
-Nine stdlib roots are also importable: `math`, `datetime`, `collections`, `statistics`, `itertools`, `functools`, `operator`, `calendar`, `json`.
+A handful of standard Python building blocks are available too: `math`, `datetime`, `collections`, `statistics`, `itertools`, `functools`, `operator`, `calendar`, and `json`.
 
-Two categories carry dedicated rejection messages:
+Two things to avoid:
 
-- **`random`** — non-deterministic across trials. Use `numpy.random.default_rng(seed)` with the seed supplied as a parameter.
-- **Network roots** — `urllib`, `urllib3`, `http`, `socket`, `ssl`, `ftplib`, `smtplib`, `requests`, `httpx`, `aiohttp`, `telnetlib`, `xmlrpc`, `webbrowser`. *"Every Optuna trial would re-fetch, so the same trial can score differently on a re-run, and the study's runtime depends on a third party's uptime. Bring the data in as a SELECTED DATA SOURCE instead."*
+- **`random`** — it makes your strategy behave differently from run to run. Use a seeded generator instead (`numpy.random.default_rng(seed)`), with the seed as one of your declared parameters, so results stay reproducible.
+- **Anything that reaches out to the network** — fetching data live during a run means the same trial could score differently on a re-run, and your study's speed would depend on a site you don't control. Bring outside data in as a data source instead, and ask the Fintela team about adding it if it isn't available yet.
 
-> [!IMPORTANT]
-> For **strategies and fitness functions the import list is advisory, not enforced** — findings are surfaced as warnings and the save goes through. It is enforced as a hard error only for risk managers. And per the source itself: the allow-list *"is a convenience guard: it surfaces an unavailable import at save time instead of as an opaque mid-run ImportError. It is NOT a security boundary."* Treat it as a compatibility list, never as a sandbox.
+> [!TIP]
+> For strategies and fitness functions, using a package outside this list shows up as a warning, not a hard stop — you can still save. Treat the list as a guide to what's supported and fast, not a strict boundary. If you need something that isn't listed, ask the Fintela team to add it.
 
-Need something else? Ask the Fintela team to add it — the editor's "Python libraries you can import" panel says so directly.
+### How your code is checked before it's used
 
-### The validation and preview sandbox
+Before Fintela accepts your code — and every time you ask for a fresh check — it actually runs your strategy, not just reads it:
 
-Internal code is executed twice over before it is ever accepted:
+- It runs your code against a realistic sample of instruments (by default, an S&P 500-style universe) over several years of history.
+- It runs the check **twice** — once over a shorter window, once over a longer one — and rejects the strategy if adding more recent data changes a signal on a date that's already happened. This protects you from unknowingly writing a strategy that only looks good because it's peeking at the future.
+- A check has a generous but limited amount of time to finish; if your code is unusually slow, simplify it or check with less history.
+- If a lot of validations are happening across the platform at once, yours may need to wait briefly and retry.
 
-| Property | Value |
-|---|---|
-| Default fixture | ~500 S&P 500 holdings, 2017–2023 |
-| Validation window | `2019-01-01` → `2022-06-30` (short) and → `2023-12-31` (long) |
-| Look-ahead check | The strategy is run **twice**, short window and long; the save is rejected if appending future data changes a past signal |
-| Compiler work budget | **90 s**, then a 504 with `Compiler validation exceeded the 90s time budget` |
-| Concurrent validations | **4** — load shed, not queued: `Compiler at capacity (4 concurrent validations); …` |
-| Max request body | **5 MiB** |
-| Output sample cap | 50 dates |
-| Pre-injected globals | `pd`, `np`, `math`, `datetime`, plus the `fintela_strategy_lib` helpers |
+The **Output sample** panel in the Validation section shows the actual positions your code produced on a recent check — date, ticker, side, and allocation — so you can sanity-check your logic without leaving the editor.
 
-The **Output sample** panel in the Validation section runs the full validation job on demand (never as-you-type) and shows the columns **Date / Ticker / Side / Allocation**. Its subtitle: *"The daily positions your strategy produces on a sample run."*
+**Run a Backtest** is a separate, on-demand check: you choose the values, the universe, and the date range, and it costs **1 token** per run. It's the fastest way to sanity-check an idea before committing it to a full study. See [tokens and billing](/docs/tokens-and-billing).
 
-The **Run a backtest** sandbox is a separate service: user code runs in a subprocess with a credential-scrubbed environment, a **240 s** per-request work budget, and no database access to the strategy tables at all. Each run costs **1 token**. See [tokens and billing](/docs/tokens-and-billing).
+### External strategies — connecting your own system
 
-### External — your own endpoint
+An external strategy is just an address Fintela calls: your language, your infrastructure, your private data, entirely under your control. See [external strategies](/docs/external-strategies) for a full walkthrough, and the [Python/FastAPI](/docs/python-fastapi) and [Node/Express](/docs/node-express) guides for working examples you can adapt.
 
-An external strategy is a URL. Fintela stores the base URL, a timeout and a concurrency budget, and calls one path on it. Your language, your infrastructure, your private data. See [external strategies](/docs/external-strategies) for the hosting walkthrough, and the [Python/FastAPI](/docs/python-fastapi) and [Node/Express](/docs/node-express) integration guides for working servers.
+#### What Fintela sends and expects back
 
-#### The wire contract
+For every simulation, Fintela calls your saved address with the start and end dates, along with your strategy's parameters for that run. If you've configured a validation universe, Fintela also includes the resolved list of tickers, so a universe-aware service can scope its output — a service that ignores it is unaffected. (If one of your own parameters happens to share that same name, your parameter takes priority, and you'll see a warning.)
 
-`/simulate` is appended to the base URL you saved. Dates are **query parameters**; parameters are the **JSON body**.
+Your service is expected to respond with the same signal structure described in [The signal your strategy returns](#the-signal-your-strategy-returns) above — Fintela checks it against the exact same rules, whether the code that produced it lives inside Fintela or on your own servers.
 
-```http
-POST /simulate?start_date=2024-01-01&end_date=2024-06-30 HTTP/1.1
-Host: api.example.com
-Content-Type: application/json
+#### If something goes wrong
 
-{
-  "lookback": 60,
-  "top_n": 10,
-  "mode": "ema",
-  "tickers": ["AAPL", "MSFT", "NVDA"]
-}
-```
+Fintela tells you clearly what happened when your service doesn't behave as expected:
 
-`tickers` is an **additive** body key carrying the resolved universe. It is present only when a universe is configured; otherwise the body is exactly your sampled parameters. If one of your strategy parameters is literally named `tickers`, your parameter wins and the universe is not forwarded, with a warning.
+- Your service returned an error, or a response Fintela didn't expect.
+- The response wasn't valid JSON, or was missing the signal it should have returned.
+- The signal itself broke one of the output rules above.
+- A signal changed for a past date after the window was extended — a sign your service is using information it shouldn't have access to yet.
+- Fintela couldn't reach your service at all — connection refused, timed out, or a DNS/TLS problem.
 
-The response must be a JSON object with a top-level `signal` key:
+While a study is running, a malformed response from your service just prunes that one trial rather than failing the whole study, so a temporary hiccup on your end doesn't waste your entire run.
 
-```json
-{
-  "signal": {
-    "2024-01-02": {
-      "AAPL": { "position": "L", "allocation": 0.5 },
-      "MSFT": { "position": "L", "allocation": 0.5 }
-    }
-  }
-}
-```
+**Look-ahead check.** During validation, Fintela calls your service twice — once over the window you asked for, and once with the end date pushed further out — and rejects the strategy if a signal on a past date changes between the two calls. Your service should always return the same answer for the same inputs, and never let future data leak into a past decision.
 
-The value of `signal` goes through the **same output validator** as internal code — every rule in [The signal you return](#the-signal-you-return) applies unchanged.
+**Universe checks.** If your service returns a ticker outside the universe you configured, you'll see a warning — add the ticker to your universe, or stop returning it, before relying on it in a study.
 
-#### Failure semantics
-
-| Condition | `error_type` | Message |
-|---|---|---|
-| Non-2xx response | `endpoint_error` | `Endpoint returned HTTP {status}: {body[:500]}` (body truncated to 500 chars) |
-| Body is not JSON | `invalid_response` | `Endpoint response is not valid JSON` |
-| No top-level `signal` key | `invalid_response` | `Endpoint response must be a JSON object with a 'signal' key` |
-| `signal` fails the output rules | `invalid_output` | The matching validator message |
-| A past signal changed when the window was extended | `data_leakage` | The leakage report |
-| Connection refused, TLS failure, DNS failure, timeout | `endpoint_error` | A diagnosis-specific transport message |
-
-At **training** time a malformed response prunes the trial rather than failing the study: *"Your external strategy endpoint returned a response that is not the expected shape: it must be JSON with a top-level "signal" object mapping date -> ticker -> {"position": "L"\|"S", "allocation": number}."*
-
-**Look-ahead check.** Validation calls `/simulate` **twice** — once over the requested window, once with the end date extended by **730 days** — and rejects the strategy if a signal on a past date changed. Your endpoint must be deterministic for a given `(start_date, end_date, params)` triple, and must not let data after a date influence the signal on that date.
-
-**Universe membership.** Any ticker your endpoint returns that is not in the forwarded universe raises a warning naming up to 20 codes: *"Those trials will fail with a missing-tickers error unless you add them to the cluster or stop emitting them — an external strategy's signal universe must be a subset of the cluster."*
-
-#### Authentication
+#### Keeping your endpoint secure
 
 > [!WARNING]
-> Fintela sends **no** `Authorization` header, API key or service token to your endpoint. The request carries only `Content-Type: application/json`, the two date query parameters and your JSON body. If your endpoint needs a secret, the only place to put it is inside the base URL path you save — a query string on the stored endpoint is not preserved, because `/simulate` is appended to the path. Redirects are never followed, on any call path.
+> Fintela does not send any credentials, API key, or authentication header to your service — only the request itself. If your service needs to verify a request genuinely came from Fintela, the only place to embed a secret is inside the address you save. Fintela never follows redirects, so make sure your saved address points directly at the right place.
 
-#### Timeouts, retries and concurrency
+#### Timeouts and concurrency
 
-The stored `timeout` is in **seconds**. Three call sites use it differently — do not conflate them:
+Your **Timeout** setting controls how long Fintela waits for your service to respond before giving up. Fintela automatically retries a request that fails for a transient reason (a dropped connection, a brief outage) a couple of times before giving up for good — but a request that times out after your service already started working isn't retried during a backtest or a study, to avoid piling more load onto an already-slow response.
 
-| Call site | Timeout | Attempts | Retried on | Backoff |
-|---|---|---|---|---|
-| Compiler validation | **30 s fixed** — ignores your stored `timeout` | 1 + 2 retries | Connect error, connect timeout, read timeout, pool timeout, remote protocol error | Linear: 1 s, 2 s |
-| Sandbox backtest | Your stored `timeout` (falls back to 60 s only if none is stored) | 1 + 3 retries | The same transport errors **except read timeout**, plus HTTP 429 / 502 / 503 / 504 | Full-jitter exponential, base 1 s, ceiling 8 s |
-| Optimizer training | Your stored `timeout` | 1 + 3 retries | Same as the sandbox | Full-jitter exponential, base 1 s, ceiling 8 s |
+Your **Max Concurrency** setting is the number of requests Fintela may have in flight against your service at once during a study — raise it if your service can comfortably handle more parallel load, lower it to protect your own infrastructure. If your strategy and your fitness function are both external and point at the same service, Fintela automatically shares that budget between them so you don't get more load than you expected.
 
-A read timeout is deliberately **not** retried in the sandbox or the optimizer: the request was accepted, so retrying would double the load on an already-slow backtest. Every client pool holds at most **2 connections** with a 30-second keep-alive — pair that with `timeout_keep_alive >= 30` on your server.
+> [!TIP]
+> Make sure your service can actually sustain the concurrency you set — a higher `Max Concurrency` only helps if your infrastructure can genuinely serve that many requests at once.
 
-> [!CAUTION]
-> **`max_concurrency` is not a connection limit.** Each HTTP client pool is fixed at 2 connections regardless of what you set. `max_concurrency` is the **worker budget the dispatcher grants your study**:
-> - For an external study the optimizer runs one task with a pool of `max_concurrency` workers.
-> - If your strategy **and** your fitness function are both external, the budget is `min(strategy, fitness)`.
-> - If both point at the **same normalized endpoint**, that budget is **halved** (floor, minimum 1) — they share your server's capacity.
-> - The optimizer caps the effective batch at **32** regardless.
-> - It also sizes the study's compute: budget ≤ 8 → 4 GiB, ≤ 32 → 8 GiB, above that → 16 GiB.
+#### Requirements for your endpoint address
 
-#### Endpoint restrictions
+Fintela checks your address both when you save it and before every call:
 
-The endpoint is screened at save time (no network call — your server may not be up yet) and again, by DNS resolution, before every request.
-
-| Rule | Message |
-|---|---|
-| No whitespace or control characters | `EXTERNAL endpoint must not contain whitespace or control characters` |
-| Must parse as a URL | `EXTERNAL endpoint is not a valid URL ({e}): '{endpoint}'` |
-| Scheme is `http` or `https` | `EXTERNAL endpoint must use http:// or https:// (got 'ftp').` |
-| Host is present | `EXTERNAL endpoint must include a host` |
-| Not `localhost` or `*.localhost` | `EXTERNAL endpoint host must not be loopback/localhost` |
-| A literal IP must be publicly routable | `EXTERNAL endpoint host {ip} must be a publicly routable address, not a private, loopback, link-local or reserved one` |
-| Every resolved address must be public | Prefixed `Your endpoint address is not allowed: ` — e.g. *"the host '10.0.0.5' is a private, loopback or otherwise internal address. Fintela only calls publicly routable addresses."* |
+- It must be a well-formed web address using `http://` or `https://`.
+- It must include a host — no blank or malformed addresses.
+- It can't point at `localhost` or a loopback address.
+- It has to resolve to a publicly reachable address — Fintela can't call something on your private network.
 
 > [!NOTE]
-> **HTTPS is not required.** A plain `http://` endpoint saves and runs; the editor shows an advisory warning only. TLS was never the control here — what is enforced is that the host resolves to a publicly routable address. There is **no port allowlist**.
+> HTTPS isn't required — a plain `http://` address works, and Fintela just shows a warning that the connection isn't encrypted. There's no restriction on which port you use, as long as the address itself is public.
 
-### Where External does not apply
+### What's different about external strategies
 
-State this plainly, because the editor hides rather than disables these:
-
-| Capability | External strategies |
+| Feature | Available for external strategies? |
 |---|---|
-| **Data sources section** | **Not available.** Your endpoint receives only parameters, dates and the optional `tickers` list — injected kwargs could never reach it. Price is still attached server-side, because the simulation prices the universe either way |
-| **Ticker sample size slider** | **Not available.** There is no synthetic fixture to sample from |
-| **Python editor, Format, Reference dialog, code intelligence, import lint** | **Not available.** Fintela never sees your code |
-| **Curated library list** | **Does not apply.** Your runtime is yours |
-| **Live as-you-type validation** | **Not available.** Validation is on demand, and each run makes two real calls to your server |
-| **Validation receipt gate** | **Does not apply.** External strategies save with no receipt requirement |
-| **Version history code view and Restore** | **Not available.** Versions record the endpoint configuration, not code |
-| **Rule-based / declarative mode** | **Does not exist for strategies at all**, internal or external. Declarative rule trees are a [risk manager](/docs/risk-managers) feature |
+| Data sources panel | No — your service only receives dates, parameters, and (optionally) the resolved ticker list. Prices are still applied when your signal is simulated, so you don't need to fetch them yourself |
+| Ticker sample size for validation | No — there's no built-in sample to choose from |
+| Python code editor, formatting, code help | No — Fintela never sees your code |
+| Curated Python library list | Doesn't apply — you control your own environment |
+| Live as-you-type validation | No — validation happens on demand, and each check makes real calls to your service |
+| Required check before saving | No — external strategies save without a passing check first, though you should still test with Run a Backtest |
+| Code view and Restore in version history | No — versions record your connection settings, not code |
+| Rule-based mode | Not available for strategies at all, internal or external — that's a [risk manager](/docs/risk-managers) feature |
 
-What External *does* get, identically to Internal: the `required_lookback` function (sandboxed standalone, it never touches your endpoint), the optional validation universe, parameters and their study search space, the sandbox backtest, the registry table, duplication, and version history of its configuration.
+Everything else works the same either way: your warm-up (lookback) function, an optional validation universe, parameters and the search space a study builds from them, Run a Backtest, the strategies list, duplication, and version history of your settings.

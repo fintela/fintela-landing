@@ -4,392 +4,318 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 1
 published: true
-updated: 2026-08-20
-summary: Internal vs external execution for strategies, fitness functions and risk managers.
-keywords: internal, external, execution_type, modes, matrix, simulate, evaluate, self-hosted, immutable
+updated: 2026-09-01
+summary: How to choose between running your strategies, fitness functions and risk managers inside Fintela or on your own infrastructure, and what that choice means for validation, timing and live trading.
+keywords: internal, external, self-hosted, endpoint, strategies, fitness functions, risk managers, live trading, validation
 ---
 
-Three Fintela registry resources are *executed code*, and each one declares how it runs when you
-create it. **Internal** means Fintela stores your Python and runs it in its own sandbox against a
-fixed function signature. **External** means Fintela stores only a URL and calls your server over
-HTTP — any language, your infrastructure, your private data. The mode lives on the individual
-record, not on the study that references it, so one study can mix an internal strategy with an
-external fitness function without any extra configuration.
+Strategies, fitness functions and risk managers are the three pieces of logic you write in Fintela,
+and each one asks you the same question when you create it: should Fintela run this for you, or
+should it call out to something you run yourself? **Internal** means you write Python directly in
+Fintela's editor and Fintela runs it for you. **External** means your logic lives on your own
+servers — in any language, on any stack — and Fintela reaches out to it over the internet whenever
+it needs an answer.
 
-## Which registries carry a mode
+This choice is made per strategy, per fitness function, and per risk manager — not per study. That
+means a single study can freely mix an internal strategy with an external fitness function, or any
+other combination, with nothing extra to configure.
 
-| Registry | Field | Values on the wire | External supported |
-|---|---|---|---|
-| [Strategies](/docs/strategies) | `execution_type` | `internal`, `external` (+ `declarative`, refused on save) | Yes |
-| [Fitness functions](/docs/fitness-functions) | `execution_type` | `internal`, `external`, `builtin` (+ `declarative`, refused on save) | Yes |
-| [Risk managers](/docs/risk-managers) | `kind` | `builtin`, `internal`, `external`, `declarative` | Yes — read the caveat below before you rely on it |
-| [Asset groups](/docs/asset-groups) | — | — | No — an asset group is data, not code |
-| [Studies](/docs/studies) | — | — | No — a study inherits the modes of the records it references |
-| [Portfolio groups](/docs/portfolio-groups) | — | — | No |
-| [Promoted portfolios](/docs/promoted-portfolios) | — | — | No |
+## Which parts of Fintela support Internal and External
 
-Values are **lowercase on the API** and **UPPERCASE in the database** (`INTERNAL`, `EXTERNAL`,
-`BUILTIN`, `DECLARATIVE`). Version snapshots keep the uppercase spelling — in
-`snapshot_execution_type` for strategy and fitness versions, in `snapshot_kind` for risk-manager
-versions.
-
-All three registry tables show an **Execution Type** column by default, rendering the raw
-lowercase value in an outlined chip. On risk managers that column is the legacy `execution_type`
-field, so it reads `internal`, `external`, or an em dash — not the `kind`. The **Kind** column,
-with translated labels **Built-in**, **Custom code**, **Rule-based** and **External HTTP**, is
-hidden by default and has to be switched on from the column chooser.
-
-> [!NOTE] Rule-based is not a live mode for strategies or fitness
-> Both editors show a third **Rule-based** (`declarative`) segment, permanently disabled with the
-> tooltip "Rule-based strategies are coming soon." / "Rule-based fitness functions are coming
-> soon." The wire path is closed too — the backend answers **400** with
-> `Rule-based (declarative) strategies are not supported yet.` or
-> `Rule-based (declarative) fitness functions are not supported yet.` Declarative rule trees are a
-> risk-manager feature only.
-
-## Where the mode is set
-
-The mode is chosen once, in the editor, at create time:
-
-| Resource | Control | Options |
+| Where you use it | Can it be External? | Notes |
 |---|---|---|
-| Strategy | Segmented control in the editor header | **Internal**, **External**, **Rule-based** (disabled) |
-| Fitness function | Segmented control in the editor header | **Internal**, **External**, **Rule-based** (disabled) |
-| Risk manager | Segmented control labelled **Kind**, pinned above the working surface | **Internal**, **External**, **Rule-based** |
+| [Strategies](/docs/strategies) | Yes | Also shows a **Rule-based** option that's disabled today — see below |
+| [Fitness functions](/docs/fitness-functions) | Yes | Also offers ready-made **Built-in** objectives, plus a disabled **Rule-based** option |
+| [Risk managers](/docs/risk-managers) | Yes, with a current limitation — see the caution further down | Also offers **Built-in** risk managers and a fully working **Rule-based** option |
+| [Asset groups](/docs/asset-groups) | No | An asset group defines which assets to trade — it's data, not logic, so there's nothing to run |
+| [Studies](/docs/studies) | No | A study simply uses whichever strategy and fitness function you chose for it |
+| [Portfolio groups](/docs/portfolio-groups) | No | — |
+| [Promoted portfolios](/docs/promoted-portfolios) | No | — |
 
-All three controls are `disabled` outside create mode. The risk-manager picker swaps its
-helper text accordingly: in create mode it reads "Choose how this risk manager is implemented. This
-cannot be changed after it is created."; afterwards it reads "The kind is fixed once the risk
-manager exists — changing it means creating a new one."
+### Seeing the mode at a glance
 
-The risk-manager editor offers no **Built-in** segment: as its create-mode notice puts it,
-built-in risk managers "are invoked inline from the study wizard and do not need to be registered
-here". You pick them when you attach a risk manager to a study. Built-in fitness objectives *are*
-rows in the fitness registry (chip value `builtin`), but they are platform-seeded and read-only:
-creating, updating, duplicating or sandboxing one is refused.
+Every registry list shows an **Execution Type** column so you can tell at a glance how each
+strategy, fitness function or risk manager runs, without opening it. On risk managers, turn on the
+**Kind** column from the column chooser for friendlier labels — **Built-in**, **Custom code**,
+**Rule-based** and **External HTTP** — which is also the one that correctly shows built-in and
+rule-based risk managers (the plain Execution Type column leaves those blank).
 
-A study stores only `strategy_id` and `fitness_id`. At launch it additionally pins
-`strategy_version_id` and `fitness_version_id` to the latest version row of each — which is what
-decouples a launched study from any later edit to the registry record.
+> [!NOTE] Rule-based isn't available for strategies or fitness functions yet
+> Both editors show a third **Rule-based** option alongside Internal and External, but it's
+> permanently disabled with a "coming soon" tooltip — you can't save one today. Rule-based logic
+> (building trading rules without writing code) is fully available for **risk managers** only.
 
-## The strategy and fitness matrix
+## Where you choose the mode
 
-A strategy's mode and a fitness function's mode are independent, so all four combinations are
-valid and supported. A `builtin` fitness objective counts as non-external for every decision in
-this table.
+You pick the mode once, when you first create the record:
 
-| Combination | Signal comes from | Score comes from | Optimizer task layout | Promotable to a tracked portfolio |
-|---|---|---|---|---|
-| internal + internal | In-process Python | In-process Python | The study's default task count; each worker pool falls back to `os.cpu_count()` | Yes |
-| internal + external | In-process Python | `POST {endpoint}/evaluate` | Exactly **1** task, pool = the fitness `max_concurrency` | Yes |
-| external + internal | `POST {endpoint}/simulate` | In-process Python | Exactly **1** task, pool = the strategy `max_concurrency` | **No** |
-| external + external | `POST {endpoint}/simulate` | `POST {endpoint}/evaluate` | Exactly **1** task, pool = `min(strategy, fitness)`, halved if both normalise to the same URL | **No** |
+| Resource | Where to find it | Options |
+|---|---|---|
+| Strategy | The Internal / External toggle at the top of the strategy editor | **Internal**, **External**, **Rule-based** (disabled) |
+| Fitness function | The Internal / External toggle at the top of the fitness editor | **Internal**, **External**, **Rule-based** (disabled) |
+| Risk manager | The **Kind** control pinned above the risk-manager editor | **Internal**, **External**, **Rule-based** |
 
-> [!WARNING] An external strategy cannot become a live-tracked portfolio
-> Promotion is gated on `strategies.execution_type` alone. Promoting a trial portfolio whose
-> strategy is external is refused with **400** and the message
-> `trial portfolio {id} uses an EXTERNAL strategy ({execution_type}); managed daily-update mode
-> supports INTERNAL strategies only, so it cannot be promoted or tracked`. The same rule blocks it
-> from a tracked basket. An external *fitness* function does not block promotion — it only scores
-> trials during optimization, and no longer participates once a portfolio is promoted.
+All three controls lock as soon as the record is saved for the first time. Editing an existing
+strategy or fitness function later, the toggle simply shows as disabled; the risk-manager editor
+spells it out with helper text — while you're creating one it says the kind can't be changed once
+it's created, and once it exists it says you'd need to create a new one to change it.
+
+The risk-manager editor doesn't offer a **Built-in** option directly — built-in risk managers are
+things you pick when you attach a risk manager to a study in the study wizard, not records you
+create yourself. Built-in fitness objectives, on the other hand, do live in the fitness registry as
+ready-made rows you can select — but they're provided by Fintela and read-only, so you can't edit,
+duplicate or backtest one as if it were your own.
+
+> [!TIP] Launched studies keep the version you started with
+> When you launch a study, Fintela locks in the exact version of the strategy and fitness function
+> you had selected at that moment. If you go back and edit the registry record afterward, any study
+> already running keeps using the version it launched with — your live results never shift under
+> you because of a later edit.
+
+## Combining internal and external
+
+A strategy's mode and a fitness function's mode are chosen independently, so all four combinations
+are valid inside the same study. A **Built-in** fitness objective behaves like Internal for
+everything in this table — it runs inside Fintela and never involves a call to your own servers.
+
+| Combination | Trading signal comes from | Score comes from | Can be promoted to a live-tracked portfolio |
+|---|---|---|---|
+| Internal strategy + Internal fitness | Fintela | Fintela | Yes |
+| Internal strategy + External fitness | Fintela | Your endpoint | Yes |
+| External strategy + Internal fitness | Your endpoint | Fintela | **No** |
+| External strategy + External fitness | Your endpoint | Your endpoint | **No** |
+
+> [!WARNING] An external strategy can't become a live-tracked portfolio
+> Daily-update, live-tracked management only works with a strategy Fintela runs internally — if
+> the strategy behind a trial is External, promoting that trial to a tracked portfolio, or adding
+> it to a tracked basket, is blocked. An external **fitness function** doesn't carry this
+> restriction: it only scores trials while a study is optimizing, and it stops being involved the
+> moment a portfolio is promoted, since live tracking doesn't need ongoing fitness scoring.
 
 ## What Internal requires
 
-| Requirement | Strategy | Fitness | Risk manager |
+With Internal execution, everything happens inside Fintela's own editor and sandbox:
+
+| Requirement | Strategy | Fitness function | Risk manager |
 |---|---|---|---|
-| Code stored in `execution_details.code` | Yes | Yes | Yes |
-| Required argument names | `data`, `start_date`, `end_date` | `simulation`, `data` | `today`, `portfolio_state`, `market_data` |
-| Server-side validation receipt before save | Yes | Yes | Yes |
-| Data sources injected as kwargs | Yes | Yes | Yes |
-| `required_lookback(...)` function | Required | Not applicable | Optional warmup declaration |
+| Your code, written and saved in Fintela's editor | Yes | Yes | Yes |
+| Inputs your function must accept | `data`, `start_date`, `end_date` | `simulation`, `data` | `today`, `portfolio_state`, `market_data` |
+| A recent successful validation before you can save | Yes | Yes | Yes |
+| Any data sources you've attached are fed in automatically | Yes | Yes | Yes |
+| A `required_lookback(...)` warm-up function | Required | Not applicable | Optional |
 
-The **validation receipt** is the gate that surprises most first-time authors. Saving any record
-whose `execution_details` is the internal variant requires a completed validation job in your
-organization, less than **1 hour** old, whose digest covers the same code, the same lookback
-snippet and the same resolved data-source graph. Every failure is **HTTP 406**, and each one
-refines the response body's `kind` field so you can branch on it instead of matching prose:
+The **validation requirement** is the part that catches most people the first time. Before you can
+save an internal strategy, fitness function or risk manager, you need a successful **Validate** run
+on file — one that's less than an hour old and matches exactly what you're about to save: the same
+code, the same lookback logic, and the same data sources. If you save without one, or after
+something has drifted, Fintela blocks the save and tells you why:
 
-| `kind` | Message |
+| What went wrong | What it means |
 |---|---|
-| `validation_receipt_missing` | `This code has not been validated as a strategy. Validate it (POST /validate/internal/…) before saving.` (the noun is `strategy`, `fitness function` or `risk manager`) |
-| `validation_receipt_params_mismatch` | `This code was validated, but not at the parameter values being saved (…). Causality and warmup are proven at the values the validation ran with, so validate again with these ones before saving.` |
-| `validation_receipt_window_override` | `This code was validated over a custom date window. The causality checks only cover the period they ran on, so a receipt minted that way cannot authorize a save. Validate over the default window (a custom ticker list is fine) and save again.` |
-| `validation_receipt_lookback_mismatch` | `The code was validated, but not with this required_lookback snippet. Validate the strategy again before saving.` |
+| No validation on file | You haven't clicked Validate for this code yet — do that first. |
+| Validated at different parameter values | Some checks depend on the exact values you're saving with, so validate again using those values before saving. |
+| Validated over a custom date window | Those checks only cover the window you tested, so validate again over the default window (a custom ticker list is fine) before saving. |
+| Lookback logic changed since validating | Validate again so your warm-up window is proven for the current code. |
 
-Only the strategy path compares the parameter point, because only a strategy has causality and
-warmup proven at specific values.
+Only strategies check the exact parameter values, since only a strategy's timing and warm-up
+behavior can change depending on the values it's run with.
 
 ## What External requires
 
-External records carry three fields instead of code:
+Instead of code, an external record needs just three settings, all entered in the editor:
 
 | Field | Strategy label | Fitness label | Risk manager label |
 |---|---|---|---|
-| `endpoint` | **Endpoint** | **Endpoint** | **Endpoint** |
-| `timeout` | **Timeout (seconds)** | **Timeout (seconds)** | **Timeout (s)** |
-| `max_concurrency` | **Max Concurrency** | **Max Concurrency** | **Max concurrency** |
+| Where to reach your service | **Endpoint** | **Endpoint** | **Endpoint** |
+| How long to wait for a response | **Timeout (seconds)** | **Timeout (seconds)** | **Timeout (s)** |
+| How many trials to send in parallel | **Max Concurrency** | **Max Concurrency** | **Max concurrency** |
 
-Editor defaults are `timeout = 30` and `max_concurrency = 4` for all three, and all three refuse an
-empty endpoint (`Endpoint is required` / `Endpoint is required.`). They disagree on the numbers:
-the strategy editor demands whole numbers ≥ 1 (`Must be a positive integer`), the fitness editor
-only checks for a number ≥ 1 (`Must be ≥ 1`), so `2.5` passes there, and the risk-manager editor
-checks neither field client-side — it coerces both with `parseInt` and lets the server rule.
+All three default to a 30-second timeout and a concurrency of 4, and none of them can be saved with
+an empty Endpoint. The numeric fields are checked a little differently across the three editors —
+strategies and fitness functions validate as you type (strategies require a whole number, fitness
+functions accept a decimal like 2.5), while the risk-manager editor is more lenient on screen but
+the values are still checked when you save.
 
-**External records need no validation receipt.** The gate fires only on the internal variant of
-`execution_details`, so the endpoint URL screen below is the only external-specific save check.
+**External records skip the validation-receipt requirement above.** Since Fintela isn't running
+your code, there's nothing for it to validate ahead of time — the only checks that apply are on
+your endpoint's address itself (see [Endpoint address rules](#endpoint-address-rules) below).
 
-Two things External does *not* get:
+Two things you don't get with External:
 
-- **No data-source injection for external strategies.** The Data sources section is hidden
-  entirely when the mode is external — your endpoint receives only parameters and dates, so
-  injected kwargs would never reach it. Price is still attached server-side because the simulation
-  prices the universe either way.
-- **No injected extras for external fitness.** Only the internal evaluator merges graph-resolved
-  pipeline outputs into the call. An external endpoint receives the simulation dict and your
-  parameters, nothing more.
+- **No automatic data-source feed for external strategies.** The Data sources section disappears
+  from the editor entirely once a strategy is set to External — your endpoint only ever receives
+  parameter values and the date window for each trial, not any data feeds you'd otherwise attach.
+  Fintela still prices the universe on its own side either way, so your signals can be turned into
+  trades.
+- **No extra context for external fitness functions.** Only Fintela's own built-in scoring pulls in
+  additional derived data; an external fitness endpoint receives the trial's simulation results and
+  your parameter values, and nothing beyond that.
 
-External strategies still **must** declare a `required_lookback(...)` function. The backend
-resolves the lookback identically for both modes and refuses a save without it:
-`A required_lookback(...) function is required (lookback_function_code must be non-empty).`
-Nothing ever posts the snippet to your endpoint: the compiler executes it on its own, at
-study-create time, to compute the worst-case warmup window the asset group has to cover.
+You still need to provide a `required_lookback(...)` warm-up function for an external strategy,
+even though your actual signal logic runs entirely on your own servers — a save is refused without
+one. This one small piece of code is entered directly in Fintela and used once, when you launch a
+study, purely to work out how much historical data your asset group needs to warm up. It's never
+sent to your endpoint, and it has no bearing on the signal your endpoint returns.
 
-## External wire contracts
+## What your endpoint needs to do
 
-Three resources, three different shapes. The strategy and fitness contracts are exact inverses of
-each other — get them the wrong way round and your handler reads the wrong half of the request.
+If you choose External for a strategy, fitness function or risk manager, your service takes on a
+narrow, well-defined job. Your models, your data and your code never leave your own systems —
+Fintela only ever sends it the inputs it needs and reads back a result, so you can bring your own
+language, stack and private data sources without any of it touching Fintela's servers. The full
+setup guides — [external strategies](/docs/external-strategies) and
+[external fitness](/docs/external-fitness) — walk through building one; here's what each is
+expected to do.
 
-### Strategy endpoint, POST /simulate
+### Strategies
 
-`/simulate` is appended to the saved base URL. **Dates travel in the query string, parameters in
-the JSON body.**
+For every trial, Fintela sends your endpoint the date range being simulated and the parameter
+values for that trial (plus, if you've set up an asset universe, the list of tickers in it) and
+expects back a trading signal: for each date, which tickers to hold, in which direction (long or
+short), and how much to allocate to each one.
 
-```http
-POST https://api.example.com/strategy/simulate?start_date=2024-01-02&end_date=2024-12-31
-Content-Type: application/json
+If your endpoint returns a ticker that isn't in your Asset Group, Fintela skips just that trial with
+a warning listing a sample of the offending tickers (up to 20), rather than failing your whole
+study. The study builder reminds you of this rule up front: every ticker your endpoint returns has
+to exist in the selected Asset Group, or the trials that reference it will fail.
 
-{"lookback": 60, "top_n": 10, "tickers": ["AAPL", "MSFT"]}
-```
+When you validate an external strategy, Fintela calls your endpoint twice — once for the window
+you're testing, and once with the end date pushed roughly two years further out. If the signal for
+a past date comes back different between the two calls, that's a sign your endpoint's answer
+depends on data it shouldn't have access to yet (a lookahead bias), and validation is blocked so you
+can catch it before it costs you in a live study.
 
-`tickers` is additive — present only when a universe is configured, carrying the resolved ticker
-codes. The two paths break a name collision differently: at validation, a strategy parameter
-literally named `tickers` wins and the universe is not forwarded (a warning says so), while the
-sandbox and the optimizer merge the universe key **last**, so there it overwrites the parameter.
-Strategy parameters are numeric, so the collision is a corner case rather than a real design
-choice.
+### Fitness functions
 
-The response must be a JSON object with a top-level `signal` key, whose value is validated by the
-same output validator internal code goes through:
+For every trial, Fintela sends your endpoint the parameter values being tested along with that
+trial's simulation results — equity curve, holdings, orders, trades and performance metrics — and
+expects back a single number: the fitness score for that trial. The optimizer uses this score to
+steer toward better parameter combinations over the course of a study, the same way it would with
+an internal fitness function.
 
-```json
-{"signal": {"2024-01-02": {"AAPL": {"position": "L", "allocation": 0.5}}}}
-```
+### Risk managers
 
-| Failure | Message |
-|---|---|
-| Body is not JSON | `Endpoint response is not valid JSON` |
-| No `signal` key | `Endpoint response must be a JSON object with a 'signal' key` |
-| Non-2xx | `Endpoint returned HTTP {status}: {first 500 chars}` |
-| Wrong shape during a study | `Your external strategy endpoint returned a response that is not the expected shape: it must be JSON with a top-level "signal" object mapping date -> ticker -> {"position": "L"\|"S", "allocation": number}.` — the trial is pruned, the study continues |
+Unlike strategies and fitness functions, which are called once per trial, an external risk manager
+is called once for **every simulated trading day**. On each call Fintela sends your endpoint the
+current date, the portfolio's state (its value, cash allocation, peak value and current holdings)
+and your configured parameters — deliberately **no market data**, since a risk manager that needs
+its own data is expected to source it itself. Your endpoint responds with a list of actions to
+take, or an empty response to do nothing that day.
 
-Validation calls `/simulate` twice — once over the requested window, once with the end date pushed
-out by 730 days — and fails with `data_leakage` if a past signal changed, which stops the editor
-short of the save dialog. Any ticker your endpoint returns
-that is not in the forwarded universe produces a warning naming up to 20 codes. The study builder
-repeats the point: "External strategy: every ticker your endpoint returns must also exist in the
-selected Asset Group. Any signal ticker missing from the cluster will fail those trials."
+If your endpoint fails 10 times in a row, or 25 times in total during a single trial, Fintela stops
+calling it for the rest of that trial so a flaky connection doesn't stall your whole study, and it
+keeps a log of up to 50 such events per run for you to review afterward.
 
-See [external strategies](/docs/external-strategies) for a worked server.
+> [!CAUTION] External risk managers can't be saved from the editor yet
+> Fintela's platform-wide limit requires an external risk manager to respond in well under a
+> second, but the risk-manager editor currently only accepts whole seconds and defaults to 30 —
+> every value it can produce today falls outside what's allowed, so the save is always rejected.
+> Until this is fixed, use an **Internal** (custom code) or **Rule-based** risk manager instead.
 
-### Fitness endpoint, POST /evaluate
+## Endpoint address rules
 
-`/evaluate` is appended to the saved base URL. **Parameters travel in the query string, the
-period-sliced simulation in the JSON body** — the inverse of the strategy contract.
+Whichever of the three you're setting up, the address you enter has to clear the same checks
+before it can be saved:
 
-```http
-POST https://api.example.com/fitness/evaluate?threshold=0.05
-Content-Type: application/json
+- It has to be a complete, well-formed URL.
+- It must use `http://` or `https://` — no other schemes.
+- It needs a host name or address.
+- It can't point at `localhost` or a loopback address.
+- If you use a raw IP address rather than a domain name, it has to be a real, publicly reachable
+  address — not a private, internal or reserved one.
+- No stray whitespace or control characters in the URL.
 
-{"equity": {}, "holdings": {}, "orders": [], "trades": [], "metrics": {}}
-```
+> [!NOTE] `http://` is allowed, and any port works
+> Encryption isn't what's being enforced here — reachability is. All three editors show an
+> advisory warning if you enter a plain `http://` address (your data would travel unencrypted) but
+> it never blocks Save; use `https://` once you're past testing. There's no restriction on which
+> port your service listens on.
 
-The body always carries exactly those five keys. `equity` and `holdings` are objects keyed by
-date, `orders` and `trades` are arrays, and `metrics` is the period's metric object.
-
-The response must be a JSON object with a top-level `fitness` **number**:
-
-```json
-{"fitness": 1.87}
-```
-
-Anything else prunes the trial with `Your external fitness endpoint returned a response that is not
-the expected shape: it must be JSON with a top-level "fitness" number.` Compiler validation
-rejects the same three ways as the strategy path (`Endpoint response is not valid JSON`,
-`Endpoint response must be a JSON object with a 'fitness' key`, `Endpoint returned HTTP …`), plus
-an `invalid_output` failure naming the type it received instead of a number.
-
-See [external fitness](/docs/external-fitness) for a worked server.
-
-### Risk manager endpoint, one POST per tick
-
-The risk-manager contract differs on every axis. **No path is appended** — the engine posts to the
-saved URL exactly as stored — and it fires **once per simulated bar**, not once per trial.
-
-```http
-POST https://my-service.example.com/risk-manager
-Content-Type: application/json
-
-{
-  "today": "2024-01-15",
-  "portfolio_state": {
-    "value": 100000.0,
-    "cash_allocation": 0.05,
-    "portfolio_peak": 102000.0,
-    "holdings": [{"ticker": "AAPL", "side": "L", "allocation": 0.35}]
-  },
-  "params": {"threshold": 0.05}
-}
-```
-
-The engine sends **no market data** — an external risk manager owns its own data side. Respond
-`2xx` with a JSON array of operation objects; `[]` means do nothing. Engine limits: the per-tick
-timeout is clamped to **500 ms**, **10** consecutive failures or **25** total failures mark the
-risk manager terminal for the rest of the trial, and at most **50** events are recorded per run.
-
-> [!CAUTION] External risk managers are not reachable from the editor today
-> The server accepts `timeout` only in the range **0.001 – 0.5 seconds** and `max_concurrency`
-> only in **1 – 32**; on top of that the per-organization quota `max_per_tick_timeout_ms`
-> (default **100**) is compared against `timeout × 1000`, so the practical ceiling is 0.1 s. The
-> editor seeds the **Timeout (s)** field at `30` and parses it with `parseInt`, so the field can
-> only ever hold whole seconds — every value it can produce is outside the accepted range. The
-> save is refused with **406** and
-> `EXTERNAL risk manager timeout must be between 0.001 and 0.5 seconds, got 30`. Use Internal
-> (custom Python) or Rule-based risk managers until the field accepts fractional seconds.
-
-## Endpoint URL rules
-
-All three resources share one save-time screen. Every rejection is **HTTP 406** with the message
-verbatim:
-
-| Rule | Message |
-|---|---|
-| No whitespace or control characters | `EXTERNAL endpoint must not contain whitespace or control characters` |
-| Must parse as a URL | `EXTERNAL endpoint is not a valid URL ({error}): '{endpoint}'` |
-| Scheme is `http` or `https` | `EXTERNAL endpoint must use http:// or https:// (got 'ftp').` |
-| Host present | `EXTERNAL endpoint must include a host` |
-| Not `localhost` or `*.localhost` | `EXTERNAL endpoint host must not be loopback/localhost` |
-| A literal IP must be publicly routable | `EXTERNAL endpoint host {ip} must be a publicly routable address, not a private, loopback, link-local or reserved one` |
-
-> [!NOTE] `http://` is allowed, and there is no port allowlist
-> TLS was never the control here — a publicly routable host is. All three editors show an advisory
-> warning when the URL is plain `http://` ("Unencrypted (http://) — the request and your
-> endpoint's reply travel in cleartext. Fine for testing; use https:// in production.") but it
-> never blocks Save. Any port is accepted.
-
-The save-time screen is deliberately DNS-blind: it never makes a network call, so you can register
-an endpoint before it is up. A second screen runs at fetch time — the compiler, the sandbox and
-the optimizer each resolve the host and refuse if **any** resolved address is private, loopback,
-link-local, reserved, multicast or unspecified, with the stable prefix
-`Your endpoint address is not allowed: `. Redirects are never followed.
+Saving an endpoint doesn't test that it's actually live — you can register an address before your
+service is even running. The real check happens every time Fintela is about to call your endpoint
+(validating, running a backtest, or launching a study): it resolves the address again and refuses
+to call it if it points at a private, internal, or otherwise non-public network location. Fintela
+also never follows redirects your server sends back.
 
 ## Timeouts, retries and concurrency
 
-The stored `timeout` is **not** used everywhere. For a strategy or fitness endpoint, three call
-sites, three policies:
+How long Fintela waits for your endpoint, and how many times it tries again, depends on what
+you're doing:
 
-| Call site | Timeout used | Attempts | Retries on |
-|---|---|---|---|
-| Compiler validation (the Validate button) | **Fixed 30 s** — the stored `timeout` is ignored | 1 + 2, linear backoff 1 s then 2 s | connect / connect-timeout / read-timeout / pool-timeout / remote-protocol errors |
-| Sandbox ("Run a backtest") | The stored `timeout`, falling back to 60 s if the record carries none | 1 + 3, full-jitter exponential backoff, base 1 s, ceiling 8 s | connect / connect-timeout / pool-timeout / remote-protocol errors, plus HTTP 429, 502, 503, 504 — a read-timeout is deliberately **not** retried |
-| Optimizer training | The stored `timeout` | 1 + 3, full-jitter exponential backoff, base 1 s, ceiling 8 s | connect / connect-timeout / pool-timeout / remote-protocol errors, plus HTTP 429, 502, 503, 504 |
+| When | How long Fintela waits | What gets retried |
+|---|---|---|
+| Validating your code | Always 30 seconds, no matter what Timeout you've set | Up to 2 retries on connection problems |
+| Running a backtest in the sandbox | Your configured Timeout, or 60 seconds if none is set | Up to 3 retries, with increasing delay, on connection problems and on server errors or "temporarily overloaded" responses from your endpoint — a plain timeout is not retried, since that's treated as your endpoint genuinely being slow |
+| Running a full study | Your configured Timeout | Same retry behavior as a backtest |
 
-The sandbox and optimizer clients each hold a pool of **2 connections** with a 30-second keep-alive
-expiry; compiler validation opens a one-shot request instead. Pair the keep-alive with
-`timeout_keep_alive >= 30` on your server.
+> [!TIP] Max Concurrency controls how many trials run at once, not connections
+> This setting caps how many trials Fintela sends to your endpoint at the same time — think of it
+> as a parallelism budget, not a technical connection setting. When both a strategy and a fitness
+> function are external, the smaller of their two limits applies, and it's halved if they actually
+> point at the same endpoint. Regardless of what you set, the optimizer never runs more than 32
+> trials in parallel for a single study. Leaving Max Concurrency blank or at zero is treated as
+> unlimited.
 
-> [!TIP] `max_concurrency` is a worker budget, not a connection limit
-> It does not size the HTTP pool. It is the fan-out budget the dispatcher hands the study: a study
-> with any external component runs as exactly one task whose process pool is sized to
-> `min(strategy, fitness)` across whichever components are external, halved (floor, minimum 1)
-> when both endpoints normalise to the same URL. The optimizer then caps the batch at **32**
-> regardless. A missing or non-positive `max_concurrency` on an external record is treated as
-> unbounded and logged.
-
-Fintela sends **no credential** to your endpoint. There is no signing header, no API key and no
-mutual TLS on this path — authorize by whatever means your own server enforces.
+Fintela never sends any credentials, API keys or signing headers to your endpoint. If you need to
+control who's allowed to call your service, that's on you to enforce — with your own API key
+scheme, IP restrictions, or whatever authentication fits your setup.
 
 ## Changing a record's mode after creation
 
-The editors freeze the mode: the segmented control is disabled outside create mode, and the
-strategy and fitness agent paths refuse the field with "An existing resource's execution type
-cannot be changed."
+Once you save a strategy, fitness function or risk manager, its mode is locked — the Internal /
+External / Rule-based control stays disabled for the life of that record.
 
-> [!WARNING] The freeze is a UI rule, not an API rule
-> `PUT /strategies`, `PUT /fitness` and `PUT /risk-managers` all write `execution_type` / `kind`
-> straight from the payload without comparing it to the stored value. Nothing at the API layer
-> rejects a flip. Treat the mode as immutable anyway — the product gives you no way to change it,
-> half of what the record needs (code, or an endpoint) would be missing after a flip, and version
-> history would record the change as a new version. **Create a new record instead.**
+> [!WARNING] Treat the mode as permanent
+> The product gives you no way to change a saved record's mode, and you shouldn't try to work
+> around it even if you find a way — flipping it would leave the record missing half of what it
+> needs (code with no endpoint, or an endpoint with no code) and would show up as a confusing
+> change in that record's version history. If you need different behavior, **create a new
+> strategy, fitness function or risk manager** instead of trying to convert an existing one.
 
-Launched studies are insulated from a flip regardless. When a study has pinned versions, the
-optimizer resolves the execution type from the frozen `snapshot_execution_type` rather than from
-the live row, so a post-launch change cannot re-route a running study down the wrong code path.
+Studies you've already launched are unaffected by any of this. Because a study locks in the exact
+version of its strategy and fitness function the moment you launch it, nothing you change
+afterward — mode or otherwise — can reach back into a study that's already running or completed.
 
-Every registry **update** is also guarded by an optimistic-concurrency cursor: a stale
-`expected_updated_at` returns **409** rather than silently overwriting a concurrent edit.
+If two people try to save changes to the same record at the same time, Fintela protects the first
+save: the second person is asked to refresh and reapply their edit rather than having it silently
+overwrite what was just saved.
 
-## How a run picks the code path
+## How Fintela decides which code to run
 
-```text
-Study (strategy_id, fitness_id)
-  │
-  ├─ at launch: pin strategy_version_id / fitness_version_id
-  │
-  ▼
-Optimizer resolves, per component (strategy shown; fitness reads the twin tables):
-  pinned?  → SELECT snapshot_execution_type FROM developers.strategy_versions
-  not?     → SELECT execution_type          FROM developers.strategies
-  │
-  ├─ "INTERNAL" → compile the stored Python, call it in-process
-  ├─ "EXTERNAL" → screen the endpoint once, then POST per trial
-  ├─ "BUILTIN"  → (fitness only) read the named metric off the simulation
-  └─ anything else → "Unrecognized strategy execution type: {value}" and the study fails
-                     ("Unrecognized fitness execution type: …" on the fitness side)
-```
+Every time a study runs, Fintela already knows exactly how to execute each of its pieces — because
+that decision was made the moment you chose Internal, External, or Built-in for the strategy and
+fitness function behind it. Internal code runs inside Fintela; external code is called over your
+endpoint; a Built-in fitness objective is read straight off the simulation results without any code
+running at all. This is fixed to the exact version of each record that was current when you
+launched the study, so nothing about how a running study executes can shift underneath it partway
+through.
 
-Validation follows the same split. The editor picks the route from the record's mode — there is no
-single endpoint that figures it out for you:
+Validating your code follows the same split — an internal strategy is checked differently from an
+external one, and the same goes for fitness functions and risk managers, with built-in risk
+managers getting their own lightweight check. Validation runs in the background: once you click
+Validate, you can move on and come back to it, but you do still need it to finish successfully
+before Fintela will let you save (see [What Internal requires](#what-internal-requires) above).
 
-| Route | Used by |
-|---|---|
-| `POST /validate/internal/strategy` | Internal strategies |
-| `POST /validate/external/strategy` | External strategies |
-| `POST /validate/internal/fitness` | Internal fitness functions |
-| `POST /validate/external/fitness` | External fitness functions |
-| `POST /validate/internal/risk-manager` | Internal (custom code) risk managers |
-| `POST /validate/external/risk-manager` | External risk managers |
-| `POST /validate/builtin/risk-manager` | Built-in risk managers |
+See [optimizer architecture](/docs/optimizer-architecture) for more on how Fintela schedules and
+runs studies once they're launched, and [study lifecycle](/docs/study-lifecycle) for exactly when a
+study locks in its versions and what happens at each stage from launch to completion.
 
-Each returns **202** with `{"job_id": …, "status": "pending"}`, which you poll on `GET /jobs/:id`.
+## Where External doesn't apply
 
-For how the dispatcher turns this into ECS tasks, see
-[optimizer architecture](/docs/optimizer-architecture). For when the pinning happens, see
-[study lifecycle](/docs/study-lifecycle).
+A few places in the product don't offer an execution mode at all, and two of the options the UI
+shows can't actually be used today:
 
-## Where External does not apply
-
-Four of the seven registries have no execution mode at all, and two modes the UI advertises cannot
-actually be used today — Rule-based on strategies and fitness, and External on risk managers:
-
-- **Asset groups, portfolio groups and promoted portfolios have no execution mode.** They are
-  data, not code. There is nothing to host.
-- **Studies have no mode of their own.** A study is external if — and only if — its strategy or
-  its fitness function is.
-- **Rule-based (declarative) strategies and fitness functions are not available.** The editor
-  segment is permanently disabled and the wire path returns 400. Rule-based *risk managers* are
-  fully supported.
-- **External risk managers cannot currently be saved through the editor** (see the caveat above).
-- **External strategies cannot be promoted to a tracked portfolio** or added to a tracked basket.
-- **You cannot create or flip a record through the developer API.** Every developer-api route is a
-  `GET`; strategies and fitness functions are read-only there, and risk managers have no
-  developer-api routes at all. Records are authored in the application.
+- **Asset groups, portfolio groups and promoted portfolios have no execution mode.** They hold
+  data — which assets to trade, or which portfolios to track — not logic, so there's nothing to
+  choose.
+- **Studies have no mode of their own.** A study counts as external only if the strategy or the
+  fitness function it uses is external.
+- **Rule-based strategies and fitness functions aren't available yet.** The option is visible in
+  both editors but permanently disabled. Rule-based **risk managers** are fully supported today.
+- **External risk managers can't currently be saved through the editor** — see the caution above.
+- **External strategies can't be promoted to a tracked portfolio** or added to a tracked basket.
+- **You can't create a record, or change its mode, through Fintela's read-only Developer API** —
+  the API you can access with a personal access key from your account settings to pull your
+  strategies, fitness functions and results into your own tools. That API only lets you read
+  records; strategies and fitness functions are read-only there, and risk managers aren't exposed
+  through it at all. Creating and editing any of the three always happens inside the application.

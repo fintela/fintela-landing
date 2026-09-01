@@ -4,649 +4,482 @@ section: Platform Overview
 sectionOrder: 2
 order: 1
 published: true
-updated: 2026-08-20
-summary: The Fintela UI map — sidebar sections, every route, the command palette, notifications, and how access gating actually works.
-keywords: navigation, sidebar, ui, routes, more options, command palette, shortcuts, notifications, entitlements, locked, mobile
+updated: 2026-09-01
+summary: A map of the Fintela workspace — the sidebar, top bar, search, notifications, keyboard shortcuts, and how locked features and permissions work.
+keywords: navigation, sidebar, top bar, search, keyboard shortcuts, notifications, help menu, account menu, locked features, permissions, mobile navigation, product tours
 ---
 
-Fintela is a single-page app behind one login. Everything except the login, signup and legal
-pages lives inside one shell: a floating sidebar rail on the left, a fixed top bar across the
-top, and the current page in the middle. This page is the map — every sidebar entry and where
-it goes, every route the router mounts, the palette and shortcuts that reach them faster, and
-the two mechanisms that decide what you can actually open.
+Every part of Fintela you use day to day — Home, your portfolios, Markets, the registries,
+Fintelligent — lives inside one consistent workspace. This page is your map of it: what's in the
+sidebar and where each entry takes you, how to search and use shortcuts to get around faster,
+what the top bar controls do, a directory of every page you can reach, and how Fintela shows you
+when a feature isn't included in your plan yet.
 
-## Shell layout
+## Workspace layout
 
-```text
-┌──────────────────────────────────────────────────────────────────────┐
-│  ▸ tokens · AI tokens        [ Search…  ⌘K ]     💬  🔔  ?  You  ◉   │  AppHeader (fixed, 56px)
-├────────┬─────────────────────────────────────────────────────────────┤
-│ Fintela│  token banners (only when your balance is low or zero)      │
-│ ───────│ ─────────────────────────────────────────────────────────── │
-│ANALYSIS│                                                             │
-│  Home  │                                                             │
-│Portfoli│                  the routed page                            │
-│Portf.Mg│                  (scrolls independently)                    │
-│ Markets│                                                             │
-│REGISTRY│                                                             │
-│ Asset G│                                                             │
-│ Strateg│                                                             │
-│ Studies│                                                             │
-│ Portf.G│                                                             │
-│ ───────│                                                             │
-│ ⋮ More │                                                             │
-│        │                    ╭───────────────╮                        │
-│ ───────│                    │  Fintelligent │  ← launcher (desktop)  │
-│Workspac│                    ╰───────────────╯                        │
-│    ⇥pin│                                                             │
-└────────┴─────────────────────────────────────────────────────────────┘
-```
+Once you learn the layout, it applies everywhere in the product:
 
-The rail is a floating card, not an edge-glued panel: it is **64 px** collapsed, **220 px**
-expanded, with a **12 px** gutter on every side. On desktop it expands when you move the
-pointer over it and collapses when you leave, unless you pin it. The pin state persists in
-`localStorage` under `fintela:drawer-pinned` (`'1'` or `'0'`).
+- **Sidebar** (left) — jump between sections of the platform. On a desktop screen it starts out
+  narrow, showing only icons, and expands to show labels when you move your pointer over it. Pin
+  it open if you'd rather it stay expanded; either way, Fintela remembers your preference the
+  next time you open the app on that device.
+- **Top bar** (top) — always visible, holding your token balances, search, notifications, help
+  and your account menu.
+- **Main area** (centre) — whatever page you're currently on. It scrolls on its own, so the
+  sidebar and top bar stay put while you read a long report or scroll through a table.
 
-The pin toggle sits at the very bottom of the rail, desktop only. Its tooltip reads
-**"Pin sidebar"** when unpinned and **"Collapse sidebar"** when pinned.
+The pin control sits at the very bottom of the sidebar (desktop only). Its tooltip reads
+**"Pin sidebar"** when the sidebar is set to auto-collapse, and **"Collapse sidebar"** once
+you've pinned it open.
 
-> [!NOTE] The sidebar does not exist on mobile
-> Below the `md` breakpoint the shell does not render the rail at all — not collapsed, not
-> as a slide-over. Phones and small tablets get a completely separate bottom bar with its
-> own information architecture. See [Mobile bottom navigation](#mobile-bottom-navigation).
+> [!NOTE] The sidebar doesn't appear on a phone
+> On a phone or small tablet, Fintela replaces the sidebar entirely with a bottom navigation bar
+> built for smaller screens, with its own set of shortcuts. See
+> [Mobile navigation](#mobile-navigation).
 
 ## Sidebar
 
-The sidebar has **two visible sections** — `Analysis` and `Registry` — plus a **More Options**
-flyout that holds six more destinations. There is no AI section; Fintelligent moved into the
-flyout.
+The sidebar has two visible sections — **Analysis** and **Registry** — plus a **More Options**
+menu that holds a handful of further destinations you won't need every day. There's no separate
+"AI" section: Fintelligent, your AI assistant, lives inside More Options.
 
-Every entry renders as a real link with an `href`, so Cmd-click, middle-click and "open in new tab"
-all work. When the rail is collapsed, each entry's label becomes a tooltip on hover.
+Every entry is a real link, so you can open one in a new tab (middle-click, or Cmd/Ctrl-click)
+just like any other link on the web. When the sidebar is collapsed to icons only, hovering an
+icon shows its full label.
 
 ### Analysis section
 
-| Label | Route | Documentation |
+| Entry | What it's for | Documentation |
 |---|---|---|
-| **Home** | `/analysis` | [Home](/docs/home) |
-| **Portfolios** | `/analysis/portfolios` | [Portfolios dashboard](/docs/portfolios-dashboard) |
-| **Portfolio Manager** | `/analysis/portfolio-manager` | [Portfolio Manager](/docs/portfolio-manager) |
-| **Markets** | `/analysis/markets` | [Market](/docs/market) |
+| **Home** | Your starting point and daily overview | [Home](/docs/home) |
+| **Portfolios** | Browse and open the portfolios and studies you're tracking | [Portfolios dashboard](/docs/portfolios-dashboard) |
+| **Portfolio Manager** | Compare equity, metrics, holdings and trades across your whole book | [Portfolio Manager](/docs/portfolio-manager) |
+| **Markets** | Market data, prices and research tools | [Market](/docs/market) |
 
-> [!WARNING] Home is `/analysis`, not `/`
-> The root path is an immediate redirect to the first Analysis feature, which is Home. A
-> bookmark on `/` lands on `/analysis`.
+> [!NOTE] Opening Fintela always takes you to Home
+> If you bookmark Fintela's main address, or open the app fresh, you'll land on Home — treat it
+> as your default starting point every session.
 
 ### Registry section
 
-| Label | Route | Documentation |
+| Entry | What it's for | Documentation |
 |---|---|---|
-| **Asset Groups** | `/asset-groups` | [Asset groups](/docs/asset-groups) |
-| **Strategies** | `/strategy` | [Strategies](/docs/strategies) |
-| **Studies** | `/studies` | [Studies](/docs/studies) |
-| **Portfolio Groups** | `/analysis/portfolio-groups` | [Portfolio groups](/docs/portfolio-groups) |
+| **Asset Groups** | Define which tickers make up a group you can build strategies and portfolios from | [Asset groups](/docs/asset-groups) |
+| **Strategies** | Where your trading strategies live — create, browse and edit them | [Strategies](/docs/strategies) |
+| **Studies** | Every backtest you've run, ready to review or rerun | [Studies](/docs/studies) |
+| **Portfolio Groups** | Assemble strategies into a portfolio group, rank them, and build the group you'll go on to monitor | [Portfolio groups](/docs/portfolio-groups) |
 
-> [!CAUTION] Two similarly named sections, two different jobs
-> **Portfolio Manager** (`/analysis/portfolio-manager`, Analysis section, rocket icon) is
-> comparative monitoring across your whole book. **Portfolio Groups**
-> (`/analysis/portfolio-groups`, Registry section) is the administrative registry and creation
-> wizard. Portfolio Manager took over the `/analysis/portfolio-manager` URL that the
-> administrative pages used to own, so older material is likely to have them crossed.
+> [!CAUTION] Portfolio Manager and Portfolio Groups aren't the same thing
+> **Portfolio Manager**, in the Analysis section, is where you monitor and compare portfolio
+> groups you've already built — equity, metrics, holdings and trades across your whole book.
+> **Portfolio Groups**, in the Registry section, is where you create and administer those groups
+> in the first place. If an old link or saved page called "Portfolio Manager" now takes you
+> somewhere unexpected, it's most likely pointing at the monitoring view described here.
 
-### More Options flyout
+### More Options menu
 
-The trigger row sits under the Registry list, labelled **"More Options"** with a right-pointing
-chevron. It opens a menu to the right of the rail — not an inline expansion — and holds the
-rail open while it is showing. The order below is the flyout's own render order, not the
-sidebar `order` values.
+Below the Registry list sits a **"More Options"** row. Opening it shows a menu with a few more
+destinations:
 
-| # | Label | Route | Gate | Documentation |
-|---|---|---|---|---|
-| 1 | **Fitness Functions** | `/fitness` | — | [Fitness functions](/docs/fitness-functions) |
-| 2 | **Risk Managers** | `/risk-managers` | — | [Risk managers](/docs/risk-managers) |
-| 3 | **Promoted Portfolios** | `/promoted-portfolios` | — | [Promoted portfolios](/docs/promoted-portfolios) |
-| 4 | **Data Explorer** | `/analysis/data-explorer` | entitlement `data_explorer` | [Data Explorer](/docs/data-explorer) |
-| 5 | **Laboratory** | `/laboratory` | entitlement `laboratory` | [Laboratory](/docs/laboratory) |
-| 6 | **Fintelligent** | `/ai/fintelai` | JWT role `fintela-ai:read` or `root:all` | [Fintelligent](/docs/fintelligent) |
+| Entry | What it's for | Documentation |
+|---|---|---|
+| **Fitness Functions** | Define how a strategy is scored during a backtest | [Fitness functions](/docs/fitness-functions) |
+| **Risk Managers** | Rules that manage exposure and risk on a strategy or portfolio | [Risk managers](/docs/risk-managers) |
+| **Promoted Portfolios** | Portfolios your organization has highlighted for wider visibility | [Promoted portfolios](/docs/promoted-portfolios) |
+| **Data Explorer** | Browse the market data and datasets available to you (included with some plans) | [Data Explorer](/docs/data-explorer) |
+| **Laboratory** | An interactive coding workspace for advanced research (included with some plans) | [Laboratory](/docs/laboratory) |
+| **Fintelligent** | Your AI assistant — only appears here if your account has AI access | [Fintelligent](/docs/fintelligent) |
 
-Fintelligent is the only entry in the whole sidebar that can disappear: without the AI role it
-is filtered out of the flyout entirely. Everything else is always listed, locked or not.
+Fintelligent is the one entry that can disappear from the menu entirely: without AI access it
+simply isn't shown. Every other entry is always listed, whether it's unlocked for you or not —
+see [Locked features and permissions](#locked-features-and-permissions).
 
-One route is mounted but never listed anywhere in the sidebar: **API Docs** at `/developer`,
-which is marked `hidden` in the feature manifest. Nothing in the shipped UI links to it, so it is
-reachable by URL only. See [API overview](/docs/api-overview).
+One more page isn't listed in this menu at all: the API overview, for connecting your own tools
+and dashboards to your Fintela data. See [API overview](/docs/api-overview) if that's something
+your plan includes.
 
-### Active-entry rule
+### How the sidebar shows where you are
 
-The Home entry highlights only on an exact `/analysis` match. Every other entry highlights when
-the current path *starts with* its route. So `/analysis/portfolios/abc` lights up Portfolios but
-not Home, and `/analysis/portfolio-manager/:basketId/trades` lights up Portfolio Manager.
+The sidebar highlights the section you're currently in. Home highlights only when you're exactly
+on the Home page; every other entry stays highlighted as you move through its own sub-pages — so
+opening one specific portfolio still keeps **Portfolios** highlighted, and reviewing a group's
+trade history still keeps **Portfolio Manager** highlighted.
 
 ### Workspace switcher
 
-Above the pin toggle, in the rail footer, sits the workspace switcher. It scopes what entity
-list pages show. Two entries, in this order:
+Near the bottom of the sidebar, above the pin control, sits the workspace switcher. It controls
+what your list pages — Asset Groups, Strategies, Studies and the rest — show you:
 
-| Menu entry | Mode | What it shows |
-|---|---|---|
-| **{organization}'s Workspace** | `company` | everything the organization owns (the default) |
-| **My Workspace** | `my` | only the items you created |
+| Option | Shows |
+|---|---|
+| **{Your organization}'s Workspace** (default) | Everything your organization owns |
+| **My Workspace** | Only the items you personally created |
 
-`{organization}` is your organization's name, derived from your Keycloak group path; it falls
-back to **Unassigned** when there is none.
-
-The choice persists in `localStorage` under `fintela.workspace.mode`, versioned by
-`fintela.workspace.mode.version`. The current version is **2** and the default is `company`.
-Users migrated from version 1 who had chosen `my` are reset to `company` once, and the shell
-shows a one-off snackbar for eight seconds reading **"Default view switched to Company
-Workspace. Change it anytime in the sidebar."**
-
-The switcher is behind the `workspaces` feature flag, which defaults to on. With the flag off
-the row renders nothing.
+Your choice is remembered on this device and won't reset on its own. Not every account has this
+switcher — if you don't see it, your list pages always show everything your organization owns.
 
 ## Top bar
 
-The header is fixed, 56 px tall, and slides its left edge to match the rail's width. Contents,
-left to right:
+Always visible at the top of the screen, left to right:
 
-| Element | Behaviour |
+| Element | What it does |
 |---|---|
-| Fintela Tokens chip | Tooltip **"Fintela Tokens — click to manage"**; links to `/account?section=tokens`. Turns red and filled at zero. Hidden below the `sm` breakpoint. |
-| Fintela AI Tokens chip | Tooltip **"Fintela AI Tokens — click to manage"**; links to `/account?section=ai-tokens`. Also hidden below `sm`. |
-| Search trigger | Desktop: a 400 px-wide bordered box reading **"Search..."** with a `⌘K` key badge. Mobile: a search icon with tooltip **"Search (Ctrl+K)"**. |
-| Feedback bubble | Opens the comment box. Visible on every breakpoint — it is the only entry point. |
-| Notifications bell | See below. |
-| Help menu | See below. |
-| Your name | From your profile; hidden below `sm`. |
-| Avatar | Opens the account menu. Carries a small organization-logo badge when your org has one. |
+| Fintela Tokens | Your compute token balance — click to manage it. Turns red once you're at zero. |
+| Fintela AI Tokens | Your AI token balance, used for Fintelligent — click to manage it. |
+| Search | Opens quick search — see [Search and keyboard shortcuts](#search-and-keyboard-shortcuts). |
+| Feedback | Opens a box to send feedback directly from wherever you are. |
+| Notifications | See below. |
+| Help | See below. |
+| Your name and avatar | Opens the account menu. |
 
-The header also has a hamburger button in its markup, but it is rendered with `display: none`
-and its handler does nothing. It is not a way to open anything.
+On a narrower screen, some of these condense down to icons only, but every control is still
+reachable.
 
-Directly beneath the header, above the page, the shell renders token banners. At a zero compute
-balance a full-width red alert reads **"Tokens depleted — compute is paused (backtests,
-optimizations and daily updates). Daily updates resume automatically after a purchase."**; on a
-low balance a dismissible bottom-centre snackbar reads **"Token balance is running low."** Both
-carry a **"Buy tokens"** action pointing at `/account?section=tokens`. See
-[Tokens and billing](/docs/tokens-and-billing).
+Right below the top bar, above the page itself, Fintela shows a banner when your token balance
+needs attention. At zero compute tokens, a full-width alert reads **"Tokens depleted — compute is
+paused (backtests, optimizations and daily updates). Daily updates resume automatically after a
+purchase."** At a low balance, a dismissible message reads **"Token balance is running low."**
+Both include a **"Buy tokens"** button. See [Tokens and billing](/docs/tokens-and-billing).
 
 ### Notifications
 
-The bell's tooltip is **"Notifications"** and its accessible label is
-**"Notifications ({{count}} unread)"**. The count badge caps at **99**.
+The bell shows how many notifications you have unread, up to 99 — beyond that it just reads
+**99+**.
 
-> [!NOTE] The badge only ever counts your own
-> The unread badge is always computed for scope `mine`, never `team`, whatever scope the open
-> panel is showing.
+> [!NOTE] The unread count is always your own
+> Even if you switch the panel to show your team's notifications, the number on the bell always
+> reflects your own unread count, never your team's.
 
-The panel is 380 px wide with a 380 px scrolling list.
+Opening the bell shows a scrolling panel:
 
-| Panel element | Copy |
+| Panel element | What it shows |
 |---|---|
-| Title | **Notifications** |
-| Scope toggles (Owner/Admin only) | **Mine** and **Team** |
+| Scope toggle (Owner/Admin only) | **Mine** and **Team** |
 | Empty state | **No new notifications** |
-| Pagination | **Load more** / **Loading…** |
+| Pagination | **Load more** |
 | Footer action | **Mark all as read** |
 
-The **Team** toggle appears only for users the workspace role guard accepts — any of the JWT
-client roles `users:manage`, `root:all`, `Owner` or `Admin`. The selected scope is taken from what
-the server actually applied, not what the client asked for: the backend decides from its own
-stored role, and a request for `team` from someone not entitled to it is silently downgraded to
-`mine` rather than refused, so the toggle corrects itself.
+The **Team** toggle only appears if your role gives you team-management permissions; everyone
+else always sees just their own notifications.
 
-Rows deep-link where the event happened — a completed study to its analysis page, a P&L event to
-that group's equity tab in Portfolio Manager, an agent event to its conversation. Rows whose
-kind has no destination are still clickable to clear, but do not navigate.
+Clicking a notification takes you straight to what it's about — a completed study opens its
+results, a P&L alert opens that group's performance view in Portfolio Manager, a message from
+Fintelligent opens that conversation. A few notification types don't have a specific destination;
+clicking one of those just marks it read without navigating anywhere.
 
 ### Help menu
 
 | Item | Opens |
 |---|---|
-| **Product tours** | the Tour Center |
-| **What's new** | the What's new dialog, with a count badge |
-| **Documentation** | this documentation site, in a new tab |
+| **Product tours** | The Tour Center, with every guided tour available at any time |
+| **What's new** | A dialog listing recently introduced features, with a count badge |
+| **Documentation** | This documentation site, in a new tab |
 
-A dot appears on the Help button itself whenever there is a feature introduction you have not
-seen.
+A small dot appears on the Help button whenever there's a feature introduction you haven't seen
+yet.
 
 ### Account menu
 
-The avatar menu is identity plus four things, in this order:
+Opening your avatar shows your identity plus a few actions, in this order:
 
 | Section | Contents |
 |---|---|
-| Identity | Your name, your email, and your organization with its role path |
-| **Fintela API Key** | Masked key with a copy button; the tooltip toggles **"Copy API key"** → **"Copied!"** |
-| **Language** | **English**, **Español**, **Português** — endonyms, deliberately untranslated |
-| Actions | **Light mode** / **Dark mode** toggle, then **Account settings** → `/account` |
+| Identity | Your name, your email, and your organization with your role in it |
+| **Fintela API Key** | Your personal key for connecting your own tools and dashboards to Fintela — copy it from here. See [API overview](/docs/api-overview). |
+| **Language** | English, Español, Português |
+| Actions | Light mode / Dark mode toggle, then **Account settings** |
 
-Only two themes exist, dark and light. With nothing stored, the app honours a
-`prefers-color-scheme: light` system setting and otherwise defaults to dark. There is no
-"system" option in the menu.
+Only light and dark themes exist today — there's no "match my system" option.
 
-> [!WARNING] Sign out is not in this menu
-> Signing out lives on the Account page, in its own Actions card. See
+> [!NOTE] Sign out isn't in this menu
+> To sign out, go to Account settings — it lives there as its own action. See
 > [Account setup](/docs/account-setup).
 
-## Command palette and shortcuts
+## Search and keyboard shortcuts
 
-### The palette
+### Quick search
 
-**Cmd/Ctrl + K** opens the palette from anywhere in the shell. It is a filtered list over five
-categories, in this fixed order: `Pages`, `Studies`, `Strategies`, `Fitness`, `Asset Groups`.
-The input placeholder reads **"Search studies, strategies, fitness, asset groups..."** and the
-footer legend reads **↑ ↓ navigate**, **↵ open**, **Esc close**.
+**Cmd/Ctrl + K** opens quick search from anywhere in Fintela. Results are grouped into five
+categories, always in this order: **Pages**, **Studies**, **Strategies**, **Fitness**, **Asset
+Groups**. The footer legend reads **↑ ↓ navigate**, **↵ open**, **Esc close**.
 
-The hardcoded Pages tier is:
+The built-in Pages results are:
 
-| Entry | Description | Route |
-|---|---|---|
-| Overview | Analysis dashboard | `/analysis` |
-| Portfolios | Portfolio analysis | `/analysis/portfolios` |
-| Portfolio Manager | Compare equity, metrics, holdings and trades across your portfolio groups | `/analysis/portfolio-manager` |
-| Markets | Market data and prices | `/analysis/markets` |
-| Studies | Backtest study registry | `/studies` |
-| Strategies | Strategy registry | `/strategy` |
-| Fitness | Fitness functions registry | `/fitness` |
-| Asset Groups | Ticker asset groups | `/asset-groups` |
+| Page | Description |
+|---|---|
+| Overview | Analysis dashboard |
+| Portfolios | Portfolio analysis |
+| Portfolio Manager | Compare equity, metrics, holdings and trades across your portfolio groups |
+| Markets | Market data and prices |
+| Studies | Backtest study registry |
+| Strategies | Strategy registry |
+| Fitness | Fitness functions registry |
+| Asset Groups | Ticker asset groups |
 
-The Portfolio Manager row also matches the retired names `deployed`, `portfolio groups
-dashboard`, `baskets` and `live`, so old muscle memory still finds it.
+Searching "deployed," "live," "portfolio groups dashboard" or "baskets" also finds Portfolio
+Manager — leftover muscle memory from its previous names still works.
 
-With an empty query the palette shows all pages plus your last 5 studies and last 3 each of
-strategies, fitness functions and asset groups. Study rows deep-link to
-`/analysis/portfolios/study/:studyId`.
+With an empty search box, you'll see all the pages above plus your 5 most recent studies and your
+3 most recent strategies, fitness functions and asset groups each — so your common destinations
+are usually one click away without typing anything.
 
-> [!NOTE] Strategy, fitness and asset-group hits open the registry, not the item
-> Those three tiers link to their registry index — `/strategy`, `/fitness`, `/asset-groups` —
-> not to a `view/:id`. Only study rows carry a per-item destination today.
+> [!NOTE] Not every result opens straight to the item
+> Recent studies open directly to that study's results. Strategy, fitness function and asset
+> group results currently open to their registry list rather than the specific item — from there
+> it's one more click to what you're looking for.
 
-The palette fetches nothing until you open it for the first time — its four registry queries stay
-unmounted until then, so a session that never opens it costs no requests.
-
-An alternative natural-language command bar exists behind the `commandSystem` feature flag,
-which defaults to **off**. Unless you have explicitly enabled it with `?ff_commandSystem=1`,
-the palette described above is what you get.
+Fintela is also testing an alternative, natural-language search bar with a small group of users.
+If you don't see it, the search described above is what you'll use.
 
 ### Keyboard shortcuts
 
-Only these bindings exist.
-
 | Keys | Where | Effect |
 |---|---|---|
-| **Cmd/Ctrl + K** | anywhere in the shell | open the palette |
-| `↑` / `↓` | palette | move the selection |
-| `Enter` | palette | open the highlighted result |
-| `Esc` | palette | close |
-| `Enter` or `Space` | a focused registry row | open that row |
+| **Cmd/Ctrl + K** | anywhere | Open search |
+| `↑` / `↓` | search results | Move the selection |
+| `Enter` | search results | Open the highlighted result |
+| `Esc` | search results | Close search |
+| `Enter` or `Space` | a focused row in a list | Open that row |
 
-Registry rows are ordinary tab stops: `Enter` and `Space` fire only when focus is on the row
-itself, so pressing either on an inner control (a switch, a checkbox) triggers that control
-instead.
+If focus is on a control inside a row — a switch or a checkbox — pressing Enter or Space
+activates that control instead of opening the row, same as anywhere else on the web.
 
-> [!NOTE] There is no vi-style grid navigation and no cheat sheet
-> A `j`/`k`/`g g`/`x`/`/` grid keyboard layer exists in the codebase as an unused hook — no
-> registry wires it up, and its hint string is never rendered. There are also no leader keys,
-> no `?` cheat sheet and no per-user keybindings.
+> [!NOTE] That's the full list
+> Fintela doesn't currently offer a shortcuts cheat sheet, additional navigation shortcuts, or
+> the ability to customize your own key bindings.
 
-## Route reference
+## Page directory
 
-Four routes are public. Everything else is nested under one protected route that renders the
-shell; opening any of them while logged out sends you through `/login?returnTo=` plus the encoded path, and back
-afterwards.
+Every page in Fintela has its own address, so you can bookmark a specific portfolio, study or
+conversation and come straight back to it, or share it with a teammate.
 
-### Public routes
+### Before you sign in
 
-| Route | Page |
+| Page | What it does |
 |---|---|
-| `/login` | Hands straight over to Keycloak, then returns you to `returnTo` |
-| `/signup` | Hands over to Keycloak registration |
-| `/terms` | Terms and Conditions — renders without auth |
-| `/privacy` | Privacy Notice — renders without auth |
+| Sign in | Takes you to Fintela's secure sign-in screen |
+| Sign up | Takes you to registration |
+| Terms and Conditions | Viewable without signing in |
+| Privacy Notice | Viewable without signing in |
 
-The branded login and registration screens themselves are a Keycloak theme, not pages in this
-app.
+Once you're signed in, you're returned to whatever page you were headed to — or Home, by
+default.
 
-### Shell and account routes
+### Account and general pages
 
-| Route | Page |
-|---|---|
-| `/` | Redirects to `/analysis` |
-| `/account` | Account. Accepts `?section=tokens` and `?section=ai-tokens` deep links |
-| `/account/usage-dashboard` | Fintela Usage Dashboard. Your organization comes from the token — there is no `:orgId` parameter |
-| `*` | 404 rendered inside the shell, with the nav chrome intact |
+- Fintela's main address always takes you straight to Home.
+- **Account settings** has direct links to jump straight to your Tokens or AI Tokens tab — the
+  "Buy tokens" buttons elsewhere in the app use these.
+- **Usage Dashboard** shows your organization's usage; it's scoped to your organization
+  automatically, so there's nothing to select.
+- Any address that doesn't match a real page shows a friendly **"Page not found"** screen with a
+  **"Back to dashboard"** button — your sidebar and top bar stay right where they are.
 
-The 404 page reads **"Page not found"** / **"The page you’re looking for doesn’t exist or may
-have moved."** with a **"Back to dashboard"** button.
+### Registries
 
-### Registry routes
+Asset Groups, Strategies, Studies, Fitness Functions, Risk Managers, Promoted Portfolios and
+Laboratory all follow the same simple pattern: a list of everything you have, a page to view one
+item, and a page to edit it — so once you know how one registry works, you know how they all
+work. Laboratory is only available if it's included in your plan.
 
-Each simple registry feature mounts three paths — the index, `view/:id` and `edit/:id` — all
-rendering the same page, which reads its mode from the URL.
+Strategies and Fitness Functions each also have a full-page sandbox, reached with the
+**"Run a backtest"** action on a registry row — a workspace where you test a strategy or fitness
+function, either starting fresh from a portfolio or with that registry item preselected.
 
-| Base route | Also mounts | Sidebar entry |
-|---|---|---|
-| `/asset-groups` | `view/:id`, `edit/:id` | Asset Groups |
-| `/strategy` | `view/:id`, `edit/:id` | Strategies |
-| `/studies` | `view/:id`, `edit/:id` | Studies |
-| `/fitness` | `view/:id`, `edit/:id` | Fitness Functions (More Options) |
-| `/risk-managers` | `view/:id`, `edit/:id` | Risk Managers (More Options) |
-| `/promoted-portfolios` | `view/:id`, `edit/:id` | Promoted Portfolios (More Options) |
-| `/laboratory` | `view/:id`, `edit/:id` | Laboratory (More Options) — locked by `laboratory` |
-| `/developer` | `view/:id`, `edit/:id` | none — hidden — locked by `developer_api` |
+Portfolio Groups has its own set of pages: the list of your groups, a **"Rank and Build"**
+workspace for ranking and assembling a group (you can save and reopen this later as a saved
+view), a structure page for reviewing one group's makeup, and pages for creating or editing a
+group.
 
-Two registries also have a full-page sandbox, reached from the **Run a backtest** action on a
-registry row:
+### Analysis area
 
-| Route | Page |
-|---|---|
-| `/strategy/sandbox` | Strategy sandbox, strategy derived from an origin portfolio |
-| `/strategy/sandbox/:id` | Strategy sandbox with a registry strategy preselected |
-| `/fitness/sandbox` | Fitness sandbox |
-| `/fitness/sandbox/:id` | Fitness sandbox with a registry fitness function preselected |
+Home, the Portfolios dashboard, a study's results, and each portfolio's own page — with tabs for
+Performance (the default), Holdings, Transactions, Risk Analytics, Overfitting and Profile.
+Markets and Data Explorer live here too, when your plan includes them.
 
-Portfolio Groups is a nested feature and does not follow the `view`/`edit` convention:
+Portfolio Manager has four book-level tabs — Equity (the default), Metrics, Holdings and Trades —
+plus a matching set of tabs for each individual portfolio group: Profile, Equity, Metrics,
+Holdings, Trades, Robustness, Ideas, News and Operations, so you can drill from your whole book
+down into one group's detail.
 
-| Route | Page |
-|---|---|
-| `/analysis/portfolio-groups` | Portfolio Groups |
-| `/analysis/portfolio-groups/rank` | Rank and Build workspace |
-| `/analysis/portfolio-groups/rank/:viewId` | Rank and Build with a saved View applied |
-| `/analysis/portfolio-groups/baskets/:basketId` | Basket structure |
-| `/analysis/portfolio-groups/groups/create` | Create a portfolio group |
-| `/analysis/portfolio-groups/groups/:groupId/edit` | Edit a portfolio group |
-| `/analysis/portfolio-groups/:viewId` | Saved-View deep link, kept for back-compatibility |
+### Fintelligent
 
-### Analysis routes
-
-| Route | Page |
-|---|---|
-| `/analysis` | Home |
-| `/analysis/portfolios` | Portfolios dashboard |
-| `/analysis/portfolios/study/:studyId` | Study analysis |
-| `/analysis/portfolios/:portfolioId` | Performance — the landing tab owns the bare route |
-| `/analysis/portfolios/:portfolioId/holdings` | Holdings |
-| `/analysis/portfolios/:portfolioId/transactions` | Transactions |
-| `/analysis/portfolios/:portfolioId/risk` | Risk Analytics |
-| `/analysis/portfolios/:portfolioId/overfitting` | Overfitting |
-| `/analysis/portfolios/:portfolioId/profile` | Profile |
-| `/analysis/markets` | Markets — locked by `markets` |
-| `/analysis/data-explorer` | Data Explorer — locked by `data_explorer` |
-
-Portfolio Manager has four book-level tabs and a set of per-group sub-views. Equity is the
-landing tab and owns the bare route.
-
-| Route | Page |
-|---|---|
-| `/analysis/portfolio-manager` | Equity |
-| `/analysis/portfolio-manager/metrics` | Metrics |
-| `/analysis/portfolio-manager/holdings` | Holdings |
-| `/analysis/portfolio-manager/trades` | Trades |
-| `/analysis/portfolio-manager/:basketId` | Redirects to that group's Profile |
-| `/analysis/portfolio-manager/:basketId/profile` | Group profile |
-| `/analysis/portfolio-manager/:basketId/equity` | Group equity |
-| `/analysis/portfolio-manager/:basketId/metrics` | Group metrics |
-| `/analysis/portfolio-manager/:basketId/holdings` | Group holdings |
-| `/analysis/portfolio-manager/:basketId/trades` | Group trades |
-| `/analysis/portfolio-manager/:basketId/robustness` | Group robustness |
-| `/analysis/portfolio-manager/:basketId/ideas` | Group ideas |
-| `/analysis/portfolio-manager/:basketId/news` | Group news |
-| `/analysis/portfolio-manager/:basketId/operations` | Group operations |
-
-### Fintelligent routes
-
-| Route | Page |
-|---|---|
-| `/ai/fintelai` | Conversation list |
-| `/ai/fintelai/new` | New conversation |
-| `/ai/fintelai/c/:conversationId` | An existing conversation |
-
-Fintelligent has two homes. On every other page it is a floating panel, opened from a
-desktop-only pill at the bottom centre labelled **"Fintelligent"** (tooltip **"Ask
-Fintelligent"**). On `/ai/fintelai` and anything beneath it, the pill and the panel are both
-suppressed — the page *is* the chat. See
+A conversation list, a page for starting a new conversation, and a page for each past
+conversation. There are two ways to reach Fintelligent: a floating chat launcher at the bottom of
+most pages (desktop only), or its own full page under More Options → Fintelligent, where the
+floating launcher is hidden because the whole page is the conversation. See
 [Fintelligent capabilities](/docs/fintelligent-capabilities).
 
 ## Product tours
 
-Ten guided tours ship with the app. All of them are reachable at any time from
+Ten guided tours ship with Fintela. All of them are reachable at any time from
 **Help → Product tours**, which opens the Tour Center: **"Short guided walkthroughs. Take them
-whenever you like — nothing here expires."** Each row offers **Start**, **Resume** or **Replay**
-and carries a status chip of **Not taken**, **In progress**, **Completed**, **Skipped** or
-**Closed**.
+whenever you like — nothing here expires."** Each one offers **Start**, **Resume** or **Replay**,
+with a status of **Not taken**, **In progress**, **Completed**, **Skipped** or **Closed**.
 
-| Tour | Where it arms | Requires |
+| Tour | Where it starts | Requires |
 |---|---|---|
 | **Getting around Fintela** | Home | — |
 | **Studies** | Studies registry | — |
 | **Strategies** | Strategies registry | — |
 | **Asset Groups** | Asset Groups registry | — |
-| **Markets** | Markets, Markets Pulse | entitlement `markets` |
-| **Screener** | Markets Screener | entitlement `markets` |
-| **News** | Markets ticker view | entitlement `markets` |
+| **Markets** | Markets, Markets Pulse | Markets included in your plan |
+| **Screener** | Markets Screener | Markets included in your plan |
+| **News** | Markets ticker view | Markets included in your plan |
 | **Portfolios** | Portfolios dashboard and detail | — |
 | **Portfolio Manager** | Portfolio Manager section and group views | — |
-| **Laboratory** | Laboratory | entitlement `laboratory` |
+| **Laboratory** | Laboratory | Laboratory included in your plan |
 
-Every tour is marked `mobile: 'skip'` — none of them run on a phone, because the mobile
-information architecture is different enough that the steps would point at controls that are
-not there.
+Tours are available on desktop only — the mobile layout is different enough that a desktop tour's
+steps wouldn't line up with what's on screen there.
 
-A tour waits **900 ms** after you land on a surface before offering itself, and refuses to arm
-while any modal dialog is open — which is what keeps it behind the consent dialog and the
-organization-setup screen. Step controls are **Next**, **Back**, **Skip tour**, **Done**,
-**Close** and **Learn more**.
+A tour waits a moment after you land on a page before offering itself, and never appears while
+another dialog is open — so it stays out of the way of things like a welcome screen. Step
+controls are **Next**, **Back**, **Skip tour**, **Done**, **Close** and **Learn more**.
 
-**Help → What's new** lists features introduced since your baseline, each with a **Show me**
-button; when there is nothing, it reads **"You're up to date."**
+**Help → What's new** lists features introduced since you last checked, each with a **Show me**
+button; when there's nothing new, it reads **"You're up to date."**
 
-Preferences live on the Account page, in a **Product tours** card shown to every user: a
-**"Don't show tours automatically"** switch and a **"Reset all tours"** button. Resetting
-progress deliberately does not clear the mute.
+Your preferences for tours live on the Account page, in a **Product tours** card: a
+**"Don't show tours automatically"** switch, and a **"Reset all tours"** button. Resetting your
+progress doesn't turn automatic tours back on if you've muted them — that's a separate switch.
 
-## Mobile bottom navigation
+## Mobile navigation
 
-Below the `md` breakpoint the sidebar is gone and a fixed 58 px bottom bar takes over. It is
-**hand-maintained and deliberately different** — a task-oriented Analyze/Create grouping that
-does not exist in the sidebar — and it exposes only a subset of destinations.
+On a phone or small tablet, the sidebar is replaced by a bottom navigation bar built specifically
+for mobile — a task-oriented Analyze/Create grouping that's deliberately different from the
+sidebar, exposing only the destinations most people need on the go.
 
-| Button | Target |
+| Button | Takes you to |
 |---|---|
-| **Home** | `/analysis` |
-| **Analyze** | opens the Analyze menu |
-| **Create** | opens the Create menu |
-| **Organization** | `/organization`, which redirects to `/account`. Shown only with role `users:manage` or `root:all` |
-| **Fintelligent** | toggles the chat panel |
+| **Home** | Home |
+| **Analyze** | Opens the Analyze menu |
+| **Create** | Opens the Create menu |
+| **Organization** | Account settings — shown only if you have user-management permissions |
+| **Fintelligent** | Toggles the chat panel |
 
 The **Analyze** menu:
 
-| Item | Route | Gate |
-|---|---|---|
-| Portfolios | `/analysis/portfolios` | — |
-| Markets | `/analysis/markets` | entitlement `markets` |
+| Item | Requires |
+|---|---|
+| Portfolios | — |
+| Markets | Included in your plan |
 
 The **Create** menu:
 
-| Item | Route |
+- Asset Groups
+- Fitness Functions
+- Strategies
+- Studies
+
+A locked item still shows a small lock icon and still opens — you'll land on the same locked
+preview described in [Locked features and permissions](#locked-features-and-permissions). The
+Fintelligent button carries a dot badge while one of your AI conversations has a run in progress
+— amber if it's waiting on you, otherwise your theme's accent colour.
+
+Risk Managers, Portfolio Groups, Promoted Portfolios, Data Explorer and Laboratory don't have a
+dedicated button on mobile. You can still reach them from a shared link or a notification — there
+just isn't a shortcut to them in the bottom bar.
+
+## Locked features and permissions
+
+Two separate things decide what you can do in Fintela: which features are included in your plan,
+and what your role allows within your organization.
+
+### Locked features
+
+Locking is about your plan, not about who you are on your team — everyone in your organization
+sees the same features unlocked or locked. Nine areas can be locked:
+
+| Feature | What it covers |
 |---|---|
-| Asset Groups | `/asset-groups` |
-| Fitness Functions | `/fitness` |
-| Strategies | `/strategy` |
-| Studies | `/studies` |
+| Markets | Market data and pricing in the Markets tab |
+| Data Explorer | Browsing the datasets available to you |
+| Laboratory | Interactive coding sessions, billed by the minute |
+| Developer API | Generating and rotating your personal API key |
+| Live trading | Connecting a broker, and creating and launching live trading operations |
+| Seed export | Exporting portfolio and basket holdings and order intents |
+| AI ideas | AI-generated context and portfolio idea suggestions |
+| Daily updates | Automatic daily recalculation of your portfolios |
+| Bulk studies | Running many studies at once, and bulk risk-manager optimization |
 
-Locked items show a small lock glyph and still navigate. The Fintelligent button carries a dot
-badge while an agent run is live — amber when the run is waiting on you, otherwise the primary
-colour.
+Four of these lock an entire page — Markets, Data Explorer, Laboratory and the API overview. The
+rest only lock specific actions inside pages you can otherwise still open. See
+[Live trading](/docs/live-trading) for more on connecting a broker.
 
-Registries not in these two menus — Risk Managers, Portfolio Groups, Promoted Portfolios — and
-the rest of More Options — Data Explorer, Laboratory — are reachable on mobile only by URL.
+Your organization's plan can change at any time, and a newly unlocked feature is typically
+available within about a minute — no need to sign out or refresh.
 
-## How access gating works
+> [!IMPORTANT] Locked doesn't mean hidden
+> A locked feature still shows up in your sidebar, and clicking it still opens the page. What
+> you'll see is a preview: the layout is there, blurred, with no real data loaded, and a panel
+> reading **"Feature locked"** / **"Buy tokens to unlock this feature."**, with a **"Buy tokens"**
+> button and a note that **"This is a preview — your real data appears once unlocked."**
 
-Two mechanisms decide what you can open, and only two: **entitlement locks** and **JWT client
-roles**.
+Locked entries in the sidebar carry a small lock icon and a **"Locked — buy tokens to unlock"**
+tooltip. Search results and Fintelligent will still take you to a locked feature if you ask for
+it by name — you'll just land on the same preview.
 
-### Entitlement locks
+This protection isn't only visual — Fintela checks on its side too, so a locked feature can't
+actually be used even if you get past the preview screen. You'll only see an interruption when
+you actively try to do something the feature requires, like saving or running something; quietly
+browsing a locked page doesn't pop up a message.
 
-Locks are a packaging control, not a permission system. Nine feature keys exist:
+### Plan limits (quotas)
 
-| Key | What it gates |
+Separate from locked features, some things are capped by how many you're allowed to have at once
+— for example, the number of strategies your plan permits. Trying to create one more than your
+limit shows **"You've reached your plan limit,"** along with the reassurance that **"Your
+existing {resource} keep working normally,"** and a reminder that **"You can also delete one to
+make room."**
+
+> [!NOTE] Limits only apply when you create something new
+> Reading, editing, stopping or deleting something you already have is never blocked by a limit —
+> a limit can never trap you inside a position you're already holding, and moving to a smaller
+> plan never deletes anything you already own. See
+> [Tokens and billing](/docs/tokens-and-billing) for current plan tiers and numbers.
+
+### Team roles and permissions
+
+Separate from plan-based locks, your role within your organization controls a small number of
+things:
+
+| Your role | What it opens |
 |---|---|
-| `markets` | the Markets tab's precomputed data |
-| `data_explorer` | the Data Explorer terminal |
-| `laboratory` | live kernel sessions, metered per minute |
-| `developer_api` | issuing and rotating the developer API key |
-| `broker_paper_trading` | connecting a broker, creating and launching operations |
-| `seed_export` | portfolio and basket seed and order-intent extraction |
-| `ai_ideas` | AI context packs and basket idea generation |
-| `daily_updates` | recurring scheduled recompute |
-| `bulk_studies` | bulk studies and risk-manager optimization |
+| AI access granted | The **Fintelligent** entry in More Options |
+| Owner, Admin, or user-management permission | The **Organization** button in the mobile bottom bar |
+| Owner, Admin, Manager, Analyst, or user-management permission | The notifications **Team** scope toggle |
 
-Four of them attach to a navigable surface: `markets` (Markets), `data_explorer` (Data
-Explorer), `laboratory` (Laboratory) and `developer_api` (API Docs). The other five gate
-actions inside pages rather than the pages themselves.
+Your role is also shown on the Account page and the usage dashboard as Owner, Admin, Manager or
+Analyst, based on your position in your organization's structure. That display can occasionally
+differ slightly from the permissions used for navigation — when it does, Fintela always falls
+back to the more restrictive option rather than granting extra access, which is why the
+notifications Team toggle quietly shows you your own notifications instead of erroring if you
+don't have access.
 
-Which keys are locked for your organization is not fixed in the app. It is one global policy
-row, tunable by a single `UPDATE` that every replica picks up within about a minute and with no
-deploy — the product currently ships with all nine locked. The live set for your organization is
-whatever `GET /entitlements/me` reports:
+## Renamed features and old links
 
-```http
-GET /entitlements/me
-```
+If you have an old bookmark, saved link, or notification from before a feature was renamed or
+moved, don't worry — Fintela takes you to the current version automatically.
 
-> [!IMPORTANT] Locked is not hidden
-> A locked feature stays in the sidebar, still navigates, and still renders its page. What you
-> get is a **blurred, `inert`, data-free preview**: the page's structure is drawn behind a blur,
-> the whole subtree is removed from focus order and the accessibility tree, and it runs against
-> a frozen query client so **no data is fetched at all**. Over the top sits a panel reading
-> **"Feature locked"** / **"Buy tokens to unlock this feature."** with a **"Buy tokens"** button
-> pointing at `/account?section=tokens`, and a footnote: **"This is a preview — your real data
-> appears once unlocked."**
-
-In the sidebar a locked entry gains the tooltip **"Locked — buy tokens to unlock"** in both rail
-states, plus a small lock glyph trailing the label when the rail is expanded. Neither the command palette nor
-Fintelligent's navigation consults the lock state at all — both go straight to the page and let
-the overlay take over.
-
-The overlay is a preview, not a guard. The backend enforces the same locks independently and
-answers **HTTP 402** with a machine-readable body:
-
-```json
-{
-  "error": "feature_locked",
-  "feature": "markets",
-  "message": "...",
-  "upgrade": "purchase_tokens"
-}
-```
-
-The HTTP client answers these 402s centrally, so an action fails the same way at every call site,
-whether or not that call site handles it. Only writes raise a dialog: a `GET` or `HEAD` that 402s
-is a background read of a locked surface and is left silent. The dialog quotes the backend's
-`message` verbatim.
-
-Quota errors are a separate case, because they have a second, free remedy:
-
-```json
-{
-  "error": "quota_reached",
-  "quota": "strategies",
-  "used": 2,
-  "limit": 2,
-  "requested": 1,
-  "message": "...",
-  "upgrade": "purchase_tokens"
-}
-```
-
-That one raises **"You've reached your plan limit"**, with the reassurance **"Your existing
-{resource} keep working normally."** and **"You can also delete one to make room."**
-
-> [!NOTE] Limits are read at creation only
-> Nothing consults a limit on read, update, delete or stop. A lock can never trap you inside a
-> live position, and falling back to the free tier deletes nothing. See
-> [Tokens and billing](/docs/tokens-and-billing) for the tiers, the current numbers and how
-> activation works.
-
-### JWT client roles
-
-The second mechanism reads client roles straight out of your access token, from
-`resource_access['fintela-api'].roles`. In the shell they gate exactly three things:
-
-| Role | What it opens |
+| You might know it as | It's now called |
 |---|---|
-| `fintela-ai:read` or `root:all` | the **Fintelligent** entry inside More Options |
-| `users:manage` or `root:all` | the **Organization** button in the mobile bottom bar |
-| `users:manage`, `root:all`, `Owner` or `Admin` | the notifications **Team** scope toggle |
+| Deployed Portfolios, Portfolio Groups Dashboard | **Portfolio Manager** |
+| Data Clusters | **Asset Groups** |
+| Data Pipelines | Retired — see below |
+| FintelAI | **Fintelligent** |
 
-A second, separate derivation reads `Owner` / `Admin` / `Manager` / `Analyst` from the deepest
-Keycloak group path (`/Org/Role/…`). That one drives the Account page and the usage dashboard,
-not navigation. It can legitimately disagree with the role the backend stores — the backend keeps
-only the first segment of your first group — which is why the notifications Team scope downgrades
-instead of erroring.
+> [!CAUTION] Data Pipelines is retired, not renamed
+> An old Data Pipelines link now opens Data Explorer, but the feature itself no longer exists as
+> a separate destination — a strategy now selects its own data sources directly inside its
+> editor. Data Explorer is where you go to browse what each data source actually contains.
 
-### What does not gate anything
+A handful of old tab names on Portfolio Manager and portfolio pages — like "Overview," "Exposure"
+or "Transactions" — have also been renamed; any old link using one of them opens its current
+equivalent automatically.
 
-> [!CAUTION] `feature.permission` is dead metadata
-> Every feature in the manifest carries a `permission` string — `markets:read`, `studies:read`,
-> `overview:read` and so on. **Nothing reads it.** The router mounts every route
-> unconditionally and the sidebar never consults it. Several of those strings are not real
-> Keycloak roles at all. Do not treat them as access control, and do not infer permissions from
-> them.
-
-Two guard components, `RoleGuard` and `PermissionGuard`, are defined and exported in the auth
-folder and imported by nothing. They gate no route in the shipped app.
-
-## Legacy redirects
-
-These paths are **redirects only**. None of them is a live destination — each one rewrites to a
-current route so old bookmarks, shared links and notification deep links keep resolving.
-
-| Legacy path | Redirects to |
-|---|---|
-| `/organization` | `/account` |
-| `/dataCluster/*` | `/asset-groups/*` — path tail and query preserved |
-| `/data-pipelines/*` | `/analysis/data-explorer` |
-| `/analysis/deployed-portfolios/*` | `/analysis/portfolio-manager/*` |
-| `/analysis/portfolio-manager/rank` | `/analysis/portfolio-groups/rank` |
-| `/analysis/portfolio-manager/rank/:viewId` | `/analysis/portfolio-groups/rank/:viewId` |
-| `/analysis/portfolio-manager/baskets/:basketId` | `/analysis/portfolio-groups/baskets/:basketId` |
-| `/analysis/portfolio-manager/groups/create` | `/analysis/portfolio-groups/groups/create` |
-| `/analysis/portfolio-manager/groups/:groupId/edit` | `/analysis/portfolio-groups/groups/:groupId/edit` |
-| `/analysis/portfolio-manager/equity` | `/analysis/portfolio-manager` |
-| `/analysis/portfolio-manager/overview` | `/analysis/portfolio-manager` |
-| `/analysis/portfolio-manager/live` | `/analysis/portfolio-manager` |
-| `/analysis/portfolio-manager/backtest` | `/analysis/portfolio-manager` |
-| `/analysis/portfolio-manager/exposure` | `/analysis/portfolio-manager/holdings` |
-| `/analysis/portfolio-manager/:basketId/performance` | `/analysis/portfolio-manager/:basketId/equity` |
-| `/analysis/portfolio-manager/:basketId/risk` | `/analysis/portfolio-manager/:basketId/equity` |
-| `/analysis/portfolio-manager/:basketId/transactions` | `/analysis/portfolio-manager/:basketId/trades` |
-| `/analysis/portfolios/:portfolioId/metrics` | `/analysis/portfolios/:portfolioId` (Performance) |
-| `/analysis/portfolios/:portfolioId/equity` | `/analysis/portfolios/:portfolioId/risk` |
-| `/analysis/portfolios/:portfolioId/risk-managers` | `/analysis/portfolios/:portfolioId/risk` |
-| `/analysis/portfolios/:portfolioId/trades` | `/analysis/portfolios/:portfolioId/transactions` |
-| `/analysis/portfolios/:portfolioId/orders` | `/analysis/portfolios/:portfolioId/transactions` |
-| `/analysis/portfolios/:portfolioId/investor` | `/analysis/portfolios/:portfolioId/profile` |
-
-Retired `?tab=` values on a Portfolio Manager group are translated on arrival: `results`,
-`performance` and `risk` all resolve to `equity`, and `transactions` resolves to `trades`.
-
-> [!CAUTION] Data Pipelines is retired, not moved
-> `/data-pipelines/*` is a redirect to Data Explorer. The feature no longer exists — a strategy
-> now selects its built-in data sources in its own editor. Data Explorer is where you browse
-> what each source contains.
-
-> [!WARNING] One legacy shape cannot be recovered
-> The bare saved-View link `/analysis/portfolio-manager/:viewId` is gone. That URL shape is now
-> read as a basket id, so an old saved-View bookmark of that form lands on a group detail page
-> that does not exist rather than redirecting.
-
-### Renames still visible in the product
-
-| Old name | Current name | Where the old name survives |
-|---|---|---|
-| Deployed Portfolios, Portfolio Groups Dashboard | **Portfolio Manager** | palette search keywords; the `/analysis/deployed-portfolios` redirect |
-| Data Clusters | **Asset Groups** | the `data_clusters` quota key and the `/dataCluster` redirect |
-| FintelAI | **Fintelligent** | an unused key in the sidebar's icon map |
+> [!WARNING] One old link shape doesn't redirect correctly
+> A very old style of saved-view link, from before the Portfolio Groups redesign, may not resolve
+> correctly and can land you on an unrelated group's page instead. If an old bookmark like that
+> stops making sense, open [Portfolio groups](/docs/portfolio-groups) fresh and re-open your
+> saved view from there.

@@ -4,863 +4,688 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 2
 published: true
-updated: 2026-08-20
-summary: Every action Fintelligent can take against the platform, and the limits on each.
-keywords: capabilities, tools, actions, agent tools, create strategy, launch study, read results, permissions, limits
+updated: 2026-09-01
+summary: Everything Fintelligent can do for you inside Fintela, and exactly where it needs your confirmation before anything changes.
+keywords: capabilities, permissions, confirmations, creating strategies, launching studies, editing risk managers, reading portfolios, limits
 ---
 
-Fintelligent acts through a fixed registry of **194 tools** grouped into 18 families. Every one of
-them is declared in code with an exact name, an argument schema, a target plane and a `mutating`
-flag — the assistant cannot invent an action outside this list. **164 tools are read-only. 30 can
-change your data.** This page enumerates all of them, says which platform objects each one touches,
-and states where your click is required and where it is not.
+Fintelligent can take around 190 distinct actions across the platform, organized into the categories
+covered on this page. It can never invent an action outside this fixed list — everything it does is
+one of the capabilities described below. Most of what it can do (164 actions) is pure lookup: reading
+your studies, portfolios, market data, and more. A much smaller set (30 actions) can actually create,
+change, or delete something in your account. This page walks through every category, says what each
+one touches, and — most importantly — tells you exactly where Fintelligent needs your click before
+anything is saved, and where it does not.
 
 > [!CAUTION]
-> Not every write goes through a dialog. The editor path (`ui_crud_action` → `ui_editor_field` →
-> `ui_request_save`) always ends with **you** clicking Confirm. The direct API path
-> (`create_strategy`, `create_study`, `launch_study`, `delete_*`, the basket writes) **persists
-> immediately with no dialog**. The tool descriptions call the direct path *secondary* and tell the
-> agent to confirm in chat first, but nothing in the platform enforces that. The two paths are set
-> side by side under **Which path needs your click**, below.
+> Not every change Fintelligent makes shows you a confirmation dialog first. When it fills in one of
+> Fintela's own editors — for a strategy, study, fitness function, risk manager, or asset group — it
+> always ends by asking you to click Confirm before anything is saved. But a faster, direct path —
+> creating a strategy, creating or launching a study, deleting something, or changing a portfolio
+> group — saves immediately, with no dialog. Fintelligent is instructed to tell you in chat what it's
+> about to do before it takes that kind of action, but nothing forces it to wait for your reply first,
+> so always read that message before assuming it's asking permission. See
+> [Which actions need your confirmation](#which-actions-need-your-confirmation) below for exactly
+> which is which.
 
-## How a capability reaches the platform
+## How Fintelligent's actions work
 
-### Planes
+### What it can touch
 
-Each tool binds to exactly one of five planes. The plane decides where the call lands and what
-authority it carries.
+Every action Fintelligent can take falls into one of a few categories:
 
-| Plane | Tools | Where it executes | Authority |
-|---|---|---|---|
-| `backend` | 177 | The Rust API (`services/backend`) | **Replays your own JWT.** The agent inherits your RBAC and organization scope exactly — it can never read or write anything you could not |
-| `compiler` | 6 | The stateless compiler catalogs | Service token, no database, no billing. Contracts, primitives, examples, fixtures |
-| `ui` | 8 | Your browser | Emitted as a `tool_call` over the stream; the SPA applies it. Nothing runs server-side |
-| `control` | 2 | Inside the agent | `load_playbook`, `delegate_to_spoke`. Never leave the process |
-| `context` | 1 | The backend, via the screen you are on | `replay_view_query`. Arguments come from the published view context, not from the model |
+- **Actions on your account data.** The vast majority of what Fintelligent does — reading your
+  studies, strategies, portfolios, and market data, and making the small set of changes described
+  below — uses exactly your own permissions. It can never see or touch anything in Fintela that you
+  personally couldn't see or touch yourself.
+- **General reference lookups.** A handful of actions look up platform reference material —
+  available metrics, samplers, worked examples — that isn't tied to your account and never touches
+  your data.
+- **Actions on your screen.** Some actions play out visibly in your browser, the same way your own
+  clicks would: opening an editor, filling in a field, navigating to a different page. Because these
+  happen in your browser rather than landing straight in the database, Fintelligent doesn't get
+  instant proof they worked — it only knows for sure once you complete a save.
+- **Behind-the-scenes organizing.** For more complex requests, Fintelligent may organize its own
+  work internally — for example, loading a checklist for a particular kind of task, or handing part
+  of the request to a specialist. None of this touches your data on its own.
+- **Reading exactly what's on your screen.** One action re-runs the same query that's already
+  producing what you're looking at, so anything Fintelligent tells you about that screen can't drift
+  from what's actually shown.
 
-```text
-  model picks a tool
-        │
-        ├─ backend ──► services/backend  ── your JWT ──► Postgres        (billable, org-scoped)
-        ├─ compiler ─► compiler catalogs ── service token                (no DB, no billing)
-        ├─ ui ───────► SSE tool_call ──► your browser ──► the page bus   ("dispatched", not "applied")
-        ├─ control ──► handled inside the agent loop                     (never leaves the process)
-        └─ context ──► the query your current screen published ──► backend read
-```
+### Focused specialists for complex requests
 
-A UI-plane call is answered to the model with `{"dispatched": true, "verified": false}` — the
-transport is one-way, so the agent is told the action was *emitted*, never that it was applied. The
-only proof a write landed is the editor snapshot that comes back on the next `ui_request_save`.
+For simple questions, Fintelligent answers directly using its everyday set of lookup actions. One
+change — deriving a new asset group from an existing grouping — is available to it immediately too,
+without any extra setup, since it's low-risk and easy to reverse.
 
-### Who holds which tools
+For anything more involved — writing a new strategy, launching a study, editing a risk manager, and
+so on — Fintelligent first loads the matching checklist for that kind of work: one for strategies,
+one for studies, one for risk managers, one for fitness functions, one for asset groups, plus
+checklists for troubleshooting and for building reports. Loading the right checklist is what unlocks
+the ability to open editors, fill them in, and request a save. Once loaded, a checklist stays active
+for the rest of that conversation — it also loads automatically if you already have the matching
+editor open, or if a previous attempt to save just failed validation.
 
-The agent is a Hub with seven specialist spokes. The roster is not flat: a tool is reachable only if
-some roster carries it.
+For research-heavy questions, Fintelligent may hand part of the work to a focused specialist — one
+for studies, one for strategies, one for fitness functions and risk managers, one for asset groups,
+one for portfolio groups and broader portfolio analysis, one for general research across the
+platform, and one specifically for your live-traded portfolios. The two focused on general research
+and on live trading are read-only by design, no matter how the request is phrased — they can never
+create, change, or delete anything. A specialist also never sees your whole conversation; it only
+sees the specific piece of work handed to it, so it stays scoped and returns a focused answer.
 
-| Actor | Tools it can call | Can it write? |
-|---|---|---|
-| **Hub** (base roster) | 44 | One mutating tool only: `derive_cluster_from_grouping`. Everything else is a read or an escalation |
-| **Hub** + a loaded playbook | up to 66 | Adds `ui_editor_field`, `ui_crud_action`, `ui_request_save`, `platform_command`, `read_agent_draft`, `save_agent_draft` |
-| `study` spoke | 30 | `create_study`, `launch_study`, `stop_study`, `resume_study`, `duplicate_study`, `derive_cluster_from_grouping` |
-| `analytics` spoke | 45 | `create_basket`, `update_basket`, `delete_basket`, `update_basket_portfolios` |
-| `knowledge` spoke | 37 | The fitness and risk-manager writes (9 tools) |
-| `data` spoke | 44 | The asset-group writes (5 tools) |
-| `strategy` spoke | 22 | `create_strategy`, `update_strategy`, `delete_strategy`, `duplicate_strategy` |
-| `research` spoke | 37 | **Read-only** |
-| `live` spoke | 7 | **Read-only** |
+A few rules always hold, no matter how a request is phrased:
 
-Three rules constrain who can write. The first is asserted at import, so a roster that breaks it
-fails the boot rather than degrading at runtime:
+- Fintelligent can never navigate your screen, open an editor, or ask you a question through anything
+  other than its direct connection to your browser — a specialist working in the background can't do
+  any of that.
+- Handing work off to a specialist is read-only by default. It has to be specifically marked as
+  allowed to write before that piece of work can change anything.
+- Fintelligent can never create, update, or delete a strategy, study, fitness function, risk manager,
+  or asset group on its own initiative — that always goes through either the on-screen editor (with
+  your Confirm click) or a specialist explicitly allowed to write.
 
-- **No spoke may hold a UI, control or context tool.** Your screen belongs to the Hub. A spoke that
-  tries to navigate, open an editor or ask you a question is refused in-band.
-- **A delegation is read-only by default.** `delegate_to_spoke` takes a `mutating` boolean that
-  defaults to false; a read-only brief has every mutating tool stripped from the spoke's roster
-  before it starts.
-- **The Hub cannot reach a registry write directly.** `create_strategy`, `create_fitness`,
-  `create_risk_manager`, `create_study`, `launch_study` and the rest are spoke-owned. The Hub must
-  either delegate with `mutating: true` or take the editor path.
+### Every action is logged
 
-**Playbooks** are the seven authoring contracts (`strategy`, `study`, `risk_manager`, `fitness`,
-`asset_group`, `remediation`, `reports`). The Hub loads one with `load_playbook` when it is about to
-write, or the turn pre-loads it when you already have that editor open, when the last message was a
-failed validation, or when the previous turn loaded it. Loading is one-way within a turn — a
-playbook is never unloaded.
+Every change Fintelligent makes to your account — creating, editing, or deleting a strategy, study,
+fitness function, risk manager, asset group, or portfolio group — is permanently recorded: who
+requested it, when, and exactly what changed. That record can never be edited or deleted afterward,
+so it stays a reliable history of what the assistant did on your behalf. Plain lookups aren't logged
+this way, since they don't change anything.
 
-### The audit trail
+If you press Stop or close the tab while Fintelligent is in the middle of saving something, the save
+is not cancelled — it keeps running in the background for a short grace period. If Fintelligent can't
+confirm the outcome before it has to answer, it tells you plainly that the change may or may not have
+gone through, rather than staying silent, so you always know to go check.
 
-Every tool flagged `mutating` emits `mutating: true` on its `tool_call` event, and the backend writes
-an append-only row to `developers.agent_action_log` carrying the organization, the user, the
-conversation, the sequence number of the user message that started the turn, the tool name and a
-SHA-256 digest of the arguments. The table's trigger rejects `UPDATE` and `DELETE`. Read-only calls
-are not audited.
+When a single request involves more than one change, those changes are applied one at a time, in
+order, so an earlier failure can't be skipped over. Ordinary lookups within the same request can run
+in parallel, since there's no risk of one interfering with another.
 
-Mutating calls are also **shielded against cancellation**: if you press Stop or close the tab while a
-write is in flight, the request is not torn off — it keeps running, and the turn waits a short grace
-period for its real outcome before giving up. If it still has not answered, the tool result says
-explicitly that the action *may or may not* have been applied, rather than leaving a `tool_call` with
-no result at all. A batch containing any mutation runs serially; read batches run concurrently.
+## Everything Fintelligent can do, at a glance
 
-## Capability map
+| Area | Actions | Can create or change something | What it covers |
+|---|---:|---:|---|
+| Portfolio analysis & portfolio groups | 46 | 4 | Trial-portfolio metrics, equity, holdings, lineage, overfitting, what-if previews, cross-study rankings, portfolio groups, and managed portfolios |
+| Market | 24 | 0 | Market overview, indices, sectors, countries, per-ticker prices, financials, sentiment, insider activity, analyst ratings, corporate actions, rates, news |
+| Studies | 19 | 5 | Listing, metadata, progress, errors, clustering, parameter importance, overfitting, comparisons, cost previews, plus creating, launching, stopping, resuming, and duplicating |
+| Data Explorer | 17 | 0 | Data catalog, dataset summaries and coverage, feature series, raw rows, rates, macro series, calendars, symbol changes, metadata fields |
+| Asset groups | 15 | 5 | Universes, date coverage, metadata quality, compatibility checks, groupings, plus creating, updating, deleting, and duplicating |
+| Risk managers | 12 | 5 | Your own and the public library, quotas, versions, previews, plus creating, updating, deleting, duplicating, and forking |
+| Reference and knowledge | 11 | 0 | Data sources, built-in risk managers, reference building blocks, worked examples, resource requirements, metrics, samplers, benchmarks, a workspace snapshot |
+| Strategies | 9 | 4 | Listing, metadata, declared parameters, versions, previews, plus creating, updating, deleting, and duplicating |
+| Tickers | 9 | 0 | Symbol lookup, search, snapshots, indices, constituents, time series, exchanges, filter values |
+| On-screen actions | 8 | 2 | Navigation, editor writes, opening editors, save requests, question cards, PDF reports, on-screen command batches |
+| Fitness functions | 8 | 4 | Listing, metadata, versions, previews, plus creating, updating, deleting, and duplicating |
+| Checking your code | 7 | 0 | The checks run on your own code, external connections, and built-in resources before anything can be saved |
+| Screener | 3 | 0 | Filter options, match counts, match results |
+| Saved drafts | 2 | 1 | Reading and saving your in-progress authoring work |
+| Behind-the-scenes organizing | 2 | 0 | Loading a checklist for a task, handing work to a specialist |
+| Long-running checks | 1 | 0 | Waiting on a check that takes a moment to finish |
+| Re-reading your screen | 1 | 0 | Re-running the query behind whatever you're currently looking at |
+| Live brokerage | 0 | 0 | Intentionally empty — no live-brokerage action exists yet |
+| **Total** | **194** | **30** | |
 
-| Family | Tools | Mutating | Plane | What it covers |
-|---|---:|---:|---|---|
-| Trial portfolios and baskets | 46 | 4 | backend | Trial portfolio metrics, equity, holdings, lineage, overfitting, what-if, global rankers, portfolio groups, managed portfolios |
-| Market | 24 | 0 | backend | Overview, indices, sectors, countries, per-ticker OHLC, financials, sentiment, insider, analyst, corporate actions, rates, news |
-| Studies | 19 | 5 | backend | Listing, metadata, progress, errors, clustering, importances, overfitting, comparison, cost previews, create, launch, stop, resume, duplicate |
-| Data Explorer | 17 | 0 | backend | Catalog, dataset summary and coverage, feature series, raw rows, rates, macro series, calendars, symbol changes, metadata fields |
-| Asset groups | 15 | 5 | backend | Universes, date coverage, metadata quality, compatibility matrix, groupings, create, update, delete, duplicate |
-| Risk managers | 12 | 5 | backend | Own and public library, quotas, versions, sandboxes, create, update, delete, duplicate, fork |
-| Knowledge and catalogs | 11 | 0 | compiler (6), backend (5) | Data sources, built-in risk managers, declarative primitives, worked examples, resource contracts, metrics, samplers, benchmarks, workspace snapshot |
-| Strategies | 9 | 4 | backend | Listing, metadata, declared parameters, versions, sandbox, create, update, delete, duplicate |
-| Tickers | 9 | 0 | backend | Symbol resolution, search, snapshots, indices, constituents, time series, exchanges, facets |
-| Interface | 8 | 2 | ui | Navigation, editor writes, editor opening, save requests, question cards, PDF reports, command batches |
-| Fitness functions | 8 | 4 | backend | Listing, metadata, versions, sandbox, create, update, delete, duplicate |
-| Validation | 7 | 0 | backend | The seven compile checks for internal, external and built-in resources |
-| Screener | 3 | 0 | backend | Filter schema, match count, match page |
-| Drafts | 2 | 1 | backend | Read and write the server-side authoring draft |
-| Control | 2 | 0 | control | Load a playbook, delegate to a spoke |
-| Jobs | 1 | 0 | backend | Wait for an async job |
-| View context | 1 | 0 | context | Re-run the query behind your current screen |
-| Broker | 0 | 0 | — | **Intentionally empty.** No live-brokerage tool exists |
-| **Total** | **194** | **30** | | |
+## Actions that change your data
 
-## Capabilities that change your data
+### What Fintelligent can create, edit, or delete
 
-### The mutating tools
+| What you're working with | What Fintelligent can do to it |
+|---|---|
+| Strategy | Create, fully update, delete, or duplicate |
+| Fitness function | Create, fully update, delete, or duplicate |
+| Risk manager | Create, update, delete, duplicate, or fork a public one into your own library |
+| Asset group | Derive one from a study's universe or from a grouping, fully replace its ticker universe, delete, or duplicate |
+| Study | Save, launch (this is the one that spends Fintela tokens and starts the optimization), stop, resume with more trials, or make a config-only duplicate |
+| Portfolio group | Create from a set of portfolios, partially update, delete, or refresh its member data |
+| Your in-progress draft | Save your work-in-progress on a strategy, study, fitness function, risk manager, or asset group, so it survives you navigating away or closing the tab |
 
-These 30 tools are the complete set that can alter platform state. Everything else in this document
-is a read.
+Every one of these persists immediately when Fintelligent acts on it directly — there is no separate
+confirmation dialog on this path. The next section explains when that direct path is used instead of
+the editor, and how to tell which one you're getting.
 
-| Tool | Object written | Effect | Dialog? |
-|---|---|---|---|
-| `create_strategy` | Strategy | Creates and **persists immediately** | No |
-| `update_strategy` | Strategy | Full replace of the fields sent | No |
-| `delete_strategy` | Strategy | Deletes one or more by id | No |
-| `duplicate_strategy` | Strategy | Copies one | No |
-| `create_fitness` | Fitness function | Creates and **persists immediately** | No |
-| `update_fitness` | Fitness function | Full replace of the fields sent | No |
-| `delete_fitness` | Fitness function | Deletes one or more by id | No |
-| `duplicate_fitness` | Fitness function | Copies one | No |
-| `create_risk_manager` | Risk manager | Creates one of kind `builtin`, `internal`, `external` or `declarative` | No |
-| `update_risk_manager` | Risk manager | Updates one | No |
-| `delete_risk_manager` | Risk manager | Deletes one or more by id | No |
-| `duplicate_risk_manager` | Risk manager | Copies one | No |
-| `fork_risk_manager` | Risk manager | Forks a public one into your library | No |
-| `create_cluster_from_study` | Asset group | Derives one from a study's universe | No |
-| `derive_cluster_from_grouping` | Asset group | Derives one from a grouping namespace and code | No |
-| `update_data_cluster` | Asset group | `tickers_id` is a **full replacement** of the universe | No |
-| `delete_data_cluster` | Asset group | Deletes one or more by id | No |
-| `duplicate_data_cluster` | Asset group | Copies one | No |
-| `create_study` | Study | Saves a study. Starts nothing unless `launch_now: true` | No |
-| `launch_study` | Study | **Charges Fintela tokens and starts the optimization** | No |
-| `stop_study` | Study | Cancels one or more running studies | No |
-| `resume_study` | Study | Restarts a completed or stopped study with more trials | No |
-| `duplicate_study` | Study | Config-only copy | No |
-| `create_basket` | Portfolio group | Creates one from portfolio ids; trial ids are auto-promoted to managed. A paid `allocation_method` charges its unlock (402 if unaffordable) | No |
-| `update_basket` | Portfolio group | Partial update; `rewrite_backtest` recomputes from inception, allowed only on a never-operated basket | No |
-| `delete_basket` | Portfolio group | Deletes it | No |
-| `update_basket_portfolios` | Portfolio group | Triggers a data refresh of the member portfolios | No |
-| `save_agent_draft` | Agent draft | Writes the draft row. **Creates no resource** | No |
-| `ui_crud_action` | — | Opens an editor or triggers a row action in your browser | Depends on the page |
-| `platform_command` | — | Runs a batch of command intents in your browser | Depends on the intent |
+Creating a portfolio group with a paid allocation method also charges to unlock that method at the
+moment of creation; if your balance can't cover it, the creation is declined rather than partially
+applied.
 
 > [!WARNING]
-> `launch_study` and `create_study` with `launch_now: true` commit **Fintela tokens** (the compute
-> currency). The cost is knowable in advance — `preview_new_study_cost` quotes an uncreated
-> configuration and `preview_study_cost` quotes a saved study, both read-only — but neither is
-> mandatory before a launch.
+> Launching a study — whether by saving one with "launch now" turned on, or launching an existing
+> saved study — spends **Fintela tokens**, the platform's compute currency, and starts the
+> optimization running. You can always see the cost ahead of time: ask Fintelligent to preview the
+> cost of a new configuration or of a saved study before you commit — previewing never creates
+> anything or spends any tokens — but Fintelligent isn't required to show you that number before it
+> launches something, so ask for it yourself if you want to see it first.
 
-### Which path needs your click
+### Which actions need your confirmation
 
-There are two ways to author a registry object, and only one of them ends in a dialog.
+There are two ways an object gets created, edited, or deleted, and only one of them ends in a dialog.
 
-| | Editor path | Direct API path |
+| | Through the editor | Fintelligent acting directly |
 |---|---|---|
-| Tools | `ui_crud_action` → `ui_editor_field` → `ui_request_save` | `create_*` / `update_*` / `delete_*` |
-| Where it runs | Your browser | The backend |
-| What you see | The real editor, filled in, then the Save Confirm dialog | Nothing until it is done |
-| Who persists it | **You**, by clicking Confirm | The agent |
-| Status while waiting | `Waiting for you to confirm — the Save dialog is open` | none |
-| Declared as | The default | "SECONDARY path… use this only when the user explicitly asks to skip the wizard" |
+| What happens | Fintelligent opens the real editor for that object and fills it in, exactly as if you had | Fintelligent creates, updates, or deletes the object without opening anything on screen |
+| What you see | The actual editor, filled in, followed by the same Save confirmation dialog you'd see doing it by hand | Nothing on screen until it's already done |
+| Who actually saves it | **You**, by clicking Confirm | Fintelligent, on its own |
+| While you wait | A clear "waiting for you to confirm" status | No waiting step at all |
+| When it's used | The default, safer path | Meant for when you've explicitly asked to skip the editor |
 
-`ui_request_save` runs exactly the validation a human Save runs and then stops. It never persists.
-For a **study** it saves nothing at all: it opens the review dialog with the token cost for you to
-confirm or cancel — the tool step renders as **"Opening the study for your review"**.
+Requesting a save through the editor path always runs the same checks your own Save button would,
+then stops there — it never persists anything by itself. For a study specifically, this step never
+saves anything on its own: it opens the review dialog showing you the token cost, so you're the one
+who decides to confirm or cancel the launch.
 
-The same is true through `platform_command`: its `save` intent calls `ui_request_save` underneath and
-reports `awaiting_user_confirmation`, never `done`. Its `run` intent with `action: 'launch'` has no
-bus verb at all — it navigates you to the section page so you can confirm there.
+Running a batch of on-screen commands works the same way: its save step opens the same confirmation
+dialog and waits for you, and its launch step doesn't launch anything directly — it takes you to the
+study's page so you can confirm there yourself.
 
-Internal code carries one more gate that applies to **both** paths. Saving a strategy, fitness
-function or risk manager requires a completed validation receipt matching a SHA-256 digest of the
-code, the lookback snippet and the resolved data-source graph. Receipts expire after **one hour**.
-Without one the save is rejected:
+There's one more safeguard that applies no matter which path is used. Before a strategy, fitness
+function, or risk manager written in your own code can be saved, that exact code has to have already
+passed a validation check — and that check has to be recent (within about an hour) and match the
+exact parameter values and code being saved. If the code changed, the parameters changed, or the
+validation used a different date window than the save, the save is refused and Fintelligent has to
+re-validate first.
 
-| HTTP | `kind` | Meaning |
-|---|---|---|
-| `406` | `validation_receipt_missing` | *"This code has not been validated as a strategy. Validate it (POST /validate/internal/…) before saving."* |
-| `406` | `validation_receipt_params_mismatch` | Validated, but not at the parameter values being saved |
-| `406` | `validation_receipt_window_override` | Validated over a custom date window, which cannot authorize a save |
+## Working directly on your screen
 
-## Interface capabilities
+Eight actions play out visibly in your browser, the same way your own clicks would. These are the
+only actions that can navigate you somewhere, open an editor, ask you a question, or hand you a
+generated PDF — no specialist working in the background can do any of these. Three of them pause the
+conversation and wait for something from you — either your click or your answer — before Fintelligent
+continues.
 
-Eight tools that run in your browser rather than on the server. They are the Hub's alone — no spoke
-can call them. Three of them are **terminal**: they end the agent's turn, and their result comes back
-as your next message.
-
-| Tool | Terminal | Mutating | What it does |
+| Action | Waits for you? | Can change something? | What it does |
 |---|---|---|---|
-| `ui_navigate` | no | no | Moves the app to a page |
-| `ui_editor_field` | no | no | Writes one field, or many, into an open editor |
-| `ui_crud_action` | no | **yes** | Opens a create/edit editor or triggers a row action |
-| `ui_request_save` | **yes** | no | Runs the human Save validation and opens the Confirm dialog |
-| `ui_ask_user` | **yes** | no | Renders the question card |
-| `generate_pdf_report` | no | no | Composes a study PDF in your browser |
-| `generate_portfolio_pdf_report` | no | no | Composes a trial-portfolio PDF in your browser |
-| `platform_command` | **yes** | **yes** | Runs a batch of command-core intents |
+| Go to a page | no | no | Moves you to a different section of the app |
+| Fill in an editor | no | no | Writes one field, or several at once, into whatever editor is currently open on your screen |
+| Open an editor or trigger a row action | no | **yes** | Opens a create/edit editor, or triggers an action tied to a row in a list |
+| Request a save | **yes** | no | Runs the same checks a real Save would, then opens the Confirm dialog for you |
+| Ask you a question | **yes** | no | Shows a question card with a few choices and waits for your answer |
+| Generate a PDF report (study) | no | no | Puts together a PDF report about a study, right in your browser |
+| Generate a PDF report (portfolio) | no | no | Puts together a PDF report about one of your trial portfolios, right in your browser |
+| Run a batch of on-screen commands | **yes** | **yes** | Runs a short sequence of the actions above in order, stopping the moment one of them fails |
 
-### Navigation (`ui_navigate`)
+### Moving you around the app
 
-Read-only; writes nothing. Takes a `page` from a closed enum of 14 route keys — an unlisted value is
-a no-op.
+Fintelligent can take you straight to any of the app's main sections — your studies list, your
+portfolios, the portfolio manager, markets, the Data Explorer, portfolio groups, the Fintelligent
+chat itself, strategies, fitness functions, asset groups, risk managers, the laboratory, or your
+account page.
 
-| Key | Route | Key | Route |
-|---|---|---|---|
-| `overview` | `/analysis` | `studies` | `/studies` |
-| `portfolios` | `/analysis/portfolios` | `strategies` | `/strategy` |
-| `portfolio_manager` | `/analysis/portfolio-manager` | `fitness` | `/fitness` |
-| `markets` | `/analysis/markets` | `data_clusters` | `/asset-groups` |
-| `data_explorer` | `/analysis/data-explorer` | `risk_managers` | `/risk-managers` |
-| `portfolio_groups` | `/analysis/portfolio-groups` | `laboratory` | `/laboratory` |
-| `fintelligent` | `/ai/fintelai` | `account` | `/account` |
+**Limit.** It can only send you to one of these top-level pages — it can't yet deep-link you straight
+to one specific record within a page, like one particular study. If a feature on a page is locked for
+your plan, you still land there and see the locked preview rather than being blocked from navigating.
 
-**Limit:** the tool declares an optional `params` object, but the handler reads only `page`. Deep
-links to a specific record are not reachable this way. Navigation is never refused for a
-locked feature — you land on the blurred preview.
+### Filling in an editor for you
 
-### Editor writes (`ui_editor_field`)
+Once an editor is open on your screen — for a strategy, a fitness function, a risk manager, an asset
+group, or a study — Fintelligent can type values into its fields for you, one at a time or several at
+once, exactly as if you'd typed them yourself. Nothing it writes this way touches your account until
+you actually confirm the save; it's all still sitting in the open, unsaved editor.
 
-Writes into the editor already open on your screen. It never touches the database; nothing it writes
-is saved until you confirm.
+**Limits.** It can only fill in fields that editor actually has, so it won't invent or attempt to set
+something outside the form. If no editor happens to be open yet, or it's ambiguous which of two open
+editors to write into, the write is held for about 15 seconds waiting for the right editor to open —
+past that it's dropped, and if you then ask Fintelligent to save, it tells you plainly that some of
+what it meant to write never arrived, rather than saving incomplete data silently.
 
-| Argument | Values |
-|---|---|
-| `entity` | `strategy`, `fitness`, `risk_manager`, `asset_group`, `cluster` (legacy alias), `study` |
-| `field` | `name`, `description`, `code`, `params`, `data_sources`, `validation_universe`, `universe_binding`, `lookback_function_code`, `execution_type`, `endpoint`, `timeout`, `max_concurrency`, `kind`, `rules`, `spec`, `tickers`, `basket_members`, `asset_group`, `strategy_id`, `fitness_id`, `fitness_params`, `dates`, `n_trials`, `sampler`, `grid_decimals`, `autostop`, `daily_updates`, `optimization_direction`, `eligibility`, `risk_managers`, `benchmark`, `fields`, `save` |
-| `value` | Required for every field except `save`, which takes none |
+### Opening an editor or triggering a row action
 
-`fields` takes an object of several fields at once, applied in order — one call fills a whole form.
+This is the one on-screen action that's tracked in your account's action history, because it's the
+one that can ask your screen to open something for creating or editing, or to trigger an action tied
+to an existing row in a list.
 
-**Limits.** A field outside that enum is rejected in-process. If no editor is mounted, or if two are
-mounted and no `entity` was given, the write is **parked in a queue for 15 seconds** (64 entries max,
-oldest evicted first) and replayed when the right editor mounts; past the TTL it is dropped and
-reported on the next save as `EDITOR_WRITE_LOST`. `params` means different things in different
-editors: on a strategy it declares parameters, on a study it is the search space over them.
+Opening the create or edit editor works for strategies, fitness functions, risk managers, asset
+groups, and studies. Duplicating works the same way for everything except risk managers.
 
-### Opening editors and row actions (`ui_crud_action`)
+Deleting, stopping, and resuming, though, are deliberately left to you: even if Fintelligent tries to
+trigger one of those directly, nothing happens — those stay as buttons on the list pages themselves,
+each with its own confirmation dialog, so an irreversible action always requires your own click on
+your own screen.
 
-**Mutating and audited** — it is the one interface tool that can ask the page to destroy or halt
-something.
+### Requesting a save
 
-| Declared action | Strategy | Fitness | Risk manager | Asset group | Study |
-|---|---|---|---|---|---|
-| `create` | yes | yes | yes | yes | yes |
-| `edit` | yes | yes | yes | yes | yes |
-| `duplicate` | yes | yes | **no listener** | yes | yes |
-| `delete` | **no listener** | **no listener** | **no listener** | **no listener** | **no listener** |
-| `stop` | **no listener** | **no listener** | **no listener** | **no listener** | **no listener** |
-| `resume` | **no listener** | **no listener** | **no listener** | **no listener** | **no listener** |
+Before anything gets saved through the editor path, Fintelligent can request a save on your behalf —
+which runs exactly the same checks your own Save button would, and then stops to show you the Confirm
+dialog. It never persists anything by itself.
 
-`delete`, `stop` and `resume` are in the tool's argument enum, but no page subscribes to them.
-Stopping and deleting are left deliberately to the list view's own buttons and their confirmation
-dialogs. A dispatched action with no listener does nothing.
+If something's not right, Fintelligent tells you plainly what's wrong rather than reporting a generic
+error — for example, that the editor wasn't open to begin with, that it was still loading its
+reference data, that some of the fields it tried to write never actually landed, that the editor
+changed under it, that there's an existing unreviewed draft you need to keep or discard first, or that
+the code itself failed validation.
 
-The legacy token `cluster` is **not** routable here — an asset group is `asset_group`. Ids arriving
-as strings are coerced; a non-numeric id is dropped.
+For an asset group, there's no code to check — the request just validates the universe you've
+selected and opens the Confirm dialog. For a study, this step never saves anything at all: it opens
+the review dialog showing you the token cost of launching, and you decide whether to confirm or
+cancel.
 
-### Requesting a save (`ui_request_save`)
+### Asking you a question
 
-Terminal. Runs the same validation a human Save runs, then hands you the dialog. Accepts `entity` in
-`strategy`, `fitness`, `risk_manager`, `asset_group`, `cluster`, `study`.
+When Fintelligent needs you to make a choice or clarify something before it can continue, it can show
+you a question card right in the chat — between one and six questions at a time, each with two to six
+options, presented as a single choice, multiple choices, or a dropdown. There's almost always a
+free-text "Other…" option too, in case none of the listed choices fit. When the question is about
+choosing a fitness function or a risk manager, the card can also let you search your own library and
+the shared public library directly, rather than typing a name.
 
-Three guards run before the compiler is ever called, so a lost write is never reported as a code
-error:
-
-| `failure_kind` | Meaning |
-|---|---|
-| `EDITOR_NOT_OPEN` | Nothing to save — the editor must be opened first |
-| `EDITOR_NOT_READY` | The editor is still loading its catalogs; nothing was validated |
-| `EDITOR_WRITE_LOST` | Field writes never reached the editor; the code was **not** validated |
-| `EDITOR_STATE_CHANGED` | The editor moved under the agent |
-| `EDITOR_DRAFT_UNREVIEWED` | An unreviewed draft is showing; keep or discard it first |
-| `VALIDATION_FAILED` | The code itself is wrong |
-| `COMPILER_UNAVAILABLE`, `COMPILER_TIMEOUT` | The validator did not answer; retry unchanged |
-| `VALIDATION_RECEIPT_MISSING` | No receipt for this code |
-| `PERSIST_CONFLICT`, `PERSIST_NO_ROWS`, `PERSIST_FAILED` | The save reached the server and failed |
-| `SYNC_FAILED`, `DEPENDENCY_FAILED` | A downstream step failed |
-
-The result also carries an editor snapshot — entity, resource id, mode, fields, a code **hash**, a
-short excerpt and a line count. The snapshot itself never carries the code body.
-
-**Limits.** For `asset_group` there is no compile step: it validates the universe and opens the
-Confirm dialog. For `study` it saves nothing and opens the review dialog with the token cost. The
-client watchdog gives a validation **270 seconds** before reporting a timeout, sized to outlive the
-backend's own 240-second patient-retry budget.
-
-### Asking you a question (`ui_ask_user`)
-
-Terminal and read-only. Renders the question card and waits for a person — it is exempt from the
-watchdog and is never timed out.
-
-| Constraint | Value |
-|---|---|
-| Questions per card | 1 to 6 |
-| Options per question | 2 to 6 |
-| Question kinds | `single` (radio), `multi` (checkbox), `dropdown` (select) |
-| Free-text escape | An **"Other…"** option, present unless `allow_other: false` |
-| Registry picker | Only for `catalog: "fitness"` and `catalog: "risk_manager"` |
-
-Answers return as a machine message tagged `⟦answer⟧`. Nothing is written by this tool.
+This step waits for you specifically — it has no time limit, so take the time you need. It only reads
+your answer; it never writes anything to your account.
 
 ### PDF reports
 
-`generate_pdf_report` (one study) and `generate_portfolio_pdf_report` (one trial portfolio). The
-agent gathers the numbers with the read tools and authors the title plus an ordered list of
-`{heading, body}` sections; your browser composes the PDF with jsPDF and downloads it. Markdown and
-LaTeX in a body are typeset.
+Fintelligent can put together a PDF report — one for a study, or one for a single trial portfolio —
+gathering the relevant numbers and writing up a set of titled sections, with tables and formatted
+text where useful. The whole thing is composed and downloaded right in your browser.
 
-**Limits.** Read-only, non-terminal, and entirely client-side — no file is stored on any server and
-no data leaves the browser during composition. At least one section is required. There is **no
-server-side file delivery**: the message `downloads` channel has a renderer but no producer.
+**Limits.** This never uploads or stores anything on a server, and it never uses data beyond what
+you're already allowed to see. At least one section is required for a report to be generated. Because
+the whole thing happens in your browser, there's no separate copy sitting anywhere else to retrieve —
+if a download doesn't land the way you expect, ask Fintelligent to generate it again.
 
-### Platform commands (`platform_command`)
+### Running a batch of on-screen commands
 
-Terminal and **mutating**. Runs an ordered batch of intents through the same dispatcher the human
-Cmd+K palette uses, and posts a `CommandResult[]` back. Execution stops at the first failing intent,
-so a failed `validate` never reaches `save`.
+For a request that needs several on-screen steps in a row — say, search for a strategy, open it, and
+fill in a couple of fields — Fintelligent can run them as one ordered batch, using the same command
+system behind the app's own command palette (Cmd+K). If any step in the batch fails, the whole batch
+stops right there rather than plowing ahead with the rest.
 
-| Intent | What it does | Persists? |
-|---|---|---|
-| `navigate` | Goes to a page, or to an entity in `view` or `edit` mode | no |
-| `search` | Fuzzy-resolves entities by name or id | no |
-| `create` | Publishes the entity's create action; returns `draft_open` | no |
-| `view` | Opens an entity read-only | no |
-| `edit` | Opens an entity's editor | no |
-| `set_fields` | Writes an object of fields into the open editor | no |
-| `read_editor` | Returns the editor snapshot | no |
-| `validate` | Runs `ui_request_save` | no |
-| `save` | Runs `ui_request_save`; reports `awaiting_user_confirmation` | **no** |
-| `run` | `launch`, `stop`, `relaunch` or `backtest` on an entity | no |
+The steps available cover navigating, searching for entities by name, opening a create editor,
+viewing something read-only, opening an edit editor, filling in fields, reading back what's currently
+in an editor, validating, requesting a save, and running (launching, stopping, relaunching, or
+backtesting).
 
 > [!NOTE]
-> **There is no `delete` intent.** The command interface deliberately exposes no destructive action
-> to humans or to the agent; deletion stays on the page buttons with their confirmation dialogs.
+> **There's no delete step in this batch system, on purpose.** Whether it's you or Fintelligent
+> driving it, deleting something always goes through the dedicated page button and its own
+> confirmation dialog — never through a command batch.
 
-Addressable entity types are `study`, `strategy`, `data_cluster`, `fitness`, `risk_manager`,
-`basket`, `portfolio_groups_view`. Only the first five have a create/stop/relaunch path; `basket` and
-`portfolio_groups_view` return `port_unavailable` for those. `platform_command` is always handled,
-regardless of whether the human command palette is enabled.
+Saving and requesting-a-save through a batch behave exactly like the standalone save action above:
+they open the Confirm dialog and wait for you rather than persisting on their own. Launching works
+the same way — it takes you to the relevant page rather than starting anything on the spot.
 
-## Registry capabilities
+This applies to studies, strategies, asset groups, fitness functions, and risk managers; portfolio
+groups and the portfolio-groups overview page can be searched and viewed this way but don't yet
+support create, launch, or duplicate through this particular batch system.
+
+## Managing your strategies, studies, and risk models
 
 ### Studies
 
-19 tools. Reads and writes `studies` and their trial portfolios. Five mutate.
+19 actions, five of which can change something.
 
-| Tool | What it does | Writes |
-|---|---|---|
-| `list_studies` | The most recent studies with status and progress. Default `limit` 20, newest first | — |
-| `get_study_metadata` | Name, strategy, fitness, params, windows, grid size, status, snapshots | — |
-| `get_study_progress` | Completed trials against `n_trials` | — |
-| `get_study_status` | Last and desired status, timestamps, and a structured `failure_diagnostic` when the run failed | — |
-| `get_study_opt_history` | Per-trial optimization history for a metric and stage | — |
-| `get_study_errors` | The error dashboard, grouped by `failure_kind` | — |
-| `get_study_clustering` | Behavioural trial clustering, summary form | — |
-| `get_study_param_importances` | fANOVA plus MDI importances with bootstrap confidence intervals | — |
-| `get_study_overfitting` | PBO (CSCV), deflated-Sharpe inputs, verdict aggregate | — |
-| `get_study_export_params` | Every completed trial's hyperparameters | — |
-| `compare_studies` | Cross-study weighted-average optimization history | — |
-| `preview_study_cost` | Quotes a **saved** study's launch cost and machine. Creates nothing, charges nothing | — |
-| `preview_new_study_cost` | Quotes a study that does not exist yet. Creates nothing, charges nothing | — |
-| `suggest_study_search_space` | Turns one breadth choice into a launchable search space. Read-only | — |
-| `create_study` | Creates a study directly | **Study** |
-| `launch_study` | Launches a saved study | **Study; charges tokens** |
-| `stop_study` | Cancels running studies | **Study** |
-| `resume_study` | Adds trials to a completed or stopped study | **Study** |
-| `duplicate_study` | Config-only copy | **Study** |
+**What Fintelligent can tell you:**
 
-**Limits.** `get_study_opt_history` is downsampled to at most 200 evenly spaced trials;
-`compare_studies` to 60 per study across roughly four studies; `get_study_clustering` and
-`get_study_overfitting` are pinned to summary mode because their full payloads cannot fit the tool
-result cap. `list_studies` should not be raised past about 20 — a larger listing is truncated
-mid-entry. `create_study` requires `display_name`, `strategy_id`, `cluster_strategy_id`,
-`fitness_id`, `n_trials`, the four window dates and `params`; unknown keys are rejected in-process.
-`launch_now` defaults to false, so a created study costs nothing until it is launched.
+- Your most recent studies, with status and progress (newest first)
+- One study's full setup — name, strategy, fitness function, parameters, date windows, grid size,
+  status, and snapshots
+- How many trials are done against the total you set
+- A study's current status, including a clear explanation of why it failed, if it did
+- The optimization history for a chosen metric and stage, trial by trial
+- The error dashboard, grouped by what went wrong
+- A behavioral clustering summary of a study's trials
+- Which parameters mattered most, with confidence ranges
+- Overfitting diagnostics and an overall verdict
+- Every completed trial's parameter values, ready to export
+- A weighted comparison of optimization history across several studies
+- A cost preview — for a study you've already saved, or one that doesn't exist yet. Either way,
+  previewing creates nothing and charges nothing
+- Turning a rough breadth choice into a ready-to-launch search space
+
+**What Fintelligent can do:**
+
+- Create a study directly
+- Launch a saved study — this is the one that spends tokens and starts the run
+- Stop one or more running studies
+- Resume a completed or stopped study with more trials
+- Make a config-only duplicate
+
+**Limits.** Optimization history is capped at roughly 200 evenly spaced trials so a chart stays
+readable; comparing studies is capped at about 60 trials per study across roughly four studies at a
+time; clustering and overfitting results come back as a summary rather than every underlying data
+point, since the full detail is too large to hand back in one go. Asking for your recent studies list
+shouldn't be pushed much past about 20 at a time — a longer list gets cut off partway through.
+Creating a study needs a name, a strategy, an asset group, a fitness function, a trial count, all
+four date-window boundaries, and the parameter search space. A newly created study doesn't spend
+anything or start running unless it's explicitly launched.
 
 See [Studies](/docs/studies) and [Study lifecycle](/docs/study-lifecycle).
 
 ### Strategies
 
-9 tools. Four mutate.
+9 actions, four of which can change something.
 
-| Tool | What it does | Writes |
-|---|---|---|
-| `list_strategies` | The org's strategies with metadata; code bodies omitted | — |
-| `get_strategies_metadata` | Metadata for specific ids | — |
-| `get_strategies_parameters` | Declared parameters — name, type, default | — |
-| `get_strategy_versions` | Version history | — |
-| `run_strategy_sandbox` | Previews positions over a date range against an asset group. Async: 202 plus a job id | — |
-| `create_strategy` | Creates and persists | **Strategy** |
-| `update_strategy` | Full replace of the fields sent | **Strategy** |
-| `delete_strategy` | Deletes by id | **Strategy** |
-| `duplicate_strategy` | Copies one | **Strategy** |
+Fintelligent can list your organization's strategies (without exposing the underlying code), pull
+metadata for specific ones, list their declared parameters, show their version history, and preview
+the positions a strategy would take over a date range against a chosen asset group. It can also
+create, fully update, delete, or duplicate a strategy.
 
-**Limits.** Ids must come from an earlier result — the whole call fails with **406** if any id is
-unknown, and `get_strategy_versions` returns **404** for an unknown or partly inaccessible id.
-`lookback_mode` accepts only `function`; `is_window` was retired and is rejected. Internal code must
-pass `validate_internal_strategy` first — the save is gated on a completed receipt no more than an
-hour old.
+**Limits.** Fintelligent can only act on strategies it already knows the id of from something earlier
+in the conversation — if it names one that doesn't exist or isn't accessible, the whole request fails
+rather than partially succeeding. Before your own code can be saved as an internal strategy, it has
+to pass validation first, and that validation has to be recent (no more than about an hour old) and
+match the code and parameters you're actually saving.
 
 See [Strategies](/docs/strategies) and [Execution modes](/docs/execution-modes).
 
 ### Fitness functions
 
-8 tools. Four mutate.
+8 actions, four of which can change something.
 
-| Tool | What it does | Writes |
-|---|---|---|
-| `list_fitness_functions` | Built-in objectives plus the org's own; code bodies omitted | — |
-| `get_fitness_metadata` | Metadata for specific ids | — |
-| `get_fitness_versions` | Version history | — |
-| `run_fitness_sandbox` | Previews the score over a date range. Async: 202 plus a job id | — |
-| `create_fitness` | Creates and persists | **Fitness function** |
-| `update_fitness` | Full replace of the fields sent | **Fitness function** |
-| `delete_fitness` | Deletes by id | **Fitness function** |
-| `duplicate_fitness` | Copies one | **Fitness function** |
+Fintelligent can list the built-in objectives plus your organization's own (again, without exposing
+the code), pull metadata and version history, and preview the score a fitness function would produce
+over a date range. It can also create, fully update, delete, or duplicate a fitness function.
 
-**Limits.** `run_fitness_sandbox` needs a fitness id, a strategy id, an asset group, both parameter
-sets and a date range. Internal code is receipt-gated exactly as strategies are.
+**Limits.** Previewing a fitness function needs a fitness id, a strategy id, an asset group, both
+sets of parameters, and a date range. Your own code is validated the same way strategy code is, with
+the same one-hour freshness rule.
 
 See [Fitness functions](/docs/fitness-functions) and [External fitness](/docs/external-fitness).
 
 ### Risk managers
 
-12 tools. Five mutate — the largest write surface of any registry family.
+12 actions, five of which can change something — the largest set of write actions of any single area.
 
-| Tool | What it does | Writes |
-|---|---|---|
-| `list_risk_managers` | The org's risk managers | — |
-| `list_public_risk_managers` | The public shared library | — |
-| `get_risk_managers_metadata` | Metadata for specific ids | — |
-| `get_risk_manager_quotas` | Quotas and usage | — |
-| `get_risk_manager_versions` | Version history | — |
-| `run_risk_manager_sandbox` | Previews one risk manager, built-in or saved. Async | — |
-| `run_risk_manager_stack_sandbox` | Previews an ordered stack. Async | — |
-| `create_risk_manager` | Creates one | **Risk manager** |
-| `update_risk_manager` | Updates one | **Risk manager** |
-| `delete_risk_manager` | Deletes by id | **Risk manager** |
-| `duplicate_risk_manager` | Copies one | **Risk manager** |
-| `fork_risk_manager` | Forks a public one into your library | **Risk manager** |
+Fintelligent can list your own risk managers and the shared public library, check quotas and usage,
+show version history, and preview one risk manager on its own or an ordered stack of several
+together. It can also create a risk manager (built-in, your own code, an external connection, or a
+rules-based one), update it, delete it, duplicate it, or fork a public one into your own library so
+you can customize it.
 
-**Limits.** `kind` is one of `builtin`, `internal`, `external`, `declarative`. `builtin_name` is
-required when `kind` is `builtin`; `execution_details` is required otherwise. `run_risk_manager_sandbox`
-requires either `risk_manager_id` or `builtin_name` — the executor enforces the choice before the call
-leaves the process. A stack sandbox needs a non-empty `risk_managers` list.
+**Limits.** A built-in risk manager needs you to name which one; anything else needs its own
+execution details filled in. Previewing a single risk manager needs either an existing one or a
+built-in name to test against; previewing a stack needs at least one risk manager in it.
 
 See [Risk managers](/docs/risk-managers).
 
 ### Asset groups
 
-15 tools. Five mutate. The API still calls these *data clusters*, which is why most tool names say
-`cluster`.
+15 actions, five of which can change something. (You may also see these called "data clusters"
+elsewhere in the product — it's the same thing.)
 
-| Tool | What it does | Writes |
-|---|---|---|
-| `list_data_clusters` | The org's universes with a ticker count and sample symbols | — |
-| `resolve_asset_group_universe` | Ranks existing groups by how much of a requested instrument set each holds | — |
-| `get_data_clusters_metadata` | Metadata for specific ids | — |
-| `get_date_coverage` | Start and end availability | — |
-| `get_meta_quality` | The metadata-quality report | — |
-| `get_cluster_last_date` | Last available data date | — |
-| `cluster_compatibility_matrix` | Whether the group can feed a strategy's injected sources over a range | — |
-| `list_groupings` | Every sector or industry taxonomy available, in one call | — |
-| `get_grouping_detail` | One grouping's descriptor and hierarchy. Returns no members | — |
-| `get_grouping_namespaces` | Grouping namespaces | — |
-| `create_cluster_from_study` | Derives a group from a study's universe | **Asset group** |
-| `derive_cluster_from_grouping` | Derives a group from a namespace and code | **Asset group** |
-| `update_data_cluster` | `tickers_id` replaces the whole universe | **Asset group** |
-| `delete_data_cluster` | Deletes by id | **Asset group** |
-| `duplicate_data_cluster` | Copies one | **Asset group** |
+Fintelligent can show your universes and what they contain, how well a set of existing groups covers
+a requested list of instruments, metadata, date coverage, a data-quality report, the most recent
+available date, whether a group can feed a given strategy's data needs, every available
+sector/industry taxonomy, and detail on one grouping. It can also derive a new asset group from a
+study's universe or from an existing grouping, replace a group's entire ticker universe, delete a
+group, or duplicate one.
 
 > [!WARNING]
-> `update_data_cluster` takes `tickers_id` as the **complete** replacement universe, not a delta.
-> Anything omitted is removed.
+> Updating an asset group's ticker list **replaces the whole universe** — it doesn't add to it. If
+> you ask Fintelligent to add a few tickers to an existing group, make sure the full intended list is
+> what actually gets sent; anything left out is removed.
 
-`derive_cluster_from_grouping` is the single mutating tool on the Hub's base roster — it can be
-called without loading a playbook or delegating.
+Deriving a new asset group from an existing grouping is the one change Fintelligent can make
+immediately, without first loading a checklist or asking a specialist, because it's low-risk and
+easy to reverse.
 
 See [Asset groups](/docs/asset-groups).
 
-### Validation and sandboxes
+### Checking your code before it's saved
 
-7 validation tools plus the four sandbox tools listed above. All read-only: they compile and run
-code, they never save it.
+11 actions altogether (7 dedicated checks, plus the 4 preview actions already mentioned above for
+strategies, fitness functions, and risk managers) — every one of them read-only. They compile and run
+your code, or test your connection, but they never save anything.
 
-| Tool | Checks |
-|---|---|
-| `validate_internal_strategy` | Python strategy code, with test parameter values |
-| `validate_internal_fitness` | Python fitness code |
-| `validate_internal_risk_manager` | Python risk-manager code |
-| `validate_builtin_risk_manager` | A built-in risk manager by name |
-| `validate_external_strategy` | A user-hosted endpoint over a date range |
-| `validate_external_fitness` | A user-hosted fitness endpoint |
-| `validate_external_risk_manager` | A user-hosted risk-manager endpoint |
+The seven checks cover your own strategy code (against test parameter values), your own fitness
+code, your own risk-manager code, a chosen built-in risk manager, and — for strategies, fitness
+functions, and risk managers you host yourself — a live check against your own connection.
 
-**Limits.** All are asynchronous — they return 202 with a job id, and the outcome is read with
-`get_job`. A validation result is a **receipt**, and it is what the corresponding save is gated on
-for one hour.
+**Limits.** These checks run in the background and can take a moment to finish; the result is
+retrieved separately rather than waited for live. A passing result is what's called a validation
+receipt, and it's what a save is checked against for the following hour — after that, or if the code
+changes, it needs to be validated again.
 
 See [External strategies](/docs/external-strategies) and [Laboratory](/docs/laboratory).
 
-### Agent drafts
+### Saved drafts of in-progress work
 
-2 tools. One mutates.
+2 actions, one of which can change something.
 
-| Tool | What it does | Writes |
-|---|---|---|
-| `read_agent_draft` | Reads the saved draft for a resource being authored, including the code. A 404 means "no draft yet" and is an ordinary answer | — |
-| `save_agent_draft` | Writes the draft | **Draft row only** |
+Fintelligent can read back a saved draft of work you (or it) were authoring — including the code —
+and it can save one. A draft is simply Fintelligent's work-in-progress, kept on your account, so
+authoring a strategy, study, fitness function, risk manager, or asset group survives you navigating
+away, reloading the page, or closing the tab. There's exactly one live draft per person, per type of
+object, per specific record (or "new" record) being worked on.
 
-A draft is the agent's work-in-progress on the server, so authoring survives you navigating away,
-reloading, or closing the tab. `entity` is one of `strategy`, `fitness`, `risk_manager`,
-`asset_group`, `study`; `resource_id` names the record being edited, and omitting it selects the
-separate create-mode slot. There is exactly **one live draft per (user, entity, resource)**.
-
-**Limits.** `content` **replaces** the whole draft — it is not a patch. Concurrency is controlled by
-`expected_updated_at`, taken from the last read; a stale token is refused with **409**, which means
-you edited the draft while the agent worked. Omit the token only for the very first write of a brand
-new draft — sending no token onto an existing draft is also a 409. A draft is not a save: it creates
-nothing until you keep it and confirm the editor's Save.
+**Limits.** Saving a draft replaces the whole thing — it's not layered on top of what was there
+before. If you've made your own edits to the same draft while Fintelligent was mid-task, its next
+save is refused rather than overwriting what you just changed; Fintelligent re-reads the draft and
+retries instead. And remember: a draft is never itself a save. Nothing about the underlying strategy,
+study, fitness function, risk manager, or asset group actually exists until you keep the draft and
+confirm the real Save in the editor.
 
 See [Fintelligent drafts and runs](/docs/fintelligent-drafts-and-runs).
 
-## Analysis capabilities
+## Analyzing portfolios and results
 
 ### Trial portfolios
 
-24 read-only tools over the portfolios a study produces. None writes.
+24 read-only actions covering the individual portfolios a study produces. None of them change
+anything.
 
-| Tool | What it returns |
-|---|---|
-| `get_top_portfolios` | One study's top portfolios by metric and stage |
-| `get_study_portfolios` | The trial portfolios one or more studies produced |
-| `get_portfolio_metadata` | Metadata for one or more portfolios |
-| `get_portfolio_metrics` | Stored per-portfolio backtest metrics |
-| `get_portfolio_avg_metrics` | Train and validation stage-weighted averages; the weights must sum to 1.0 |
-| `get_portfolio_window_metrics` | Metrics over an explicit date window |
-| `get_portfolio_entity_windows_metrics` | Per-holding windowed metrics |
-| `get_portfolio_params` | Hyperparameter values |
-| `get_portfolio_holdings` | Holdings and positions |
-| `get_portfolio_equity` | Equity curves |
-| `get_portfolio_overfitting` | Per-portfolio overfitting diagnostics |
-| `get_portfolio_seed` | The reproducible seed and config |
-| `get_portfolio_trials` | Trial rows — params plus objective |
-| `get_portfolio_lineage` | Study, strategy and fitness provenance |
-| `get_portfolio_roc_curve` | Rolling rate-of-change curve |
-| `get_portfolio_risk_manager_events` | Which risk manager fired or halted, and when |
-| `resolve_portfolio` | Resolves a study id and trial number to a portfolio id |
-| `simulate_trial_what_if` | Re-simulates with overrides such as inverted sides or a shorter window. Preview only |
-| `get_global_top_portfolios` | Ranks across studies by metric and stage |
-| `get_global_top_portfolios_weighted` | Ranks across studies by a weighted combination of metrics |
-| `get_global_top_portfolios_named_stages_avg` | Ranks across studies by one metric averaged over weighted stages |
-| `get_global_top_portfolios_custom_timeframe` | Ranks across studies over an explicit date window |
-| `get_global_top_portfolios_custom_timeframes_avg` | Ranks across studies over several weighted windows |
-| `get_study_top_portfolios_named_stages_avg` | The same weighted-stage ranking within one study |
+Fintelligent can pull up a study's top portfolios by whichever metric and stage you care about; every
+trial portfolio one or more studies produced; metadata, stored backtest metrics, stage-weighted
+averages, metrics over a custom date window, per-holding windowed metrics, hyperparameter values,
+holdings and positions, equity curves, per-portfolio overfitting diagnostics, the reproducible seed
+and configuration behind a result, trial-level parameters and objective scores, the study/strategy/
+fitness lineage behind a portfolio, a rolling rate-of-change curve, and a log of when a risk manager
+fired or halted trading.
 
-**Limits.** Weighted rankers require their weights to sum to 1.0. The named-stages rankers rank only
-portfolios that have every requested stage. `simulate_trial_what_if` is preview compute — the engine
-produces the numbers and nothing is persisted.
+It can also resolve a study and trial number into a specific portfolio, re-simulate a trial with an
+override — say, inverted trade sides, or a shorter window — as a pure what-if preview, and rank
+portfolios across multiple studies: by a single metric, by a weighted combination of metrics, by one
+metric averaged across weighted stages, over a custom date window, or across several weighted date
+windows at once.
+
+**Limits.** Weighted rankings need the weights you supply to add up to 1.0. A ranking across named
+stages only includes portfolios that actually have every stage you asked for. What-if re-simulation
+is a preview only — the numbers are computed fresh each time and nothing about it is ever saved.
 
 See [Portfolios dashboard](/docs/portfolios-dashboard), [Portfolio detail](/docs/portfolio-detail)
 and [Metrics reference](/docs/metrics-reference).
 
 ### Portfolio groups
 
-18 tools. Four mutate. The API calls these *baskets*.
+18 actions, four of which can change something. (These are sometimes called "baskets" elsewhere in
+the product.)
 
-| Tool | What it does | Writes |
-|---|---|---|
-| `list_baskets` | The org's portfolio groups | — |
-| `get_basket` | One group's full detail and config | — |
-| `get_basket_dashboard` | Summary KPIs, per-group cards, needs-attention rollups, rebalance timeline | — |
-| `get_basket_exposure` | Aggregate sector and ticker concentration across groups | — |
-| `compare_baskets` | Compares groups over a period | — |
-| `get_basket_backtest` | Blended equity plus stats | — |
-| `get_basket_seed` | Seed data — `bundle`, `blended` or both | — |
-| `get_basket_freshness` | How current each member's daily update is | — |
-| `simulate_basket` | What-if re-simulation of allocation, rebalance or exclusions. **Never persisted** | — |
-| `get_basket_news_sentiment` | Sentiment rollup across holdings, plus headlines | — |
-| `get_ranking_windows` | Rolling ranking windows | — |
-| `get_basket_order_intent` | **Read-only preview** of how the group would trade live. Places no orders | — |
-| `list_basket_operations` | Live operations, drafts and running | — |
-| `get_basket_operation_status` | One operation's status and detail | — |
-| `create_basket` | Creates a group from portfolio ids | **Portfolio group** |
-| `update_basket` | Partial update | **Portfolio group** |
-| `delete_basket` | Deletes it | **Portfolio group** |
-| `update_basket_portfolios` | Refreshes member data | **Portfolio group** |
+Fintelligent can show your organization's portfolio groups, one group's full detail and
+configuration, a dashboard of summary numbers and per-group cards flagging anything that needs
+attention, aggregate sector/ticker concentration across groups, a comparison between groups over a
+period, blended equity and stats, the underlying seed data, how current each member's daily update
+is, sentiment across a group's holdings with headlines, rolling ranking windows, a read-only preview
+of how the group would trade live (without placing any actual order), and the status of live and
+drafted group operations. It can also create a group from a set of portfolios (any trial portfolios
+you include are automatically promoted to managed portfolios), partially update a group, delete a
+group, or refresh a group's member data.
 
-**Limits.** `create_basket` auto-promotes trial ids to managed portfolios, and a paid
-`allocation_method` charges its unlock at creation — a **402** if the balance is short.
-`rebalance_enabled` requires `rebalance_frequency_days`. `update_basket` does not auto-clear
-`allocation_method_params`: switching to `equal_weight` or `manual` requires sending
-`allocation_method_params: null` as well. `rewrite_backtest` recomputes from inception and is
-accepted only for a group that has never operated.
+**Limits.** Creating a group with a paid allocation method also charges to unlock that method — if
+your balance can't cover it, the creation is declined. Turning on scheduled rebalancing requires you
+to also set how often it rebalances. Switching a group to equal-weight or manual allocation needs its
+old allocation parameters explicitly cleared, or they'll linger. Recomputing a group's backtest from
+inception is only available for a group that has never actually been operated live.
 
 See [Portfolio groups](/docs/portfolio-groups) and [Portfolio manager](/docs/portfolio-manager).
 
-### Managed portfolios and live operations
+### Managed (live-traded) portfolios
 
-Four tools exist in the registry; **only two are reachable**.
+Two things Fintelligent can tell you here, deliberately: the list of your managed portfolios
+(identity and configuration only) and one managed portfolio's detail.
 
-| Tool | Reachable | Notes |
-|---|---|---|
-| `list_managed_portfolios` | yes — `live` spoke | Identity and config only |
-| `get_managed_portfolio` | yes — `live` spoke | One managed portfolio's detail |
-| `get_managed_equity` | **no** | Declared but on no roster |
-| `get_managed_holdings` | **no** | Declared but on no roster |
-
-`get_managed_equity` and `get_managed_holdings` stream a live-traded portfolio's raw positions and
-equity curve. They are deliberately granted to no actor, so that account-level position data never
-reaches the model provider. The agent can identify a managed portfolio and route you to it; it
-cannot read what it holds.
+What it deliberately **cannot** tell you is a managed portfolio's actual live positions or its equity
+curve — those are kept off-limits to Fintelligent entirely, so that no account-level live position
+data ever reaches the AI. Fintelligent can point you toward a managed portfolio and take you to it,
+but it can never read what it's actually holding.
 
 See [Live trading](/docs/live-trading).
 
-## Market and data capabilities
+## Market and data lookups
 
-Every tool in this section is read-only. None writes anything.
+Every action in this section is read-only. None of them writes anything.
 
 ### Market
 
-24 tools.
+24 actions. Fintelligent can pull up a market overview with breadth and movers, the latest available
+data date, a ticker's profile, fundamental and technical metrics for many tickers at once, OHLC price
+history, financial statements, news-sentiment history, insider transactions, analyst ratings and
+targets, corporate actions (dividends and splits), crypto fundamentals, fund/ETF fundamentals,
+available technical indicators and their settings, rankings of tickers by an indicator (as a full
+list or a quick summary), sector and country breakdowns, market indices, upcoming earnings within a
+chosen number of days, top tickers by volume, the most volatile tickers, an interest-rates snapshot,
+and ranked, summarized news for a set of tickers over a window.
 
-| Tool | Returns |
-|---|---|
-| `get_market_overview` | Breadth, movers, headline stats |
-| `get_market_last_date` | Latest available market-data date |
-| `get_ticker` | One ticker's profile |
-| `get_ticker_metrics` | Fundamental and technical metrics for many tickers in one call |
-| `get_ticker_ohlc` | OHLC price history |
-| `get_ticker_financials` | Financial statements and fundamentals |
-| `get_ticker_sentiment` | News-sentiment history |
-| `get_ticker_insider` | Insider transactions |
-| `get_ticker_analyst` | Analyst ratings and targets |
-| `get_ticker_corporate_actions` | Dividends and splits |
-| `get_ticker_crypto_fundamentals` | Crypto fundamentals |
-| `get_ticker_fund_fundamentals` | Fund and ETF fundamentals |
-| `get_indicator_metadata` | Available indicators and their parameters |
-| `get_top_indicators` | Ranks tickers by an indicator, z-scored over a window |
-| `get_top_indicators_summary` | The same filters answered as three numbers instead of rows |
-| `get_sectors` | Sector breakdown and weights |
-| `get_countries` | Country breakdown and weights |
-| `get_indices` | Market indices |
-| `get_index` | One index's detail |
-| `get_upcoming_earnings` | Earnings within the next N days |
-| `get_top_volume` | Top tickers by volume |
-| `get_top_volatile` | Most volatile tickers |
-| `get_rates_summary` | Interest-rates snapshot |
-| `get_news` | Ranked, server-summarized news for a set of tickers over a window |
-
-**Limit.** `get_news` and `get_basket_news_sentiment` return text written by third parties. Their
-results are lexically scrubbed before reaching the model, because anyone who can publish a headline
-can put instructions in one.
+**Limit.** News and headline sentiment come from third parties, so before any of that text reaches
+Fintelligent it's scrubbed of anything that reads like an embedded instruction — since anyone who can
+publish a headline could otherwise try to slip one in.
 
 See [Market](/docs/market).
 
 ### Tickers
 
-9 tools.
-
-| Tool | Returns |
-|---|---|
-| `resolve_ticker_symbols` | Turns up to **500** symbols into ticker ids in one call, with name, type, country, sector and industry |
-| `search_tickers` | Substring search on code and name, with optional fundamental filters |
-| `get_tickers_metadata` | Metadata for a batch of ids |
-| `get_ticker_snapshots` | Screens by fundamental ranges — P/E, margins, ROE, moving averages, yield |
-| `list_indices` | Indices that actually have membership data, with member counts and coverage window |
-| `get_index_constituents` | Constituents by mode — `current`, `ever`, `interval_any`, `interval_all` or `as_of` |
-| `get_ticker_timeseries` | One price or volume series. The series name is exact PascalCase |
-| `list_exchanges` | Exchange codes |
-| `get_ticker_facets` | Valid filter values — types, countries, sectors, industries |
+9 actions. Fintelligent can resolve up to 500 symbols into full ticker details in one go (name, type,
+country, sector, industry), search tickers by name or code with optional fundamental filters, pull
+metadata for a batch of tickers, screen by fundamental ranges (P/E, margins, ROE, moving averages,
+yield, and more), list indices that actually have membership data along with their coverage window,
+pull an index's constituents (as of today, ever a member, always in an interval, or as of a specific
+date), pull a single price or volume series, list exchange codes, and list the valid filter values —
+types, countries, sectors, industries — for building your own filters.
 
 ### Screener
 
-3 tools, meant to be used in order.
+3 actions, meant to be used in order: first check the filter catalog for a given exchange (coverage
+differs a lot by market, so this always needs to be checked per exchange), then preview how many
+tickers a filter set matches before committing to anything, then browse a page of the actual matching
+symbols.
 
-| Tool | Returns |
-|---|---|
-| `get_screener_schema` | The filter catalog **for one exchange**, with per-field availability and the snapshot date |
-| `preview_screener_matches` | How many tickers a filter set matches — a count, no rows |
-| `browse_screener_matches` | One page of matches, with the symbol and the screened values |
-
-**Limit.** Coverage differs sharply by market, so the schema is per-exchange and must be read first.
-`browse_screener_matches` returns symbols, not ids — pair it with `resolve_ticker_symbols` when ids
-are needed.
+**Limit.** Match results come back as symbols, not internal ids — pair this with the ticker-resolution
+action above if you need ids for something else.
 
 ### Data Explorer
 
-17 tools.
-
-| Tool | Returns |
-|---|---|
-| `get_data_explorer_catalog` | Datasets and fields available to explore |
-| `get_dataset_summary` | Available datasets plus coverage |
-| `get_dataset_ticker_coverage` | Per-ticker coverage, paginated and sortable |
-| `get_dataset_time_coverage` | Record counts over time |
-| `get_dataset_feature_series` | One feature's series for a ticker, optionally windowed or z-scored |
-| `get_dataset_raw_data` | Raw rows for one ticker, paginated |
-| `preview_data_sources` | Samples the real data a data-source selection resolves to |
-| `get_meta_fields` | Available ticker-metadata fields |
-| `get_meta_records` | Ticker-metadata records, paginated |
-| `get_rate_series` | An interest-rate series |
-| `get_rate_curve` | The yield curve as of a date |
-| `get_rate_history` | History of one rate series |
-| `get_macro_catalog` | Macro indicators by country and code |
-| `get_macro_series` | A macro indicator series for a country |
-| `get_calendar_earnings` | Earnings calendar over a range, paginated |
-| `get_calendar_ipos` | IPO calendar over a range, paginated |
-| `get_symbol_changes` | Renames and mergers, paginated |
+17 actions covering the platform's broader data catalog: what datasets and fields are available to
+explore, dataset summaries and coverage, per-ticker coverage (paginated and sortable), how record
+counts change over time, one feature's series for a ticker (optionally windowed or z-scored), raw
+data rows for a ticker, a preview of what a data-source selection actually resolves to, available
+ticker-metadata fields and records, interest-rate series and the yield curve as of a date, macro
+indicators by country, an earnings calendar, an IPO calendar, and a log of ticker renames and
+mergers.
 
 See [Data Explorer](/docs/data-explorer).
 
-## Knowledge and control capabilities
+## Reference knowledge and how complex requests are handled
 
-### Catalogs and contracts
+### Reference catalogs
 
-11 tools. Six run against the compiler catalogs, which hold no data and are never billed. All are
-read-only.
+11 read-only actions covering general reference material rather than anything specific to your
+account — none of it counts against your data. Fintelligent can look up the exact requirements for a
+given resource type (what a valid strategy, fitness function, or risk manager needs to declare), the
+data sources strategies can draw on, the building blocks available to rules-based risk managers, the
+built-in risk managers and their settings, worked examples of strategies, fitness functions, and risk
+managers, a preview of exactly what data a chosen data-source selection would hand to a strategy
+(without writing any code), the platform's injectable data sources, the curated benchmark list, every
+performance metric the platform computes, the available optimization samplers, and a compact snapshot
+of your whole workspace in a single call.
 
-| Tool | Plane | Returns |
-|---|---|---|
-| `get_resource_contract` | compiler | The authoritative signature, fields and allowed imports for a resource type |
-| `get_data_source_catalog` | compiler | The injectable-data ingredients strategies can request |
-| `get_declarative_primitives` | compiler | Primitives available to declarative risk managers |
-| `get_builtin_risk_managers` | compiler | Built-in risk managers and their parameters |
-| `get_examples` | compiler | Worked example strategies, fitness functions and risk managers |
-| `preview_validation_fixture` | compiler | Exactly what the validator will hand a strategy for a data-source selection, without writing any code |
-| `get_injectable_data_catalog` | backend | Injectable data sources |
-| `get_benchmark_catalog` | backend | Curated benchmarks with ticker id, code, exchange and the cluster type each serves |
-| `list_metrics` | backend | Every performance metric the platform computes |
-| `list_samplers` | backend | Optimization samplers |
-| `deep_research` | backend | A compact snapshot of the whole workspace in one call |
+**Limit.** The data-source catalog and the worked-examples list are both large enough that asking for
+either without narrowing it down comes back cut off — they work best narrowed to what you actually
+need.
 
-**Limit.** `get_data_source_catalog` and `get_examples` exceed the tool-result cap, so an unqualified
-call is truncated — they must be narrowed.
+### Getting oriented, and re-checking what's on your screen
 
-### Workspace snapshot and view replay
+The workspace-snapshot action loads counts plus your most recent studies, strategies, fitness
+functions, asset groups, and portfolio groups in one call — it's how Fintelligent gets its bearings
+before answering a broad, open-ended question about your account.
 
-`deep_research` loads counts plus the most recent studies, strategies, fitness functions, asset
-groups and portfolio groups in a single call. It is how the agent orients before answering a broad
-question.
+Separately, Fintelligent can re-run the exact query behind whatever screen you're currently looking
+at and pull back its rows, using no filters of its own — the filters come from the screen you already
+have open, so what it tells you can never drift from what you actually see. It only accepts a page
+size and an offset for paging through more of the same result.
 
-`replay_view_query` re-runs the query behind the screen you are looking at and returns its rows. It
-takes **no filters** — the filters come from the context your screen published, so the result cannot
-drift from what you see. It accepts only `limit` and `offset`, mapped onto whichever paging argument
-the underlying tool declares.
+**Limits.** This only works when the screen you're on actually published a query for Fintelligent to
+replay — not every page does. And whatever result your screen already sent along as context is capped
+(40 rows, 8 columns, and a modest character limit per cell and overall), which is exactly why this
+re-run action exists — to get the fuller picture beyond that initial sample.
 
-**Limits.** It is available only when the screen published a query. The named tool is resolved
-against the live registry and **refused unless it is a non-mutating backend read**, whatever the page
-claims. The inline sample your screen sends the agent is capped at 40 rows, 8 columns, 48 characters
-per cell and 4,000 characters overall — `replay_view_query` exists because that sample is bounded.
+### Breaking down complex requests
 
-### Playbooks and delegation
+For anything that needs specialized handling, Fintelligent can load the matching checklist for the
+kind of work at hand — for a strategy, a study, a risk manager, a fitness function, an asset group,
+troubleshooting, or building a report — and, separately, it can hand a scoped piece of a request off
+to a focused specialist for studies, portfolio analysis, fitness functions and risk managers, asset
+groups, strategies, general research, or your live-traded portfolios.
 
-| Tool | What it does |
-|---|---|
-| `load_playbook` | Loads one authoring contract and the tools it governs: `strategy`, `study`, `risk_manager`, `fitness`, `asset_group`, `remediation`, `reports` |
-| `delegate_to_spoke` | Hands a scoped sub-task to `study`, `analytics`, `knowledge`, `research`, `strategy`, `data` or `live` |
+Neither of these touches your data by itself. Handing off a piece of work includes a restated version
+of what's needed, the format expected back, anything already looked up, and optional limits on how
+much the specialist is allowed to do. It defaults to read-only and has to be explicitly told a piece
+of work is allowed to write before it can change anything.
 
-Neither touches your data. A delegation carries a restated objective, an output format, any ids
-already resolved, and optional caps on the spoke's iterations, token budget and tool subset —
-`tool_constraints` can only narrow the spoke's roster, never widen it. **`mutating` defaults to
-false**, and a read-only brief has every mutating tool removed before the spoke starts.
+A specialist never sees your whole conversation — only the specific task it was handed — and its
+answer comes back as a summary, kept short and focused rather than dumping everything it found.
 
-A spoke never sees your conversation. It is seeded from the delegation brief alone, and its answer
-comes back as a summary capped at **2,400 characters**.
+### Long-running checks
 
-### Background jobs
+For anything that takes a moment to finish — a code preview, a cost check, a validation —
+Fintelligent checks back for the result rather than waiting live, and can tell you whether it's still
+pending, running, completed (with the full result), or failed (with a clear explanation, plus the
+exact line and position in your code, when relevant).
 
-`get_job` is the completion read for every tool that returned 202 with a job id — the sandboxes, the
-previews, the validations.
+**Limits.** Each check-back waits up to about 25 seconds for a final answer, so it's used once rather
+than in a tight loop. If too much time passes before anyone checks back — about an hour for a
+validation, about a day for everything else — the result expires and needs to be re-run. For a
+validation specifically, a "failed" result usually just means your code didn't pass the check, not
+that anything broke.
 
-| Field | Values |
-|---|---|
-| `status` | `pending`, `running`, `completed`, `failed` |
-| On `completed` | `result` holds the full payload |
-| On `failed` | `error` plus structured `error_details`, including compiler line and column |
+## Limits that apply to everything Fintelligent does
 
-**Limits.** The call blocks for up to **25 seconds** waiting for a terminal status, so it is used
-once per job rather than in a polling loop. A **404** means the job is unknown or expired —
-validation jobs expire after **1 hour**, everything else after **24 hours**. For a validation job,
-`failed` usually means the code failed validation, not that the system broke.
+These practical limits apply across every capability described above, no matter which one is being
+used:
 
-## Limits on every capability
+- **A typical question or request is answered within about two minutes.** More involved authoring
+  work — actually creating or substantially editing something — is allowed noticeably longer, since
+  there's more real work to do. If it runs long, Fintelligent tells you plainly that it ran out of
+  time rather than pretending it finished, and picks back up from where it left off if you ask it to
+  continue.
+- **A single request can only take so many steps before Fintelligent has to summarize and stop.** For
+  anything that needs more, it's usually more efficient to continue in a follow-up message.
+- **Very long lookups are shortened automatically** so Fintelligent can actually work with what comes
+  back, rather than being handed more than it can process.
+- **What your current screen shares with Fintelligent is a bounded sample** — a limited number of
+  rows, columns, and characters, not necessarily every row you could scroll to. When you need the
+  fuller picture, Fintelligent can re-run the underlying query itself (see above) rather than relying
+  only on that sample.
+- **Repeating the exact same question in one conversation is answered from what Fintelligent already
+  found**, rather than looking it up again from scratch — except where the answer could genuinely
+  have changed in the meantime, like a study's progress, a data date, or a background job's status,
+  which are always checked fresh.
+- **Fintelligent only ever sees what you're allowed to see.** Every account lookup and every account
+  change uses your own permissions exactly — if your role can't see a particular study, Fintelligent
+  can't either.
 
-These bounds apply to all 194 tools regardless of family.
-
-| Limit | Value |
-|---|---|
-| Tool result fed back to the model | 16,000 characters, truncated past that |
-| Tool calls per iteration | 8 |
-| Same-tool calls in one loop | Nudged at 4, refused at 8. Mutations, polls and the UI/control planes are exempt |
-| Hub iterations per turn | 12 |
-| Spoke iterations per delegation | 6 |
-| Hub token budget | 80,000 |
-| Spoke token budget | 25,000 |
-| Model input | 120,000 tokens |
-| Ordinary turn | 105 s soft deadline, 115 s hard budget |
-| Authoring turn | 540 s soft, 570 s hard — **earned** by real authoring work, not granted up front |
-| Backend call timeout | 50 s |
-| Compiler call timeout | 90 s |
-| Screen context sent with a message | 4,000 characters, 40 rows, 8 columns, 60 selected ids |
-
-Beyond the mechanical caps:
-
-- **The agent inherits your permissions, never more.** Every backend call replays your JWT. If your
-  role cannot read a study, neither can Fintelligent.
-- **Identical calls are answered from context** rather than re-executed, except for mutations,
-  volatile polls and the UI and control planes.
-- **Volatile tools are never deduplicated.** `get_study_progress`, `get_study_status`,
-  `get_cluster_last_date`, `get_market_last_date`, `get_basket_freshness`, `list_basket_operations`,
-  `get_basket_operation_status`, `read_agent_draft` and `get_job` change on their own, so repeating
-  one is legitimate polling.
-- **A turn that runs out of budget stops honestly.** It reports `incomplete`, not `finished`, and
-  tells you it can pick up where it left off.
-
-Chat itself is metered in Fintela **AI Tokens**, a separate currency from the compute tokens a study
-consumes. A depleted balance blocks the turn before any tool runs, with a **402**. See
+Chat itself is metered separately, in Fintela **AI Tokens** — a different currency from the compute
+tokens a study spends when it runs. If your AI Token balance runs out, your next message is blocked
+before Fintelligent does anything, and you're told plainly why. See
 [Tokens and billing](/docs/tokens-and-billing).
 
 ## What Fintelligent cannot do
 
-| Not available | Why |
+| Can't do | Why |
 |---|---|
-| Read your connected brokerage account | The broker tool group is **intentionally empty**. Broker connections, live positions, order fills, allocations and end-of-day reconciliation were removed so no connected-account data reaches the model provider |
-| Read a managed portfolio's positions or equity curve | `get_managed_holdings` and `get_managed_equity` are declared but granted to no actor, for the same reason |
-| Any live-trading mutation | Broker connect, launch and rebalance; basket-operation launch, execution and force-stop; managed promote — all deliberately absent until a human-confirmation gate exists. The `live` spoke is strictly read-only |
-| Delete anything through the command interface | There is no `delete` intent, for humans or for the agent |
-| Delete, stop or resume through `ui_crud_action` | The actions are declared but no page subscribes to them; those buttons and their dialogs stay with you |
-| Receive an uploaded file | The composer's attach picker shows your selection as chips, but nothing is uploaded or sent. Pasted **code** is genuinely sent, as a fenced block appended to your message |
-| Send you a file from the server | PDFs are composed and downloaded entirely in your browser. There is no server-side delivery channel |
-| Deep-link `ui_navigate` to one record | Only the page key is read; the `params` argument is ignored |
-| Choose its own model | There is no model picker. The model resolves from the conversation, defaulting to `deepseek-v4-pro` |
-| Use your own LLM key | Bring-your-own-key was removed. The header is no longer read or forwarded |
+| Read your connected brokerage account directly | This is intentionally left out entirely — none of your broker connection, live positions, order fills, allocations, or end-of-day reconciliation data ever reaches Fintelligent |
+| Read a managed portfolio's live positions or equity curve | Kept off-limits on purpose, for the same reason — it can point you to a managed portfolio, but never read what it actually holds |
+| Connect a broker, launch or rebalance live trading, execute or force-stop a portfolio-group operation, or promote something to managed | None of these are available yet — live-trading changes are deliberately withheld until there's a dedicated human-confirmation step for them. Everything Fintelligent can do around your live trading is read-only |
+| Delete anything through a batch of on-screen commands | There's no delete step in that system, for you or for Fintelligent |
+| Delete, stop, or resume something by asking it directly | Those specific actions are always left to the page's own buttons and their own confirmation dialogs |
+| Receive a file you upload in chat | Attaching a file shows it in the composer, but it isn't actually sent anywhere — only pasted code text goes through |
+| Hand you a file from its own side | Every PDF report is built and downloaded entirely inside your browser — there's no separate copy sitting on a server to fetch later |
+| Take you straight to one specific record | It can send you to a page — your studies list, say — but not yet straight into one particular study on that page |
+| Let you pick which underlying AI model it runs on, or use your own AI provider key | Both options have been removed — Fintelligent always runs on the platform's own configured model |
 
 ## Where to go next
 
-- [Fintelligent](/docs/fintelligent) — the chat surface, conversations and how a turn behaves.
-- [Fintelligent drafts and runs](/docs/fintelligent-drafts-and-runs) — reviewing, keeping and
-  discarding what the agent wrote.
-- [Registries](/docs/registries) — the objects these capabilities read and write.
-- [Tokens and billing](/docs/tokens-and-billing) — the two currencies and what each one pays for.
+- [Fintelligent](/docs/fintelligent) — how the chat itself works: conversations, and what happens
+  during a turn.
+- [Fintelligent drafts and runs](/docs/fintelligent-drafts-and-runs) — reviewing, keeping, and
+  discarding what the assistant has written for you.
+- [Registries](/docs/registries) — the strategies, studies, fitness functions, risk managers, and
+  asset groups these capabilities read and write.
+- [Tokens and billing](/docs/tokens-and-billing) — the two currencies involved, and what each one
+  pays for.

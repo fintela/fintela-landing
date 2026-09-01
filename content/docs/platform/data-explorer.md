@@ -4,671 +4,454 @@ section: Platform Overview
 sectionOrder: 2
 order: 4
 published: true
-updated: 2026-08-20
-summary: Browse what every built-in data source contains before you wire it into a strategy.
-keywords: data explorer, data sources, series, fields, coverage, inspect, data pipelines
+updated: 2026-09-01
+summary: Browse what every built-in dataset actually contains before you build it into a strategy, fitness function or risk manager.
+keywords: data explorer, data library, market data, fundamentals, coverage, freshness, data sources, asset groups
 ---
 
-The Data Explorer is Fintela's Data Library: one read-only browse surface over every dataset that
-feeds the platform. Pick a dataset and you get its live row-count estimate, its coverage window, its
-freshness, and — for ticker-scoped datasets — per-ticker coverage, a time-distribution chart, a
-charted feature series and the raw stored records. Nothing here is editable and nothing here runs a
-backtest; it exists so you know what a data source actually contains before you inject it into a
-[strategy](/docs/strategies), a [fitness function](/docs/fitness-functions) or a
-[risk manager](/docs/risk-managers).
+The Data Explorer is Fintela's Data Library — a read-only view into every dataset that feeds the
+platform. Pick a dataset and you'll see how many rows it holds, the date range it covers, how
+fresh it is, and — for datasets built around individual tickers — per-ticker coverage, a chart of
+how data is distributed over time, a chartable data series and the raw records themselves. You
+can't edit anything here and you can't run a backtest from this page; it exists so you know
+exactly what a data source contains before you build it into a [strategy](/docs/strategies), a
+[fitness function](/docs/fitness-functions) or a [risk manager](/docs/risk-managers).
 
-## Where the Data Explorer lives
+## Finding the Data Explorer
 
-| Item | Value |
-|---|---|
-| Route | `/analysis/data-explorer` |
-| Feature key | `data-explorer` |
-| Nav label | `Data Explorer` |
-| Sidebar placement | the **More Options** flyout, not the visible Analysis section |
-| Page eyebrow / title | `Analysis` / `Data Explorer` |
-| Page subtitle | `Browse every dataset powering the platform — live coverage, freshness and raw records.` |
+Data Explorer lives under **More Options** in the sidebar, not in the main Analysis list — see
+[Navigation](/docs/navigation) for how that menu works. Once you're on the page, the top reads
+**Analysis / Data Explorer**, with the subtitle **"Browse every dataset powering the platform —
+live coverage, freshness and raw records."**
 
-The entry is registered both in the Analysis feature set (so the route resolves) and in the "More
-Options" set (so the sidebar renders it inside the flyout). See [navigation](/docs/navigation) for
-how that flyout works.
+## Access and unlocking
 
-## Access and the data_explorer lock
+Data Explorer is a paid feature. Whether it's unlocked depends on your organization's plan, not
+on your individual role — everyone in your organization sees it the same way, unlocked or locked.
 
-Two independent gates apply.
+If it's locked for your organization, the sidebar entry is still there — you'll just see a small
+lock icon with the tooltip **"Locked — buy tokens to unlock."** Clicking it still opens the page,
+but what you'll see is a blurred preview of the real layout with no live data behind it, and a
+panel reading:
 
-| Gate | Mechanism | Failure |
-|---|---|---|
-| Role | permission `data_cluster:read`, checked as the first statement of every backend handler (`root:all` bypasses) | HTTP 403 `Missing permission 'data_cluster:read'` |
-| Entitlement | lock key `data_explorer`, one router-level middleware layer over the whole `/data-explorer/*` router | HTTP 402 with `"error": "feature_locked"` |
+- **Feature locked**
+- **Buy tokens to unlock this feature.**
+- a **Buy tokens** button that takes you to your token settings
+- **This is a preview — your real data appears once unlocked.**
 
-`data_explorer` ships in the default `locked_features` array, so the feature is locked out of the
-box for non-activated organizations. Locked does **not** mean hidden: the nav entry stays in the
-flyout and stays clickable, carrying a lock glyph with the tooltip `Locked — buy tokens to unlock`.
-Opening the page renders the real layout behind a blur, `inert` and `aria-hidden`, inside a frozen
-query client so no request fires, with a centred panel:
+> [!NOTE] Browsing doesn't cost tokens
+> Once Data Explorer is unlocked, looking around costs you nothing — no compute tokens are
+> deducted for browsing datasets, no matter how much you click through. The only thing standing
+> between you and the data is the one-time unlock. See
+> [Tokens and billing](/docs/tokens-and-billing).
 
-| Element | Text |
-|---|---|
-| Title | `Feature locked` |
-| Body | `Buy tokens to unlock this feature.` |
-| CTA | `Buy tokens` → `/account?section=tokens` |
-| Caption | `This is a preview — your real data appears once unlocked.` |
-
-The 402 body is:
-
-```json
-{
-  "message": "This feature is available on paid accounts. Buy tokens to unlock it.",
-  "error": "feature_locked",
-  "feature": "data_explorer",
-  "upgrade": "purchase_tokens"
-}
-```
-
-> [!NOTE] Locked is not the same as metered
-> Browsing the Data Explorer deducts no tokens — none of its handlers touch the token ledger. The
-> only barrier is the `data_explorer` entitlement. See
-> [tokens and billing](/docs/tokens-and-billing).
-
-One adjacent lock matters: the Technical Indicators indicator picker reads
-`GET /market/indicators/metadata`, which sits behind the separate `markets` lock. With
-`data_explorer` unlocked but `markets` still locked that request returns 402 and the indicator
-selector renders with an empty option list.
+One thing worth knowing if you use the **Technical Indicators** dataset: its indicator picker
+pulls its list from Markets, which is a separate feature with its own unlock. If Data Explorer is
+unlocked but Markets isn't, that indicator dropdown will simply show no options.
 
 ## The Data Library sidebar
 
-A 260px `nav` column, overline heading **`Data Library`**, sticky from the `md` breakpoint with its
-own scroll. Datasets are bucketed into seven groups in a fixed order; empty groups are dropped.
-Each row shows the group glyph, the dataset label, and a monospace freshness caption.
+A column on the left, headed **Data Library**, lists every dataset you can browse, grouped into
+seven categories (empty categories are simply left out). Each row shows an icon for its group,
+the dataset's name, and how fresh it is — for example `today`, `3d ago`, or, once a dataset is
+more than 45 days stale, the actual date it was last updated. A dataset with no recorded update
+at all shows a dash.
 
-Freshness is computed from the dataset's `last_date`:
-
-| Age | Rendered as |
-|---|---|
-| 0 days | `today` |
-| 1–45 days | `3d ago` (`{{count}}d ago`) |
-| over 45 days | the raw ISO date |
-| unparsable / null | `—` |
-
-Datasets whose coverage is limited carry a small coloured dot with the tooltip
-`Coverage is limited to the S&P 500 tracked universe (current and historical constituents). Tickers outside it won't appear here.`
+Datasets that only cover the S&P 500 tracked universe — current and historical constituents —
+carry a small coloured dot; hovering it explains that tickers outside that universe simply won't
+show up.
 
 ## Landing overview
 
-With no dataset selected the content pane shows the Data Library landing:
+Before you pick a dataset, the main panel shows an overview of everything available: one card per
+group, each listing how many datasets it holds, with a grid of clickable tiles underneath.
 
-- Intro: `Every dataset powering the platform, in one place. Pick a dataset to inspect its per-ticker coverage, time distribution and raw records — live row counts and freshness below.`
-- Empty catalog: `The dataset catalog is empty.`
-- One card per group, subtitled `{{count}} dataset` / `{{count}} datasets`, holding a grid of
-  clickable dataset tiles (1 column on `xs`, 2 on `sm`, 3 on `xl`).
+Each tile shows the dataset's name, an **S&P 500 universe** chip when the dataset is scoped that
+way, a short description, and three quick stats:
 
-Each tile shows the group glyph, the label, an `S&P 500 universe` chip when the dataset is scoped,
-the description clamped to two lines, and three stats:
-
-| Micro-label | Value |
+| Stat | What it tells you |
 |---|---|
-| `Rows` | `≈` plus a compact magnitude of the row estimate, e.g. `≈1.2M` |
-| `Window` | `first_date → last_date`, or `—` |
-| `Updated` | the freshness label |
+| Rows | An approximate size of the dataset, e.g. `≈1.2M` |
+| Window | The date range the dataset spans, from first date to last |
+| Updated | How fresh the dataset is |
 
-Compact magnitudes use `T` at ≥1e12, `B` at ≥1e9, `M` at ≥1e6, `K` at ≥1e3, one decimal each;
-smaller values print in full.
+Once you select a dataset, those tiles are replaced by a header with the dataset's name, its
+scope, its description, and four larger stat tiles: **Rows (est.)**, **First date**, **Last
+date** and **Freshness**.
 
-Once a dataset is selected, a header band replaces the tile above the panel: the label as an `h2`,
-the scope chip, the description, and four KPI tiles from the summary endpoint — `Rows (est.)`,
-`First date`, `Last date`, `Freshness` (with the raw `last_date` as its sub-label).
-
-> [!NOTE] Row counts are estimates
-> They come from `pg_class.reltuples`, summed across partitions for partitioned tables. For
-> recently backfilled tables the service falls back to a bounded exact count that saturates at
-> **1 000 001** until the database is analysed. That is why the label says `Rows (est.)` and the
-> tiles prefix `≈`.
+> [!NOTE] Row counts are estimates, not exact totals
+> The **Rows (est.)** figure is always an approximation, which is why it's shown with a `≈`. For a
+> dataset that was very recently loaded, the estimate can briefly look like a suspiciously round
+> number until the platform finishes indexing it properly — that's expected, not a data problem.
 
 ## Dataset catalog
 
-The catalog is server-owned. The frontend hard-codes no dataset list — labels, descriptions,
-grouping, panel choice, feature lists, cluster-filterability, chart mark and scope notes all arrive
-from `GET /data-explorer/catalog`. Only the group ordering, icons and colours are client-side.
+Every dataset you can browse — its name, description, which group it belongs to, and what kind of
+view it opens — is maintained centrally and kept current automatically, so you'll always see the
+full, up-to-date catalog without doing anything yourself.
 
 ### The seven groups
 
-| Group id | Sidebar label |
+| Group | What it covers |
 |---|---|
-| `market_data` | `Market data` |
-| `fundamentals` | `Fundamentals` |
-| `corporate_actions` | `Corporate actions` |
-| `events_calendar` | `Events calendar` |
-| `alternative` | `Alternative data` |
-| `macro_rates` | `Macro & rates` |
-| `reference` | `Reference` |
+| Market data | Prices, technical indicators, market cap history |
+| Fundamentals | Company and fund financials |
+| Corporate actions | Dividends and stock splits |
+| Events calendar | Earnings and IPO schedules |
+| Alternative data | News sentiment, insider transactions |
+| Macro & rates | Interest rates and macroeconomic indicators |
+| Reference | Index membership, ticker metadata, groupings, and the data sources catalog |
 
-### Every dataset and the panel it opens
+### Every dataset and what it opens
 
-Twenty datasets are advertised. Eight of them do not use the generic ticker drill-in at all — they
-open a bespoke panel and are served by their own endpoints.
+Twenty datasets are available. Twelve of them open the standard ticker-by-ticker view described
+below; the other eight — mostly reference and calendar data that isn't organized around
+individual tickers — each open their own purpose-built view.
 
-| Dataset | `id` | Group | Panel | Per-ticker drill-in | Chartable features |
-|---|---|---|---|---|---|
-| Price Data | `price_data` | Market data | Ticker time series | yes | `open`, `high`, `low`, `close`, `adjusted_close`, `volume`, `market_cap` |
-| Technical Indicators | `technical_indicators` | Market data | Ticker time series | yes | indicator names from the live metadata |
-| Market Cap History | `market_cap_history` | Market data | Ticker time series | yes | `market_cap` |
-| US Equity Fundamentals | `us_equity_fundamentals` | Fundamentals | Ticker time series | yes | 15 metrics, see below |
-| Crypto Fundamentals | `crypto_fundamentals` | Fundamentals | Ticker time series | yes | `market_cap`, `circulating_supply`, `total_supply`, `market_cap_dominance`, `ath_price`, `atl_price` |
-| Analyst Trends | `analyst_trends` | Fundamentals | Ticker time series | yes | none — table only |
-| Fund Fundamentals | `fund_fundamentals` | Fundamentals | Ticker time series | yes | `net_assets`, `expense_ratio`, `fund_yield`, `holdings_count` |
-| Dividends | `dividends` | Corporate actions | Ticker time series | yes | `value`, `unadjusted_value` (bar mark) |
-| Splits | `splits` | Corporate actions | Ticker time series | yes | none — table only |
-| News Sentiment | `news_sentiment` | Alternative data | Ticker time series | yes | `sentiment_score`, `article_count` |
-| Insider Transactions | `insider_transactions` | Alternative data | Ticker time series | yes | none — table only |
-| Index Constituents | `index_membership` | Reference | Ticker time series | yes | `constituent_count` |
-| Earnings Calendar | `earnings_calendar` | Events calendar | Events calendar | no | — |
-| IPO Calendar | `ipo_calendar` | Events calendar | Events calendar | no | — |
-| Interest Rates | `interest_rates` | Macro & rates | Rates | no | — |
-| Macro Indicators | `macro_indicators` | Macro & rates | Macro | no | — |
-| Symbol Changes | `symbol_changes` | Reference | Symbol changes | no | — |
-| Ticker Metadata | `ticker_meta` | Reference | Fields / Records | no | — |
-| Hierarchical Groupings | `groupings` | Reference | Groupings explorer | no | — |
-| Data Sources | `ingredients` | Reference | Data Sources catalog | no | — |
+| Dataset | Group | What you can view | Look up individual tickers | Chartable data |
+|---|---|---|---|---|
+| Price Data | Market data | Ticker history | yes | Open, High, Low, Close, Adjusted Close, Volume, Market Cap |
+| Technical Indicators | Market data | Ticker history | yes | whichever indicators Markets currently offers |
+| Market Cap History | Market data | Ticker history | yes | Market Cap |
+| US Equity Fundamentals | Fundamentals | Ticker history | yes | 15 financial metrics, see below |
+| Crypto Fundamentals | Fundamentals | Ticker history | yes | Market Cap, Circulating Supply, Total Supply, Dominance, ATH, ATL |
+| Analyst Trends | Fundamentals | Ticker history | yes | table only, no chart |
+| Fund Fundamentals | Fundamentals | Ticker history | yes | Net Assets, Expense Ratio, Yield, Holdings Count |
+| Dividends | Corporate actions | Ticker history | yes | Value, Unadjusted Value (shown as bars) |
+| Splits | Corporate actions | Ticker history | yes | table only, no chart |
+| News Sentiment | Alternative data | Ticker history | yes | Sentiment Score, Article Count |
+| Insider Transactions | Alternative data | Ticker history | yes | table only, no chart |
+| Index Constituents | Reference | Ticker history | yes | Constituent Count |
+| Earnings Calendar | Events calendar | Events calendar | no | — |
+| IPO Calendar | Events calendar | Events calendar | no | — |
+| Interest Rates | Macro & rates | Rates | no | — |
+| Macro Indicators | Macro & rates | Macro | no | — |
+| Symbol Changes | Reference | Symbol changes | no | — |
+| Ticker Metadata | Reference | Fields / Records | no | — |
+| Hierarchical Groupings | Reference | Groupings explorer | no | — |
+| Data Sources | Reference | Data Sources catalog | no | — |
 
-`us_equity_fundamentals` charts `pe_ratio`, `market_cap`, `ebitda`, `beta`, `roe`, `roa`,
-`dividend_yield`, `profit_margin`, `operating_margin`, `revenue_ttm`, `price_book`, `peg_ratio`,
-`price_sales_ttm`, `week_52_high`, `week_52_low` — fifteen features, while its raw table shows
-thirteen columns. `price_sales_ttm`, `week_52_high` and `week_52_low` are chartable only, and the
-last two have no localized label so they appear as raw snake_case in the Feature selector.
+US Equity Fundamentals can chart P/E Ratio, Market Cap, EBITDA, Beta, ROE, ROA, Dividend Yield,
+Profit Margin, Operating Margin, Revenue TTM, Price/Book, PEG Ratio, Price/Sales TTM, 52-Week High
+and 52-Week Low — fifteen metrics in total. A few of these are chart-only, and a couple show up in
+the Feature picker under their internal field name rather than a friendly label.
 
-Four datasets carry the `S&P 500 universe` scope chip because their source tables are only populated
-for the tracked universe: `market_cap_history`, `news_sentiment`, `insider_transactions` and
-`analyst_trends`.
+Four datasets carry the **S&P 500 universe** chip because they're only collected for that tracked
+universe: Market Cap History, News Sentiment, Insider Transactions and Analyst Trends.
 
-Three datasets have no date probe at all, so their `First date`, `Last date` and `Freshness` tiles
-are permanently `—` by design: `technical_indicators`, `ticker_meta` and `groupings`. `ingredients`
-is excluded from the summary endpoint entirely, so its header band shows no KPI tiles.
+For three datasets — Technical Indicators, Ticker Metadata and Hierarchical Groupings — the
+coverage-date concept doesn't really apply, so their **First date**, **Last date** and
+**Freshness** tiles always show a dash. Data Sources doesn't show these stat tiles at all, since
+it's a reference catalog rather than a time series.
 
-Only five datasets accept the asset-group filter: `price_data`, `us_equity_fundamentals`,
-`crypto_fundamentals`, `technical_indicators` and `ticker_meta`. Of those,
-`us_equity_fundamentals` restricts the picker to groups whose `cluster_type` is `us_equity`, and
-`crypto_fundamentals` to `crypto`; groups with no metadata resolved yet are kept in the list either
-way.
+Five datasets can be narrowed down to a specific [asset group](/docs/asset-groups): Price Data,
+US Equity Fundamentals, Crypto Fundamentals, Technical Indicators and Ticker Metadata. For US
+Equity Fundamentals and Crypto Fundamentals, the asset-group picker only offers groups that
+actually match that asset class.
 
-> [!CAUTION] `ticker_code` is not always a ticker
-> For `index_membership` the coverage table's `Ticker` and `Name` columns hold the **index** code
-> and name, and its `Nulls` column is a hard-coded `0` — not a measurement.
+> [!CAUTION] Index Constituents shows index codes, not ticker codes
+> For the Index Constituents dataset, the **Ticker** and **Name** columns in the coverage table
+> actually show the index's own code and name — not an individual stock. Its **Nulls** column is
+> always shown as `0` rather than a real measurement.
 
 ## Ticker-scoped datasets
 
-Twelve datasets open the standard ticker view. Its toolbar carries a segmented control labelled
-`View` with two options — `Coverage` and `Time Distribution` — plus, for cluster-filterable
-datasets, an [asset group](/docs/asset-groups) selector pushed to the right.
+Twelve datasets open the standard ticker-by-ticker view. Its toolbar has a **View** toggle with
+two options — **Coverage** and **Time Distribution** — plus, for datasets that support it, an
+[asset group](/docs/asset-groups) filter on the right.
 
-The selector is a small `Select` with `All tickers` as its first (empty) option, then one option per
-asset group you own. The filter is organization-scoped: a group belonging to another organization
-silently returns zero rows rather than an error.
+The filter is a dropdown starting with **All tickers**, followed by one option per asset group
+you have access to. It's scoped to your organization — picking a group that isn't yours simply
+returns no rows rather than an error.
 
 ### Coverage table
 
-| Control | Behaviour |
+| Control | What it does |
 |---|---|
-| Search | placeholder `Search ticker…`, 300 ms debounce, matched case-insensitively against the ticker code only, resets to page 1 |
-| `From` | `type="date"`, its `max` bound to the `To` value |
-| `To` | `type="date"`, its `min` bound to the `From` value |
-| `CSV` | tooltip `Export the current page to CSV`, disabled at zero rows |
+| Search | Type a ticker code to filter the table; matching starts after a brief pause and ignores case |
+| From / To | Narrow the table to a date range; each bound limits what you can pick for the other |
+| CSV | Downloads the current page of results; greyed out when there's nothing to export |
 
 Columns:
 
-| Column | Sortable | Cell |
+| Column | Sortable | Shows |
 |---|---|---|
-| `Ticker` | yes (`ticker_code`) | monospace |
-| `Name` | no | secondary text, truncated |
-| `First Date` | yes (`first_date`) | ISO date or `—` |
-| `Last Date` | yes (`last_date`) | ISO date or `—` |
-| `Records` | yes (`record_count`) | right-aligned count |
-| `Nulls` | no | `0` in success green, otherwise a warning-coloured count with tooltip `{{count}} null values` |
+| Ticker | yes | The ticker code |
+| Name | no | The company or instrument name |
+| First Date | yes | Earliest date on record, or a dash |
+| Last Date | yes | Most recent date on record, or a dash |
+| Records | yes | How many rows exist for that ticker |
+| Nulls | no | `0` in green when the data is complete, otherwise a highlighted count of missing values |
 
-Clicking a header toggles ascending/descending; clicking a different header resets to ascending.
-The default state sends no sort parameter at all, and the backend then orders by `ticker_code`
-ascending. Pagination offers 25 / 50 / 100 rows, defaults to 50, and counts server-side. Clicking a
-row opens the inspection drawer.
+Click a column header to sort by it; click again to reverse the order. You can show 25, 50 or 100
+rows per page (50 by default). Clicking a row opens the inspection panel described below.
 
-Empty state title is `No coverage rows`. The description depends on scope: a tracked-universe
-dataset shows `This dataset covers the S&P 500 tracked universe — tickers outside it won't appear here. Try clearing the search or the cluster filter.`,
-everything else shows `No tickers match the current filters.`
+Changing the dataset or the asset-group filter resets your search, date range, sort and page back
+to their defaults.
 
-Changing the dataset or the asset-group filter resets the page, the search, both date bounds, the
-sort column and the direction.
-
-> [!WARNING] The date window does not apply to two datasets
-> `From` and `To` are still rendered for `technical_indicators` and `index_membership`, but the
-> backend does not bind them for those two — their coverage queries have no window placeholder.
+> [!WARNING] The date filter doesn't apply to every dataset
+> **From** and **To** are shown for every ticker-scoped dataset, but for Technical Indicators and
+> Index Constituents they don't actually narrow the results — those two always show full history
+> regardless of what you set.
 
 ### Time Distribution chart
 
-An outlined panel of fixed height 520 with the caption `Data presence over time` and a segmented
-control offering `Monthly` (default) and `Yearly`.
-
-The chart is a combo: a bar series named `Tickers` on the left axis and a line series named
-`Records` on the right, over a hierarchical category time axis, with a bottom zoom slider, inside
-zoom, and a crosshair axis pointer. Loading shows a spinner; no data shows `No data available`.
+A chart labelled **"Data presence over time,"** with a toggle for **Monthly** (default) or
+**Yearly** grouping. It combines a bar showing how many tickers have data in each period with a
+line showing how many total records were recorded, and you can zoom in on any stretch of time.
 
 > [!NOTE]
-> Time Distribution always charts the whole table. It ignores both the asset-group filter and the
-> `From`/`To` window, and it is not paginated.
+> Time Distribution always reflects the whole dataset — it ignores the asset-group filter and the
+> From/To date range, and it isn't paginated.
 
 ### Inspection drawer
 
-Clicking a coverage row sets `?ticker` and opens a right-anchored drawer (full width on `xs`,
-`min(720px, 90vw)` from `sm`, `min(720px, 44vw)` on `xl`). Clicking the same ticker again closes it.
-The header shows the monospace ticker code with the dataset label beneath, the feature selector, and
-a close button labelled `Close inspection`.
+Click any row in the coverage table to open a panel with a closer look at that ticker. It shows
+the ticker code, the dataset name, and — where the dataset supports charting — a selector for
+which data series (or, for Technical Indicators, which indicator) to inspect.
 
-The feature selector appears only when the dataset has chartable features:
+When a chartable series is available, you'll also see four quick stats — **Min**, **Max**,
+**Mean**, **Last** — computed from the data currently loaded, and a toggle between **Chart** and
+**Table** views. Chart is the default, except for Splits, Insider Transactions and Analyst
+Trends, which don't have a chartable series and open straight on the raw records table.
 
-| Dataset | Control | Label | Options |
-|---|---|---|---|
-| `technical_indicators` | autocomplete | `Indicator` | de-duplicated, sorted indicator names from `GET /market/indicators/metadata`, filtered to ticker-applicable ones |
-| every other charting dataset | select | `Feature` | one entry per catalog feature, showing the localized column label where one exists, otherwise the raw key |
+- **Chart** — plots the selected series for that ticker. Dividends renders as bars; everything
+  else renders as a line. If you're viewing Technical Indicators and haven't chosen an indicator
+  yet, you'll see a prompt to pick one first.
+- **Table** — the raw stored records for that ticker, 50 rows at a time. Long lists (like an
+  index's constituents) are truncated with a "+N more" note and the full list available on
+  hover.
 
-Below the header, when the dataset charts a series, sits a four-tile stat strip — `Min`, `Max`,
-`Mean`, `Last` — computed client-side over the loaded points, and a segmented control labelled
-`Inspection view` with `Chart` and `Table`. The default tab is `Chart`; for `splits`,
-`insider_transactions` and `analyst_trends` there is no series, so the drawer opens straight on
-`Table` and the toggle is not rendered at all.
+A chart shows up to the most recent 500 data points for that ticker.
 
-- **Chart** — titled `TICKER — feature label`. `dividends` renders as bars; everything else renders
-  as a line with a soft area fill and a dashed zero marker. Tooltip values print to four decimals.
-  Bottom zoom slider plus inside zoom. Empty shows `No data`. For `technical_indicators` with no
-  indicator picked yet, an empty state reads `Select an indicator to chart` /
-  `Pick a technical indicator from the selector above to load its series.`
-- **Table** — the raw stored records for that ticker, page size fixed at 50 with no size selector.
-  Columns come from the API response. Nulls render as a dimmed `—`; integers print with separators;
-  values under 10 print to four decimals; values at or above 1e9 collapse to `B`, at or above 1e6 to
-  `M`; everything else prints to two decimals. A `constituents` array shows the first six codes and
-  ` +{{count}} more`, with the full list in a tooltip.
-
-The series request loads at most **500** points, taken as the most recent rows and returned in
-ascending date order, with null values excluded.
-
-Column headers in the raw table are localized where a label exists — `Date`, `Start Date`,
-`End Date`, `Open`, `High`, `Low`, `Close`, `Adj. Close`, `Volume`, `Market Cap`, `P/E Ratio`,
-`EBITDA`, `Beta`, `ROE`, `ROA`, `Div. Yield`, `Profit Margin`, `Op. Margin`, `Revenue TTM`, `P/B`,
-`PEG`, `P/S TTM`, `Circ. Supply`, `Total Supply`, `Dominance`, `ATH`, `ATL`, `Indicator`, `Window`,
-`Z-Window`, `Value`, `Count`, `Constituents`. Everything else — `ex_date`, `declaration_date`,
-`owner_name`, `transaction_code`, `net_assets`, `week_52_high` and so on — renders as the raw
-snake_case key.
-
-Changing the dataset or the ticker resets the tab and the raw page.
+Switching to a different ticker or dataset resets the view back to its defaults.
 
 ## Events calendars
 
-`Earnings Calendar` and `IPO Calendar` share one agenda panel, remounted per dataset so switching
-between them resets local state.
+Earnings Calendar and IPO Calendar share the same layout, with a toggle for **Upcoming**
+(default) or **Past**, and a search box for company name or ticker.
 
-| Control | Detail |
-|---|---|
-| Window | segmented control labelled `Calendar window`, options `Upcoming` (default) and `Past` |
-| Range caption | `{{from}} → {{to}}` in monospace |
-| Search | placeholder `Search company or code…`, 300 ms debounce |
-
-Windows are computed in the browser, not taken from the API defaults:
-
-| Window | Earnings | IPOs |
+| Window | Earnings shows | IPOs show |
 |---|---|---|
-| `Upcoming` | today → today + 30 days | today → today + 60 days |
-| `Past` | today − 30 days → today | today − 30 days → today |
+| Upcoming | the next 30 days | the next 60 days |
+| Past | the last 30 days | the last 30 days |
 
-Page size is fixed at 50. Rows are grouped into day blocks headed by a locale-aware
-`weekday, MMM d, yyyy` date and a right-aligned `{{count}} event` / `{{count}} events`.
+Events are grouped by day, with each day showing how many events fall on it.
 
-**Earnings rows** show a ticker chip, the company name (or `—`), a timing chip — `BMO` for
-`BeforeMarket`, `AMC` for `AfterMarket`, otherwise `—` — and `Est.` with the estimate to two
-decimals. In the `Past` window only, they also show `Actual` and a surprise chip formatted to one
-decimal, coloured positive at or above zero. When the row resolves to a tracked ticker its chip
-links into Markets at `/analysis/markets?tab=ticker&tickerId=…` with the tooltip `Open in Markets` — see
-[Market](/docs/market). Market-wide rows with no resolved ticker are still listed; their chip is
-inert and the name is `—`.
+**Earnings rows** show the ticker, the company name, whether the report is before or after market
+open (**BMO** / **AMC**), and the estimated figure. In the Past view, you'll also see the actual
+reported figure and how far it beat or missed the estimate. If the ticker is one Fintela tracks,
+clicking it opens that ticker in [Market](/docs/market).
 
-**IPO rows** show the company name, a code chip, an optional exchange chip, `Range` as
-`$from–$to`, `Offer` (only when an offer price exists), `Shares` as a compact magnitude, and an
-optional deal-type chip.
-
-Empty states: `No earnings scheduled in this window`, `No earnings reported in this window`,
-`No IPOs scheduled in this window`, `No IPOs priced in this window`, each with the hint
-`Try the other view or clear the search.`
+**IPO rows** show the company name, its ticker, its exchange where known, the expected price
+range, the offer price once set, the number of shares, and the deal type where known.
 
 ## Interest rates panel
 
-Up to five KPI tiles: four tenor tiles labelled `{{tenor}} yield` for `3M`, `2Y`, `10Y` and `30Y`,
-plus a `2s10s spread` tile in basis points, shown only when both the 2Y and 10Y points exist. A
-tenor with no observation renders `—`.
+Up to five quick-read tiles at the top: yield for the 3-month, 2-year, 10-year and 30-year
+Treasury tenors, plus a **2s10s spread** — the gap between the 2-year and 10-year yields in basis
+points, a widely watched recession signal — shown whenever both of those tenors have data.
 
-- **`Yield curve`** — subtitle `U.S. Treasury constant-maturity · as of {{date}}`, a line over a
-  category axis of tenor labels with circular markers, axis and tooltip values as percentages to two
-  decimals. Empty text is `No rate observations yet.`
-- **`History`** — subtitle `Daily observations for the selected tenor`, with a segmented control
-  labelled `Tenor` over every available series. It defaults to `UST_10Y` when present, otherwise the
-  shortest series, and loads 500 observations.
+- **Yield curve** — plots the current yield for every available tenor side by side, so you can
+  read the curve's overall shape at a glance.
+- **History** — plots daily yields for one tenor at a time, defaulting to the 10-year (or the
+  shortest available tenor if that's missing), over its most recent 500 observations.
 
-> [!NOTE] How the curve is assembled
-> Each tenor contributes its most recent observation at or before the requested date, so different
-> tenors on one curve can carry different observation dates, and the "as of" subtitle uses only the
-> last point's date. Series codes are parsed with `^UST_(\d+)(M|Y)$`; codes that do not match are
-> dropped from the curve chart and sort last in the tenor selector. Values are stored as percent per
-> annum — the API returns e.g. `4.28` and the UI divides by 100 before formatting.
+> [!NOTE] Reading the curve
+> Each point on the yield curve uses that tenor's most recent available reading as of the
+> selected date — so if one tenor's data is a day or two behind another's, the curve mixes dates
+> slightly rather than leaving a gap. Yields are shown as ordinary percentages.
 
 ## Macro indicators panel
 
-Two selects drive the panel: `Country` (minimum width 220, defaulting to `USA` when present,
-otherwise the first country) and `Indicator` (minimum width 260, defaulting to the first indicator).
-Both option lists come from the macro catalog endpoint.
-
-The left pane charts the selected country/indicator series over `period_date` as a line with an
-area fill and inside zoom, dropping points whose value is null. The right pane,
-`Latest values — {{country}}`, is a sticky-header table with the columns `Indicator`, `Period` and
-`Value`. The `Period` cell shows the ISO `period_date`, not the vendor period string. Both panes
-fall back to `No macro observations for this selection.`
+Two dropdowns — **Country** (US by default) and **Indicator** — drive this view. The chart on the
+left plots the selected indicator's history for that country; the table on the right, **Latest
+values**, lists every indicator's most recent reading for that country side by side, so you can
+scan a country's whole macro picture at once.
 
 ## Symbol changes panel
 
-A single card titled `Symbol changes`, subtitled `Ticker renames across exchanges`, with a search
-field in the action slot (`Search old or new symbol…`, 300 ms debounce). Search matches the old
-symbol, the new symbol or the company name.
+A single table titled **Symbol changes**, tracking ticker renames across exchanges, with a search
+box matching the old symbol, the new symbol, or the company name.
 
-| Column | Cell |
+| Column | Shows |
 |---|---|
-| `Date` | monospace change date |
-| `Change` | `OLD → NEW`, old in secondary text, new in bold |
-| `Company` | secondary text, `—` when null |
-| `Exchange` | outlined chip, `—` when null |
-
-Page size is fixed at 50. Empty state: `No symbol changes match the search`.
+| Date | When the change took effect |
+| Change | The old symbol and the new one |
+| Company | The company name |
+| Exchange | Which exchange, where known |
 
 ## Ticker Metadata panel
 
-`ticker_meta` opens a two-tab panel — `Fields` (default) and `Records` — with the asset-group filter
-injected into the same row. Clicking a row in `Fields` switches to `Records` and pre-applies that
-field as a "require populated" filter.
+Ticker Metadata opens a two-tab view — **Fields** and **Records** — plus the asset-group filter.
+Clicking a field in the Fields tab jumps you to Records already filtered to tickers that have
+that field populated.
 
 ### Fields tab
 
-Toolbar: a search box (`Search field…`, client-side, matching key, label and description), a switch
-captioned `Only fields injected into strategies`, and a right-aligned summary
-`{{tickers}} tickers · {{fields}} fields · {{injected}} injected into strategies`.
+A searchable list of every metadata field Fintela tracks about a ticker — things like sector,
+industry, country, currency, ISIN and similar identifiers — 18 fields in total. A switch lets you
+show only the fields that are actually available to inject into your own strategies.
 
-| Column | Content |
+| Column | Shows |
 |---|---|
-| `Field` | the monospace key over its display label |
-| `Description` | the field description |
-| `Type` | an outlined chip with the raw type, `string` or `integer` |
-| `Used in strategies` | a success chip labelled `strategies` when exposed, otherwise a dimmed `—` |
-| `Availability` | a coverage bar with a percentage to one decimal, over `non-null / total` |
-| `Distinct` | the distinct-value count |
-| `Sample values` | up to 5 chips, values over 36 characters truncated |
+| Field | The field's name |
+| Description | What the field represents |
+| Type | Text or number |
+| Used in strategies | Whether you can pull this field into a strategy you write |
+| Availability | What share of tickers actually have a value for this field |
+| Distinct | How many different values exist across all tickers |
+| Sample values | A handful of example values |
 
-The eighteen fields, in fixed order: `code` (`Ticker Code`), `name` (`Name`), `type` (`Type`),
-`sector` (`Sector`), `industry` (`Industry`), `country` (`Country`), `country_iso` (`Country ISO`),
-`currency` (`Currency`), `currency_code` (`Currency Code`), `currency_name` (`Currency Name`),
-`currency_symbol` (`Currency Symbol`), `isin` (`ISIN`), `cusip` (`CUSIP`), `lei` (`LEI`),
-`openfigi` (`OpenFIGI`), `primary_ticker` (`Primary Ticker`), `description` (`Description`),
-`full_time_employees` (`Full-Time Employees`). Only the last is `integer`.
-
-"Used in strategies" is resolved at request time from the live injectable-source registry, not from
-a hard-coded list. `code` is always exposed because it is the index of the `meta` DataFrame rather
-than a column of it. The exposed tooltip reads
-``This field is exposed as a column of the `meta` DataFrame injected into strategies.``; the other reads
-`Not injected into user strategies — for reference only.`
-
-Availability counts a value as present only when it is non-null **and** not an empty string.
-No matches renders `No fields match the current filters.`; a failed load renders
-`Failed to load meta field catalog.`
+**Availability** counts a value as present only when it's actually filled in — an empty string
+doesn't count as data.
 
 ### Records tab
 
-Toolbar: a search box (`Search ticker or name…`, 300 ms debounce, matching code or name), a
-multi-select autocomplete labelled `Require fields populated` with the placeholder `any field`, a
-`{{count}} tickers` caption, a `CSV` button (tooltip
-`Export the current page (visible columns) to CSV`), and a column chooser covering every column the
-API returns — it refuses to hide the last visible column.
+Browse the metadata for individual tickers, with a search box, a filter for "only tickers where
+these fields are populated," a column chooser (you can hide columns, but at least one must stay
+visible), and CSV export of whatever's currently on screen.
 
-Visible by default: `code`, `name`, `type`, `sector`, `industry`, `country`, `currency`, `isin`.
-Pagination offers 25 / 50 / 100, defaulting to 50.
-
-> [!NOTE]
-> Unlike the raw-records table, the `Records` header row prints the raw column keys, not localized
-> labels. That is the actual behaviour, not a rendering bug.
-
-Empty and error states: `No tickers match the current filters.` and
-`Failed to load ticker metadata.`
+By default you'll see Code, Name, Type, Sector, Industry, Country, Currency and ISIN; you can add
+more from the column chooser. Pagination offers 25, 50 or 100 rows per page.
 
 ## Hierarchical Groupings panel
 
-A two-pane explorer, mounted unfiltered by cluster type.
+A two-pane explorer for the platform's built-in groupings — sector-ETF collections, index-based
+universes and similar structures you can use as a strategy's universe.
 
-The left pane holds a `Namespace` select defaulting to the first namespace, then a list of that
-namespace's groupings — the code as the primary line (with a `synthetic` chip where applicable) and
-the name beneath. Empty renders `No groupings available for this namespace.`
+The left pane lets you pick a namespace, then browse its groupings by code and name. Selecting one
+shows its full description on the right, along with its kind, its source, and its asset class.
 
-The right pane starts on
-`Select a grouping from the list to inspect its descriptor and constituent timeline.` Selecting a
-grouping shows its name, `namespace:code`, its description, and chips for `kind: {{value}}`,
-`provenance: {{value}}` and `cluster_type: {{value}}`.
+> [!CAUTION] Some groupings carry survivorship bias
+> A grouping whose membership is derived from a current ticker attribute (rather than tracked
+> historically) uses today's snapshot for every date you look at — including past ones. If you
+> backtest a strategy over a grouping like this, you're implicitly assuming its current members
+> always belonged to it, which introduces survivorship bias into your results. The panel flags
+> these with a **"no temporal versioning"** warning so you know before you build on one.
 
-> [!CAUTION] Survivorship bias on attribute-derived groupings
-> When a grouping's provenance is `ticker_attribute`, the panel adds a `no temporal versioning` chip
-> and a warning alert: the grouping derives membership from a ticker attribute at query time, and
-> that current snapshot is used for every historical date. Historical backtests over such a grouping
-> carry survivorship bias.
-
-A `Hierarchy` block lists `Parents` and `Children` as chips reading `full_code — name`, or `none`.
-The timeline block is headed `Constituent timeline ({{start}} → {{end}})` with a timeframe selector
-offering `1Y`, `3Y`, `5Y`, `10Y` (default) and `Max`; `Max` anchors the start at `1990-01-01`. Four
-summary cards follow — `Days covered`, `Min / mean / max`, `First date`, `Last date` — then a chart
-card `Constituents over time`, subtitled `Daily constituent count within the selected window`,
-drawing a step line named `Constituents`. With nothing resolved it reads
-`No constituents resolved in this date range.`
+Below that, you'll see the grouping's parent and child groupings (if any), and a **Constituent
+timeline** chart showing how many members the grouping held over time — choose 1, 3, 5 or 10 years
+back, or the maximum available history.
 
 ## Data Sources catalog
 
-The `Data Sources` dataset is the reference for what a strategy can actually inject. Its intro
-reads `Every data source you can inject into a strategy — with its exact shape, how to index it in code, and a live sample.`
-and its catalog description is:
-
-> Every data source a strategy, fitness function or risk manager can inject — prices, fundamentals,
-> groupings, default clusters, basket holdings and more — with its exact shape (dict / table / set /
-> record), how to index it in code, and a live sample. Your reference for what each source looks
-> like and how to use it.
-
-This panel is the only one that calls no `/data-explorer/*` endpoint. It reads the compiler catalog
-proxy `GET /compiler/catalog/data-sources`, enriches each row with the usage snippet from
-`GET /strategies/injectable-data-catalog`, and previews samples through `POST /data-sources/preview`.
+The Data Sources dataset is your reference for exactly what you can build into a
+[strategy](/docs/strategies), [fitness function](/docs/fitness-functions) or
+[risk manager](/docs/risk-managers) — every data source available, what shape it comes in, how to
+use it in your own code, and a live sample of real data.
 
 ### Built-in data sources
 
-One accordion per registered source, ordered by the registry's display order. The summary row shows
-the label, a type badge, a `needs config` chip when the source requires configuration, and a
-monospace chip with the keyword argument the source is injected as.
+One entry per data source Fintela offers, each showing its label, its data type, whether it needs
+any configuration before use, and the keyword you'd use to reference it in your own strategy code.
 
-| Source key | Injected as | Label | Needs config |
-|---|---|---|---|
-| `meta` | `meta` | Ticker metadata | no |
-| `volume` | `volume` | Trading volume | no |
-| `news_sentiment` | `sentiment` | News sentiment | no |
-| `market_cap` | `market_cap` | Market cap | no |
-| `dividends` | `dividends` | Dividends | no |
-| `splits` | `splits` | Splits | no |
-| `insider_transactions` | `insider_flow` | Insider transactions | no |
-| `analyst_trends` | `analyst_revisions` | Analyst estimate revisions | no |
-| `fundamentals_crypto` | `fundamentals` | Fundamentals (crypto) | no |
-| `fundamentals_equity` | `fundamentals` | Fundamentals (US equity) | no |
-| `fund_fundamentals` | `expense_ratio` | Fund expense ratio | no |
-| `earnings_calendar` | `next_earnings_days` | Days to next earnings | no |
-| `ipo_calendar` | `ipo_activity` | IPO activity | no |
-| `interest_rates` | `rates` | Interest rates | yes |
-| `macro_indicators` | `macro` | Macro indicators | yes |
-| `symbol_changes` | `symbol_changes` | Symbol changes | no |
-| `benchmark` | `benchmarks` | Benchmarks & reference series | yes |
-| `groupings` | `groupings` | Hierarchical groupings | yes |
-| `default_clusters` | `default_clusters` | Platform default clusters | yes |
-| `basket_holdings` | `basket_holdings` | Basket holdings | yes |
+| Data source | Used in your code as |
+|---|---|
+| Ticker metadata | `meta` |
+| Trading volume | `volume` |
+| News sentiment | `sentiment` |
+| Market cap | `market_cap` |
+| Dividends | `dividends` |
+| Splits | `splits` |
+| Insider transactions | `insider_flow` |
+| Analyst estimate revisions | `analyst_revisions` |
+| Fundamentals (crypto) | `fundamentals` |
+| Fundamentals (US equity) | `fundamentals` |
+| Fund expense ratio | `expense_ratio` |
+| Days to next earnings | `next_earnings_days` |
+| IPO activity | `ipo_activity` |
+| Interest rates | `rates` |
+| Macro indicators | `macro` |
+| Symbol changes | `symbol_changes` |
+| Benchmarks & reference series | `benchmarks` |
+| Hierarchical groupings | `groupings` |
+| Platform default clusters | `default_clusters` |
+| Basket holdings | `basket_holdings` |
 
-> [!NOTE] The price panel is not in this list
-> `adjusted_close` (injected as `prices`) is deliberately excluded from the catalog endpoint — it is
-> the always-present price substrate rather than an opt-in source. The legacy `fundamentals` key is
-> marked deprecated and filtered out in favour of the two typed keys above.
+Sources marked as needing configuration — interest rates, macro indicators, benchmarks,
+groupings, default clusters, and basket holdings — need you to pick specifics, like which
+country's macro data or which benchmark series, before Fintela can show you a preview or inject
+them into your strategy.
 
-Several of these carry coverage limits that decide whether a strategy can run over a given
-[asset group](/docs/asset-groups). `sentiment` and `market_cap` are collected only for the tracked
-S&P 500 universe; `dividends` and `splits` are equity corporate actions. In all four cases a crypto
-or forex group is unavailable to a strategy that uses them. Within the equity universe a never-payer
-is a legitimate all-zero `dividends` column (and a never-split ticker an all-1.0 `splits` column),
-not missing data.
+> [!NOTE] Prices aren't in this list
+> Adjusted close prices are always available to every strategy by default — they're not an
+> opt-in source you need to add, which is why you won't find them in this catalog.
+
+A few sources come with real coverage limits worth knowing before you rely on them: news
+sentiment and market cap are only collected for the tracked S&P 500 universe, and dividends and
+splits only exist for equities — none of the four are available to a strategy running over a
+crypto or forex asset group. Within equities, a ticker that has simply never paid a dividend (or
+never split) correctly shows as all zeros, not as missing data.
 
 ### What a shape card shows
 
-Expanding an accordion renders a shape card with the source's description, a plain-language
-narrative of its structure, a faithful indexing example, its column list or column hint, and a usage
-snippet.
+Expanding any source shows a description of what it contains, a plain-language explanation of its
+structure, an example of how to reference it in your own code, its available columns or fields,
+and — once you've configured anything it needs — a live preview built from real data.
 
-- Sources that require configuration show a chip that flips from `needs config` to
-  `{{count}} selected` once configured, and a button reading `Configure` or `Edit selection`. Until
-  something is picked, the card reads `Pick what to inject above to preview a live sample.`
-- Sources that carry their own identity — `groupings`, `default_clusters`, `basket_holdings` —
-  preview standalone. Ticker-scoped sources require you to pick an asset group before the preview
-  runs.
+Sources that don't need a specific ticker — groupings, default clusters, basket holdings —
+preview immediately. Sources tied to individual tickers ask you to pick an asset group first, so
+the preview reflects real tickers you'd actually use.
 
-## Data Pipelines is retired
+## Looking for Data Pipelines?
 
-There is no Data Pipelines page. `/data-pipelines/*` — including its old `/edit/:id` deep links —
-redirects to `/analysis/data-explorer`, replacing the history entry.
+If you used the old Data Pipelines page, that page is gone — any old link to it now opens Data
+Explorer instead. The two things Data Pipelines used to do now live in two different places:
 
-| Old surface | Where the capability lives now |
+| What you wanted to do | Where it lives now |
 |---|---|
-| `/data-pipelines` (browse what a source contains) | the `Data Sources` dataset in the Data Explorer, plus the per-dataset panels above |
-| `/data-pipelines/edit/:id` (wire sources to a resource) | the Data Sources section inside the strategy, fitness function and risk manager editors |
+| See what a data source actually contains | The Data Sources dataset here in Data Explorer, or any of the per-dataset panels above |
+| Wire a data source into a strategy, fitness function or risk manager | The Data Sources section inside each one's own editor |
 
-A strategy now selects its built-in data sources in its own editor: the editor's data-sources
-section lists the same catalog rendered here, ticks the ones you want, keeps the function signature
-in sync with the chosen keyword arguments, and holds the per-source configuration for the sources
-that need it. See [strategies](/docs/strategies), [fitness functions](/docs/fitness-functions) and
-[risk managers](/docs/risk-managers).
+Each editor now lists the same catalog shown here, lets you tick the sources you want, keeps your
+code's parameters in sync automatically, and holds the configuration for sources that need it.
+See [Strategies](/docs/strategies), [Fitness functions](/docs/fitness-functions) and
+[Risk managers](/docs/risk-managers).
 
-The Data Explorer is the browse half of that split — read-only, no wiring, no persistence.
+Data Explorer is the browsing half of that split — look, don't touch. Wiring a source into
+something you'll actually run happens in that resource's own editor.
 
-## Deep links
+## Bookmarking and sharing a view
 
-Five parameters are written to the URL with `replace: true`, so a dataset view can be bookmarked or
-shared. Everything else — table search, sort, paging, the coverage date window and the panel-local
-selections (calendar window, tenor, country, timeframe) — is component state and is not in the URL.
+The dataset you're viewing, an asset-group filter, whether you're on the Coverage or Time
+Distribution tab, and an open ticker inspection are all saved into the page's address — so you
+can bookmark a specific view or share the link with a teammate and they'll land on exactly what
+you were looking at.
 
-| Parameter | Value | Meaning |
-|---|---|---|
-| `dataset` | a dataset id | The selected dataset. Absent, or unknown, falls back to the landing overview. |
-| `cluster_id` | integer | Asset-group filter. Only meaningful on cluster-filterable datasets; an empty string clears it. |
-| `tab` | `coverage` \| `heatmap` | Ticker-view sub-tab. Anything other than the literal `heatmap` resolves to `coverage`, and `coverage` is written by deleting the parameter. |
-| `ticker` | ticker code | Opens the inspection drawer. Ignored unless the dataset is ticker-scoped. |
-| `feature` | feature key | The series charted in the drawer. |
+Search terms, sort order, page number, the coverage date range, and panel-specific choices like
+the events calendar window or the rates tenor are not part of that link — those reset to their
+defaults whenever the page loads fresh.
 
-Selecting a new dataset sets `dataset` and deletes `cluster_id`, `tab`, `ticker` and `feature`.
-Changing the inspected ticker clears `feature`.
+## Exporting data
 
-## Exports
+Four places on this page let you download what's currently on screen as a CSV file:
 
-Three CSV buttons exist, all client-side. There is no server-side export endpoint anywhere in this
-feature.
+| Where | Downloads |
+|---|---|
+| Coverage table | The current page of ticker coverage rows |
+| Inspection drawer, Chart view | The plotted series for that ticker |
+| Inspection drawer, Table view | The raw records for that ticker |
+| Ticker Metadata, Records tab | The currently visible columns for the filtered tickers |
 
-| Where | Button | Filename | Headers |
-|---|---|---|---|
-| Coverage table | `CSV` | `{dataset_id}_coverage.csv` | the six localized column headers |
-| Inspection drawer, Chart tab | `Export CSV` | `{dataset_id}_{ticker}_{feature}.csv` | `date`, the feature key |
-| Inspection drawer, Table tab | `Export CSV` | `{dataset_id}_{ticker}_raw.csv` | the API's raw column keys |
-| Metadata Records tab | `CSV` | `ticker_meta.csv` | the currently visible columns, raw keys |
-
-> [!WARNING] Exports cover what is loaded, never the full result set
-> The coverage and metadata buttons write the current page — 25, 50 or 100 rows depending on the
-> page size. In the drawer, the Table tab writes its fixed 50-row page and the Chart tab writes the
-> loaded series, at most 500 points. Files are comma-separated with `\n` line endings, quoting cells
-> that contain a comma, a quote or a newline; there is no byte-order mark.
+> [!WARNING] Exports cover what's on screen, not the full result set
+> Every export downloads only what's currently loaded — the current page (up to 100 rows in the
+> coverage and metadata tables), the drawer's fixed 50-row page, or up to 500 charted points. If
+> you need more than that, narrow your filters first so the rows you want are the ones on screen.
 
 ## What the Data Explorer does not do
 
-- **No transforms.** Values are shown exactly as stored. The only reshaping controls are the
-  Monthly/Yearly granularity toggle, the rates tenor selector and the groupings timeframe selector.
-  Derived series, resampling and joins belong in the data-sources graph of a strategy, not here.
-- **No writes.** All seventeen backend routes are `GET`. Nothing on this page creates, edits or
-  deletes anything.
-- **No drill-in for eight datasets.** Asking a per-dataset endpoint for one of them returns HTTP 406
-  naming the correct alternative rather than pretending the dataset does not exist.
-- **No `window_size` / `z_score_window` control.** Both are real API parameters for
-  `technical_indicators`, but no UI control sets them and the drawer never sends them.
-- **`feature=value` is not how you chart an indicator.** `technical_indicators` declares a single
-  catalog feature (`value`) that the UI never uses; the drawer's `?feature` carries an indicator
-  name, and the backend skips whitelist validation for that dataset alone.
-
-## Backend endpoints
-
-All seventeen routes are read-only `GET`s under one entitlement layer, and every response is wrapped
-in the standard `{"data": …}` envelope.
-
-```http
-GET /data-explorer/catalog
-GET /data-explorer/summary
-GET /data-explorer/datasets/:dataset_id/ticker-coverage
-GET /data-explorer/datasets/:dataset_id/time-coverage
-GET /data-explorer/datasets/:dataset_id/tickers/:ticker_code/series
-GET /data-explorer/datasets/:dataset_id/tickers/:ticker_code/raw
-GET /data-explorer/meta/fields
-GET /data-explorer/meta/records
-GET /data-explorer/calendar/earnings
-GET /data-explorer/calendar/ipos
-GET /data-explorer/rates/series
-GET /data-explorer/rates/curve
-GET /data-explorer/rates/history
-GET /data-explorer/macro/catalog
-GET /data-explorer/macro/series
-GET /data-explorer/macro/latest
-GET /data-explorer/symbol-changes
-```
-
-Parameters, defaults and clamps:
-
-| Endpoint | Parameters | Defaults and limits |
-|---|---|---|
-| `ticker-coverage` | `page`, `page_size`, `search`, `data_cluster_id`, `sort`, `dir`, `from`, `to` | page 1; page size 50, capped at 200; `sort` whitelisted to `ticker_code`, `first_date`, `last_date`, `record_count` with anything else falling back to `ticker_code`; only the literal `desc` reverses direction |
-| `time-coverage` | `granularity` | `monthly` by default; only the literal `yearly` switches; no cluster filter, no window, no paging |
-| `series` | `feature` (required), `limit`, `window_size`, `z_score_window` | limit 200, capped at 500; the window parameters apply to `technical_indicators` only |
-| `raw` | `page`, `page_size` | page 1; page size 50, capped at 200 |
-| `meta/records` | `page`, `page_size`, `search`, `data_cluster_id`, `require_fields` | page 1; page size 50, capped at 200; `require_fields` is a comma-separated list of known field keys |
-| `calendar/earnings` | `from`, `to`, `search`, `page`, `page_size` | `from` today, `to` today + 14 days; page size 50, capped at 200 |
-| `calendar/ipos` | `from`, `to`, `search`, `page`, `page_size` | `from` today, `to` today + 30 days; page size 50, capped at 200 |
-| `rates/curve` | `date` | defaults to today; each tenor contributes its latest observation at or before the date |
-| `rates/history` | `series_code` (required), `limit` | limit 500, capped at 2000 |
-| `macro/series` | `country` (required), `indicator` (required) | unpaginated, ascending by period |
-| `macro/latest` | `country` (required) | newest row per indicator |
-| `symbol-changes` | `search`, `page`, `page_size` | page 1; page size 50, capped at 200 |
-
-> [!NOTE] The UI's calendar windows differ from the API defaults
-> The panel computes 30 days forward for earnings and 60 for IPOs; the API, called without `from`
-> and `to`, defaults to 14 and 30 days respectively.
-
-Error contract:
-
-| Status | Condition |
-|---|---|
-| 402 | the `data_explorer` entitlement is locked and enforcement is on |
-| 403 | the caller lacks `data_cluster:read` |
-| 406 | unknown dataset, dataset not drillable (the message names the alternative), invalid feature for the dataset, dataset not ticker-scoped, or an unknown meta field |
-| 500 | database error |
-
-Datasets that are not drillable and the endpoint each one routes to instead:
-
-| Dataset | Use instead |
-|---|---|
-| `groupings` | `GET /groupings/available` or `/groupings/{id}` |
-| `ticker_meta` | `GET /data-explorer/meta/fields` and `/data-explorer/meta/records` |
-| `ingredients` | `GET /injectable-data-sources/catalog` |
-| `earnings_calendar` | `GET /data-explorer/calendar/earnings` |
-| `ipo_calendar` | `GET /data-explorer/calendar/ipos` |
-| `interest_rates` | `GET /data-explorer/rates/series`, `/rates/curve` or `/rates/history` |
-| `macro_indicators` | `GET /data-explorer/macro/catalog` and `/macro/series` |
-| `symbol_changes` | `GET /data-explorer/symbol-changes` |
-
-These are internal application routes, not the public developer API. For the documented external
-surface see the [API overview](/docs/api-overview).
+- **No transforms.** Everything you see is exactly as stored — the only reshaping controls
+  anywhere on this page are the Monthly/Yearly toggle, the rates tenor selector, and the
+  groupings timeframe selector. If you need derived or resampled series, or to join sources
+  together, that happens when you wire data sources into a strategy, not here.
+- **No writes.** Every view on this page is read-only. Nothing you do here creates, edits or
+  deletes anything — for that, you'd go to the strategy, fitness function or asset-group editors
+  themselves.
+- **No ticker drill-in for eight datasets.** Earnings Calendar, IPO Calendar, Interest Rates,
+  Macro Indicators, Symbol Changes, Ticker Metadata, Hierarchical Groupings and Data Sources each
+  open their own dedicated view instead of the standard per-ticker coverage table — that's
+  expected, not a bug.
+- **No control over an indicator's calculation window.** Technical Indicators are calculated
+  using platform defaults; there's no control here to adjust the window used behind an
+  indicator's calculation.

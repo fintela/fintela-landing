@@ -4,538 +4,445 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 2
 published: true
-updated: 2026-08-20
-summary: The six tabs of a single portfolio — performance, holdings, transactions, risk, overfitting and profile.
-keywords: portfolio detail, performance, holdings, transactions, trades, orders, risk analytics, overfitting, tearsheet, profile
+updated: 2026-09-01
+summary: The six views inside a single portfolio — performance, holdings, trades and orders, risk analytics, robustness, and a shareable investor profile.
+keywords: portfolio detail, performance, holdings, transactions, trades, orders, risk analytics, robustness, tearsheet, profile
 ---
 
-Every trial a study produces is a portfolio, and every portfolio opens into the **Portfolio Analysis** tab — one screen with six sub-views behind a dropdown. Performance answers "did this work", Holdings "what did it hold", Transactions "what did it do", Risk Analytics "how did it hurt", Robustness "is the result real", and Profile "can I show this to someone". The tab is hidden until you drill into a portfolio from the [Portfolios Dashboard](/docs/portfolios-dashboard) or the [Optimization Dashboard](/docs/optimization-dashboard), then stays open until you dismiss it.
+Every trial a study produces is a portfolio, and opening one takes you into **Portfolio Analysis** — a single screen with six views you switch between from a dropdown. **Performance** answers "did this work", **Holdings** "what did it hold", **Transactions** "what did it do", **Risk Analytics** "how did it lose money along the way", **Robustness** "is the result real, or just luck", and **Profile** "can I show this to someone". You reach this screen by drilling into a portfolio from the [Portfolios Dashboard](/docs/portfolios-dashboard) or the [Optimization Dashboard](/docs/optimization-dashboard); it stays open until you close it.
 
 ## The six tabs
 
-Each tab is a real route, so the dropdown items are ordinary links and open-in-new-tab works. Performance is the bare `:portfolioId` route with no trailing segment.
+Each of the six views is its own page, so you can open one in a new browser tab, bookmark it, or send the exact view to a colleague — the link takes them straight back to it.
 
-| Tab caption | URL | Page component | Consolidates |
-|---|---|---|---|
-| `Profile` | `/analysis/portfolios/:portfolioId/profile` | `PortfolioInvestorPage` | the former Investor tearsheet |
-| `Performance` | `/analysis/portfolios/:portfolioId` | `PortfolioPerformancePage` | former Overview + Metrics |
-| `Holdings` | `/analysis/portfolios/:portfolioId/holdings` | `PortfolioHoldingsPage` | — |
-| `Transactions` | `/analysis/portfolios/:portfolioId/transactions` | `PortfolioTransactionsPage` | former Trades + Orders |
-| `Risk Analytics` | `/analysis/portfolios/:portfolioId/risk` | `PortfolioRiskAnalyticsPage` | former Equity & Risk + Risk Managers |
-| `Robustness` | `/analysis/portfolios/:portfolioId/overfitting` | `PortfolioOverfittingPage` | — |
+| Tab | Shows you | Formerly |
+|---|---|---|
+| Profile | An investor-ready summary you can export or share | New |
+| Performance | The equity curve and the full metrics comparison | Merged from the old Overview and Metrics pages |
+| Holdings | What the portfolio held, and when | — |
+| Transactions | Every trade and every order the portfolio placed | Merged from the old Trades and Orders pages |
+| Risk Analytics | Drawdown, volatility and other risk views, plus any risk-manager activity | Merged from the old Equity & Risk and Risk Managers pages |
+| Robustness | The statistical verdict on whether the result is genuine skill or overfitting | Formerly labeled Overfitting |
 
-The dropdown renders in exactly that order. Nine pre-consolidation sub-views collapsed into these six; the retired segments still resolve, as redirects — see [Retired sub-routes](#retired-sub-routes).
-
-> [!WARNING] The Robustness tab's URL segment is `overfitting`
-> Label, segment and component names diverge here: the caption is **Robustness**, the path segment is `overfitting`, and the component is `PortfolioOverfittingPage`. Likewise the **Profile** tab is served by `PortfolioInvestorPage`.
+The tabs always appear in this order. If you used Fintela before this redesign, see [Renamed tabs](#renamed-tabs) below for where your old bookmarks now lead.
 
 ### Which tab a drill-down lands on
 
-The landing sub-view is decided by the `investorView` feature flag, which defaults to **on**:
-
-| `investorView` | Drill-downs land on | Profile in the dropdown |
-|---|---|---|
-| on (default) | `Profile` | shown |
-| off | `Performance` (the bare route) | hidden — but `/…/profile` still resolves and renders |
-
-Flags resolve as `?ff_investorView=1|0` in the URL → `localStorage['fintela.flags.investorView']` → the compile-time default.
-
-Every drill-down goes through one URL builder, which re-attaches `?studyId=` unless the dashboard is in the cross-study `all` mode, and always strips `?analysis=` (the path already names the portfolio).
+By default, opening a portfolio takes you to the **Profile** tab. Depending on how your workspace is configured, it may instead open on **Performance** — in that case Profile is left out of the dropdown, though you can still reach it directly if you have a saved link to it.
 
 ### What every tab shares
 
-All six render the same slim header: a provenance strip on the left with **`Source strategy`** and **`Author`**, and a help button on the right whose tooltip and aria-label read **`View documentation`**, opening a contextual docs panel anchored right.
+All six views share the same slim header: on the left, a strip naming the **strategy this portfolio came from** and its **author**; on the right, a help button that opens a short documentation panel for whatever you're looking at.
 
-Two guards are also shared, but not by all six pages:
+Two safeguards apply on some tabs, not all:
 
-| Condition | Result | Message |
-|---|---|---|
-| Route param is not a positive finite number | error alert | `Invalid portfolio ID.` |
-| Portfolio metadata or equity fails to load | warning alert | `This portfolio is no longer available. It may have been deleted, or you may not have access to it.` |
+| Situation | What you see |
+|---|---|
+| The portfolio ID in the address is invalid | An error: "Invalid portfolio ID." |
+| The portfolio's data can't be loaded | A warning: "This portfolio is no longer available. It may have been deleted, or you may not have access to it." |
 
-Both render a button **`Close Portfolio Analysis`**, which performs the same dismissal as the tab's "x".
+Either message comes with a **Close Portfolio Analysis** button — the same action as clicking the tab's "x".
 
-> [!NOTE] The unavailable guard is not on every tab
-> Only **Performance** and **Profile** branch on a load error — they are the two possible drill-down landing views. **Holdings**, **Transactions**, **Risk Analytics** and **Robustness** carry only the invalid-id guard, so a deleted portfolio renders empty panels there rather than the exit.
+> [!NOTE] Not every tab shows the "unavailable" warning
+> Only **Performance** and **Profile** show the full unavailable message — they're the two views a drill-down can land on directly. **Holdings**, **Transactions**, **Risk Analytics** and **Robustness** still catch an invalid ID, but if the portfolio itself can't be found, they simply render empty rather than showing the exit message.
 
-Portfolios are labelled `Trial N · <study display name>`, never by their raw id — trial numbers collide across studies, so they always travel with study context. The one place the raw id does surface is the Profile tab's `Reference` field, which renders `#<portfolioId> · Trial N`.
+Portfolios are always labeled `Trial N · <study name>` rather than by an internal ID — trial numbers repeat across different studies, so the study name travels with them everywhere except the Profile tab's `Reference` field, which does show the raw ID alongside the trial number.
 
-> [!NOTE] Nothing on these tabs polls
-> Queries are cached with a 60-second stale time, `refetchOnWindowFocus` is off, and there is no refetch interval, websocket or auto-refresh anywhere in this surface. Data refreshes on navigation and remount.
+> [!NOTE] Nothing here refreshes automatically
+> These tabs don't poll for new data or auto-refresh in the background. If you want the latest numbers, revisit the tab or reload the page.
 
 ## Performance
 
-The bare `:portfolioId` route. It merges what used to be two pages — the equity overview and the metrics matrix — and renders each block exactly once.
+The main landing view for a portfolio, combining what used to be two separate pages — the equity overview and the metrics matrix — into one screen.
 
 ### Header actions
 
-Four right-aligned buttons sit above the equity card. On mobile each collapses to an icon button.
+Four buttons sit above the equity chart (collapsing to icons on mobile):
 
-| Button | Tooltip | What it does |
-|---|---|---|
-| `Seed` | `View and download this trial's seed (the daily rebalancing signal the engine uses)` | Opens a dialog titled **`Trial seed`**. The seed is fetched only when the dialog opens. Download filename base is `trial_<trial>_<study_name>_seed`, with each run of characters outside `[\w.-]` collapsed to a single `_`. |
-| `Test Risk Manager` | `Test a Risk Manager on this portfolio in the sandbox` | Links to `/strategy/sandbox?mode=risk_manager_exploration&originPortfolio=<id>&from=<encoded current path>`. |
-| `Derive / Optimize RMs` | `Derive risk-manager-optimized variants of this portfolio` | Opens the Derive Risk Managers wizard, seeded with this portfolio as the single source. |
-| `Invert (what-if)` | `Flip every position L↔S and re-simulate this trial. Preview only — nothing is saved or traded.` | Toggles a transient inverted simulation. |
+| Button | What it does |
+|---|---|
+| Seed | Opens a dialog showing this trial's seed — the daily rebalancing signal the strategy produced — which you can download. |
+| Test Risk Manager | Opens the sandbox with this portfolio loaded, so you can try a risk manager against it before committing to one. |
+| Derive / Optimize RMs | Opens the Derive Risk Managers wizard, pre-loaded with this portfolio as the starting point. |
+| Invert (what-if) | Flips every position long-to-short and short-to-long and re-runs the simulation, purely as a preview — nothing is saved or traded. |
 
-`Test Risk Manager` and `Derive / Optimize RMs` are both disabled while the risk-manager query is loading and whenever the portfolio already carries a risk manager. In the second case their tooltip changes to **`This portfolio already contains a Risk Manager`**. The disabled `Test Risk Manager` control deliberately exposes no `href`.
+`Test Risk Manager` and `Derive / Optimize RMs` are both unavailable while risk-manager information for the portfolio is still loading, and again once the portfolio already has a risk manager attached — the tooltip in that case reads "This portfolio already contains a Risk Manager."
 
 ### Equity curve
 
-A card titled **`Equity Curve`** wrapping the chart, with quick-timeframe buttons. The canonical button set, in order, is `All`, `Since creation`, `Train`, `Val`, `OOS`, `RLP`, `YTD`, `MTD`, `1M`, `1W` — each rendered only when it applies. `Train` and `Val` need a train-end boundary, `OOS` needs the study to have been configured with an out-of-sample window, `RLP` needs real-life-performance data to exist, and `Since creation` is a basket-only window that never appears on a trial.
+A chart of the portfolio's equity, with quick-timeframe buttons above it: **All**, **Since creation**, **Train**, **Val**, **OOS**, **RLP**, **YTD**, **MTD**, **1M**, **1W**. Only the buttons that make sense for this portfolio appear — **Train** and **Val** need the study to have a defined training cutoff, **OOS** needs the study to have been set up with an out-of-sample window, **RLP** needs the portfolio to have real-life trading data, and **Since creation** only applies to a basket rather than a single trial.
 
-A benchmark ticker selector is embedded in the chart. The legend shows **`Portfolio`**, the benchmark label, and one swatch per available study period. When there is no curve the chart reads **`No equity data`**.
+A benchmark selector sits on the chart itself. The legend shows **Portfolio**, the benchmark, and a swatch for each study period covered. With no data to plot, the chart reads "No equity data."
 
-Zooming the chart or picking a preset publishes the visible window to the rest of the page: the windowed metrics query and the scorecard's `W · ` chips both follow it.
+Zooming into a date range, or picking one of the preset buttons, updates the rest of the page to match — the metrics table below and the scorecard's windowed figures both follow whatever range you've selected.
 
 ### Invert what-if
 
-While the toggle is on, an inverted re-simulation overlays the stored curve and a panel appears below it: a warning chip **`Inverted (what-if)`**, and, when the portfolio has a risk manager, the caption **`What-if excludes risk managers.`** A failure renders **`Could not simulate the inverted what-if.`**
+Turning the toggle on overlays an inverted re-simulation on top of the real curve, with a panel below showing a warning label ("Inverted (what-if)") and, if the portfolio has a risk manager, a note that the what-if doesn't account for it. If the simulation fails, you'll see "Could not simulate the inverted what-if."
 
-The panel's four figures are labelled with hardcoded English strings — `Total Return`, `CAGR`, `Sharpe Ratio`, `Max Drawdown` — not i18n entries, so they stay English in every locale. If any ticker had no market data, the caption **`Some tickers had no market data and were excluded: {{tickers}}`** lists them.
+The panel reports four figures: **Total Return**, **CAGR**, **Sharpe Ratio**, **Max Drawdown**. If any ticker had no market data available for the inverted run, it's called out by name.
 
-The what-if is transient. It is never persisted, and it resets when you navigate to another portfolio.
+This is a preview only — it's never saved, and it resets as soon as you move to another portfolio.
 
 ### Metrics comparison
 
-The metrics half of the page opens with the bold heading **`Metrics Comparison`** and, when overfitting scores exist, a compact verdict chip whose tooltip carries `Deflated Sharpe (OOS):`, `Prob. Sharpe (OOS):`, `Study PBO:` and `Trials:`.
+This half of the page opens with **Metrics Comparison** and, once robustness scores exist, a compact verdict badge summarizing the deflated Sharpe confidence, probabilistic Sharpe confidence, the study's overall overfitting probability, and how many trials it ran.
 
-Seven summary KPI cards follow — a metric with no value in any stage is skipped rather than rendered empty. Each card shows a stage badge, the value, the metric name and a signal badge:
+Below that sit up to seven summary cards — any metric with no value anywhere is simply left out rather than shown empty:
 
-| Card label | Metric | Preferred stage |
+| Card | Metric | Stage shown |
 |---|---|---|
-| `Fitness` | `fitness` | `overall` |
-| `Sharpe Ratio` | `sharpe_ratio` | `out_of_sample` |
-| `Max Drawdown` | `max_drawdown` | `out_of_sample` |
-| `CAGR` | `compound_annual_growth_rate` | `overall` |
-| `Total Return` | `total_return` | `overall` |
-| `Win Rate` | `win_rate` | `out_of_sample` |
-| `Profit Factor` | `profit_factor` | `overall` |
+| Fitness | Fitness score | Overall |
+| Sharpe Ratio | Sharpe ratio | Out-of-sample |
+| Max Drawdown | Max drawdown | Out-of-sample |
+| CAGR | Compound annual growth rate | Overall |
+| Total Return | Total return | Overall |
+| Win Rate | Win rate | Out-of-sample |
+| Profit Factor | Profit factor | Overall |
 
-Stage badges read `Train`, `Val`, `OOS`, `Overall`, `RLP`. When study metadata is available, the `Fitness` card also renders the study's fitness name, kind and description.
+Each card shows which stage (Train, Val, OOS, Overall or RLP) the value comes from, plus a signal badge (see below). When study details are available, the Fitness card also shows the fitness function's name and a short description.
 
 ### Metric signals
 
-Signal badges are per-metric diagnostics computed client-side by comparing stages. They are **not** the overfitting verdict — that lives on the [Robustness tab](#robustness-overfitting) and is statistically grounded.
+Signal badges are quick, per-metric diagnostics — a first read on whether a number looks healthy, not the final word. For the statistically grounded verdict, see the [Robustness tab](#robustness-overfitting).
 
-| Badge | Rule |
+| Badge | What triggers it |
 |---|---|
-| `High Risk` | OOS `max_drawdown`/`average_drawdown` magnitude > 0.20, or `volatility` > 0.30 |
-| `Controlled Risk` | OOS `max_drawdown`/`average_drawdown` magnitude < 0.10, or `volatility` < 0.15 |
-| `Train≫OOS` | train→OOS deterioration > 30% **and** (no validation stage, or train→val > 30%) |
-| `Val Weak` | train→val > 25% **and** train→OOS < 20% |
-| `OOS Strong` | OOS is at least as good as train |
-| `Stable` | relative spread across the present stages < 15% |
+| High Risk | Out-of-sample drawdown deeper than 20%, or volatility above 30% |
+| Controlled Risk | Out-of-sample drawdown shallower than 10%, and volatility below 15% |
+| Train ≫ OOS | Performance drops more than 30% from training to out-of-sample (or to validation, if there's no OOS stage) |
+| Val Weak | Performance drops more than 25% from training to validation, but holds up reasonably well out-of-sample |
+| OOS Strong | Out-of-sample performance matches or beats training |
+| Stable | The metric stays within about 15% of itself across every stage it appears in |
 
-A metric with no train value gets no badge at all. When a study has no out-of-sample stage, validation stands in as the out-of-sample reference. `total_return`, `max_drawdown_duration` and `recovery_factor` are time-normalised against each stage's calendar-day span before the comparison, so unequal stage lengths do not fake a signal.
-
-> [!NOTE] Two signal values ship in the code but never render
-> `Overall Best` and `Weak` exist as enum values and locale strings, but the only function that produces signals never returns them. Six badges are reachable.
+A metric with no training-stage value gets no badge at all. When a study has no out-of-sample stage, validation is used as the reference instead. Total return, max drawdown duration, and recovery factor are adjusted for how long each stage actually ran before being compared, so a short stage doesn't look artificially better or worse than a long one.
 
 ### Windowed scorecard and Window Bucket
 
-An accordion headed **`Metrics`**, collapsed by default. Its header carries chips for `compound_annual_growth_rate`, `sharpe_ratio` and `max_drawdown` at the primary stage — out-of-sample if present, else validation, else the first stage with data — and, while a chart window is active, the same three prefixed **`W · `**.
+A collapsible **Metrics** panel, collapsed by default, that remembers whether you left it open. Its header always shows CAGR, Sharpe and Max Drawdown for the portfolio's primary stage — out-of-sample if there is one, otherwise validation, otherwise whichever stage has data — and, while you have a custom chart window selected, the same three figures for that window.
 
-Inside sits the detail metrics table: one row per metric, one column per active stage, plus a **`Window`** column that appears only while a chart window is active (its header carries the window's `YYYY-MM → YYYY-MM` span). This is the only surface anywhere with the equity-zoom Window column. Benchmark rows are fed from a separate benchmark window query.
+Opening it reveals the full metrics table: one row per metric, one column per stage, plus a **Window** column that only appears while you've zoomed the equity chart to a custom range (its header shows the exact months covered). This is the only place on the portfolio that shows figures for that custom window specifically.
 
-The scorecard header also hosts the **`Window Bucket`**, which collects several windows and averages them:
+The scorecard header also has a **Window Bucket**, for building a blended view out of several time ranges:
 
-| Control | Copy |
+| What you can do | How |
 |---|---|
-| Add the current chart zoom | `Add zoomed window`, or `Zoom the chart first` when there is none |
-| Add a hand-typed window | `Custom range`, with `Start`, `End`, `Label (optional)`, `Cancel`, `Add` |
-| Weights | `Weights:`, `(must be 100%)`, `Equal weights` |
-| Compute | `Calculate weighted avg` → `Computing…` → `Weighted average result`; on failure `Failed to compute. Try again.` |
-| Empty | `No windows added yet.` |
+| Add the range you've zoomed to | One click — disabled until you've zoomed the chart |
+| Add a custom range | Type a start date, end date, and an optional label |
+| Weight each window | Set weights that must add up to 100%, or use equal weights |
+| Compute | Calculates a weighted-average result across all your added windows |
 
-The weighted result reports four figures: `Total Return`, `CAGR`, `Volatility`, `Max Drawdown`.
+The result reports four blended figures: **Total Return**, **CAGR**, **Volatility**, **Max Drawdown**.
 
 ### Radar, heatmap and advanced metrics
 
-- **`Metrics Radar`** renders only when at least two stages have data. Subtitle: `Values normalised per metric — higher area = better except for risk metrics`. It has a `Select metrics` control and a `Metrics ({{active}} / {{total}})` counter, and falls back to `Not enough data for radar chart (need at least 2 series with ≥ 3 metrics).`
-- The per-stage heatmap is titled **`Metrics Comparison`**, with columns **`Metric`**, one per active stage, **`Best`** and **`Signal`**. It excludes the advanced set below.
-- **`Advanced Metrics`** is an accordion, collapsed by default, whose header carries a count badge and which holds exactly the excluded metrics: `skewness`, `excess_kurtosis`, `tail_ratio`, `up_capture`, `down_capture`, `information_ratio`, `treynor_ratio`, `beta`, `alpha`, `correlation`, `payoff_ratio`, `recovery_factor`, `omega_ratio`, `martin_ratio`.
+- **Metrics Radar** appears once at least two stages have data, so you can see the portfolio's overall shape at a glance — a larger area is better, except for risk metrics. You choose which metrics to include; with fewer than two stages or three metrics, it explains that there isn't enough data yet.
+- A per-stage **heatmap** lays every core metric out by stage, with a **Best** column and the signal badge for each row.
+- **Advanced Metrics** is a collapsed section holding the less commonly used figures — skewness, excess kurtosis, tail ratio, up/down capture, information ratio, Treynor ratio, beta, alpha, correlation, payoff ratio, recovery factor, omega ratio and Martin ratio.
 
-Definitions, units and direction for every metric live in the [metrics reference](/docs/metrics-reference).
+For what every metric actually measures, see the [metrics reference](/docs/metrics-reference).
 
 ### Strategy configuration
 
-A collapsible section titled **`Strategy configuration`**, closed by default, whose open state persists for the browser session under `fintela.portfolios.section.performance-config`. It holds four blocks:
+A collapsible **Strategy configuration** section, closed by default, that remembers your preference. It holds four parts:
 
-| Block | Title | Notes |
-|---|---|---|
-| Parameter chips | `Parameters` | Renders `None` when the trial has no parameters. |
-| Study information | `Study Information` | Only when `?studyId=` is present. Fields, in order: `Strategy`, `Author`, `Fitness`, `Strategy Asset Group`, `Fitness Asset Group`, `Train Period`, `Validation Period`, `Trials`. `Author` is the strategy's author, not whoever launched the study. |
-| Risk manager configuration | `Risk Manager Configuration` | The final risk-manager values that built this portfolio. Renders nothing at all when there are none; on a failed fetch it shows `Could not load the risk-manager configuration.` |
-| Lineage | `Portfolio lineage` | Renders nothing when the portfolio has neither a parent nor derived children. Otherwise `Derived from`, `via study #{{id}}.` and `{{count}} derived portfolios (risk-manager variants of this one):`. |
+| Section | Shows |
+|---|---|
+| Parameters | The parameter values this trial ran with, or "None" if the strategy takes none. |
+| Study Information | Only shown when you arrived from a specific study — the strategy, its author, the fitness function, the asset groups used for strategy and fitness, the train and validation periods, and how many trials the study ran. |
+| Risk Manager Configuration | The exact risk-manager settings that produced this portfolio, if any. Nothing is shown when there isn't one. |
+| Portfolio lineage | If this portfolio was derived from another (for example, as a risk-manager variant), shows what it came from and, if others were derived from it in turn, how many. |
 
 ## Holdings
 
-What the portfolio actually held, and when. This tab reads the **shared timeframe filter** that the layout renders above it — one of only two tabs that do (the other is Risk Analytics).
+What the portfolio actually held, and when it changed. Like Risk Analytics, this tab responds to the date-range filter shown above it.
 
-Four panels, in order:
+1. **Equity Curve** — the portfolio's value over time, with a benchmark selector and a toggle between **Aligned to window start** (both lines rebased to the same starting point) and **Raw values**. Click anywhere on the curve to pin that date for the panels below; hover to preview it. Any positions you've selected are highlighted on the curve as coloured bands.
+2. **Allocation Snapshot** — a treemap of everything held on the pinned date, which you can break down by ticker code, type, ISIN, sector, industry, country or currency.
+3. **Current Holdings** — a table of every position on that date, with its weight, the change from the prior date, and an allocation bar. The subtitle shows the position count, not counting cash.
+4. **Historical Allocation** — the same breakdown as the snapshot, but as a stacked area over time so you can see how the mix evolved.
 
-1. **`Equity Curve`** — a filled time-series chart. Its header carries a benchmark ticker selector (with an exchange filter) and an alignment toggle switching between **`Aligned to window start`** and **`Raw values`**. Clicking a point pins the holdings date; hovering previews it. Selected holdings paint coloured highlight bands on the curve.
-2. **`Allocation Snapshot`** — a treemap plus legend for the pinned date, with a feature selector over the seven ticker features `Code`, `Type`, `Isin`, `Sector`, `Industry`, `Country`, `Currency`. Empty state: **`No holdings data available`**.
-3. **`Current Holdings`** — a table with columns **`Symbol`**, **`Weight`**, **`Change`**, **`Allocation`**. Its subtitle is the date followed by `{{count}} positions`, with `CASH` excluded from the count.
-4. **`Historical Allocation by {{feature}}`** — subtitle **`Weight over time (stacked %)`**, a stacked-percentage area over the same feature the snapshot is showing.
-
-> [!NOTE] Every weight has a net and a gross component
-> Holdings arrive per bucket as `{ net, gross }`: `gross` is the size of the position, `net` carries the sign (positive long, negative short). The snapshot sizes its treemap tiles by **gross** — a short must not shrink to nothing — and marks short entries by the sign of `net`, appending **` (S)`** on the tile and legend label and **`(SHORT)`** in the tooltip. The history stacks the **net** weights instead, so shorts sit below the zero line; its tooltip appends the same **`(SHORT)`**. The Current Holdings table lists signed net weights and shows the same **`SHORT`** marker as a chip. Undeployed capital — `1 − Σ gross`, matching the engine's own convention — is shown as `CASH`.
+> [!NOTE] Long and short positions are sized differently
+> A short position isn't drawn as a negative-sized tile — the snapshot sizes every tile by the position's actual exposure and marks shorts with an **(S)** tag so they're still visible. The historical view, on the other hand, plots signed weights, so shorts appear below the zero line. The Current Holdings table shows signed weights too, with a **SHORT** tag. Capital that isn't invested in anything shows up as **CASH**.
 
 ## Transactions
 
-The former Trades and Orders pages, merged. The whole tab sits inside one filter provider, so a single ticker + status + date selection drives every trade visual on the page. The Orders section reads the same ticker and date window but not the open/closed status — that filter is about trades — and its summary tiles ignore the filter entirely (see below).
+The former Trades and Orders pages, combined into one tab. A single set of filters — ticker, open/closed status, and date range — drives every trade view on the page. The Orders section below follows the same ticker and date filter, but ignores the open/closed status (that only applies to trades), and its six summary tiles ignore filtering entirely.
 
 ### Summary tiles
 
-Five tiles, recomputed from the **filtered** trades on every filter change:
+Five tiles, recalculated from whatever trades are currently in view:
 
 | Tile | Value | Sub-label |
 |---|---|---|
-| `Trades` | total count | `{{closed}} closed · {{open}} open` |
-| `Win Rate` | wins ÷ closed, as a percentage | `{{wins}}W / {{losses}}L` |
-| `Avg Return` | signed percentage over closed trades | `over {{count}} closed` |
-| `Avg Duration` | mean closed-trade duration, rounded, with a `d` suffix | — |
-| `Best Trade` | the ticker code of the closed trade with the highest return | its signed return |
+| Trades | Total count | Closed vs. open |
+| Win Rate | Wins ÷ closed trades | Wins and losses |
+| Avg Return | Average signed return over closed trades | Number of closed trades it's based on |
+| Avg Duration | Average holding period for closed trades | — |
+| Best Trade | The ticker with the single best closed trade | Its return |
 
-A closed trade counts as a win when its `total_return_percentage` is greater than or equal to zero. A trade is closed when it has an exit date.
+A closed trade counts as a win when its return is zero or better. A trade counts as closed once it has an exit date.
 
 ### Shared filter toolbar
 
-| Control | Options |
+| Filter | Options |
 |---|---|
-| Asset select | `All assets` plus one option per traded ticker; search placeholder `Search asset…`, aria-label `Asset` |
-| Status | `All` / `Open` / `Closed` |
-| Date | `All`, `YTD`, `QTD`, `MTD`, `Custom`, grouped under `Calendar ranges` |
+| Asset | All assets, or search for a specific ticker |
+| Status | All / Open / Closed |
+| Date | All, YTD, QTD, MTD, or a custom range |
 
-The date filter here is restricted to calendar ranges. The study-period chips (`Train`, `Val`, `OOS`, `RLP`, grouped under `Study periods`) that the layout's filter offers are **not** available on this tab.
+This date filter only offers calendar ranges. The study-period shortcuts (Train, Val, OOS, RLP) available in the shared filter elsewhere on the page aren't offered here.
 
 ### Trades chart and table
 
-The chart is titled **`Trades History`**, subtitled **`Return % per trade · sorted by exit date`**, and falls back to **`No closed trades available`**.
+A chart of return per trade, sorted by exit date, reading "No closed trades available" when there's nothing to show.
 
-The table's header caption reads `{{count}} trades`. Its header is sticky, and every column except the last sorts on click; the default sort is `entry_date` descending, and switching to a new column starts descending.
+Below it, a sortable table — click any column except the last to sort by it (default: most recent entry first):
 
-| Column | Sort key | Rendering |
-|---|---|---|
-| `Ticker` | `ticker_code` | — |
-| `Side` | `position_side` | chip reading `L` (green) or `S` (red) |
-| `Entry` | `entry_date` | — |
-| `Exit` | `exit_date` | the exit date, or the primary-coloured **`● Open`** for an open trade |
-| `Days` | `total_duration_days` | — |
-| `Avg In` | `avg_entry_price` | — |
-| `Avg Out` | `avg_exit_price` | — |
-| `Invested` | `invested` | — |
-| `Return` | `total_return_percentage` | mini bar plus a signed percentage |
-| `P&L` | `total_pnl` | see the caution below |
-| `MFE` | `mfe` | — |
-| `MAE` | `mae` | — |
-| `Scaling` | not sortable | inline sparkline of the trade's P&L progression, from a single batched request |
+| Column | What it shows |
+|---|---|
+| Ticker | The traded symbol |
+| Side | Long (green) or short (red) |
+| Entry / Exit | Entry date, and exit date — or a live "● Open" marker if the trade hasn't closed |
+| Days | How long the trade has been (or was) open |
+| Avg In / Avg Out | Average entry and exit price |
+| Invested | Capital committed to the trade |
+| Return | Signed percentage return, with a mini bar |
+| P&L | Profit or loss on the trade |
+| MFE / MAE | Maximum favorable and adverse excursion — the best and worst the trade looked before it closed |
+| Scaling | A small sparkline showing how the position's P&L moved as it scaled in |
 
-The empty state is **`No trades match the current filter.`** Clicking any row opens the trade drawer.
+The empty state reads "No trades match the current filter." Click any row to open its full detail.
 
-> [!CAUTION] The `P&L` column is formatted as a percentage
-> The cell renders `total_pnl` — a money value — through the signed-percentage formatter. Read the column as the raw P&L figure, not as a percentage of anything.
+> [!CAUTION] Read the P&L column as a dollar figure
+> Despite the percentage-style formatting, P&L is a money value, not a percentage of anything.
 
 ### Trade detail drawer
 
-Headed **`Trade #{{id}}`**, with a side chip reading **`LONG`** or **`SHORT`** and an **`Open`** badge where applicable. Fields: **`Total P&L`**, **`Avg Entry`**, **`Avg Exit`**, **`Quantity`**, **`Invested`**, **`Allocation`**, **`Duration`**, **`MFE`**, **`MAE`**, followed by a **`Scale-ins / P&L Progression`** section.
+Opens as **Trade #{{id}}**, with a Long/Short chip and an Open badge if it hasn't closed yet. Shows Total P&L, Avg Entry, Avg Exit, Quantity, Invested, Allocation, Duration, MFE and MAE, plus the same scale-in / P&L progression chart.
 
 ### Trade plots
 
-Three charts in one responsive grid, all driven by the filtered trades.
-
-| Title | Help text |
+| Chart | What it tells you |
 |---|---|
-| `Return vs. Duration` | `Each point is a closed trade: holding period (x) vs. realized return (y). Green = winner, red = loser; circle = long, triangle = short.` |
-| `Outcome by Side` | `Wins vs. losses split by trade direction (long / short), so you can see which side carries the edge.` |
-| `MFE / MAE Efficiency` | `Max adverse excursion (heat taken) vs. max favorable excursion (opportunity seen), colored by realized outcome.` |
+| Return vs. Duration | Each point is a closed trade — how long it was held vs. how much it returned. Green wins, red loses; circles are longs, triangles are shorts. |
+| Outcome by Side | Wins vs. losses split by long and short, so you can see which side is carrying the edge. Captioned with the overall win rate. |
+| MFE / MAE Efficiency | How much heat a trade took (MAE) against how much opportunity it saw (MFE), coloured by outcome. |
 
-`Return vs. Duration` and `Outcome by Side` fall back to **`No closed trades in the current filter.`**; `Outcome by Side` otherwise captions itself **`Overall win rate {{rate}}%`**. The efficiency chart has one empty state of its own — **`MFE / MAE are not available for this trade source.`** — shown whenever no trade in the filter carries excursion data.
+The first two read "No closed trades in the current filter" when empty; the efficiency chart reads "MFE / MAE are not available for this trade source" if no trade in view carries that data.
 
 ### Calendar heatmap
 
-Titled **`Calendar Heatmap`**. A metric selector offers **`Daily Return %`**, **`Trade P&L ($)`** and **`Capital Invested ($)`**; a granularity control offers **`Daily`** / **`Weekly`** / **`Monthly`**; a year selector appears once the data spans more than one year. Empty states are **`No data available`** for the chart and **`No data`** per cell, and the reading hint is **`hover a cell for the exact value`**.
-
-The explainer tooltip reads: *Each cell is one period. Color encodes the metric — a red→green diverging scale for return/P&L (sign + magnitude) and a blue ramp for invested capital. In the daily view rows are weekdays and columns are weeks.*
+A calendar-style heatmap you can switch between **Daily Return %**, **Trade P&L ($)** and **Capital Invested ($)**, at a **Daily**, **Weekly** or **Monthly** granularity, with a year selector once the data spans more than one year. Colour runs red-to-green for return and P&L, and a blue ramp for invested capital; hover any cell for the exact value.
 
 ### Orders
 
-A collapsible section titled **`Orders`**, **open by default**, persisted per browser session under `transactions-orders`, and unmounted entirely while collapsed.
+A collapsible **Orders** section, open by default.
 
-Six summary tiles come straight from the server: **`Total Orders`**, **`Buy Orders`**, **`Sell Orders`** (the two latter with a `{{value}} of total` sub-label), **`Unique Tickers`**, **`First Order`**, **`Last Order`**.
+Six summary tiles: **Total Orders**, **Buy Orders**, **Sell Orders** (each shown as a share of the total), **Unique Tickers**, **First Order** and **Last Order**.
 
-> [!WARNING] The Orders tiles ignore the filters
-> Every other visual on this tab moves with the shared selection — the trade visuals on all three of ticker, status and date, the orders charts and table on ticker and date. These six tiles are portfolio-wide, server-computed figures and do not move when you filter.
+> [!WARNING] The order tiles don't move with your filters
+> Everything else on this tab responds to the shared filters. These six tiles are portfolio-wide totals and stay fixed regardless of what you've filtered to.
 
-Two charts, both driven by the filtered orders: **`Order Activity`** / **`Monthly BUY / SELL counts`**, a stacked monthly bar with a zoom slider, and **`Orders by Ticker`** / **`Top 15 tickers · BUY vs SELL breakdown`**, a horizontal stacked bar.
+Two charts follow the filters: monthly buy/sell activity, and the top 15 tickers by order volume, split by buy vs. sell.
 
-The table header shows `{{count}} orders` and a segmented control with the raw literals **`ALL`** / **`BUY`** / **`SELL`** — this is a local filter, layered on top of the shared asset and date window. Default sort is `order_date` descending.
+The order table has its own quick filter — All / Buy / Sell — layered on top of the shared ticker and date filters, sorted by most recent by default:
 
-| Column | Sort key | Rendering |
-|---|---|---|
-| `Order ID` | `order_id` | — |
-| `Ticker` | `ticker_code` | — |
-| `Date` | `order_date` | — |
-| `Action` | `action` | chip: `BUY` green, `SELL` red |
-| `Side` | `position_side` | chip: `LONG` green, otherwise secondary |
-| `Qty` | `quantity` | — |
-| `Resulting Qty` | `resulting_quantity` | — |
-| `Source` | not sortable | see below |
+| Column | Shows |
+|---|---|
+| Order ID | — |
+| Ticker | — |
+| Date | — |
+| Action | Buy (green) or Sell (red) |
+| Side | Long or short |
+| Qty | Order quantity |
+| Resulting Qty | Position size after the order |
+| Source | Where the order came from — see below |
 
-The `Source` chip has three shapes. `strategy` renders as-is in blue. `risk_manager:<name>` renders as just `<name>` in purple, with the full value in the element's `title` attribute. `manual` renders as-is. Rows persisted before the risk-manager migration carry a null source and are treated as `strategy`.
+An order's source shows as **strategy** when your strategy logic placed it, the risk manager's name when a risk manager did, or **manual** when you placed it yourself. Older orders from before Fintela tracked risk-manager attribution show as **strategy**.
 
 ## Risk Analytics
 
-Where the equity curve is read as a risk object. Like Holdings, this tab reads the layout's shared timeframe filter.
+Where the equity curve is read as a risk object, rather than a return one. Like Holdings, this tab follows the shared date-range filter above it.
 
 ### Stat cards and equity curve
 
-Four stat cards open the page: **`Start Value`**, **`End Value`**, **`Period Return`** and **`Data Points`**. `Period Return` is a signed percentage, coloured by sign.
+Four stat cards open the page: **Start Value**, **End Value**, **Period Return** (signed and colour-coded), and **Data Points**.
 
-Below them, a tall equity chart with a toggle between two modes:
+Below them, a toggle switches the equity chart between two modes:
 
-- **Line** — the filled curve.
-- **Cascade** — a waterfall of daily returns. Tooltip rows are labelled **`Day:`** and **`Cum:`**, and the info tooltip reads **`Daily return % — green gains, red losses`**. The cascade re-bases so the first *visible* bar starts at zero on every zoom.
-
-The toggle's tooltip flips between **`Switch to Line`** and **`Switch to Cascade`**.
+- **Line** — the familiar filled curve.
+- **Cascade** — a waterfall of daily returns, showing each day's move and the running total. Zooming rebases the chart so the first visible bar always starts at zero.
 
 ### Rolling risk charts
 
-Four charts in two rows. Each has its own toggle between a time series and a histogram, with tooltips **`Switch to Histogram`** / **`Switch to Time Series`**.
-
-| Chart | Line title / subtitle | Histogram title / subtitle | Rolling window |
+| Chart | Shows | Distribution view | Default window |
 |---|---|---|---|
-| Drawdown | `Drawdown` / `Peak-to-trough decline` | `Drawdown distribution` / `Histogram of drawdown` | not windowed |
-| Volatility | `Volatility` / `Rolling {{count}}-day window` | `Volatility distribution` / `Histogram of rolling volatility` | default **20** |
-| Rate of Change | `Rate of Change` / `Rolling {{count}}-day window` | `Rate of Change distribution` / `Histogram of momentum (ROC)` | default **20** |
-| Sharpe | `Sharpe Ratio` / `Rolling {{count}}-day window` | `Sharpe distribution` / `Histogram of risk-adjusted return` | default **20** |
+| Drawdown | Peak-to-trough decline over time | Histogram of drawdowns | Not windowed |
+| Volatility | Rolling volatility | Histogram of rolling volatility | 20 days |
+| Rate of Change | Rolling momentum | Histogram of momentum | 20 days |
+| Sharpe | Rolling risk-adjusted return | Histogram of rolling Sharpe | 20 days |
 
-In line mode, the three windowed charts expose an inline **`Window`** number field, minimum 2 and maximum 252. In histogram mode each chart gets a settings popover titled **`Chart settings`** with **`Bins`** (default 30, 5–200) and **`Density`** (off by default); on the three windowed charts the popover also carries a **`Window size`** field over the same 2–252 bounds. Changing a window re-requests that series from the server.
+Each chart can be switched between its time-series and histogram view. On the windowed charts, you can adjust the rolling window (from 2 to 252 days) directly on the chart; the histogram view also lets you adjust the bin count and turn density scaling on or off.
 
-> [!NOTE] Window defaults differ between surfaces
-> The rolling charts on this tab default to a 20-day window. The equivalent charts on the [Portfolios Dashboard](/docs/portfolios-dashboard) default to 14.
+> [!NOTE] Default windows differ by page
+> These rolling charts default to a 20-day window. The equivalent charts on the [Portfolios Dashboard](/docs/portfolios-dashboard) default to 14 days.
 
 ### Risk-manager execution log
 
-A card titled **`Risk-manager execution log`**, subtitled *Exceptions, timeouts, invalid outputs, and terminal transitions emitted by the risk managers attached to this portfolio during its trial. Empty is the happy path.*
+A log of everything a risk manager attached to this portfolio did during the trial — exceptions, timeouts, invalid outputs, and any point where it stopped or resumed trading. An empty log is the good outcome.
 
-Each row shows an event-type chip, the risk manager's name and kind, the trial number, the tick date, the timestamp, and the event payload rendered as raw JSON — the payload shape varies by event type, so it is deliberately not given a structured renderer. Event types and their colouring:
+Each entry shows the event type, the risk manager's name and kind, the trial number, and when it happened:
 
-| `event_type` | Tone |
+| Event | What it means |
 |---|---|
-| `exception` | error |
-| `timeout` | warning |
-| `invalid_output` | warning |
-| `terminal` | error |
-| `rejected` | warning |
-| `halted` | info — a circuit-breaker trip is a protective action, not a fault |
-| `reactivated` | success |
+| Exception | The risk manager's logic raised an error |
+| Timeout | It didn't respond in time |
+| Invalid output | It returned something the engine couldn't use |
+| Terminal | It ended the trial |
+| Rejected | Its instruction was rejected |
+| Halted | It tripped a circuit breaker — a protective pause, not a fault |
+| Reactivated | It resumed after being halted |
 
-The empty state is **`No risk-manager events recorded for this portfolio.`**, and it is the expected one. Rows come back ordered by `occurred_at` descending, so the most recent failure is first, and the server caps the response at 200 rows. See [Risk Managers](/docs/risk-managers) for what emits these.
+If there's nothing to show, that's expected — it reads "No risk-manager events recorded for this portfolio." The most recent event is always listed first, and the log shows up to the 200 most recent entries. See [Risk Managers](/docs/risk-managers) for what generates them.
 
 ## Robustness (overfitting)
 
-The statistically grounded answer to "is this result real, or is it the luckiest of many backtests". This is the authoritative overfitting verdict for a portfolio; the per-metric [signal badges](#metric-signals) on the Performance tab are only diagnostics.
+The statistically grounded answer to "is this result real, or just the luckiest of many backtests". This is the authoritative verdict for a portfolio — the per-metric [signal badges](#metric-signals) on the Performance tab are only a quick first read, not this.
 
 ### When scores exist
 
-Overfitting scores are computed **once, at study finalization**, not on demand. Until a study finishes (or is re-finalized), the tab has nothing to show.
+Robustness scores are calculated once, automatically, when a study finishes (or is re-finalized) — not on demand each time you open the tab. Until then, there's nothing to show yet.
 
-| State | Message |
+| Situation | What you see |
 |---|---|
-| No stored scores | `No robustness analysis available for this portfolio yet. Scores are computed when a study finishes — re-run the study (or its finalization) to populate them.` |
-| Query failed | `Couldn't load the robustness analysis. The scoring service may be unavailable — try again shortly, and if it persists check that the overfitting tables and endpoint are deployed.` |
+| Scores not computed yet | "No robustness analysis available for this portfolio yet. Scores are computed when a study finishes — re-run the study (or its finalization) to populate them." |
+| Couldn't load | "Couldn't load the robustness analysis. Try again shortly, and contact support if it persists." |
 
-The two are deliberately distinguished, so a broken deploy never masquerades as an unscored study. Study-level PBO additionally requires at least 2 dense trials and at least 40 days of common history; without those, the study-level figures stay empty while the per-portfolio ones may still resolve.
+These two messages are kept distinct, so a genuine loading problem is never mistaken for "this study just hasn't finished yet." The study-wide overfitting probability additionally needs at least 2 fully-run trials and 40 days of shared history across them; without that, the study-level figures stay empty even when this portfolio's own numbers are ready.
 
 ### Verdicts
 
-The hero panel is titled **`Deflated Sharpe Analysis`** and carries the verdict chip plus its meaning.
+The headline panel shows a verdict and what it means for you:
 
-| Stored verdict | Chip label | Meaning shown |
-|---|---|---|
-| `well_trained` | `Well Trained` | The out-of-sample edge survives the selection-bias correction. Strong evidence of genuine skill rather than the luckiest of many backtests. |
-| `borderline` | `Borderline` | The edge only weakly survives the selection-bias correction. Treat with caution and prefer corroborating evidence before trusting it. |
-| `overfit_risk` | `Overfit Risk` | The out-of-sample result is not clearly distinguishable from the best of many random trials, and/or it degrades materially out-of-sample. High risk of overfitting. |
-| `uncertain` | `Insufficient Data` | There is not enough out-of-sample history or trial dispersion to compute a confident verdict. Interpret the raw metrics directly. |
+| Verdict | What it means |
+|---|---|
+| Well Trained | The out-of-sample edge survives the correction for how many strategies were tried. Strong evidence of genuine skill rather than the luckiest of many backtests. |
+| Borderline | The edge only weakly survives that correction. Treat it with caution, and look for corroborating evidence before trusting it. |
+| Overfit Risk | The out-of-sample result isn't clearly distinguishable from the best of many random trials, and/or it degrades materially out-of-sample. High risk of overfitting. |
+| Insufficient Data | There isn't enough out-of-sample history or trial variety to compute a confident verdict. Read the raw metrics directly instead. |
 
-> [!WARNING] The `uncertain` verdict displays as "Insufficient Data"
-> The stored enum value and the rendered label differ. Filtering or scripting against the API uses `uncertain`.
+The verdict is decided in this order — the first condition that applies wins:
 
-The classifier runs in this order, and the first match wins:
-
-1. **`uncertain`** when out-of-sample observations are below 30, or the deflated Sharpe is not finite, or the cross-trial Sharpe variance is not positive, or the effective trial count is 1 or less.
-2. **`overfit_risk`** when the train→OOS degradation test is flagged, **or** study PBO is above 0.5, **or** the deflated Sharpe is below 0.90.
-3. **`borderline`** when the deflated Sharpe is below 0.95.
-4. **`well_trained`** otherwise.
+1. **Insufficient Data**, when there are fewer than 30 out-of-sample trading days, or too few distinct trials to draw a conclusion.
+2. **Overfit Risk**, when performance degrades significantly from training to out-of-sample, or the study-wide overfitting probability is above 50%, or the deflated Sharpe confidence is below 90%.
+3. **Borderline**, when the deflated Sharpe confidence is below 95%.
+4. **Well Trained**, otherwise.
 
 ### Deflated Sharpe gauge and skill vs. luck
 
 Two charts sit side by side.
 
-**`Deflated Sharpe (confidence it is real skill)`** is a 0–100% gauge whose colour zones break at exactly the verdict cutoffs: red below 90, amber 90–95, green at 95 and above. Its caption reads **`Red <90% · Amber 90–95% · Green ≥95%`**. An outer halo ring encodes the study-level PBO — red when PBO exceeds 0.5 — captioned **`Outer ring: study PBO {{pbo}}`**. With no deflated Sharpe it reads **`Not enough data to compute a Deflated Sharpe.`**
+**Deflated Sharpe** is a 0–100% gauge — your confidence that this is real skill, not luck — coloured red below 90%, amber from 90–95%, and green at 95% and above. An outer ring shows the study-wide overfitting probability, turning red once it passes 50%. With no deflated Sharpe available, it reads "Not enough data to compute a Deflated Sharpe."
 
-**`Skill vs. luck`** is a two-bar horizontal chart on an **`Annualized Sharpe`** axis, with the categories **`Best-of-N luck (SR₀)`** and **`Your OOS Sharpe`**, plus a dashed `SR₀ <value>` reference line. Its caption reads **`SR₀ is the Sharpe the best of {{n}} trials would reach with zero real skill. Clearing it is the bar for genuine edge.`** With no out-of-sample Sharpe it reads **`No out-of-sample Sharpe available.`**
+**Skill vs. luck** compares this portfolio's out-of-sample Sharpe ratio against the Sharpe the best of every trial in the study would be expected to reach with zero real skill, purely from trying enough variations. Clearing that "luck threshold" is the bar for a genuine edge. With no out-of-sample Sharpe available, it reads "No out-of-sample Sharpe available."
 
-The stored `sr0` is a per-period figure, so both the bar and the `Luck threshold SR₀` card annualize it by ×√252 before display. The observed OOS Sharpe is read straight off the metrics response, which the engine already serves annualized, and falls back to the **validation** Sharpe when the study has no out-of-sample stage.
-
-Below the charts, a plain-language paragraph is assembled from the numbers — how many strategies were tried and their effective independent count, this portfolio's out-of-sample Sharpe, its deflated Sharpe with a verbal judgement (`strong evidence of genuine skill` / `borderline — the edge only weakly survives the correction` / `not distinguishable from best-of-N luck`), whether out-of-sample degrades versus training and by what z, and the study-level PBO with a `high` / `low` label.
+Below the charts, a plain-language summary is generated from the numbers — how many strategies were compared, this portfolio's out-of-sample Sharpe, its deflated Sharpe with a verdict in words, whether performance degrades from training to out-of-sample, and the study's overall overfitting probability.
 
 ### Component breakdown
 
-Eight stat cards, each with a hover tooltip.
-
-| Label | Sub-label | What it means |
-|---|---|---|
-| `Deflated Sharpe (OOS)` | `vs. best-of-N null` | Probability the true OOS Sharpe exceeds the level the best of N trials would reach by luck alone. Corrects for selection bias, sample length, skew and kurtosis. ≥95% = well trained. |
-| `Probabilistic Sharpe (OOS)` | `vs. zero` | Probability the true OOS Sharpe is positive, ignoring how many strategies were tried. PSR > DSR always; the gap is the price of searching many strategies. |
-| `Your OOS Sharpe` | `annualized` | The portfolio's realized out-of-sample Sharpe ratio (annualized, ×√252). |
-| `Luck threshold SR₀` | `annualized` | Expected maximum Sharpe under a zero-skill null across the effective number of trials. Your Sharpe must clear this to indicate real edge. |
-| `OOS observations` | `trading days` | Number of out-of-sample daily returns behind the verdict. Below ~30 the verdict is `uncertain`. |
-| `Train → OOS degradation` | `flagged (z > 1.65)` or `not significant` | One-sided z-test that OOS Sharpe is materially below training Sharpe. Train is selection-inflated, so read it alongside the val→OOS test. |
-| `Val → OOS degradation` | `unbiased decay test` | The same z-test on validation vs. OOS. Both are held out, so it isolates genuine decay from selection inflation. |
-| `OOS autocorrelation` | `lag-1` | Serial correlation of OOS daily returns. Above ~0.2 in magnitude the annualized Sharpe — and these tests — can be biased. |
-
-The `Deflated Sharpe (OOS)` value is tinted by the verdict. `Train → OOS degradation` turns red when the test is flagged. `OOS autocorrelation` turns amber when its magnitude exceeds 0.2.
+| Figure | What it means |
+|---|---|
+| Deflated Sharpe (OOS) | Probability the true out-of-sample Sharpe exceeds what the best of every trial tried would reach by luck alone. Corrects for how many strategies were searched. 95%+ is Well Trained. |
+| Probabilistic Sharpe (OOS) | Probability the true out-of-sample Sharpe is positive at all, without correcting for how many strategies were tried. Always higher than the Deflated Sharpe — the gap is the cost of searching many strategies. |
+| Your OOS Sharpe | This portfolio's realized out-of-sample Sharpe ratio. |
+| Luck threshold (SR₀) | The Sharpe ratio the best of all the trials tried would be expected to reach with zero real skill. Your Sharpe needs to clear this to indicate a genuine edge. |
+| OOS observations | Number of out-of-sample trading days behind the verdict. Below about 30, the verdict becomes Insufficient Data. |
+| Train → OOS degradation | Whether performance drops significantly from training to out-of-sample. Training results are naturally inflated by selection, so read this alongside the validation comparison below. |
+| Val → OOS degradation | The same comparison between validation and out-of-sample — both are genuinely held-out data, so this more reliably isolates real decay. |
+| OOS autocorrelation | How much one day's return predicts the next. Above roughly 0.2, the Sharpe ratio (and these tests) can be somewhat less reliable. |
 
 ### Study-level context
 
-Two more cards under the heading **`Study-level context`**. These describe the whole search, not this one portfolio, so they are identical across every trial of the same study.
+Two more figures describe the whole search this portfolio came from, not this trial specifically — so they're identical for every trial in the same study.
 
-| Label | Sub-label | What it means |
-|---|---|---|
-| `Backtest Overfitting (PBO)` | `high` or `low` | Probability that the strategy ranked best in-sample underperforms the median out-of-sample, across combinatorial train/test splits (CSCV). Green at 0.5 or below, red above. |
-| `Trials searched` | `≈{{value}} effective` | How many strategy configurations the optimizer evaluated (N), and the effective independent count after accounting for correlation between trials. More trials ⇒ a higher luck threshold SR₀. |
+| Figure | What it means |
+|---|---|
+| Backtest Overfitting Probability | The likelihood that the strategy which looked best during training actually underperforms the typical result out-of-sample, tested across many different ways of splitting the data. Considered low at 50% or below. |
+| Trials searched | How many strategy variations the optimizer actually evaluated, and the effective number after accounting for how similar many of them were to each other. More trials searched raises the luck threshold. |
 
 ### The statistics behind the tab
 
-Four statistics do the work. All are computed in Python at study finalization and persisted.
+Four statistical tests do the work behind this tab, run automatically once your study finishes:
 
-| Statistic | Definition |
-|---|---|
-| **PSR** — Probabilistic Sharpe Ratio | `PSR(SR*) = Φ( (SR − SR*)·√(n−1) / √(1 − g₃·SR + ((g₄−1)/4)·SR²) )`, using Lo's variance of the Sharpe estimator, where `g₃` is skewness and `g₄` is raw (non-excess) kurtosis. |
-| **DSR** — Deflated Sharpe Ratio | `PSR` evaluated at `SR* = SR₀` over the out-of-sample returns. `SR₀ = √V · [ (1−γ)·Φ⁻¹(1 − 1/N_eff) + γ·Φ⁻¹(1 − 1/(N_eff·e)) ]`, with `γ = 0.5772156649015329` (Euler–Mascheroni), `V` the cross-trial Sharpe variance and `N_eff = ρ̂ + (1 − ρ̂)·M` the effective independent trial count. |
-| **PBO** — Probability of Backtest Overfitting | Combinatorially Symmetric Cross-Validation. Split the common timeline into `S` equal contiguous blocks (`S` starts at 16, must be even, and shrinks by 2 until every block holds at least 20 observations), evaluate every symmetric `C(S, S/2)` in-sample/out-of-sample split, take the logit of the in-sample-best trial's out-of-sample rank, and report the fraction of splits where that logit is ≤ 0. Above 20 000 splits a deterministic Monte-Carlo subsample is used instead. Needs at least 2 trials. |
-| **Degradation** | `z = (SR_a − SR_b) / √(Var(SR_a) + Var(SR_b))`, a one-sided test that window B's Sharpe is materially below window A's, assuming disjoint windows. |
+- **Probabilistic Sharpe Ratio (PSR)** — the probability that the true Sharpe ratio exceeds a given threshold, adjusting for the shape of the return distribution (its skew and fat tails) rather than assuming returns are perfectly normal.
+- **Deflated Sharpe Ratio (DSR)** — the same test, evaluated against the "luck threshold" described above, so it accounts for how many strategy variations were tried before this one was selected.
+- **Backtest Overfitting Probability (PBO)** — repeatedly splits the study's shared history into blocks, checks whether the strategy that looked best on one half still looks best on the other, and reports how often it doesn't.
+- **Degradation test** — a statistical test for whether performance in one period is materially worse than another, used to compare training against out-of-sample and validation against out-of-sample.
 
-The thresholds the verdict uses are fixed constants:
+The exact degradation cutoff used is a z-score of 1.645; the card above rounds this to "z > 1.65."
 
-| Constant | Value |
-|---|---|
-| `DSR_WELL_TRAINED` | `0.95` |
-| `DSR_BORDERLINE` | `0.90` |
-| `PBO_HIGH` | `0.5` |
-| `MIN_OBS_FOR_VERDICT` | `30` |
-| `DEGRADATION_Z_CRIT` | `1.645` |
-
-Note that the card's sub-label rounds the critical value to `z > 1.65` while the test itself uses `1.645`.
-
-Per-portfolio results are stored one row per portfolio: `verdict`, `dsr_oos`, `psr_oos`, `sr0`, `n_oos`, `degradation_z`, `degradation_flagged`, `val_oos_degradation_z`, `oos_autocorr_lag1`, `computed_at`. Study-level results are stored one row per study: `pbo`, `pbo_lambda_mean`, `cscv_blocks`, `cscv_combos`, `cscv_subsampled`, `n_trials`, `n_eff`, `sharpe_var`, `sr0`, `computed_at`, plus two JSONB distributions — `cscv_lambdas` (the per-split logits PBO counts) and `train_sharpes` (the per-trial in-sample Sharpes behind `sharpe_var`). Both cascade on delete, so purging a study or portfolio removes its scores. Study finalization is covered in [study lifecycle](/docs/study-lifecycle).
+These figures are saved with the portfolio and the study once computed, so Fintela doesn't need to recalculate them each time you open this tab — and they're automatically cleared if you delete the study or portfolio they belong to. See [study lifecycle](/docs/study-lifecycle) for when a study finalizes and its scores get computed.
 
 ## Profile
 
-An investor-facing tearsheet for one trial, built to be exported. The whole page is wrapped in a single element so it can be rasterized to PDF, and the interactive controls are marked to stay out of the capture.
+A shareable, investor-ready summary of one trial's results, built for export. It's designed to look right whether you're viewing it on screen or exporting it as a PDF — the interactive controls simply don't appear in the exported version.
 
-> [!NOTE] Profile is flag-gated
-> The tab is hidden from the dropdown when `investorView` is off, though its route still resolves and renders. Almost all of its copy is defined as inline English defaults rather than locale entries, so it does not translate.
+> [!NOTE] Profile's tab visibility depends on your workspace
+> Depending on how your workspace is configured, the Profile tab may not appear in the dropdown — but a direct link to it still opens and works. Its text currently displays in English only, regardless of your language setting.
 
 ### Masthead and metadata
 
-The title is `<strategy name> — Trial N`, or just `Trial N` when the strategy is unknown. Beside it sit an asset-class chip, a warning chip reading **`Simulated`**, the organization logo (or its initials), and the kicker **`Investment report`**.
+The title reads `<strategy name> — Trial N`, or just `Trial N` if the strategy name isn't available. Alongside it: an asset-class label, a **Simulated** warning label (a reminder that these are backtested, not live, results), your organization's logo, and the **Investment report** kicker.
 
-Three actions live in the masthead, in this order:
+Three actions sit in the masthead:
 
-| Action | States |
+| Action | What it does |
 |---|---|
-| `Share` | Only rendered when the `linkedinShare` flag is **off**. Copies a caption to the clipboard, opens LinkedIn, then downloads the PDF. |
-| `Promote` | Becomes **`Promoted`** once done, and is disabled while promoting or already promoted. Tooltips: `Promote this trial into the Portfolio Groups` / `Already promoted to the Portfolio Groups`. |
-| `Export PDF` | Becomes **`Preparing…`** while rasterizing, and is disabled in that window, so a second click is ignored. |
+| Share | Copies a caption to your clipboard, opens LinkedIn so you can post it, and downloads the PDF version. |
+| Promote | Adds this trial to your [Portfolio Groups](/docs/portfolio-groups). Once done, it's labeled **Promoted** and can't be promoted again — the action only ever runs once per portfolio. |
+| Export PDF | Renders the report to a PDF you can download. Shows **Preparing…** while it works, and ignores extra clicks in the meantime. |
 
-If the report element is not mounted yet, export reports **`The report is not ready yet. Wait for it to finish loading.`** If the caption copies but the capture fails, the share path reports **`The caption was copied, but the PDF could not be generated: {{reason}}`**.
+If the report hasn't finished loading yet, Export PDF tells you to wait. If Share manages to copy the caption but the PDF fails to generate, it tells you the caption copied but names the reason the PDF didn't.
 
-> [!WARNING] The `linkedinShare` flag reads inverted
-> With the flag **on**, the share-card preview block renders but the masthead's `Share` button is **not** wired. With it **off**, the reverse. Both defaults ship as on, so out of the box the preview appears and the `Share` button does not.
-
-Below the masthead, a metadata strip carries **`Prepared by`**, **`As of`**, **`Data through`**, **`Period`** and **`Reference`** — the last as `#<portfolioId> · Trial N`.
+Below the masthead, a metadata strip shows who prepared the report, when, the date the data runs through, the period covered, and a reference number combining the portfolio ID and trial number.
 
 ### Report sections
 
-In order down the page:
-
-| Section | Contents |
+| Section | What it shows |
 |---|---|
-| Disclaimer | *Performance is simulated. The out-of-sample period (marked on the chart) shows results on market data the strategy was never trained on — the closest proxy to live performance. Past performance is not indicative of future results.* |
-| `Summary` | A deterministic, LLM-free report with a letter grade badge (tooltip: *Weighted score across return, risk, drawdown and robustness*), three paragraph headings **`Performance`**, **`Risk`**, **`Outlook`**, a **`Copy`** / **`Copied`** action, and the loading text **`Generating summary…`**. |
-| `Performance` | Hint *Portfolio vs benchmark, both starting at $100,000*. A **`Growth of $100,000`** hero, then a growth chart rebasing portfolio and benchmark to 100 000, with shaded train / validation / out-of-sample bands and an inline benchmark selector. The out-of-sample band appears only when the study has one. |
-| `Out-of-sample track record` | **`Since <Mon YYYY>`** and three figures — **`Return`**, **`Sharpe`**, **`Max drawdown`** — explained as *Performance on data the strategy was never trained on — the closest available proxy to live results.* |
-| `Headline figures` | Four serif tiles: `Total return` (sub: the benchmark's return), `Annualized (CAGR)` (sub: the benchmark's CAGR), `Max drawdown` (sub `worst peak-to-trough decline`), `Sharpe ratio` (sub `return per unit of risk`). |
-| `Versus the market` | Hint *Measured against `<benchmark>`*. Five figures: **`Alpha`**, **`Beta`**, **`Up capture`**, **`Down capture`**, **`Correlation`**. Up and down capture render as percentages, the rest as ratios. Unavailable → **`Benchmark comparison unavailable.`** |
-| `Composition` | Hint *As of `<date>`*. The current-holdings table at the last date, beside two breakdown panels: **`Sector allocation`** and **`Asset type`**. |
-| `Traded assets — full history` | One card per traded asset — logo, ticker, trade count, signed return contribution and a magnitude bar — with the hint `<n> assets · <m> trades`. Footer note: *Return contribution is each asset's summed realized P&L as a share of capital. Total realized from closed trades:* |
-| `Year by year` | Hint *Strategy vs `<benchmark>`*. Columns **`Year`**, **`Strategy`**, the benchmark label, **`Excess`**. |
-| Robustness note | **`Robustness screen:`** followed by the stored verdict. |
-| Disclosure | The full hypothetical-performance disclaimer, beginning *Hypothetical / simulated performance.* |
+| Disclaimer | Performance is simulated; the out-of-sample period (marked on the chart) is the closest available proxy to live results. |
+| Summary | A short, automatically generated write-up with a letter grade, covering Performance, Risk and Outlook — you can copy it with one click. |
+| Performance | Portfolio vs. benchmark, both rebased to a starting value of $100,000, with training / validation / out-of-sample periods shaded on the chart. |
+| Out-of-sample track record | Return, Sharpe and max drawdown since the out-of-sample period began — the closest available proxy to how the strategy would have performed live. |
+| Headline figures | Total return, annualized return (CAGR), max drawdown, and Sharpe ratio, each shown against the benchmark. |
+| Versus the market | Alpha, beta, up-capture, down-capture and correlation against your chosen benchmark. |
+| Composition | Current holdings as of the report date, broken down by sector and asset type. |
+| Traded assets — full history | Every asset traded, with trade count and its contribution to overall return. |
+| Year by year | Strategy vs. benchmark return for every year, and the excess return each year. |
+| Robustness note | The stored robustness verdict for this trial. |
+| Disclosure | The full hypothetical-performance disclaimer. |
 
-The headline figures do not all read from the same stage. `Total return` and `Annualized (CAGR)` come from the **overall** stage. `Max drawdown` and `Sharpe ratio` come from **out-of-sample**, falling back to **overall** when the study has no out-of-sample window.
+Total return and CAGR are measured over the whole backtest; max drawdown and Sharpe ratio are measured out-of-sample where the study has one, falling back to the whole backtest otherwise.
 
-The benchmark defaults to the platform's curated default and is user-selectable from the chart's own selector. Promotion here is the same idempotent action offered on the dashboard's ranking cards — see [Portfolio Groups](/docs/portfolio-groups) and [Promoted Portfolios](/docs/promoted-portfolios).
+The benchmark defaults to Fintela's standard choice but you can change it from the chart's own selector. Promoting a trial from here is the same one-click action available from the dashboard's ranking cards — see [Portfolio Groups](/docs/portfolio-groups) and [Promoted Portfolios](/docs/promoted-portfolios).
 
-## Retired sub-routes
+## Renamed tabs
 
-Nine pre-consolidation sub-views became six tabs. The six retired segments below are still mounted, **but only as redirects** — none of them is a live tab. Each rewrites the URL with a replacing navigation and **preserves the query string**, notably `?studyId=`.
+Nine separate pages were consolidated into today's six tabs. If you have an old bookmark or a saved link to one of the previous pages, it will still open — it just lands you on the tab that replaced it, with any study context you had selected preserved:
 
-| Retired URL | Redirects to | Tab you land on |
-|---|---|---|
-| `/analysis/portfolios/:id/metrics` | `/analysis/portfolios/:id` | Performance |
-| `/analysis/portfolios/:id/equity` | `/analysis/portfolios/:id/risk` | Risk Analytics |
-| `/analysis/portfolios/:id/risk-managers` | `/analysis/portfolios/:id/risk` | Risk Analytics |
-| `/analysis/portfolios/:id/trades` | `/analysis/portfolios/:id/transactions` | Transactions |
-| `/analysis/portfolios/:id/orders` | `/analysis/portfolios/:id/transactions` | Transactions |
-| `/analysis/portfolios/:id/investor` | `/analysis/portfolios/:id/profile` | Profile |
+| Old page | Now part of |
+|---|---|
+| Metrics | Performance |
+| Equity & Risk | Risk Analytics |
+| Risk Managers | Risk Analytics |
+| Trades | Transactions |
+| Orders | Transactions |
+| Investor | Profile |
 
-> [!CAUTION] `/analysis/portfolios/:id/overview` is not one of them
-> `overview` exists in the segment alias table but has **no mounted route**, so that URL falls through to the app's catch-all and renders Not Found. Only the six segments in the table above redirect.
+> [!CAUTION] One old page doesn't redirect
+> The very first version of the Overview page does not carry forward — if an old bookmark to it no longer works, just open the portfolio again from the [Portfolios Dashboard](/docs/portfolios-dashboard) or [Optimization Dashboard](/docs/optimization-dashboard).
 
-The retired captions `Overview`, `Equity & Risk`, `Trades`, `Metrics`, `Risk Managers` and `Investor` still exist as locale strings but no longer name any tab. `Orders` is the one exception — it survives as the header of the Transactions tab's collapsible orders section.
+The old page names Overview, Equity & Risk, Trades, Metrics, Risk Managers and Investor no longer label anything on their own. Orders is the one exception — it lives on as the heading of the Transactions tab's Orders section.
 
-## Endpoints behind the tabs
-
-Every endpoint below is a `GET` and every one of them requires the single backend permission `portfolios:read`. The frontend does not enforce it — routes mount unconditionally and the API returns the error. (These tabs also read study metadata from `GET /studies/metadata`, which is gated by `study:read` instead.)
-
-```http
-GET /portfolios/metadata?portfolio_ids=123
-GET /portfolios/tmp?portfolio_ids=123
-GET /portfolios/equity?portfolio_ids=123
-GET /portfolios/metrics?portfolio_ids=123
-GET /portfolios/metrics/window?portfolio_ids=123&start_date=…&end_date=…
-GET /portfolios/metrics/window/benchmark?portfolio_ids=123&start_date=…&end_date=…&benchmark_ticker_id=…
-GET /portfolios/overfitting?portfolio_ids=123
-GET /portfolios/holdings?portfolio_ids=123
-GET /portfolios/holdings/feature?portfolio_ids=123&feature=Sector
-GET /portfolios/drawdown_vector?portfolio_ids=123
-GET /portfolios/volatility_vector?portfolio_ids=123&shape=20
-GET /portfolios/roc_vector?portfolio_ids=123&shape=20
-GET /portfolios/sharpe_vector?portfolio_ids=123&shape=20
-GET /portfolios/params?portfolio_ids=123
-GET /portfolios/fitness?portfolio_ids=123
-GET /portfolios/strategies?portfolio_ids=123
-GET /portfolios/risk-managers?portfolio_ids=123
-GET /portfolios/lineage?portfolio_ids=123
-GET /portfolios/trials?portfolio_ids=123
-GET /portfolios/seed?portfolio_ids=123
-GET /portfolios/:portfolio_id/trades
-GET /portfolios/:portfolio_id/trades/scalings
-GET /portfolios/:portfolio_id/trades/:trade_id/scalings
-GET /portfolios/:portfolio_id/trades/:trade_id/metrics
-GET /portfolios/:portfolio_id/orders
-GET /portfolios/:portfolio_id/orders/summary
-GET /portfolios/:portfolio_id/risk-manager-events
-```
-
-The `feature` parameter accepts exactly `Code`, `Type`, `Isin`, `Sector`, `Industry`, `Country` or `Currency`. The `shape` parameter is the rolling window size.
-
-Two writes exist on these tabs. The invert what-if posts to `/portfolios/:id/simulate` with a body of `{ "invert": true }` and nothing is persisted. Promotion posts to `/portfolio_manager/managed/promote` with `{ "trial_portfolio_id": … }` and is idempotent.
-
-For what the numbers mean, see the [metrics reference](/docs/metrics-reference). For comparing many portfolios rather than reading one, see the [Portfolios Dashboard](/docs/portfolios-dashboard); for one study's search, the [Optimization Dashboard](/docs/optimization-dashboard).
+For what every metric means, see the [metrics reference](/docs/metrics-reference). For comparing many portfolios side by side rather than reading one in depth, see the [Portfolios Dashboard](/docs/portfolios-dashboard); for a single study's full search, see the [Optimization Dashboard](/docs/optimization-dashboard).

@@ -4,364 +4,202 @@ section: API Reference
 sectionOrder: 10
 order: 7
 published: true
-updated: 2026-08-20
-summary: Read fitness functions, their metadata and version history.
-keywords: /fitness, GET, fitness function, metadata, versions, direction
+updated: 2026-09-01
+summary: Pull your fitness functions, their configuration, and their full edit history into your own systems through Fintela's read-only integration.
+keywords: fitness function, scoring, read-only access, version history, access key, built-in objectives
 ---
 
-A fitness function is what scores a trial, so it is the piece of a study you most often need to
-reproduce months later. Three `GET` routes on `https://developer.fintela.io` read them: a cheap
-`{ id: name }` index, the full record including source code and parameter declarations, and the
-append-only edit history behind one function. All three are read-only — fitness functions are
-authored in the app (see [Fitness functions](/docs/fitness-functions)), and the API exists to
-reproduce, audit and document what already exists.
+A fitness function is the scoring logic behind every trial in a study — it decides what "good"
+means for a strategy, whether that's risk-adjusted return, drawdown control, or a custom blend you
+define yourself. Because a fitness function can change over time, it's often the one piece of a
+study you need to look back at months later to understand exactly what was being optimized for.
 
-## Endpoints
+You create and edit fitness functions inside Fintela itself — see
+[Fitness functions](/docs/fitness-functions) for that workflow. This page covers the separate,
+read-only way to pull your fitness functions, their configuration, and their full edit history
+into your own tools, dashboards, or audit records. Nothing here lets you create, edit, or delete a
+fitness function — that only happens in the app.
 
-| Method | Path | Returns |
-|---|---|---|
-| `GET` | `/fitness` | Map of fitness id to name. |
-| `GET` | `/fitness/metadata` | Map of fitness id to the full record. Filter with `?fitness_ids=`. |
-| `GET` | `/v2/fitness/{id}/versions` | Append-only edit history for one function, newest first. |
+## What you can retrieve
 
-`/v2/fitness/{id}/versions` is resource edit history, not "API v2". It shares a path prefix with
-`/v2/trials` and `/v2/portfolios` and has nothing else in common with them — see
-[API overview](/docs/api-overview) for how the three unrelated meanings of "version" are laid out.
+Through this read-only integration you can pull three things about your fitness functions:
 
-## Authentication and response envelope
+- **A quick list** of every fitness function in your organization, by id and name — a cheap way to
+  see what exists before asking for anything heavier.
+- **Full details** for one function or several at once — its description, how it's implemented,
+  its parameters, and which studies use it.
+- **Complete edit history** for a single function — every meaningful change ever made to it, in
+  order, so you can reconstruct exactly what a study was optimizing for at any point in time.
 
-Authentication is header-only:
+## Getting access
 
-```http
-GET /fitness HTTP/1.1
-Host: developer.fintela.io
-Authorization: Bearer YOUR_API_KEY
-```
+Access works the same way across all of Fintela's read-only integrations: generate a personal
+access key from your account settings and use it to authenticate every request. See
+[Authentication & limits](/docs/api-authentication) for how to create and use a key.
 
-Every successful response is wrapped as `{"data": ...}`. Every error is
-`{"message": "...", "kind": "..."}`. There are no scopes: a key reaches everything its
-organization can read. Full details in [Authentication](/docs/api-authentication).
+A few things worth knowing specifically for fitness data:
 
-> [!WARNING] `?api_key=` is silently ignored, not rejected
-> The query parameter is still deserialized by these handlers and its value is discarded. A
-> request that carries only `?api_key=` gets a bare `401` with no hint that the auth method is the
-> problem. Send the `Authorization` header.
+- Access keys are all-or-nothing — there's no way to grant a key access to only some fitness
+  functions. Anything your organization can see, the key can see.
+- This surface is strictly read-only. There's no way to create, edit, or delete a fitness function
+  through it — that protects you from ever accidentally changing scoring logic that a live study
+  depends on.
 
-## Rate limiting does not apply to these routes
+> [!WARNING] Double-check how you're passing your access key
+> If a request comes back unauthorized even though you're sure the key is valid, check that you're
+> sending it the way [Authentication & limits](/docs/api-authentication) describes rather than, say,
+> tacking it onto the web address — a misplaced key fails silently with a generic "unauthorized"
+> response rather than telling you what went wrong.
 
-The organization token bucket lives inside the service's `authenticate()` helper. All three
-fitness routes call the lower-level extract-and-validate pair directly, so they never touch the
-bucket and **cannot return `429` today**.
+## Request limits
 
-| Route family | Rate limited |
+Most of Fintela's read-only integrations are paced to keep the platform responsive for every
+customer — see [Authentication & limits](/docs/api-authentication) for the general guidelines.
+Fitness lookups happen to be lightweight, and today they aren't capped the way most other
+integrations are.
+
+> [!CAUTION] Don't build around that
+> Treat fitness reads as if the standard pace limits applied, even though nothing currently
+> enforces one here. This isn't a guarantee — pull requests at a reasonable, steady pace rather
+> than in a tight loop, since limits can be added or tightened at any time.
+
+## Browse your fitness functions
+
+The quick list returns every fitness function that belongs to your organization and hasn't been
+deleted, as a simple id-to-name lookup. It has no filters — you always get everything you're
+allowed to see.
+
+Use it to discover what exists, then request full details only for the functions you actually
+need. It's the cheapest call in this integration, so it's the right first step when you don't
+already know the id you're after.
+
+> [!NOTE] Don't rely on the order
+> Functions come back in no particular order. Sort them yourself if you need a stable, predictable
+> list.
+
+## Fitness function details
+
+This is where you get the full picture: everything about a fitness function's configuration, not
+just its name.
+
+### What you'll see
+
+| Field | What it tells you |
 |---|---|
-| trials, managed portfolios, v1 portfolios, baskets, basket operations, data clusters (17 routes) | Yes |
-| studies (12 routes), strategies (5 routes), **fitness (3 routes)** | No |
+| Name | Unique within your organization — no two of your fitness functions share a name. |
+| Description | The free-text note attached when it was created or last edited, if any. |
+| Implementation type | Whether the scoring logic runs inside Fintela, or on your own external service (see below). |
+| Implementation details | The actual code, or the connection details for your external service, depending on the type. |
+| Parameters | The inputs the function accepts, each with a name, a type, and an optional description. |
+| Studies using it | Which of your studies reference this function, so you can see its real-world usage at a glance. An empty list just means it's never been used yet. |
+| Created / last updated | When the function was first created, and when it was last saved — any edit in the fitness editor moves this, including a simple rename. |
 
-> [!CAUTION] This is a code defect, not a guarantee
-> The exemption reads as an incomplete migration to the shared helper rather than a decision. Do
-> not build a client that depends on fitness routes being unlimited — treat the documented limit
-> as the contract and rate-limit yourself. Where the limit does apply it is 20 requests/second
-> with a burst of 40, keyed on the organization, and a rejection carries `Retry-After: 1`. There
-> are no `X-RateLimit-*` headers anywhere on this API, so a client cannot see its remaining budget
-> until it is refused. The bucket is also per process and the service autoscales to several tasks,
-> so the effective ceiling is a multiple of the nominal one.
+> [!NOTE] A garbled parameter list shows up as empty, not as an error
+> If a function's stored parameter declarations can't be read back cleanly, you'll see an empty
+> parameter list rather than a failed request. Treat an empty list as "no parameters, or something
+> not readable" rather than a hard guarantee there are none.
 
-## List fitness functions
+Unlike a strategy's parameters, a fitness function's parameters never carry a rolling-window
+setting — a fitness function scores a simulation after the fact, so there's no window to define.
+See [Strategies](/docs/api-strategies) for that contrast.
 
-```http
-GET /fitness
-```
+Fitness functions don't carry a separate optimization direction (maximize vs. minimize) in this
+detail view — that only shows up for Fintela's built-in objectives, covered below.
 
-No path parameters, no query parameters. Returns every fitness function that belongs to your
-organization and is not soft-deleted.
+### Internal vs. external logic
 
-```bash
-curl -H "Authorization: Bearer $FINTELA_API_KEY" \
-     https://developer.fintela.io/fitness
-```
+A fitness function is implemented one of two ways:
 
-```json
-{
-  "data": {
-    "4": "sharpe_with_drawdown_penalty",
-    "9": "calmar_capped"
-  }
-}
-```
+- **Internal** — Python code that runs inside Fintela. You'll see that code exactly as saved.
+- **External** — logic that runs on your own service, which Fintela calls to score each trial.
+  You'll see the connection details you configured: which endpoint Fintela calls, how long it
+  should wait for a response, and how many trials it can score at the same time. Running your
+  scoring logic externally keeps your models and data on your own systems while still letting
+  Fintela drive the optimization — see [External fitness](/docs/external-fitness) and
+  [Execution modes](/docs/execution-modes) for when and how to use it.
 
-The payload is a JSON object, so ids arrive as **string keys**. Key order carries no meaning —
-the service builds the response from a hash map, so sort client-side if you need a stable
-ordering. This is the cheapest call on the fitness surface: use it to discover ids, then fetch
-detail for the few you care about.
+### Requesting specific functions
 
-## Fitness metadata
-
-```http
-GET /fitness/metadata
-GET /fitness/metadata?fitness_ids=4,9
-```
-
-Returns the complete record for each fitness function, keyed by id.
-
-### Query parameters
-
-| Name | Type | Required | Default | Notes |
-|---|---|---|---|---|
-| `fitness_ids` | string — comma-separated integers | No | absent means every fitness function in your organization | Whitespace around each id is trimmed, so `?fitness_ids=4, 9` is accepted. |
-
-```bash
-curl -H "Authorization: Bearer $FINTELA_API_KEY" \
-     "https://developer.fintela.io/fitness/metadata?fitness_ids=4"
-```
-
-```json
-{
-  "data": {
-    "4": {
-      "name": "sharpe_with_drawdown_penalty",
-      "description": "Sharpe, penalized for deep drawdowns.",
-      "execution_type": "internal",
-      "execution_details": {
-        "code": "def fitness(equity, trades, penalty_weight):\n    ..."
-      },
-      "parameters": [
-        {
-          "parameter_name": "penalty_weight",
-          "dtype": "float",
-          "description": "How hard to punish drawdown."
-        }
-      ],
-      "studies": [31, 44],
-      "created_at": "2025-11-04 09:12:41.882374+00",
-      "updated_at": "2026-02-18 17:03:55.104219+00"
-    }
-  }
-}
-```
-
-### Metadata fields
-
-| Field | Type | Description |
-|---|---|---|
-| `name` | string | Unique within the organization — a unique index enforces it. |
-| `description` | string \| null | Free-form description. Serialized as `null` when unset, never omitted. |
-| `execution_type` | `"internal"` \| `"external"` | Lowercase on this route. Uppercase in version snapshots — compare case-insensitively. |
-| `execution_details` | object | Shape depends on `execution_type`; see below. |
-| `parameters` | array of objects | Parameter declarations. |
-| `studies` | array of integers | Ids of studies in your organization that reference this function, excluding soft-deleted ones. `[]` if it has never been used. |
-| `created_at` | string \| null | Postgres timestamp text, not ISO-8601 — see the timestamp table below. |
-| `updated_at` | string \| null | Same format. Moves on every save from the fitness editor, including a rename. |
-
-Each entry of `parameters`:
-
-| Field | Type | Description |
-|---|---|---|
-| `parameter_name` | string | The name the function receives. |
-| `dtype` | string | Declared type as stored, e.g. `"float"`. |
-| `description` | string | **Key is absent** when unset, rather than `null`. |
-
-Fitness parameters have no `is_window` flag, unlike strategy parameters — a fitness function
-scores a finished simulation, so there is no rolling window to declare. See
-[Strategies](/docs/api-strategies) for that contrast.
-
-There is no `direction` field on this route. The eight fields above are the whole record, and
-`developers.fitness` has no direction column — an optimization direction is not part of the
-metadata response. The one place the word appears on this API is inside
-`snapshot_execution_details` on a *built-in* version snapshot — see "Built-in objectives are not
-returned" below.
-
-> [!NOTE] A malformed `parameters` blob returns as `[]`
-> If the stored declaration does not deserialize into the shape above, the service substitutes an
-> empty array instead of failing the request. An empty `parameters` therefore means either "no
-> parameters" or "unreadable declaration"; it is never an error you can see from the outside.
-
-### Execution details
-
-`execution_details` is an untagged union. Discriminate on `execution_type`, or on the presence of
-`code` versus `endpoint`.
-
-For `"internal"` — Python that runs inside Fintela:
-
-| Field | Type | Description |
-|---|---|---|
-| `code` | string | The function source, verbatim. |
-
-For `"external"` — an HTTPS endpoint you host (see [External fitness](/docs/external-fitness) and
-[Execution modes](/docs/execution-modes)):
-
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `endpoint` | string | — | URL Fintela calls to score each trial. |
-| `timeout` | number | `30.0` | Seconds. The default is applied at read time when the stored configuration omits the key. |
-| `max_concurrency` | integer | `4` | Parallel in-flight calls. Same default behaviour. |
-
-### Requesting specific ids
-
-With `?fitness_ids=`, each id is checked for readability **before any data is returned**, one at a
-time. The request is all-or-nothing: it never degrades to a partial map because one id failed.
-
-| Condition | Status | Body |
-|---|---|---|
-| A token is not an integer | `400` | `{"message": "Invalid id: 'abc'", "kind": "bad_request"}` |
-| An id exists but is not readable by your key, or does not exist | `406` | `{"message": "Fitness 4 not found", "kind": "not_acceptable"}` |
-
-Omit the filter if you would rather receive whatever is readable and reconcile client-side.
-
-> [!NOTE] The OpenAPI document is wrong on one status here
-> `openapi.json` annotates this route with `404` for an unreadable id. The handler emits `406`.
-> The handler is the truth. This is the only outright contradiction on the fitness surface;
-> elsewhere the document merely under-lists — none of the three routes declares `500`, and the
-> versions route declares only `200` and `401`.
+You can ask for one or several functions by id instead of pulling everything. The request is
+all-or-nothing: if any one of the ids you name isn't something your key can read, the whole
+request fails rather than quietly returning the rest. Leave the filter off if you'd rather get
+everything you can see and sort out what you need on your end.
 
 ## Version history
 
-```http
-GET /v2/fitness/{id}/versions
-```
+Every meaningful change to a fitness function is recorded, so you can answer "what did this
+scoring function actually look like when that study ran?" long after the fact — useful for audits,
+for reproducing a past result, or for understanding why a study behaved the way it did after a
+change. Entries come back newest first.
 
-| Path parameter | Type | Description |
-|---|---|---|
-| `id` | integer | Fitness function id. |
+Each entry shows the function's name, implementation, and parameters exactly as they stood at that
+point, along with any note recorded with the edit and when it was made.
 
-Every behavioural edit appends a row to an append-only log, so you can answer "what did this
-scoring function actually look like when that study ran?" long after the fact. Rows come back
-newest first, ordered by `version_number` descending.
+> [!NOTE] Which data source a version used isn't included here
+> If you need to know which data source a specific past version was connected to, check it
+> directly in the app — that detail isn't part of what this integration returns.
 
-```bash
-curl -H "Authorization: Bearer $FINTELA_API_KEY" \
-     https://developer.fintela.io/v2/fitness/4/versions
-```
+### When a new version is recorded
 
-```json
-{
-  "data": [
-    {
-      "version_id": 512,
-      "version_number": 3,
-      "snapshot_name": "sharpe_with_drawdown_penalty",
-      "snapshot_execution_type": "INTERNAL",
-      "snapshot_execution_details": {
-        "code": "def fitness(equity, trades, penalty_weight):\n    ..."
-      },
-      "snapshot_parameters": [
-        { "parameter_name": "penalty_weight", "dtype": "float" }
-      ],
-      "snapshot_extra_data_config": null,
-      "note": "raised the penalty after the Q3 review",
-      "created_at": "2026-02-18T17:03:55Z"
-    }
-  ]
-}
-```
+Not every save creates a new history entry — only changes that affect scoring behavior do:
 
-### Version fields
-
-| Field | Type | Description |
-|---|---|---|
-| `version_id` | integer (64-bit) | Row id of the history entry. Ties on `version_number` break by this, descending. |
-| `version_number` | integer | Per-function counter, unique per fitness id. Version `1` is created with the function. |
-| `snapshot_name` | string | The name the function had when the version was captured. |
-| `snapshot_execution_type` | string | Uppercase — `"INTERNAL"`, `"EXTERNAL"` or `"BUILTIN"` — where `/fitness/metadata` reports lowercase. |
-| `snapshot_execution_details` | object \| null | The code or endpoint configuration as it stood. |
-| `snapshot_parameters` | array \| null | Parameter declarations as they stood. |
-| `snapshot_extra_data_config` | object \| null | Retired. Kept for historical rows; **never populated on new versions** since the column it mirrored was dropped from the live table. Expect `null` on anything recent. |
-| `note` | string \| null | Optional note recorded with the edit. Rows back-filled when history was introduced carry the literal note `auto-seeded v1 from existing row`. |
-| `created_at` | string | ISO-8601 UTC to the second, always `Z`-suffixed. |
-
-The data-source wiring a version ran with is recorded in the database but is **not** returned by
-this route. If you need it, read it in the app.
-
-### When a version is appended
-
-A version is captured when the function is created, and thereafter only when one of these changes:
-
-| Change | Appends a version |
+| Change | Creates a new version |
 |---|---|
-| `execution_type` | Yes |
-| `execution_details` (the code or endpoint configuration) | Yes |
-| `parameters` | Yes |
-| Data-source wiring | Yes |
-| Soft delete or restore | Yes |
-| Rename | **No** |
-| Description edit | **No** |
+| Switching between internal and external logic | Yes |
+| Editing the code, or the external connection details | Yes |
+| Changing the parameters | Yes |
+| Changing the data source it's wired to | Yes |
+| Deleting or restoring the function | Yes |
+| Renaming it | No |
+| Editing the description only | No |
 
-So a rename alone leaves no trace in the history, and the new name simply appears on the next
-version that is captured for another reason. Multiple writes inside one save are coalesced into a
-single version — one save is one version, whatever order the statements land in.
+So renaming a function on its own leaves no separate history entry — the new name simply appears
+the next time a version is recorded for another reason. And if you change several things in one
+save, that's recorded as a single version, not several.
 
-> [!NOTE] An empty array is the not-readable answer
-> This route returns `200` with `{"data": []}` — never a `404` — for a fitness id your key cannot
-> read, and the same empty array for one that genuinely has no history. Version snapshots carry
-> historical source code, so they are withheld without confirming whether the id exists. Treat an
-> empty array as "nothing available to you", not as proof the function was never edited.
+> [!NOTE] An empty history can mean two different things
+> You'll see an empty history both when a function genuinely has no edits yet, and when your key
+> isn't allowed to see it at all — Fintela doesn't distinguish the two, so it never confirms or
+> denies the existence of something you can't access. Treat an empty result as "nothing available
+> to you," not as proof the function was never touched.
 
-## Built-in objectives are not returned
+## Built-in objectives aren't included
 
-Fintela ships platform-owned fitness rows — `sharpe_ratio`, `sortino_ratio`, `calmar_ratio`,
-`max_drawdown`, `volatility`, `total_return`, `compound_annual_growth_rate` and others — which let
-a study optimize a built-in metric without any custom code. They carry the execution type
-`BUILTIN` and belong to no organization.
+Fintela ships a set of ready-made objectives — Sharpe ratio, Sortino ratio, Calmar ratio, max
+drawdown, volatility, total return, compound annual growth rate, and others — that let a study
+optimize for a well-known metric without you writing any scoring logic at all.
 
-`/fitness` and `/fitness/metadata` both filter strictly on your organization id, so **built-in
-objectives never appear in either response**. That is why `execution_type` on this API is only
-ever `"internal"` or `"external"`.
+These built-in objectives belong to Fintela, not to your organization, so they're left out of both
+the quick list and the full-details view — those only ever show functions you created yourself. If
+you already know a built-in objective's id, though, you can still pull its version history, which
+will show its metric name, optimization direction, unit, and category instead of code or
+connection details.
 
-The readability gate on `?fitness_ids=` uses a different predicate that *does* admit
-platform-owned rows. The consequence is a quiet inconsistency worth coding against:
+> [!TIP] Don't assume every id you ask for comes back
+> If you request details for a mix of your own functions and a built-in objective's id in the same
+> call, the built-in one will simply be missing from what comes back rather than causing an error.
+> Always check what you actually got rather than assuming every id you asked for was returned.
 
-| You send | What happens |
-|---|---|
-| `?fitness_ids=` naming a built-in id | Passes the gate — no `406` — then the id is simply **missing** from the returned map. |
-| `GET /v2/fitness/{id}/versions` for a built-in id | Returns history, with `snapshot_execution_type: "BUILTIN"` and a `snapshot_execution_details` of `{"metric_name", "direction", "unit", "category"}` instead of `code` or `endpoint`. |
+## Good to know
 
-Always key off what the map returns rather than off what you asked for. A `200` with fewer entries
-than ids requested is a normal outcome here, not an error.
+- This integration is entirely read-only. Attempting to create, edit, or delete a fitness function
+  through it fails outright — those actions only work in the app.
+- You'll never see a plain "forbidden" error here. A fitness function you can't read is either
+  left out of a list or causes the whole request to fail, never a message that confirms something
+  exists but you can't touch it.
+- Full error handling details, including what to expect when a request fails, are covered in
+  [Errors & status codes](/docs/api-errors).
 
-## Timestamp formats
+## Checking for changes
 
-The two routes that return timestamps do not agree on format, and neither matches the ISO-8601
-`Z` shape used by baskets and managed portfolios. Parse per field, not per API.
+There's no live push notifications for fitness functions — nothing alerts you the moment something
+changes. If you want to stay in sync, you check periodically:
 
-| Field | Route | Format | Example |
-|---|---|---|---|
-| `created_at`, `updated_at` | `/fitness/metadata` | Raw Postgres timestamp text: space separator, microseconds, `+00` offset | `2025-11-04 09:12:41.882374+00` |
-| `created_at` | `/v2/fitness/{id}/versions` | ISO-8601 UTC, second precision | `2026-02-18T17:03:55Z` |
-
-## Errors on these routes
-
-| Status | `kind` | When |
+| What you're watching | Tells you when it moves | Good for |
 |---|---|---|
-| `200` | — | Success. |
-| `400` | `bad_request` | `fitness_ids` contains a token that is not an integer. |
-| `401` | `unauthorized` | Missing or blank `Authorization: Bearer`, unknown or revoked key, or a key with no organization or no user attached. |
-| `406` | `not_acceptable` | `fitness_ids` names an id your key cannot read. |
-| `500` | `internal` | Any database or serialization failure. The message is redacted to a generic sentence; the real cause stays in Fintela's logs. |
+| Last-updated time in the full details | Any save at all, including a rename or a description-only edit | "Has anything at all changed about this function?" |
+| Version history | Only changes that affect scoring behavior | "Has the actual scoring logic changed?" |
 
-Three absences are deliberate:
-
-- **No `403`.** The service never constructs one. A resource you cannot read is a `406` on the id
-  gate or an omission from a collection, never a permission error — there is no existence oracle.
-- **No `404`.** None of the three fitness routes emits one. An unreadable id is `406` on
-  `/fitness/metadata` and an empty array on the versions route.
-- **No `429`.** These routes bypass the rate limiter, as described above.
-
-Write verbs are rejected outright — the whole API is `GET`-only and CORS advertises `GET` alone,
-so `POST`, `PUT`, `PATCH` and `DELETE` against any fitness path fail at the router. The full
-catalogue is in [Errors](/docs/api-errors).
-
-## Polling for changes
-
-There are **no webhooks** on `developer.fintela.io`, and no push channel of any kind — no SSE, no
-long-poll, no callback registration. Integrations poll.
-
-Two signals are available, and they answer different questions:
-
-| Signal | Moves when | Use it for |
-|---|---|---|
-| `updated_at` on `/fitness/metadata` | Any save from the fitness editor, including a rename or description-only edit | "Has anything about this function changed?" |
-| `version_number` on `/v2/fitness/{id}/versions` | Only behavioural edits (see the table above) | "Has the scoring behaviour changed?" |
-
-A cheap loop is `GET /fitness` to detect additions and removals, then `GET /fitness/metadata` for
-the ids you track and compare `updated_at`. Reach for the versions route only when `updated_at`
-moved and you need to know exactly what changed.
+A practical pattern: pull the quick list regularly to catch functions being added or removed, pull
+full details for the ones you track and compare the last-updated time, and only pull version
+history when that time has moved and you need to know exactly what changed.
