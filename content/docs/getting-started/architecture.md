@@ -1,399 +1,238 @@
 ---
-title: System architecture
+title: How Fintela works
 section: Getting Started
 sectionOrder: 1
 order: 2
 published: true
-updated: 2026-08-20
-summary: How the SPA, API, compute engines and data workers fit together.
-keywords: architecture, system, spa, api, backend, simulation engine, optimizer, workers, data, keycloak, postgres
+updated: 2026-09-01
+summary: What happens behind the scenes when you use Fintela — from instant actions to background jobs and daily data updates.
+keywords: architecture, how it works, background jobs, studies, live trading, market data, sign in, developer api
 ---
 
-Fintela is not one program. The page you click is a static React app; the API it calls is a Rust
-service; the Python you write runs in separate containers, some of them launched for one job and
-never spoken to again; and the market data underneath is assembled overnight by a fleet of
-scheduled jobs. Nothing is joined by a message bus — one PostgreSQL database carries every piece of
-shared state between them. This page is the orientation: what runs where, what finishes inside your
-request and what carries on after it returns, and which parts of the system your own code actually
-touches.
+Fintela is one connected workspace, but not everything you do happens at the same speed. Opening a
+dashboard is instant. Validating a strategy takes a couple of seconds. Launching a full study can
+take minutes. Your portfolios and market data update automatically overnight, whether or not you're
+logged in. None of that is random — it follows a consistent pattern once you know what to look for.
 
-## The shape of the system
+This page is the orientation: what happens the moment you click something, what keeps running after
+you look away, how your own code fits into the picture, and what to expect from the platform as you
+rely on it day to day.
 
-```text
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │ EDGE      app.fintela.io — the React SPA, static files on CloudFront │
-  └───────────────────────────────┬──────────────────────────────────────┘
-                                  │ Keycloak JWT on every call
-  ┌───────────────────────────────┴──────────────────────────────────────┐
-  │ APPLICATION                                                          │
-  │   keycloak.fintela.io   sign-in, refresh, signing keys               │
-  │   backend.fintela.io    the Rust API — every read and every write    │
-  │   stripe.fintela.io     token packages and checkout                  │
-  │   developer.fintela.io  read-only API for integrations (API keys)    │
-  └───────────────────────────────┬──────────────────────────────────────┘
-                                  │ internal hop — never from a browser
-  ┌───────────────────────────────┴──────────────────────────────────────┐
-  │ COMPUTE                                                              │
-  │   python-compiler      validates your code                           │
-  │   strategy-sandbox ──▶ simulation-engine    one-off backtest         │
-  │   ai-agent             Fintelligent turns                            │
-  │   optimizer            on-demand task, one per slice of a study      │
-  │   portfolio-updater    on-demand task, daily extension of a book     │
-  │   lab-kernel           on-demand task, one per Laboratory session    │
-  └───────────────────────────────┬──────────────────────────────────────┘
-                                  │ every service reads and writes it
-  ┌───────────────────────────────┴──────────────────────────────────────┐
-  │ DATA      Aurora PostgreSQL — registries, trials, portfolios,        │
-  │           market data, the token ledger, and the work queue itself   │
-  │           5 long-running workers · 28 scheduled jobs fill it         │
-  └──────────────────────────────────────────────────────────────────────┘
-```
+## How Fintela is organized
 
-Every service in the application and compute planes runs as a container on AWS Fargate in one ECS
-cluster; the database underneath is a managed Aurora PostgreSQL cluster. The deployment manifest
-declares four kinds of unit, and the kind decides how you experience it:
+Everything you use lives in one place — there's nothing separate to install or manage. Behind that
+single workspace, three things are working together on your behalf:
 
-| Kind | Count | What it is | How you meet it |
-|---|---|---|---|
-| HTTP service | 8 | Always on, behind a load balancer and a hostname | Answers your request |
-| Long-running worker | 5 | Always on, no inbound port; polls the database | Picks up work you queued |
-| Scheduled job | 28 | Fires on a clock, does its batch, exits | Fills the tables you read |
-| On-demand task family | 3 | Launched per unit of work, exits when done | Runs your study, your daily update, your notebook |
-
-> [!NOTE] Every count on this page comes from the deployment manifest
-> The topology is versioned in one file, so these numbers move when the platform changes. Treat
-> them as the current shape, not as a contract.
-
-## What your browser talks to
-
-Four hostnames carry the application. Everything else in the diagram above is reached on your
-behalf.
-
-| Host | What it serves | What authenticates you |
-|---|---|---|
-| `app.fintela.io` | The SPA itself — static JavaScript, CSS and HTML from S3 behind CloudFront | Nothing; the bundle is public |
-| `keycloak.fintela.io` | Sign-in, registration, token refresh and the public signing keys | The login flow itself |
-| `backend.fintela.io` | Every application read and write | `Authorization: Bearer …` — a Keycloak access token |
-| `stripe.fintela.io` | Token packages and the checkout session | The same access token |
-
-There is no server-side rendering and no application logic at the edge. The SPA is a plain bundle
-of files; every byte of data on screen arrived from `backend.fintela.io` after you were
-authenticated.
-
-A fifth host exists for integrations and is never called by the app:
-
-| Host | What it serves | What authenticates you |
-|---|---|---|
-| `developer.fintela.io` | The read-only Developer API — every route is a `GET` | `Authorization: Bearer sk_live_…` |
-
-The key is issued inside the app and validated by a separate Rust service that reads the same
-database. See [API overview](/docs/api-overview) and
-[API authentication](/docs/api-authentication).
-
-> [!CAUTION] The internal service hostnames are not an API
-> The compiler, the sandbox and the simulation engine each resolve to a public hostname, but each
-> is gated on an internal service token that fails closed — a browser has no such token and never
-> should, so a direct call answers with an auth failure. The agent host is a retired path: chat now
-> flows through the backend, which is what persists the transcript. Build against
-> `backend.fintela.io` and `developer.fintela.io` only.
-
-## The services behind it
-
-### Application services
-
-| Service | Language | Role |
-|---|---|---|
-| `backend` | Rust (Axum) | The API. Owns every registry route, the study lifecycle, the token ledger, entitlement checks, and the proxies to every compute service |
-| `developer-api` | Rust | The read-only public API. Same database, API-key auth, no token ledger — which is why it cannot trigger compute |
-| `stripe` | Node | Token package listing and checkout sessions |
-| `keycloak` | Keycloak | Identity. Its own dedicated database, not the application one |
-
-The backend is where all the business logic lives. It resolves your organization from the token,
-enforces quotas and entitlement locks, charges tokens before dispatching billed work, and is the
-only writer the SPA ever reaches.
-
-### Compute services
-
-| Service | Language | Called by | What it does |
-|---|---|---|---|
-| `python-compiler` | Python | The backend, on your behalf | Executes and checks your strategy, fitness and risk-manager code at validation time. Holds no database of its own |
-| `strategy-sandbox` | Python | The backend, on your behalf | Runs the one-off backtest behind "Run a backtest", and the data-source preview |
-| `simulation-engine` | Rust | `strategy-sandbox` | The backtest itself — `POST /simulate`, `POST /simulate/periods`, `POST /curve/*` |
-| `ai-agent` | Python | The backend, on your behalf | [Fintelligent](/docs/fintelligent) turns. Holds no database access; it reads your workspace back through the backend, replaying your own token |
-
-Three more compute units are not services at all. They are **task families**: an image plus a size,
-launched one container per unit of work and stopped when that work is done.
-
-| Task family | Launched by | One task is |
-|---|---|---|
-| `optimizer` | `optimization-dispatcher` | One slice of a study's trial budget |
-| `portfolio-updater` | `portfolio-dispatcher` | One study re-run, or one batch of promoted portfolios extended by a day |
-| `lab-kernel` | `lab-session-manager` | One [Laboratory](/docs/laboratory) session's Python kernel |
-
-> [!NOTE] The optimizer does not call the simulation engine over HTTP
-> The Rust engine is compiled as a Python extension module and linked **inside** the optimizer and
-> updater tasks, so a backtest during optimization is an in-process call, not a network hop. The
-> `simulation-engine` HTTP service exists for the sandbox path only. See
-> [optimizer architecture](/docs/optimizer-architecture).
-
-### Background workers
-
-Five workers run continuously, each as a single instance. A second copy would double-launch work
-or double-trade, so the four that launch containers or place orders also hold a database advisory
-lock for their whole life and exit rather than run without it.
-
-| Worker | What it watches | What it does |
-|---|---|---|
-| `optimization-dispatcher` | Studies that reached `QUEUED` | Decides the task layout and launches optimizer tasks |
-| `status-updater` | Running optimizer tasks | Reconciles what the containers did back onto the study, autostops, escalates out-of-memory kills, refunds unspent tokens |
-| `portfolio-dispatcher` | Portfolio groups and studies due for a refresh | Charges the update, enqueues the members, launches updater tasks |
-| `lab-session-manager` | Laboratory session requests | Launches and tears down kernel tasks |
-| `alpaca-orchestrator` | Live operations | Reconciles positions and places broker orders on a 30-second loop |
-
-Twenty-eight scheduled jobs sit behind them, all writing into the same database: end-of-day prices,
-fundamentals, corporate actions, index membership, indicators, news sentiment, screener and market
-snapshots, portfolio metrics, ticker logos. Some fire on their own clock; a group of vendor
-collectors is instead serialized behind one nightly orchestrator that runs them in order. You never
-trigger any of them — you read the tables they leave behind. [Market](/docs/market) lists the
-schedule and which surface each job feeds.
-
-## How a request flows
-
-Four different things can happen when you click something, and knowing which one tells you whether
-to wait, to poll, or to come back tomorrow.
-
-```text
-SYNCHRONOUS   browser ──▶ backend ──▶ Postgres ──▶ 200, one round trip
-              hard ceiling: 55 s
-
-QUEUED        browser ──▶ backend ──▶ 202 { "job_id": …, "status": "pending" }
-                             └──▶ compiler / sandbox   (off the request path)
-              browser ──▶ GET /jobs/:id every 2 s until completed | failed
-
-DISPATCHED    browser ──▶ backend ──▶ row written, answered at once (204 | 200 | 202)
-                             └──▶ NOTIFY ──▶ dispatcher ──▶ ECS RunTask
-                                                  └──▶ task writes results
-              browser polls the progress endpoints; results appear as they land
-
-SCHEDULED     clock ──▶ batch task ──▶ Postgres
-              nothing to trigger and nothing to poll — you read the result
-```
-
-### Synchronous — answered inside your request
-
-Most of the app. The backend reads or writes PostgreSQL and answers in one round trip. Two
-compute-heavy actions are synchronous too, because they run in-process in Rust rather than in a
-container:
-
-| Action | Where the work happens |
+| Part | What it means for you |
 |---|---|
-| Every registry table, chart, dashboard and detail page | Backend + Postgres |
-| Simulating a [portfolio group](/docs/portfolio-groups) | Backend, in-process Rust engine |
-| The invert what-if on a trial | Backend, in-process Rust engine |
+| The app itself | Everything you see and click — dashboards, editors, charts, and results. Always available, always the same place you sign in |
+| Your work | Validating, backtesting, and optimizing the strategies, fitness functions, and risk managers you build |
+| Market data | Prices, fundamentals, and other data that stay current automatically, without you having to refresh or fetch anything yourself |
 
-Three limits apply to every synchronous call:
+If you want to pull your own results into your own tools or dashboards instead of viewing them in
+Fintela, that's also possible through the [Developer API](/docs/api-overview) — a separate,
+read-only door into your own data, covered in more detail later on this page.
 
-| Limit | Default | What you get |
-|---|---|---|
-| Request timeout | 55 seconds | `504 Gateway Timeout` |
-| In-flight ceiling per API task | 512 concurrent requests | `503` with `Server at capacity; please retry shortly.` and `Retry-After: 1` |
-| Per-organization rate | 100 requests/second sustained, burst 300 | `429` with `Your organization is sending requests too quickly; please retry shortly.` and `Retry-After: 1` |
+## Where the work happens
 
-The rate limiter is in-process, one bucket per organization per API task, and the API runs more
-than one task — so the ceiling you actually hit can be a multiple of the number above. Design
-against 100 rps, not against headroom.
+### Instant actions
 
-The three Rust services — the backend, the Developer API and the simulation engine — share one
-error type, so a failure looks the same wherever it comes from:
+Most of what you do is answered the moment you click it: browsing your registries, opening a
+dashboard, viewing a portfolio's detail page, reading a chart. Two calculations that look like they
+should take a while are actually instant too — simulating a [portfolio group](/docs/portfolio-groups)
+and reversing a "what if" on a single trial both come back immediately, with no waiting screen.
 
-```json
-{ "message": "…", "kind": "not_acceptable" }
-```
+### Running your strategies, fitness functions, and risk managers
 
-`kind` is the machine label; branch on it rather than on `message`. Two habits are worth forming
-early. A `500` always has its real cause replaced with
-`Something went wrong on Fintela's side. Please try again in a moment.` before it leaves the
-server, so there is nothing to parse out of one. And the platform's catch-all rejection is **406,
-not 400** — a missing validation receipt, a rejected external endpoint URL and an out-of-range
-external timeout all arrive as `406`. The full status-code table for the public API is on
-[errors](/docs/api-errors).
+Anything that actually executes your code — your strategy logic, your fitness function, your risk
+manager — runs in its own protected space, set aside just for that job. That keeps your runs
+independent from everyone else's and keeps the platform responsive no matter how many people are
+using it at once.
 
-### Queued — an async job
+| When you... | What happens |
+|---|---|
+| Click **Validate** in an editor | Your code is checked right away — syntax and logic problems are caught before you can run anything with it |
+| Run a backtest in the sandbox | Fintela executes a single, one-off run of your strategy, fitness function, or risk manager and shows you the result |
+| Launch a [study](/docs/studies) | Fintela runs many backtests in parallel, searching across parameters according to the trial budget you set |
+| Open the [Laboratory](/docs/laboratory) | You get a live, personal Python environment to explore in, which shuts down cleanly once you're done with it |
 
-Anything that runs your code, or anyone else's, is decoupled from the request. The backend writes
-a job row, answers `202 Accepted` with `{"job_id": …, "status": "pending"}`, and does the real call
-in the background. You then poll `GET /jobs/:id` until the status is terminal.
+### Keeping your data and portfolios current
 
-| Action | Route | Runs on |
-|---|---|---|
-| Validate a strategy, fitness function or risk manager | `POST /validate/{internal,external,builtin}/…` | `python-compiler` |
-| Run a strategy backtest in the sandbox | `POST /strategies/sandbox` | `strategy-sandbox` |
-| Run a fitness function in the sandbox | `POST /fitness/sandbox` | `strategy-sandbox` |
-| Run a risk manager, or a stack of them | `POST /risk-managers/sandbox`, `POST /risk-managers/sandbox-stack` | `strategy-sandbox` |
-| Preview a data source | `POST /data-sources/preview` | `strategy-sandbox` |
+A separate, continuous layer keeps everything you look at up to date without you asking it to.
+Overnight, prices, fundamentals, corporate actions, indicators, and other market data refresh so
+that Markets, the Screener, and your metric comparisons show fresh numbers the next time you open
+them. [Promoted portfolios](/docs/promoted-portfolios) and portfolio groups are extended by a day
+right after that data lands. If you're running a [live operation](/docs/live-trading), your
+positions, fills, and orders are reconciled with your broker roughly every 30 seconds, so what you
+see in the operation history stays close to real time.
 
-A job is `pending`, `running`, `completed` or `failed`. The app polls every **2 seconds** and gives
-up after **10 minutes** with `Still running — this is taking longer than expected. The job
-continues on the server; check back shortly.` — the wording is literal: giving up is a client-side
-decision and the work carries on.
+## What to expect when you click something
 
-> [!TIP] This is why a slow backtest never breaks
-> A synchronous call is cut off at 55 seconds, and the sandbox's own work budget is 240 seconds.
-> Holding one HTTP request open across that gap is impossible; the job pattern is what makes the
-> gap invisible.
+Not every action feels the same, and knowing which category something falls into tells you whether
+to wait, watch a progress indicator, or simply check back later.
 
-### Dispatched — an on-demand task
+### Instant
 
-The heaviest work does not run on any always-on service. The backend writes one row and answers
-immediately. A dispatcher claims that row and launches containers.
+Most of the app works this way — you click, and the answer is already there. Every instant action is
+built to finish quickly, within well under a minute. If you're pulling data through the
+[Developer API](/docs/api-overview) at high volume, an occasional burst of many requests in a short
+window may get a brief "please slow down" response rather than a failure — that's Fintela protecting
+performance for everyone, not a sign anything is wrong. If something does go wrong, you'll see a
+plain-language explanation of what happened rather than a cryptic code; teams integrating through the
+Developer API can find the specific messages it returns on [errors](/docs/api-errors).
 
-| Action | What the API does | What happens next |
-|---|---|---|
-| Launch a [study](/docs/studies) | Moves it to `QUEUED`, charges the optimization, notifies the dispatcher, answers `204 No Content` | `optimization-dispatcher` launches one or more `optimizer` tasks; trials appear in the database as each batch settles |
-| **Update portfolios** on a portfolio group | Enqueues the members and answers `{ basket_id, portfolio_count, studies_enqueued }` | `portfolio-dispatcher` launches `portfolio-updater` tasks |
-| Open the [Laboratory](/docs/laboratory) | Answers `202 Accepted` with a session in `requested` | `lab-session-manager` launches a `lab-kernel` task; the session polls to `ready` |
+### Runs in the background while you keep working
 
-These are the actions measured in minutes, not seconds. A study's wall-clock depends on its trial
-budget, its universe and its execution mode; nothing in the UI blocks while it runs.
-[Study lifecycle](/docs/study-lifecycle) documents every state, and
-[optimizer architecture](/docs/optimizer-architecture) documents the dispatch, the layout decision
-and the failure handling.
+Anything that runs your code — validating, sandbox backtests, checking a fitness function or risk
+manager, previewing a data source — happens as a background job. You'll see a progress indicator
+while Fintela checks in automatically every couple of seconds, and the job finishes as either
+successful or failed.
 
-> [!WARNING] Dispatch is not instantaneous, and the three paths are billed differently
-> A study's optimization is charged when you launch, before any container exists. A portfolio-group
-> refresh is charged by `portfolio-dispatcher` when it picks the work up, and a Laboratory session
-> is metered per minute for as long as the kernel is alive. A launch normally reaches a dispatcher
-> within milliseconds, but a resumed study waits for the dispatcher's next periodic tick instead.
-> See [tokens and billing](/docs/tokens-and-billing).
+> [!TIP] A slow backtest never breaks your session
+> Instant actions are capped at well under a minute, but a thorough backtest can reasonably need more
+> time than that. That's exactly why these run as background jobs instead — you can safely wait on
+> one, switch to another tab, or step away entirely. If a job is taking unusually long, Fintela tells
+> you it's still working rather than timing out; nothing is lost by looking away.
 
-### Scheduled — nobody triggers it
+### Takes minutes, tracked as a running task
 
-The daily plane runs whether or not you are logged in.
+The heaviest work runs as a longer task you can track rather than wait on. You kick it off, Fintela
+takes it from there, and results appear as they're ready.
+
+| Action | What happens |
+|---|---|
+| Launch a [study](/docs/studies) | It's queued and the tokens for it are charged, then Fintela starts on it right away; individual trial results appear in your dashboard as batches complete |
+| **Update portfolios** on a [portfolio group](/docs/portfolio-groups) | Every portfolio in the group is queued for a fresh run and updates one by one |
+| Open the [Laboratory](/docs/laboratory) | Your session is requested and becomes ready within moments as your personal environment starts up |
+
+These are the actions measured in minutes rather than seconds — how long a study takes depends on its
+trial budget, its universe, and its execution mode. Nothing in the app blocks while it runs, so you're
+free to keep working elsewhere.
+
+> [!WARNING] Timing and billing aren't identical across these three
+> Launching a new study is charged and picked up almost immediately. Resuming a paused study can take
+> a little longer to get going, since it waits for the next scheduling pass rather than starting
+> instantly. A portfolio group refresh is charged when the update actually begins, and a Laboratory
+> session is billed for as long as it stays open. See [tokens and billing](/docs/tokens-and-billing)
+> for the specifics.
+
+### Happens automatically, on its own schedule
+
+This layer runs whether or not you're logged in — you never trigger it, you just see its results.
 
 | What runs | When | What you see |
 |---|---|---|
-| End-of-day prices, fundamentals, indicators, metrics, snapshots | Overnight, on the schedule in [Market](/docs/market) | Fresh numbers on Markets, the Screener and the metric comparisons |
-| Daily extension of promoted portfolios and portfolio groups | After the day's prices land — the dispatcher waits for the price worker to advance the market-data watermark, so a refresh never runs on yesterday's prices | New bars on a [promoted portfolio](/docs/promoted-portfolios)'s curve |
-| Broker reconciliation for a live operation | Continuously, on a 30-second loop | Orders, fills and P&L in the operation history — see [live trading](/docs/live-trading) |
+| End-of-day prices, fundamentals, indicators, and metrics | Overnight | Fresh numbers on Markets, the Screener, and your metric comparisons — see [Market](/docs/market) |
+| Daily extension of promoted portfolios and portfolio groups | Right after that day's prices land, never before | New bars added to a [promoted portfolio](/docs/promoted-portfolios)'s curve |
+| Broker reconciliation for a live operation | Continuously, roughly every 30 seconds | Orders, fills, and P&L in the operation history — see [live trading](/docs/live-trading) |
 
-## Where your code runs
+## Where your strategies and models actually run
 
-Five container images execute user Python, and which one you land in depends only on what you are
-doing:
+Where your code executes depends only on what you're doing in the moment — the same actions behave
+the same way whether the code is one you wrote inside Fintela or one you're running from your own
+server ("external mode").
 
-| Moment | Internal mode | External mode |
+| When you... | Code written inside Fintela | An external strategy, fitness function, or risk manager |
 |---|---|---|
-| **Validate** — the Validate button in an editor | `python-compiler` executes your Python | The compiler calls your endpoint on a fixed 30-second budget |
-| **Sandbox** — "Run a backtest" | `strategy-sandbox` executes it in an isolated subprocess, then hands the signal to `simulation-engine` | The sandbox calls your endpoint |
-| **Optimize** — a launched study | The `optimizer` task executes it across a process pool | The optimizer task calls your endpoint, one task, fan-out capped at 32 |
-| **Daily update** — a promoted portfolio | The `portfolio-updater` task executes it | Not supported — an external strategy cannot be promoted or tracked |
-| **Notebook cell** — the Laboratory | The `lab-kernel` task executes it | Not applicable |
+| Click **Validate** | Checked immediately inside Fintela | Fintela calls your endpoint and waits up to about 30 seconds for a response |
+| Run a sandbox backtest | Executed in an isolated space just for that run | Fintela calls your endpoint for the signal instead |
+| Launch a study | Runs in parallel across many trials at once | Fintela calls your endpoint for each trial instead, with parallelism capped — studies with an external component run somewhat more slowly |
+| Daily update on a promoted portfolio | Re-run automatically each day | Not supported — an external strategy can't be promoted or tracked day to day |
+| Laboratory notebook cell | Runs live in your session | Not applicable |
 
-The four registry images install one pinned library manifest, so code that validates behaves
-identically when it trains and when it updates; the Laboratory kernel installs the same stack.
-[Strategies](/docs/strategies) lists the packages and versions.
+Whichever path you use, code that passes validation keeps behaving the same way later — the same
+package versions back it whether you're validating, backtesting, optimizing, or watching a daily
+update run. [Strategies](/docs/strategies) lists what's available to build with.
 
-> [!NOTE] Your code runs without the platform's credentials
-> Every worker that executes user Python strips the data-plane credentials — database password,
-> AWS keys, service tokens, secret ARNs — out of its environment before your first line runs. That
-> holds in the sandbox, in the optimizer and in the daily updater alike. The workers never open a
-> database connection of their own: the trusted parent process materializes the data and hands it
-> over.
+> [!NOTE] Your code runs in an isolated space
+> Whether you're validating, backtesting, optimizing, or running a daily update, your code executes
+> with no access to Fintela's internal systems or credentials. It only ever sees the market data and
+> inputs Fintela hands it for that run.
 
-External mode moves the execution out of Fintela entirely. What Fintela stores is the endpoint URL,
-its timeout and its concurrency budget — plus a `required_lookback(...)` snippet, which the
-compiler runs on its own to size the warmup window and never posts to you. Your endpoint is
-screened for a publicly routable host before the first connection, called over plain HTTP or HTTPS,
-and **sent no credential** — there is no signing header, no API key and no mutual TLS on that path,
-so your own server has to authorize the caller. The wire contracts, timeouts and retry policies are
-on [execution modes](/docs/execution-modes), with worked servers in
-[external strategies](/docs/external-strategies), [external fitness](/docs/external-fitness),
-[Python · FastAPI](/docs/python-fastapi) and [Node.js · Express](/docs/node-express).
+### Running your own logic outside Fintela
 
-## Authentication and tenancy
+If you'd rather keep your models, data, or proprietary logic on your own systems, external mode lets
+you do that: your code and data never leave your own infrastructure. You connect it to Fintela by
+pointing a strategy, fitness function, or risk manager at an endpoint you run yourself, and Fintela
+calls it whenever it needs a decision — during validation, a sandbox backtest, or a study — so it
+gets scored and traded alongside strategies you write directly in the app, with the same reporting
+and the same portfolios.
 
-One identity provider, one token, one scope.
+This is the right choice when you want to keep your intellectual property private, use a language or
+stack Fintela doesn't support natively, or simply avoid being locked into writing everything inside
+one editor. What Fintela stores on its side is just your endpoint's address plus the response-time
+and concurrency limits you configure — it may also call your endpoint once ahead of a run to work out
+how much historical data it needs. Fintela doesn't send your endpoint any credentials, so if you want
+to confirm requests are genuinely coming from Fintela, that check needs to live on your side. Full
+details are on [execution modes](/docs/execution-modes),
+[external strategies](/docs/external-strategies), and [external fitness](/docs/external-fitness).
 
-| Step | What happens |
+## Signing in and how your data is shared
+
+One sign-in gets you into everything. You land on a secure sign-in screen, and once you're in,
+Fintela keeps you signed in and quietly renews your session in the background — you shouldn't need to
+log back in mid-task.
+
+Your data is scoped to your **organization**, not just to you: everything you can see, everyone on
+your team can see too. Two things narrow that further — entitlement locks on specific features, and
+role-based permissions your organization sets for its members. [Navigation](/docs/navigation)
+documents what a locked feature looks like and why.
+
+[Fintelligent](/docs/fintelligent) follows the same rules as you do — it sees exactly what you see in
+your workspace, nothing more and nothing less.
+
+The [Developer API](/docs/api-overview) is a separate front door for pulling your studies,
+portfolios, and results into your own systems or dashboards. It uses its own personal access key,
+issued from your account settings, rather than your regular sign-in, and it's strictly read-only —
+nothing sent through it can change or launch anything, which means it can never rack up charges by
+accident. It's also isolated by organization: reaching for something outside your organization simply
+looks like it doesn't exist, so it can't be used to probe what other organizations have. See
+[API authentication](/docs/api-authentication) for how to generate and use a key.
+
+## Your work and data are safe
+
+Everything is saved as it happens — your registries, every trial and its results, equity curves,
+holdings and transactions, portfolio metrics, market data, and the token charges tied to your account
+all land in one secure, shared store the moment they're produced. There's no separate save step and
+nothing sits only in your browser.
+
+> [!SUCCESS] Interrupted work is never lost
+> If a study or update is interrupted partway through, you don't lose your progress — anything already
+> completed stays saved. Restarting picks up from where things left off instead of starting the whole
+> run over, and stopping a run in progress keeps every portfolio, curve, and metric it had already
+> produced.
+
+## How you'll see new results appear
+
+You generally don't need to hit refresh — Fintela keeps what's on screen current on its own. Anything
+you'd think of as "live" — a study's progress, a Laboratory session's status, a background job's
+status — checks in automatically on an interval that speeds up while something is actively running
+and eases off once it settles. Alongside that, a lightweight live-update signal lets the app notice
+changes quickly, so results generally show up within moments of being ready without you doing
+anything.
+
+If you're integrating through the [Developer API](/docs/api-overview) to pull results into your own
+tools, keep in mind that Fintela doesn't push updates out to external systems — there's nothing that
+calls your infrastructure to announce a change. The recommended approach is to check back
+periodically for what's new; that guide covers the patterns that work well for that.
+
+## Things worth knowing
+
+A few practical limits, stated plainly so you can plan around them instead of running into them by
+surprise.
+
+| What to know | What it means for you |
 |---|---|
-| Sign in | The SPA hands over to Keycloak. The branded login screen is a Keycloak theme, not a page in the app |
-| Every call | The access token travels in `Authorization: Bearer …` |
-| Verification | The API validates the RS256 signature against Keycloak's published keys, checks the issuer, and on the normal path requires the `fintela-api` audience. The key set is cached for an hour and refetched immediately when a token is signed by a key it has not seen |
-| Scoping | Your organization is resolved from the token, and every query is filtered by it |
-
-Registries are scoped to the **organization**, not to the user: everything you can see, everyone in
-your organization can see. Two mechanisms narrow that further — entitlement locks, which the
-backend enforces with `402`, and JWT client roles read from `resource_access['fintela-api'].roles`.
-[Navigation](/docs/navigation) documents both, including what a locked feature looks like.
-
-Fintelligent is not an exception to any of this: the agent service holds no database access and
-replays your own token for every read, so it sees exactly what you see.
-
-The Developer API is a separate authentication world — API keys, no Keycloak, no token ledger, and
-`404` rather than `403` for anything outside your organization so the API cannot be used as an
-existence oracle. See [API authentication](/docs/api-authentication).
-
-## Persistence and shared state
-
-One Aurora PostgreSQL cluster holds everything the application knows: the seven registries, every
-trial and its parameters, equity curves, holdings and transactions, portfolio metrics, market
-data, the token ledger, and the run-status tables that act as the work queue.
-
-There is no message broker. Services coordinate by writing rows and reading them back:
-
-- A dispatcher **claims** work with a database query, not by receiving a message.
-- `NOTIFY` is only a wake-up hint. Every dispatcher also runs a timed poll, so a lost notification
-  costs one poll interval and never a lost job.
-- The optimizer's own search state lives in the same database, which is why a trial that reached a
-  terminal state is durable the moment it is written.
-
-Two stores sit beside it. Keycloak keeps identity in its own separate database. A cache backplane
-carries change notifications between API tasks and is deliberately optional — with none
-configured, nothing is published and polling alone stays correct.
-
-> [!SUCCESS] A crashed component loses work, never state
-> Because Postgres is the only channel, a container that dies mid-run leaves everything it already
-> committed. A relaunch subtracts the trials that already finished rather than starting over, and
-> a run that is stopped keeps every portfolio, curve and metric it had persisted.
-
-## Staying up to date
-
-Nothing is pushed to your browser from a compute task. Results become visible because they are
-already in the database and the app refetches.
-
-Two channels, and only one of them is real-time:
-
-| Channel | What it carries |
-|---|---|
-| Polling | The floor. Every live indicator — study progress, health, lifecycle, session status, job status — is a polled read on an interval that adapts to what is running |
-| `GET /events` | Server-Sent Events, scoped to your organization, and **data-free**. An envelope names a topic that changed; the client then refetches through its own authenticated endpoints |
-
-The stream publishes nine topics — `agent_runs`, `baskets`, `entitlements`, `fitness`, `jobs`,
-`lab_sessions`, `risk_managers`, `strategies`, `studies` — and sends a `ping` keep-alive every 15
-seconds. It is a hint, not a transport: when it is connected the app widens its polling intervals,
-and when it is not, the polling alone is still correct.
-
-For integrations the picture is simpler still: there are **no webhooks anywhere on Fintela**, no
-callback registration and no push channel on `developer.fintela.io`. Poll, and cache what has not
-changed. [API overview](/docs/api-overview) has the recommended polling shapes.
-
-## Limits of this architecture
-
-Stated plainly so you do not design around something that is not there.
-
-| Limit | Consequence |
-|---|---|
-| **No webhooks, anywhere** | Every integration polls. Nothing on Fintela will call your infrastructure except an external strategy, fitness or risk-manager endpoint during a run |
-| **The Developer API cannot start work** | Every route is a `GET`. It has no token-ledger integration, so a write there would be compute billed to nobody. Everything that costs tokens is triggered inside the app |
-| **Synchronous means 55 seconds** | Anything longer is an async job or a dispatched task. There is no way to ask the API to hold a connection open |
-| **Internal service hosts are closed** | The compiler, the sandbox and the simulation engine reject anything without an internal service token |
-| **You cannot size a study's fleet** | Task count comes from the dispatcher's configuration, the execution type, the sampler and the trial budget. There is no worker knob in the UI or the API |
-| **An external component collapses a study to one task** | Distributed execution and external endpoints are mutually exclusive — see [execution modes](/docs/execution-modes) |
-| **External strategies cannot be tracked** | Daily updates re-execute the strategy on Fintela's schedule against Fintela's data, which only works for internal code |
-| **Market data is end-of-day** | Every figure comes from a scheduled worker, and Fintela does not display intraday prices — see [Market](/docs/market) |
-| **Data Pipelines is retired** | `/data-pipelines/*` redirects to the [Data Explorer](/docs/data-explorer); a strategy selects its data sources in its own editor |
+| Nothing calls out to your own systems automatically | If you're pulling data via the Developer API, plan to check back periodically — the only exception is your own external strategy, fitness, or risk-manager endpoint, which Fintela does call, but only because you configured it |
+| The Developer API is read-only | You can pull your studies, portfolios, and results into your own tools, but you can't launch or change anything from outside the app — everything that spends tokens has to be started by you, inside Fintela |
+| Instant actions have a short time budget | Anything that could take longer runs as a background job or a tracked task instead, so you're never stuck waiting on a single screen |
+| You can't dial in an exact number of parallel workers for a study | How much a study parallelizes follows from your trial budget, execution mode, and sampler choice, not a setting you control directly |
+| Using an external strategy limits how much a study can parallelize | An external endpoint and full distributed execution don't mix — see [execution modes](/docs/execution-modes) |
+| External strategies can't be tracked day to day | Daily updates re-run your strategy on Fintela's own schedule against Fintela's own data, which only works for strategies written inside Fintela |
+| Market data is end-of-day | Fintela doesn't display intraday prices — see [Market](/docs/market) |
+| Data Pipelines has been folded into Data Explorer | Old links redirect automatically to the [Data Explorer](/docs/data-explorer); a strategy still picks its data sources from its own editor |
 
 Where to go from here: [Core concepts](/docs/core-concepts) for the vocabulary,
-[Quickstart](/docs/quickstart) to put three of the objects on screen, and
-[optimizer architecture](/docs/optimizer-architecture) when you want the compute path in full
-detail.
+[Quickstart](/docs/quickstart) to put three of these objects on screen yourself, and
+[Study lifecycle](/docs/study-lifecycle) if you want to understand every stage a study moves through
+in full detail.

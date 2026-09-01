@@ -4,732 +4,438 @@ section: Registries
 sectionOrder: 3
 order: 2
 published: true
-updated: 2026-08-20
-summary: Define the tradeable universe a study runs on — tickers, index membership, and date coverage.
-keywords: asset group, data cluster, universe, tickers, index members, groupings, coverage, registry
+updated: 2026-09-01
+summary: Build and manage the saved lists of tickers and portfolios your studies trade against.
+keywords: asset group, universe, tickers, portfolio group, index membership, screener, market filters, registry
 ---
 
-An asset group is a named, saved, **frozen** list of instruments owned by your organization. It is the universe half of a quant experiment: a [study](/docs/studies) binds one asset group as its strategy universe and optionally a second one as its fitness universe, and the simulation stack loads exactly those price series. You build one in a screener that lets you filter the whole market — but only the resulting selection is saved. The filters are never stored and never re-evaluated.
+An asset group is a named, saved list of instruments that belongs to your organization. Think of it as your trading universe: a [study](/docs/studies) uses one asset group to define what its strategy is allowed to trade, and optionally a second one to define what its fitness function is scored against. You build an asset group with a screener that lets you filter the entire market by sector, valuation, performance, and more — but only the tickers you actually select get saved. The filters you used to find them are not stored, and the group never updates itself afterward.
 
 ## Overview and purpose
 
 ### What an asset group holds
 
-A group carries two kinds of membership, and they coexist in one row:
+A group can hold two kinds of members, and a single group can mix both:
 
-| Membership kind | What it is | Stored as |
-|---|---|---|
-| Tickers | Real instruments from the platform ticker table, across the `US`, `CC` (crypto) and `FOREX` exchanges | `tickers_id` — a JSONB array of integer ticker ids |
-| Portfolio-group members | A whole graduated [portfolio group](/docs/portfolio-groups) whose stitched equity curve is injected into the price panel as a `BASKET:<uuid>` pseudo-ticker and scored exactly like a ticker price series | `basket_members` — a JSONB array of `{"basket_id": <uuid>, "injection_mode": "curve"}` |
+| What you can add | What it means |
+|---|---|
+| Individual tickers | Real, tradeable instruments from Fintela's ticker data, across US equities, crypto, and forex |
+| Portfolio group members | An entire graduated [portfolio group](/docs/portfolio-groups) — its combined equity curve is added to the group as if it were a single instrument, so it can be scored and traded just like a ticker |
 
-A group is valid when it has **at least one ticker or at least one portfolio-group member**. The database constraint is `jsonb_array_length(tickers_id) > 0 OR jsonb_array_length(basket_members) > 0`, so a members-only group with no tickers at all is legal — that is the portfolio-of-portfolios case.
+A group needs at least one ticker or at least one portfolio group member to be valid. A group made up entirely of portfolio groups — a "portfolio of portfolios" — is perfectly fine.
 
 > [!WARNING]
-> An asset group has **no date range, no timeframe, and no data provider**. There are no date columns on the table; date windows belong to the study (`train_start_date` and friends). Daily bars are the only price resolution the platform stores, and the market-data vendor is a global platform choice, never a per-group setting. Any older documentation showing `start`, `end`, `timeframe` or `source` fields on an asset group is describing fields that do not exist.
+> An asset group does not carry a date range, a timeframe, or a choice of data source. Date windows are set on the study that uses the group, not on the group itself. Fintela's price history is daily bars only, and the market data your studies run on is the same for everyone on the platform — it isn't something you configure per group.
 
 ### Static membership, and the one exception
 
-Whenever you have anything selected in the builder, the screen states the rule outright:
+Whatever you have selected when you save is exactly what gets frozen into the group. The builder reminds you of this directly:
 
 > An Asset Group saves a fixed ticker list; filters are not re-evaluated later.
 
-That is the most important semantic fact about the object. The screener is a *selection tool*. Nothing about the exchange, the filters, the sort or the "Include no-data" switch is persisted, and the saved membership is never recomputed.
+That's the single most important thing to understand about asset groups. The screener you use to build one is a *selection tool*, not a live filter. None of your search settings — the exchange, the filter values, the sort order, or the "Include no-data" toggle — are saved. Only the resulting list of tickers (and portfolio group members) is kept, and it is never recalculated for you afterward.
 
-The single exception is a **grouping-derived** group, created by the [study builder](/docs/studies) when you pick a platform grouping (a sector-ETF collection, an index, a sector) as a study's universe. Those rows are deduplicated per organization and grouping, and re-picking the same grouping refreshes their membership. They are also **hidden from this registry** — you will never see or manage one here.
+The one exception is a group created automatically by the [study builder](/docs/studies) when you choose a platform grouping — a sector ETF collection, an index, or a sector — as your study's universe. Fintela creates and maintains that group for you, and re-picking the same grouping later refreshes its membership to match. These automatically-managed groups don't clutter your registry — you won't see them in the Asset Groups list, since you never need to manage them directly.
 
-### Where the old name "data cluster" still appears
+### You may still see the old name "Data Cluster"
 
-Asset Groups were renamed from **Data Clusters**, and the rename landed in the UI layer only. Every other layer still says *data cluster*, which matters the moment you read an API path, a permission string or a database column.
+Asset Groups used to be called **Data Clusters**. The screens were renamed, but a few leftover mentions of "cluster" still show up here and there — in a tooltip, a button caption, or some placeholder text. If you run into a message that says "cluster" instead of "asset group," it's the same feature; there's no separate object to worry about. If you have an old bookmark or link starting with `/dataCluster`, it still works — it takes you straight to the matching `/asset-groups` page.
 
-| Layer | Name in use |
-|---|---|
-| UI label, nav entry and route | **Asset Groups**, `/asset-groups` |
-| Legacy UI route | `/dataCluster/*` — redirects to `/asset-groups/*` |
-| Backend HTTP paths | `/data_clusters`, `/data_clusters/metadata`, … |
-| Developer API | `GET /v1/data_clusters` |
-| Database table | `developers.data_clusters` |
-| Study foreign keys | `strategy_data_cluster_id`, `fitness_data_cluster_id` |
-| Backend permission strings | `data_cluster:read`, `data_cluster:create`, `data_cluster:update` |
-| Entitlement quota key | `data_clusters` |
+### What uses an asset group
 
-The word *cluster* also survives in a handful of user-visible strings inside the builder — "Pick assets from the table to build the cluster.", "multi-market cluster", "Add them if you want a strategy to trade those tickers directly." Those are quoted verbatim throughout this page; the product term is Asset Group.
+Once you've built an asset group, here's where it gets put to work:
 
-The legacy route is a redirect, not a second surface:
+- **Studies** are the main consumer. Every study needs an asset group as its strategy universe, and can optionally use a second one as its fitness universe. A study that references a group makes that group read-only and impossible to delete until you remove the reference — see the row actions below.
+- **The strategy and fitness editors** let you pick an asset group as the universe your code explores when you test it in the sandbox.
+- **The study builder** reads a group's date coverage to suggest sensible date ranges and to set the limits on its date pickers.
+- **Markets** lets you create a group directly from a ranking result, through the **"Create Asset Group from Ranking"** action.
+- **A launched study** can hand its exact runnable universe back to you as a new asset group, with the **"Save as asset group"** button.
+- **The Developer API** exposes a read-only list of your groups, so you can pull them into your own tools — see [Asset Groups API](/docs/api-asset-groups).
 
-| Legacy path | Redirects to | Preserves |
-|---|---|---|
-| `/dataCluster` | `/asset-groups` | query string |
-| `/dataCluster/view/:id` | `/asset-groups/view/:id` | sub-path and query string |
-| `/dataCluster/edit/:id` | `/asset-groups/edit/:id` | sub-path and query string |
+### Date coverage and data quality
 
-Live routes are:
+An asset group doesn't store its own dates, but Fintela can tell you exactly what calendar its members cover. This isn't shown directly on the group's own page — there's no coverage panel there — but it powers other parts of the product:
 
-| Path | Screen |
-|---|---|
-| `/asset-groups` | Registry list (table or card view) |
-| `/asset-groups/view/:id` | Read-only detail |
-| `/asset-groups/edit/:id` | Editor |
-| `/asset-groups?mode=create` | Create flow |
+- The [study builder](/docs/studies) uses it to suggest date presets and to bound the date pickers when you set up a study against this group.
+- The strategy and fitness sandboxes use it the same way.
+- [Fintelligent](/docs/fintelligent) can look it up for you if you ask about a group's coverage or data quality.
 
-`:id` is the integer group id. A non-numeric id falls back to the list. There is no `/asset-groups/create` path.
+In plain terms, Fintela can tell you:
 
-### What consumes an asset group
+- **How far back and how recent the group's data goes** — both the widest span across all members, and the narrower window where *every* member has data at once.
+- **The latest date on which every instrument in the group has a complete, priced bar** — useful for knowing where it's safe to end a backtest.
+- **How much classification data is missing** — how many of the group's tickers lack a sector, industry, country, or type, which matters if you plan to filter or group your results by that information later.
 
-```text
-  Screener selection ──► Asset Group (frozen ticker list + basket curves)
-                              │
-                              ├─► Study: strategy universe   (required)
-                              ├─► Study: fitness universe    (optional)
-                              ├─► Strategy / fitness sandbox universe picker
-                              ├─► Study builder date presets (via /date_coverage)
-                              └─► Developer API: GET /v1/data_clusters
-```
+A couple of things worth knowing about these numbers:
 
-- **Studies** are the primary consumer. `strategy_data_cluster_id` is required on a study; `fitness_data_cluster_id` is optional. A study that references a group makes it read-only and undeletable, as described under the row action menu below.
-- **The strategy and fitness sandboxes** pick an asset group as the universe they explore against.
-- **The study builder** reads the group's date coverage to offer date presets and to bound the date pickers.
-- **Markets** can create a group straight from a ranking result through the **"Create Asset Group from Ranking"** dialog.
-- **A launched study** can hand its frozen runnable universe back as a new group — the **"Save as asset group"** button on the study's "Runnable universe (frozen at launch)" panel.
-- **The Developer API** exposes a read-only list; see [Asset Groups API](/docs/api-asset-groups).
-
-### Date coverage and metadata quality
-
-An asset group does not store dates, but the platform will tell you what calendar its members actually have. Three read endpoints report this, and none of them is rendered by this registry — there is **no coverage panel on the asset-group detail page**. `date_coverage` is the only one with a screen: the [study builder](/docs/studies) reads it for its date presets and pickers, and so do the strategy and fitness sandboxes. `last_date` and `meta-quality` have no UI consumer at all — they are reachable through the API and as [Fintelligent](/docs/fintelligent) tools.
-
-| Endpoint | Returns | Meaning |
-|---|---|---|
-| `GET /data_clusters/{id}/date_coverage` | `first_any`, `first_all`, `last_all`, `last_any`, `ticker_max_dates` | Per-series first/last dates, aggregated. `*_any` spans the union of the series; `*_all` is the window in which **every** series has data |
-| `GET /data_clusters/{id}/last_date` | a single `YYYY-MM-DD` or `null` | The latest date on which every ticker has a priced bar |
-| `GET /data_clusters/{id}/meta-quality` | `total_tickers`, `null_sector`, `null_industry`, `null_country`, `null_type` | How much classification metadata the group's tickers are missing |
-
-Two details matter when you read these numbers:
-
-- Coverage is computed **per series — tickers and portfolio-group curves alike** — so a members-only group still gets a full calendar, taken from its baskets' backtest equity series.
-- Each ticker's last day is capped at the group's complete-data ceiling, so a partially updated current day is never offered as a selectable end date.
-
-> [!NOTE]
-> `meta-quality` is the one hyphenated path in an otherwise snake_case API. Copy it exactly.
+- Coverage is calculated per member — a ticker or a portfolio group's curve alike — so a group made only of portfolio groups still gets a full, usable calendar, taken from those portfolios' own backtest history.
+- The very latest day is only offered once every member in the group has a fully priced bar for it, so a still-updating "today" is never presented as something you can select as an end date.
 
 ## Registry table view
 
-The registry lives at `/asset-groups`, in the sidebar's **Registry** section (see [navigation](/docs/navigation)). It renders through the shared registry workbench, so it behaves like the other [registries](/docs/registries).
+You'll find the Asset Groups registry in the sidebar's **Registry** section (see [navigation](/docs/navigation)). It looks and behaves like the other [registries](/docs/registries) on the platform, so if you're used to Strategies or Studies, this will feel familiar.
 
 ### Command bar
 
-| Control | Exact text | Behaviour |
+| Control | What you'll see | What it does |
 |---|---|---|
-| Page heading | **Asset groups** | the page `h1` |
-| Search box | placeholder **Search groups or symbols…** | writes to `?q=`; the clear button is labelled **Clear** |
-| Filter | **Filter** | opens the filter panel |
-| Column chooser | icon button | disabled in card view |
-| View toggle | **List view** / **Card view**, group label **View mode** | icon-only segmented control |
-| Help | **View documentation** | opens the contextual docs drawer, anchored right |
-| Refresh | **Refresh** | refetches the group list and metadata |
-| Quota meter | — | free-tier usage against the `data_clusters` cap |
-| Create | **New Asset Group** | opens the create flow |
+| Page heading | **Asset groups** | — |
+| Search box | **Search groups or symbols…** | Searches as you type; a **Clear** link resets it |
+| Filter | **Filter** | Opens the filter panel |
+| Column chooser | icon button | Lets you show or hide columns (not available in card view) |
+| View toggle | **List view** / **Card view** | Switches how the registry is displayed |
+| Help | **View documentation** | Opens this documentation in a side drawer |
+| Refresh | **Refresh** | Reloads the list |
+| Quota meter | — | Shows how many asset groups you've used against your plan's limit |
+| Create | **New Asset Group** | Opens the create flow |
 
-The create button is two-layered. It is disabled when your role cannot create asset groups. When the **entitlement quota is full** it stays enabled and primary-coloured, and clicking it opens the purchase dialog instead of the create flow — the cap is answered with a storefront, not a wall. See [tokens and billing](/docs/tokens-and-billing).
+The Create button adapts to your situation. It's disabled if your role doesn't allow creating asset groups. If you've reached your plan's asset group limit, it stays enabled — clicking it opens the upgrade dialog instead of the create flow, so you're offered a way forward rather than a dead end. See [tokens and billing](/docs/tokens-and-billing).
 
 ### Columns
 
-Columns are produced for this registry specifically. Only five exist, and only four are visible by default; the fifth is available in the column chooser.
+Five columns exist, though only four show by default — you can turn on the fifth from the column chooser.
 
-| Column | Header | Default visible | Sorts on | Rendering |
-|---|---|---|---|---|
-| `name` | **Name** | yes | the name | bold, single line |
-| `description` | **Description** | yes | the resolved description text | secondary text, single line, `—` when empty |
-| `author` | **Author** | yes | the creating user's username | secondary text |
-| `tickers` | **Tickers** | no — chooser only | the ticker count | a chip carrying the formatted count |
-| `created_at` | **Created At** | yes | the creation timestamp, `0` when null | `Mar 3, 2026` style; `—` when null; not filterable by the column filter |
+| Column | Shown by default | What it shows |
+|---|---|---|
+| Name | yes | The group's name |
+| Description | yes | A short description (see below) |
+| Author | yes | Who created the group |
+| Tickers | no | The number of tickers in the group |
+| Created At | yes | When the group was created |
 
-**Default sort is `created_at` descending** — newest first. Rows with no creation timestamp sort last.
+By default, rows are sorted by creation date, newest first; groups with no creation date sort to the end.
 
 > [!TIP]
-> The Description column does not show what you typed. By default it shows a **generated sentence** derived from the row itself, and your hand-typed text moves into the hover tooltip labelled **Author's note**. Nothing is written to the database. Append `?ff_registryGeneratedDescriptions=0` to the URL to restore the stored text.
+> The Description column doesn't necessarily show the text you typed. By default it shows a short **auto-generated summary** built from the group's own contents — how many tickers, how many portfolio group members, which symbols, and which exchanges. Your own hand-written description isn't lost — it moves into a tooltip labeled **Author's note** when you hover over the row.
 
-The generated sentence is assembled from these fragments:
+The auto-generated summary reads something like:
 
-| Fragment | Text |
-|---|---|
-| Headline | **Asset group holding {{contents}}**, or **Asset group** when the group is empty |
-| Ticker clause | **{{count}} ticker** / **{{count}} tickers** |
-| Member clause | **{{count}} portfolio group member** / **{{count}} portfolio group members** |
-| Symbols | **First symbols: {{symbols}}** — the first 5, then **+{{count}} more** |
-| Exchanges | **Exchanges: {{exchanges}}** — up to 4, then `+N more`; or **No exchange data** when the group holds tickers but their exchange metadata is missing |
+> Asset group holding 42 tickers, 2 portfolio group members. First symbols: AAPL, MSFT, NVDA, AMZN, GOOGL +37 more. Exchanges: US.
 
-A full example: `Asset group holding 42 tickers, 2 portfolio group members. First symbols: AAPL, MSFT, NVDA, AMZN, GOOGL +37 more. Exchanges: US.`
-
-Asset class is deliberately **not** part of the sentence and not a column. The class chip, the class column, the class filter and the "By type" insights breakdown were all removed from this registry.
+Asset class isn't part of this summary and isn't a column — Fintela doesn't classify asset groups by type.
 
 ### Search, filters and sort
 
-Free-text search indexes the name, the resolved description, the stored note and the author's username. Because the resolved description carries symbols, counts and exchanges, a group is findable by typing `AAPL`, `FOREX`, `42 tickers`, an author name, or the note you wrote at creation time.
+The search box looks across the group's name, its description, your own note, and the author's name. Because the auto-generated description includes symbols, counts, and exchanges, you can find a group by typing something like `AAPL`, `FOREX`, `42 tickers`, or a teammate's name.
 
-The filter panel exposes exactly five controls:
+The filter panel lets you narrow the list by:
 
-| Column | Control kind |
+| Filter | Type |
 |---|---|
-| `name` | text |
-| `description` | text |
-| `author` | multi-select |
-| `tickers` | number range |
-| `created_at` | date range |
+| Name | text |
+| Description | text |
+| Author | pick from a list |
+| Tickers | number range |
+| Created At | date range |
 
-Search, filters and sort live in the **URL**, so a filtered and sorted view is shareable. View mode and column visibility live in **local storage** on your machine.
+Your search, filters, and sort settings are saved in the page's link, so you can share a filtered view with a teammate just by sending them the URL. Your view mode (list or card) and which columns you show are remembered on your own device instead.
 
-When the Workspaces filter is set to "My" and the result is empty, a banner explains why rather than implying the org has nothing: title **"You haven't created any asset groups yet."**, body **"Workspace filter is on — it is showing only yours. Your teammates' asset groups are still there."**, and a **Show all asset groups** button that switches the workspace to company mode.
+If you switch the workspace filter to "My" and see nothing, a banner tells you why rather than letting you think the organization has no asset groups at all — it explains that you're only seeing your own, and offers a **Show all asset groups** button to see your teammates' groups too.
 
 ### Insights band
 
-The insights band summarises the rows currently visible. It renders an **Overview** section with these stat tiles:
+Above the table, an insights band summarizes whatever rows are currently visible:
 
-| Tile | Value |
+| Tile | What it tells you |
 |---|---|
-| **Insights** | count of visible rows |
-| **Dependent studies** | sum of the per-row study reference count |
-| **Graduated portfolios** | from a batched analytics fetch across all group ids |
-| **Quality** | average well-trained percentage, toned positive at 0.6 and above, warning at 0.4 and above, negative below |
+| Insights | How many groups are shown |
+| Dependent studies | How many studies, in total, use these groups |
+| Graduated portfolios | How many graduated [portfolio groups](/docs/portfolio-groups) trace back to these groups |
+| Quality | Average "well-trained" percentage across the visible groups, color-coded green, amber, or red |
 
-Below that come **Graduated portfolios** and **Dependent studies** rank bars (top 3 each), plus a **Selected** section when a row is focused. With nothing to report it shows **"No insights for this view."**
-
-The "By type" breakdown that sibling registries render is **absent here**, because it was fed by the asset-class taxonomy this registry no longer carries.
+Below the tiles, you'll find short rank lists of the groups with the most graduated portfolios and the most dependent studies, plus details on whichever row you have selected. If there's nothing to show, it simply reads **"No insights for this view."**
 
 ### Row action menu
 
-**No cell is a link.** Left-clicking a row opens the action popover below it; right-clicking opens the same actions at the cursor. The popover header is the row's name, and **View** inside it is the only navigation into a group.
+Rows aren't clickable links — clicking (or right-clicking) a row opens a small menu of actions instead, with **View** as the only way to open the group itself.
 
-| Action | Label | What it does | Disabled when | Tooltip when disabled |
-|---|---|---|---|---|
-| view | **View** | opens `/asset-groups/view/{id}` | never | — |
-| edit | **Edit** | opens `/asset-groups/edit/{id}` | the group is used in a study, or your role cannot edit | **This item is currently used in a study and cannot be edited.** (only for the in-use case) |
-| duplicate | **Duplicate** | server-side copy, `POST /data_clusters/{id}/duplicate` | your role cannot create | — |
-| copyTickers | **Copy ticker codes** | resolves the group's ticker ids to symbols and writes them to the clipboard | the group has no tickers | **This asset group has no tickers to copy.** |
-| delete | **Delete** | opens the delete confirmation | the group is used in a study, or your role cannot delete | **This item is currently used in a study and cannot be edited.** |
-
-There is **no Share action**. Asset groups are permanently organization-visible — a database trigger forces `organization` visibility on every insert and update, so a private or per-user-shared asset group is unreachable even via direct SQL. Everyone in your organization sees every non-derived asset group.
-
-**Duplicate** allocates a free name through the shared registry naming allocator: `"<name> (copy)"`, then `" (2)"`, `" (3)"` on collision. Duplicating `SP500` when `SP500 (copy)` already exists yields `SP500 (copy) (2)`. Description, tickers and portfolio-group members are copied verbatim; you become the new row's author. It responds `201 Created`.
-
-**Copy ticker codes** writes the codes in the group's own order, formatted `['AAPL','TSLA']` — single quotes, no spaces, valid in both Python and JavaScript. A snackbar reports the outcome:
-
-| Case | Severity | Text |
+| Action | What it does | When it's unavailable |
 |---|---|---|
-| Nothing selected | info | **No tickers to copy.** |
-| All resolved | success | **{{count}} ticker codes copied to clipboard.** |
-| Some unresolved | warning | **{{count}} ticker codes copied to clipboard — {{missing}} could not be resolved.** |
-| None resolved | error | **None of the {{count}} tickers could be resolved to a code.** |
-| Clipboard failure | error | **Could not copy the ticker codes: {{error}}.** |
+| View | Opens the group's read-only detail page | Always available |
+| Edit | Opens the group in the editor | The group is used by a study, or your role can't edit |
+| Duplicate | Creates a copy of the group | Your role can't create groups |
+| Copy ticker codes | Copies the group's ticker symbols to your clipboard | The group has no tickers |
+| Delete | Opens the delete confirmation | The group is used by a study, or your role can't delete |
+
+There's no Share action, because asset groups don't have a private mode — every asset group you create is automatically visible to your whole organization, and there's no way to restrict one to just yourself.
+
+**Duplicate** finds a free name automatically: it tries `"<name> (copy)"` first, then `" (2)"`, `" (3)"`, and so on if that name is already taken. The description, tickers, and portfolio group members all carry over, and you become the new copy's author.
+
+**Copy ticker codes** copies the tickers in the group's own order, formatted so you can paste the list straight into a Python or JavaScript script (for example, `['AAPL','TSLA']`). You'll see a confirmation message telling you how many codes were copied — and if some couldn't be resolved to a symbol, it tells you that too.
 
 ### Bulk selection and delete confirmation
 
-Selecting rows turns the status bar into an action bar showing **{{count}} selected**, one bulk action — **Delete**, styled destructive — and **Clear selection**.
+Selecting one or more rows turns the toolbar into an action bar showing how many you've selected, a **Delete** button, and a **Clear selection** link.
 
-Single and bulk delete open the **same** dialog:
-
-| Element | Exact text |
-|---|---|
-| Title | **Confirm Action** |
-| Message | **Are you sure you want to delete the selected asset group? Associated studies may be affected.** |
-| Buttons | **Cancel** / **Confirm** |
+Deleting one group or several opens the same confirmation dialog, warning that any studies that depend on the group(s) may be affected.
 
 > [!CAUTION]
-> The message is singular even when you are deleting many rows, and the delete is **hard** — there is no soft-delete column and no restore. Confirming a bulk delete issues one delete request per selected id. Because deletion is a hard delete, it also frees a quota slot immediately.
+> Deletion is permanent — there's no way to restore a deleted asset group. If you select several groups and confirm, each one is deleted individually. Because it's a hard delete, it also frees up a slot against your plan's limit right away.
 
-Deletion fails with **409 Conflict** when a study still references the group: **"Cannot delete: this asset group is used by one or more studies. Delete those studies first."**
+If a study still uses the group, deletion is refused with a message telling you to delete those studies first.
 
 > [!WARNING]
-> The dependent-study count shown in the insights band only counts **live** studies, but the database constraint fires for soft-deleted studies too. A group can therefore report zero dependent studies, offer an enabled Delete, and still fail with a 409.
+> The dependent-studies count you see in the insights band only counts studies that are still active. If a study was deleted but still technically references the group, that group can show zero dependent studies, let you click Delete, and still fail. If that happens, check whether you or a teammate have any deleted studies that might still reference the group.
 
 ### Relations expander
 
-Each row carries a chevron that reveals a semantic map of what the group is wired to across the other registries. Controls read **Show details** / **Hide details**; the empty state is **"No linked resources yet."** and the failure state **"Couldn't load related resources."** The legend distinguishes **Direct link** from **Linked through a study**, and the lanes are **Studies**, **Strategies**, **Fitness**, **Asset Groups** and **Risk Managers**. The data is fetched once for the whole registry, on the first expansion.
+Each row has an expandable arrow that shows how the group connects to the rest of your workspace — which studies, strategies, fitness functions, other asset groups, and risk managers it's linked to, either directly or through a study. If nothing is linked, it says so; if the data fails to load, it tells you that too. This information is fetched once, the first time you expand any row.
 
-### Empty, loading and error states
+### Empty and error states
 
-| State | Text |
-|---|---|
-| Empty registry | title **No asset groups yet**, body **Create your first asset group to define a universe to trade.** |
-| Loading | a skeleton table with header cells **Name**, **Assets**, **Created** |
-| Load failure | **Error loading asset groups definitions** |
+If you haven't created any asset groups yet, the registry invites you to create your first one to define a universe to trade. While the list loads, you'll see a skeleton table; if loading fails, you'll see a message telling you the list couldn't be loaded.
 
-> [!NOTE]
-> The loading skeleton's headers (**Name**, **Assets**, **Created**) do not match the real table's (**Name**, **Description**, **Author**, **Created At**). That is cosmetic, but worth knowing if you are matching a screenshot.
+### Confirmation messages
 
-### Toasts
-
-| Event | Text |
-|---|---|
-| Created | **Asset group created** |
-| Created from a study | **Asset group created from the study** |
-| Duplicated | **Asset group duplicated** |
-| Updated | **Asset group updated successfully** |
-| Deleted | **Asset group deleted successfully** |
+You'll see a brief confirmation message whenever you create, duplicate, update, or delete an asset group, or when a study's frozen universe is saved as a new one — so you always know your action went through.
 
 ### Roles and quotas
 
-Role permissions are resolved from your Keycloak group path and gate the row actions and the create button:
+What you can do with asset groups depends on your role in the organization:
 
-| Role | Asset-group actions |
+| Role | What you can do |
 |---|---|
-| Owner | view, edit, create, delete |
-| Admin | view, edit, create, delete |
-| Manager | view, edit, create |
-| Analyst | view, create |
-| Unresolved role | view, create |
-
-The backend enforces its own permission strings, and they do not line up one-for-one with the role table:
-
-| Operation | Backend permission |
-|---|---|
-| list, metadata, coverage, last date, meta-quality, basket holdings | `data_cluster:read` |
-| create, from-study, from-grouping, duplicate | `data_cluster:create` |
-| update | `data_cluster:update` |
-| **delete** | **`root:all`** |
+| Owner | View, edit, create, delete |
+| Admin | View, edit, create, delete |
+| Manager | View, edit, create |
+| Analyst | View, create |
+| Unrecognized role | View, create |
 
 > [!WARNING]
-> There is no `data_cluster:delete` permission. Deletion requires `root:all`, which is stricter than the frontend role matrix implies — an Admin whose token lacks `root:all` will see an enabled Delete and get a permission failure from the server.
+> Deleting an asset group requires a higher level of access than the table above might suggest. If you're an Admin and your account isn't fully provisioned for deletion, you may see an enabled Delete button but get a permission error when you use it. If that happens, ask your organization's owner to check your access.
 
-Creation is metered by the `data_clusters` entitlement quota, enforced on create, from-study, from-grouping and duplicate. The free-tier default is **2 asset groups per organization**, counted as a live row count.
+How many asset groups your organization can have is capped by your plan — the free tier includes **2 asset groups per organization**, counted as however many you currently have. Creating a new one, duplicating one, or saving a study's frozen universe as a new group all count against this limit; deleting a group frees up a slot immediately. See [tokens and billing](/docs/tokens-and-billing).
 
-Asset Groups is **not** an entitlement-locked feature — the route is never blurred behind a locked overlay, on any tier.
+Unlike some premium features, Asset Groups is available on every plan — you won't find it locked behind an upgrade prompt.
 
-## Creation wizard and advanced options
+## Building an asset group
 
 > [!NOTE]
-> Despite the "wizard" name used internally, the create flow is **one screen**, not a sequence of steps. The only modals are the optional Portfolio Groups dialog and the mandatory naming and confirm dialog. There is no asset-class step — it was removed.
+> Creating an asset group is a single screen, not a series of steps. The only pop-ups are the optional Portfolio Groups dialog and the naming dialog you see when you save.
 
 ### Entry points
 
-| Entry | How |
+You can start creating an asset group from several places:
+
+| Where | How |
 |---|---|
-| **New Asset Group** button | from the registry command bar |
-| `?mode=create` | `/asset-groups?mode=create` |
-| Fintelligent | `ui_crud_action` with entity `asset_group` and action `create`, `edit` or `duplicate` — see [Fintelligent capabilities](/docs/fintelligent-capabilities) |
-| Markets | the **Create Asset Group** action on a ranking result |
+| Asset Groups registry | The **New Asset Group** button |
+| Direct link | Opening the create view from the registry |
+| Fintelligent | Ask [Fintelligent](/docs/fintelligent) to create, edit, or duplicate an asset group for you — see [Fintelligent capabilities](/docs/fintelligent-capabilities) |
+| Markets | The **Create Asset Group** action on a ranking result |
 | Studies | **Save as asset group** on a launched study's frozen universe panel |
 
 ### Page header and layout
 
 | Mode | Title | Subtitle |
 |---|---|---|
-| create | **Create Asset Group** | **Define a new asset group by selecting tickers and filters** |
-| edit | **Edit Asset Group** | **Update definition and ticker selection for this asset group** |
-| view | the group's name, falling back to **View Asset Group** | the group's description, falling back to **Inspect definition and ticker selection for this asset group** |
+| Create | **Create Asset Group** | **Define a new asset group by selecting tickers and filters** |
+| Edit | **Edit Asset Group** | **Update definition and ticker selection for this asset group** |
+| View | The group's name | The group's description |
 
-View mode adds a **Back** button before the title that returns to `/asset-groups`. It is the same component as the editor, wrapped in a disabled fieldset — every input is read-only, and no draft is hydrated or offered. The copy-codes icon button in the selection rail is the deliberate exception and keeps working.
+When you're just viewing a group, every field is read-only and a **Back** button takes you to the registry — the only thing you can still do is copy the ticker codes.
 
-Editing an existing group seeds the selection from its saved tickers. **Name and description are not on the working surface at all** — they are collected by the confirm dialog when you save.
+If you're editing an existing group, your current selection is pre-loaded. Note that the name and description aren't shown on the main screen while you work — you set those in the confirmation dialog when you save.
 
-The working surface is a four-band layout with exactly two scroll regions (the results grid body and the selection list):
-
-```text
-[A] command bar        44px   exchange · search · funnel · include-no-data · portfolio groups
-[B] filter matrix     138px   three strips, always visible, never collapses
-[C] criteria bar       30px   MATCH ALL · one chip per active dimension · live match count
-[D] work area        flexes   results grid (virtualised)  |  selection rail (300px)
-```
+The screen itself is organized top to bottom: a command bar for choosing your market and searching, a filter panel below it, a summary bar showing your active filters and how many instruments currently match, and finally the results grid on the left with your running selection on the right.
 
 ### Command bar fields
 
-| Field | Label / values | Type | Default | Validation and behaviour |
-|---|---|---|---|---|
-| Exchange | **US**, **Crypto**, **Forex** | select | **US** | Never empty, and there is no "All" option. The underlying codes are `US`, `CC` and `FOREX`. Changing it re-seeds the sort and un-dismisses the paused banner but **does not touch your selection** — the exchange scopes discovery, not the group being built |
-| Search | placeholder **Ticker or name…** | text | empty | debounced 300 ms |
-| Funnel readout | **{{universe}} listed · {{priced}} with data · {{matches}} match** | read-only | — | makes the default price gate legible instead of a silent filter |
-| Include no-data | **Include no-data** | switch | **off** | when on, instruments with no recent price data are included in the results |
-| Coverage warning | tooltip **Coverage data unavailable; filter availability may be inaccurate until the daily snapshot runs.** | icon | hidden | shown only when the per-exchange coverage snapshot is missing |
-| Portfolio groups | **Portfolio Groups**, plus ` (N)` when members are selected | button | — | opens the Portfolio Groups dialog |
+| Field | Options | Notes |
+|---|---|---|
+| Exchange | **US**, **Crypto**, **Forex** | There's no "All markets" option — you always search one market at a time. Switching markets changes what you're searching, but never touches what you've already selected |
+| Search | Ticker or name | Searches as you type |
+| Match readout | e.g. "8,412 listed · 6,203 with data · 340 match" | Shows the full market size, how many have usable price data, and how many currently match your filters |
+| Include no-data | on/off, default off | When off, instruments without recent price data are hidden from your results |
+| Coverage warning | icon, shown only when relevant | Warns you that filter results might be temporarily inaccurate because the day's data hasn't fully updated yet |
+| Portfolio Groups | button, shows a count when you've added any | Opens the dialog for adding whole portfolio groups as members (see below) |
 
 ### Contextual banners
 
-Two 26px banners can appear between the command bar and the filter matrix.
+Two banners can appear above the filter panel, depending on what you're doing:
 
-**Survivorship notice** (info) — shown when a historical index mode is active, "Include no-data" is off, and the price gate is hiding past members:
+**Survivorship notice** — appears when you're browsing a historical index membership, "Include no-data" is off, and some past members are being hidden because they no longer have recent price data. It tells you how many are hidden and offers an **Include them** button — useful because a historical universe usually *should* include instruments that were later delisted or dropped, to avoid survivorship bias. Fintela never turns this on for you automatically, since it would silently widen what you're about to save.
 
-> {{count}} past members are hidden: they have no recent price data. A historical universe usually wants them.
+**Paused criteria** — appears when you switch markets and some of your filters don't apply to the new one. Rather than deleting those filters, Fintela pauses them: they're shown as removable chips with a **Dismiss** button, and they're excluded from your match count until you either delete them or switch back to a market where they apply.
 
-with an **Include them** button that flips the switch. It is never flipped automatically, because doing so would widen what you are about to save.
+### Filter categories and data coverage
 
-**Paused criteria** (warning) — shown when filters are set that the current market cannot support:
+Filters are grouped into three categories, always visible as you search:
 
-> {{count}} criteria paused: not available on this market
+- **Classification** — sector, index membership, industry, theme, and similar categorical filters
+- **Size & Value** — market cap, valuation ratios, margins, and other fundamentals
+- **Performance** — price, volume, technical indicators, and other trading metrics
 
-with one deletable chip per paused filter and a **Dismiss** button. Switching markets **pauses** unsupported filters rather than deleting them, and paused filters are withheld from the query so the chips and the match count can never disagree.
+Each category shows a handful of the most useful filters up front, with a "show more" option for the rest. When a category has nothing useful to offer on the current market, it says so plainly instead of showing empty controls — for example, "No sector or industry classification is collected for Crypto."
 
-### Filter matrix and coverage tiers
+Not every filter is equally reliable on every market, and Fintela is upfront about it:
 
-The matrix is three strips, always visible:
+- Filters with strong data coverage behave normally.
+- Filters with thin coverage — say, under 10% of instruments — still work, but are labeled to let you know how many instruments actually have that data.
+- Filters that exist on other markets but have no data at all on your current one are shown disabled, with a tooltip explaining that this market has no data for it.
+- Filters that are planned but not yet available anywhere are shown disabled and marked "Coming soon."
 
-| Strip | Gutter label |
-|---|---|
-| classification | **Classification** |
-| sizeValue | **Size & Value** |
-| performance | **Performance** |
+If a filter is already active, it's always shown to you — an active filter is never tucked away, even if it would otherwise be hidden behind "show more."
 
-Under the gutter label, a strip with active filters shows **{{count}} active**. Each strip shows six filter cells and an expansion button on the right that reads `+N` when there is overflow and the literal **all** when there is none. It opens a portalled popover whose header carries the strip name and a live **{{count}} matches**. Setting a value inside the popover **pins** that filter into the strip for that exchange, remembered in local storage per exchange.
+### Available filters
 
-When a strip has nothing to offer on the current market it explains itself instead of rendering blank cells:
+**Classification filters:** Sector, Index, Industry, Theme, Sub-theme, Country, and Type. All of these let you pick one or more values, except Index, which works differently — see [Index membership](#index-membership-point-in-time-universes) below. Picking a Theme narrows the Sub-theme choices to that theme's children, so the two filters always stay consistent with each other.
 
-| Strip | Empty text |
-|---|---|
-| Classification | **No sector or industry classification is collected for {{exchange}}. Its {{total}} instruments are filterable by price, volume and technicals.** |
-| Size & Value | **No fundamentals are collected for {{exchange}}. Its {{total}} instruments are filterable by price, volume and technicals.** |
-| Performance | **No market data available for {{exchange}}.** |
+**Size & Value filters** — all are range filters, each with a full set of preset ranges plus a custom option:
 
-Which filters appear where is decided by **measured per-exchange coverage** returned by the screener schema, merged with a curated layout — there is no hardcoded per-market branch anywhere in the UI. Each filter resolves to a tier:
+Market Cap, P/E, Dividend Yield, P/B, Net Margin, ROE, P/S, Forward P/E, PEG, EBITDA, Revenue, Revenue/Share, Operating Margin, Gross Margin, ROA, ROIC, EV/EBITDA, EV/Sales, P/C, P/FCF, Debt/Equity, LT Debt/Equity, Current Ratio, Quick Ratio, Payout Ratio, EPS Growth, Sales Growth, EPS Surprise, Insider Ownership, Institutional Ownership, Shares Outstanding, and Float.
 
-| Tier | Meaning | How it renders |
-|---|---|---|
-| `ok` | well covered | normal |
-| `thin` | real, but under 10% coverage | enabled, annotated **only {{n}} of {{total}} have this data** |
-| `notHere` | works on another market, zero rows here | disabled, in the popover tail, tooltip **{{n}} of {{total}} — not available on {{exchange}}**, plus a ratio chip whose tooltip reads **This market has no data for this filter, so it cannot narrow the universe.** |
-| `soon` | modelled, but nothing populated anywhere yet | disabled, tooltip **Coming soon** |
-| `hidden` | never obtainable | not rendered at all |
+On crypto markets, several of these are swapped automatically for the metrics that actually apply — Diluted Cap, Dominance, Circulating Supply, Total Supply, and Max Supply — since equity fundamentals like P/E don't exist for crypto assets.
 
-Tier resolution **fails open**: with no schema at all, every filter resolves to `ok` rather than rendering the whole builder disabled.
+**Performance filters** — also all range filters with presets and a custom option, built entirely from end-of-day data so they work reliably on every market:
 
-Cell precedence inside a strip is: every **active** filter first (a set filter can never be hidden), then every **pinned** filter, then the remaining slots by curated rank with ties broken by real coverage.
+Price, Avg Volume, Change, RSI 14, vs SMA50, 52-Week Range, Volume, Relative Volume, 90-Day Volatility, ATR 14, Beta, vs SMA20, vs SMA200, Gap, Short Float, Short Ratio, Analyst Recommendation, Target Price, All-Time High, and All-Time Low.
 
-### Filter catalog
+### Range presets
 
-**Classification** — multi-select except `index`, which is the membership picker described below.
+Instead of typing raw numbers, each range filter offers a dropdown of named presets — for example, market cap has **Mega ($200B+)**, **Large ($10-200B)**, **Mid ($2-10B)**, **Small ($300M-2B)**, **Micro ($50-300M)**, and **Nano (<$50M)**. The first option is always **Any**, which clears the filter, and the last is **Custom…**, which lets you type your own minimum and maximum.
 
-| Rank | Key | Label |
-|---|---|---|
-| 1 | `sector` | **Sector** |
-| 2 | `index` | **Index** |
-| 3 | `industry` | **Industry** |
-| 4 | `theme` | **Theme** |
-| 5 | `subtheme` | **Sub-theme** |
-| 6 | `country` | **Country** |
-| 7 | `type` | **Type** |
+Other filters offer presets suited to what they measure — **Profitable**, **Positive**, **Negative**, **Oversold**, **Overbought**, **Strong Buy**, and so on, depending on the filter.
 
-Categorical filters map to their own plural query keys: `sector` → `sectors`, `industry` → `industries`, `country` → `countries`, `type` → `ticker_types`, `theme` → `themes`, `subtheme` → `subthemes`. Choosing themes narrows the sub-theme option list to their children, and dropping a theme prunes its orphaned sub-themes — otherwise the two would intersect to a silently empty set.
-
-**Size & Value** — all range filters, all with a Custom option. Ranks 10 to 14 are the crypto entries: they never displace the equity set on US, and they are promoted automatically on Crypto where the equity fundamentals resolve to `notHere`.
-
-| Rank | Key | Label | Unit |
-|---|---|---|---|
-| 1 | `market_cap` | **Mkt Cap** | currency |
-| 2 | `pe_ratio` | **P/E** | ratio |
-| 3 | `dividend_yield` | **Div Yield** | percent |
-| 4 | `price_book` | **P/B** | ratio |
-| 5 | `profit_margin` | **Net Margin** | percent |
-| 6 | `roe` | **ROE** | percent |
-| 7 | `price_sales_ttm` | **P/S** | ratio |
-| 8 | `forward_pe` | **Fwd P/E** | ratio |
-| 9 | `peg_ratio` | **PEG** | ratio |
-| 10 | `market_cap_diluted` | **Diluted Cap** | currency |
-| 11 | `market_cap_dominance` | **Dominance** | percent |
-| 12 | `circulating_supply` | **Circ. Supply** | number |
-| 13 | `total_supply` | **Total Supply** | number |
-| 14 | `max_supply` | **Max Supply** | number |
-| 20 | `ebitda` | **EBITDA** | currency |
-| 21 | `revenue_ttm` | **Revenue** | currency |
-| 22 | `revenue_per_share` | **Rev/Share** | ratio |
-| 23 | `operating_margin` | **Op Margin** | percent |
-| 24 | `gross_margin` | **Gross Margin** | percent |
-| 25 | `roa` | **ROA** | percent |
-| 26 | `roic` | **ROIC** | percent |
-| 27 | `ev_ebitda` | **EV/EBITDA** | multiple |
-| 28 | `ev_sales` | **EV/Sales** | multiple |
-| 29 | `price_cash` | **P/C** | ratio |
-| 30 | `price_fcf` | **P/FCF** | ratio |
-| 31 | `debt_equity` | **Debt/Eq** | ratio |
-| 32 | `lt_debt_equity` | **LT Debt/Eq** | ratio |
-| 33 | `current_ratio` | **Current Ratio** | ratio |
-| 34 | `quick_ratio` | **Quick Ratio** | ratio |
-| 35 | `payout_ratio` | **Payout** | percent |
-| 36 | `eps_growth_ttm` | **EPS Growth** | percent |
-| 37 | `sales_growth_ttm` | **Sales Growth** | percent |
-| 38 | `eps_surprise` | **EPS Surprise** | percent |
-| 39 | `insider_ownership` | **Insider Own** | percent |
-| 40 | `institutional_ownership` | **Inst. Own** | percent |
-| 41 | `shares_outstanding` | **Shares Out** | number |
-| 42 | `float` | **Float** | number |
-
-**Performance** — all range filters, all with a Custom option. Built deliberately from end-of-day-backed columns only, so the strip survives on every exchange.
-
-| Rank | Key | Label | Unit |
-|---|---|---|---|
-| 1 | `price` | **Price** | price |
-| 2 | `avg_volume` | **Avg Volume** | number |
-| 3 | `change` | **Change** | percent |
-| 4 | `rsi14` | **RSI 14** | number |
-| 5 | `sma50` | **vs SMA50** | percent |
-| 6 | `high_low_52w` | **52w Range** | percent |
-| 10 | `current_volume` | **Volume** | number |
-| 11 | `rel_volume` | **Rel Volume** | number |
-| 12 | `volatility` | **Volat 90d** | percent |
-| 13 | `atr` | **ATR 14** | number |
-| 14 | `beta` | **Beta** | number |
-| 15 | `sma20` | **vs SMA20** | percent |
-| 16 | `sma200` | **vs SMA200** | percent |
-| 17 | `gap` | **Gap** | percent |
-| 18 | `short_float` | **Short Float** | percent |
-| 19 | `short_ratio` | **Short Ratio** | number |
-| 20 | `analyst_recom` | **Analyst Rec** | number |
-| 21 | `target_price` | **Target Price** | price |
-| 22 | `ath_price` | **ATH** | price |
-| 23 | `atl_price` | **ATL** | price |
-
-### Range presets and unit conventions
-
-Every range filter is a dropdown of **named presets**, not a pair of free-text boxes. The first item is always **Any**, which clears the filter; the last is **Custom…**, which reveals two number inputs with placeholders **Min** and **Max**. A preset with no name is rendered from its bounds.
-
-| Preset | Label | Used by |
-|---|---|---|
-| `mega` | **Mega ($200B+)** | market cap |
-| `large` | **Large ($10-200B)** | market cap |
-| `mid` | **Mid ($2-10B)** | market cap |
-| `small` | **Small ($300M-2B)** | market cap |
-| `micro` | **Micro ($50-300M)** | market cap |
-| `nano` | **Nano (<$50M)** | market cap |
-| `profitable` | **Profitable** | P/E, forward P/E |
-| `positive` | **Positive** | margins, returns, change, EPS surprise, dividend yield, EBITDA |
-| `negative` | **Negative** | margins, change, EPS surprise, beta |
-| `none` | **None** | dividend yield, payout ratio |
-| `priceAbove` | **Price above** | moving averages |
-| `priceBelow` | **Price below** | moving averages |
-| `newHigh` | **New high** | 52-week range |
-| `oversold` | **Oversold** | RSI 14 |
-| `overbought` | **Overbought** | RSI 14 |
-| `strongBuy` | **Strong Buy** | analyst recommendation |
-| `buyBetter` | **Buy or better** | analyst recommendation |
-| `holdBetter` | **Hold or better** | analyst recommendation |
-
-> [!WARNING]
-> Units differ by filter and the control converts for you — which matters if you drive the screener through the API instead. `percent` filters are stored as a **fraction** (`0.05` means 5%), and the control shows a `%` adornment while converting a typed `5` to `0.05`. `currency` filters are stored in **raw dollars**, and the control shows `$M` while converting a typed `2000` to `2e9`. `price`, `ratio`, `multiple` and `number` are stored as typed.
-
-Range filters write `{key}_min` and `{key}_max` into the query body.
+> [!NOTE]
+> Whatever units make sense for a filter, the control shows and accepts them directly — percentages as percentages, dollar amounts in millions, and so on. You don't need to convert anything by hand.
 
 ### Index membership: point-in-time universes
 
-The **Index** filter is the closest thing the builder has to dynamic membership, and it is the most easily misread control on the screen. It is a real AND predicate with a point-in-time dimension: it selects the instruments that were members of an index **according to a timing rule you choose** — and then that resolved list is what gets frozen into your group.
+The Index filter is the most powerful — and most easily misunderstood — control in the screener. Unlike every other filter, it has a time dimension: it selects the instruments that were members of an index **according to a timing rule you choose**, and whatever it resolves to is what gets frozen into your group.
 
-| Control | Label | Values |
+| Setting | Options | What it means |
 |---|---|---|
-| Index | **Index** | autocomplete; each option reads `name (count)`, where the count is evaluated for the current mode |
-| Mode | **Evaluated at** | **Current**, **Ever**, **Period**, **On a date** |
-| Strictness (Period only) | **Membership** | **At any point** or **The whole period** |
-| Dates (Period only) | **From** / **To** | date inputs |
-| Date (On a date only) | **On** | a single date input |
+| Index | pick one | Each option shows how many instruments currently qualify |
+| Evaluated at | Current, Ever, Period, On a date | When membership is checked |
+| Membership (Period only) | At any point / The whole period | Whether an instrument only needs to have been a member at some point during the period, or a member throughout it |
+| Dates (Period only) | From / To | The date range to check |
+| Date (On a date only) | a single date | The exact date to check membership as of |
 
-Timing rules map to the wire values `current`, `ever`, `interval_any`, `interval_all` and `as_of`. **Period defaults to "At any point"**, the survivorship-bias-free reading.
+**Period defaults to "At any point,"** which is the setting that avoids survivorship bias — it includes instruments that were later removed from the index.
 
-Modes that need history are **disabled** when the index has none, with the tooltip **"No membership history is recorded for this index."** When history does exist, a caption reads **History covers {{from}} → {{to}}**, and the date inputs are clamped to that window. Clearing the index also clears its companion timing keys.
+If an index has no historical membership recorded, the modes that depend on history are disabled with a tooltip explaining why. When history is available, you'll see the date range it covers, and the date pickers are limited to that range.
 
 > [!TIP]
-> An index-based selection is still a snapshot. Once you save, the group holds the instruments the rule resolved to at that moment — it does not track the index afterwards. Pair a historical mode with **Include them** on the survivorship banner if you want delisted past members in the saved set.
+> An index-based selection is still just a snapshot. Once you save, the group holds whatever instruments the rule resolved to at that moment — it does not keep tracking the index afterward. If you want delisted or removed members included, pair a historical mode with the **Include them** option on the survivorship banner.
 
-**Platform groupings** — sector-ETF collections, indices as universes, sectors, industries — are **not** selectable here. You pick those in the [study builder](/docs/studies), which materialises a derived group instead. Those derived rows are hidden from this registry.
+Broader platform groupings — like sector ETF collections or "the S&P 500 as a universe" — aren't picked here. You choose those in the [study builder](/docs/studies) instead, which creates and maintains a matching asset group for you automatically; you won't see those groups in this registry, since you don't need to manage them yourself.
 
 ### Results grid
 
-The grid is virtualised, with 26px rows, and both **sorting and paging are server-side**. Columns are derived from measured coverage: a column removes itself when the market has zero coverage for its field.
+The results table shows the instruments that match your current filters, with columns that adjust to what data is actually available on the current market — for example, a column for a metric with zero coverage on Forex simply won't appear there.
 
-| Column | Header | Alignment |
-|---|---|---|
-| `ticker` | **Ticker**, or **Pair** on Forex | left |
-| `name` | **Name** | left |
-| `price` | **Price** | right |
-| `change_pct` | **Chg %** | right |
-| `volume` | **Volume** | right |
-| `avg_volume` | **Avg Vol** | right |
-| `market_cap` | **Mkt Cap** | right |
-| `sector` | **Sector** | left |
-| `industry` | **Industry** | left |
-| `theme` | **Theme** | left |
-| `subtheme` | **Sub-theme** | left |
-| `rel_volume` | **Rel Vol** | right |
-| `rsi14` | **RSI** | right |
-| `atr14` | **ATR** | right |
-| `volatility_90d` | **Volat** | right |
-| `price_vs_sma50` | **vs SMA50** | right |
-| `range52w` | **52w** | left |
+You'll typically see: Ticker (or Pair, on Forex), Name, Price, Change %, Volume, Avg Volume, Market Cap, Sector, Industry, Theme, Sub-theme, Relative Volume, RSI, ATR, Volatility, vs SMA50, and 52-Week Range. Clicking a Theme or Sub-theme tag adds it as a filter. Every column except Theme and Sub-theme can be sorted; results default to sorting by market cap on US stocks and by average volume on crypto and forex.
 
-Theme and Sub-theme cells are clickable tags — clicking one adds it to the corresponding filter. Every column except Theme and Sub-theme is sortable. The default sort is `market_cap` on US and `avg_volume` on Crypto and Forex, where market cap is null; direction defaults to descending, a new column sorts descending, and clicking the active column toggles.
+Selecting every matching instrument is a single click — a header checkbox lets you select all matches, not just the ones currently loaded on screen.
 
-The header checkbox means **"select all matches"**, not "the rows loaded so far". It is disabled at zero matches, indeterminate when only some loaded rows are selected, and checked only when a complete id set was resolved for exactly these criteria. Its accessible label is **Select all {{count}} matches**, and it becomes a spinner while resolving.
+The footer keeps three different numbers separate, on purpose, because they answer different questions:
 
-With no results the body reads **"No matches for these filters."**
+- **How many match** your current filters, in total.
+- **How many are shown** so far — the grid loads up to 5,000 rows at a time, and if more match, it tells you so and suggests narrowing your filters.
+- **How many are selected** — the set that will actually be saved into your group, capped at **10,000 instruments**. If your selection would exceed that, Fintela keeps the top instruments up to the cap and tells you so.
 
-The footer states three different counts, deliberately:
+Above the grid, a summary bar spells out your active filters in plain language — for example, "Sector is one of: Technology, Healthcare" — joined together, with a live count of how many instruments currently match all of them at once. The market you're searching is always part of that intersection but isn't shown as a removable chip, since you can't clear it — you can only change it.
 
-| Element | Text |
+### Your selection
+
+On the right side of the screen, you'll always see the group you're actually building — this is what gets saved, independent of whatever filters are currently active.
+
+- A header shows how many instruments are selected, and flags how many currently fall outside your active filters. **Your selection is never pruned just because you changed a filter** — the filters are only a discovery tool; they never remove something you've already chosen.
+- A **Copy ticker codes** button copies your current selection to the clipboard in a format ready to paste into Python or JavaScript.
+- A **Clear** button empties your entire selection.
+- If nothing is selected yet, it reads: "Pick assets from the table to build the cluster."
+- Above 2,000 selected instruments, Fintela stops showing individual names and just shows the count, to keep things responsive.
+- A small breakdown at the bottom shows your top markets and sectors by count, and flags when your selection spans more than one exchange — a reminder that the market filter only scopes what you're searching, not what's actually in your saved group.
+
+### Adding portfolio groups as instruments
+
+The Portfolio Groups dialog is where you add whole portfolios to an asset group, rather than individual tickers. Open it from the command bar.
+
+Each portfolio group you add contributes its combined equity curve, and Fintela scores and trades that curve exactly like it would a ticker's price series — which is what lets you build a strategy that allocates capital across portfolios you've already validated, instead of picking individual names.
+
+A couple of things worth knowing:
+
+- Adding a portfolio group only adds its curve. If you also want a strategy built on this asset group to be able to trade the actual tickers a portfolio group holds, you need to add those tickers to the group separately.
+- If a portfolio group you add holds tickers that aren't already in your asset group, Fintela tells you which ones, in case you want to add them directly.
+- If you try to save with a portfolio group that no longer exists or isn't yours, the save is rejected and you're told which one(s) couldn't be found.
+
+### Naming and saving your asset group
+
+The only place you name and describe an asset group is the confirmation dialog that appears when you click the primary save button.
+
+| Mode | What you're asked |
 |---|---|
-| Paging progress | **{{shown}} of {{total}}** |
-| Beyond the paging reach | **{{count}} beyond reach — narrow your filters** |
-| Labelled twin of the header checkbox | **Select all {{count}} matches** or **Clear these {{count}}** |
-| Selection truncated by the cap | **selected the top {{kept}} of {{total}} — narrow your filters** |
-| Snapshot marker | **snapshot {{date}}** |
+| Create | Name your asset group to create it |
+| Edit | Review the name and description before saving |
 
-> [!NOTE]
-> Three numbers, three meanings. **Matches** is how many instruments pass your criteria. **Shown of total** is how far paging has reached — the browse endpoint reaches 5,000 rows, so anything past that is reported as "beyond reach". **Selected** is the set that will actually be saved, capped at **10,000 instruments**; the server reports the truncation and the UI mirrors it.
+Both **Name** and **Description** are required — you can't confirm without filling in both, even though Description might look optional at a glance.
 
-The criteria bar above the grid makes the intersection literal: a static **MATCH ALL** label (not a mode switch), one deletable chip per dimension joined by `∧`, and a live match count on the right. The exchange is deliberately not a chip — it cannot be removed. Empty, it reads **"No filters — the whole market is selectable."** Paused criteria are excluded from this bar on purpose: they are not narrowing anything, and the paused banner is where they are surfaced.
+Before you get to this dialog, the save button itself stays disabled until your selection holds at least one ticker or portfolio group member, with a reminder message underneath the editor. A couple of other rules apply when you save:
 
-| Chip kind | Tooltip |
-|---|---|
-| Categorical | **{{field}} is one of: {{list}}** |
-| Theme / sub-theme (array overlap) | **Carries any of these: {{list}}** |
-| Range | **{{field}} {{bounds}}** |
-| Index | the full membership summary; the chip itself reads `index name · timing label` |
-
-### Selection rail
-
-The 300px rail on the right is the group you are actually building.
-
-- Header: **{{count}} selected**, plus **{{count}} outside filter** when some selected tickers fall outside the current criteria. **Selected tickers are never pruned by a filter change** — the filter is a discovery tool, not a constraint on the saved set.
-- A copy button, labelled **Copy ticker codes as ['AAPL','TSLA',…]**.
-- A **Clear** button that empties the whole selection.
-- Empty state: **"Pick assets from the table to build the cluster."**
-- Above 2,000 selected ids, names are not resolved and the list shows **{{count}} selected — names not listed.**
-- A composition strip at the bottom with two lines, **Markets** and **Sectors**, each showing the top three `name count` pairs. When more than one exchange is present it flags **multi-market cluster**, with the tooltip **"This cluster spans more than one market. The exchange filter scopes discovery, not the saved set."**
-
-### Advanced options: portfolio groups as instruments
-
-The Portfolio Groups dialog is the advanced panel of this editor. It is opened from the command bar and titled **Portfolio Groups (as instruments)**.
-
-| Element | Exact text |
-|---|---|
-| Help line | **Optional. Each portfolio group is injected as its equity curve and scored exactly like a ticker price series — enabling strategies that allocate capital across your own portfolios.** |
-| Disclosure title | **Why add portfolio groups?** |
-| Paragraph 1 | **Use it to build a strategy of strategies — one that rotates capital between portfolios you have already validated, instead of picking individual names.** |
-| Paragraph 2 | **A portfolio group contributes only its curve. If you also want a strategy to trade the tickers a portfolio group holds, add those tickers to this cluster as well.** |
-| Picker | multi-select autocomplete over your organization's portfolio groups, placeholder **Add portfolio groups…** |
-| Missing-ticker caption | **These portfolio groups hold {{count}} ticker(s) not in this cluster: {{codes}}. Add them if you want a strategy to trade those tickers directly.** — the first 12 codes, then an ellipsis |
-| Footer | **Close** |
-
-Every member is written with `injection_mode: "curve"`, which is the only value the field takes today. Members are validated server-side: each must exist, belong to your organization and not be soft-deleted, or the save is rejected with **"Basket(s) not found or not owned by this organization: {ids}"**.
-
-### Naming and confirm dialog
-
-This dialog is the **only** place an asset group is named. It opens when you press the primary button.
-
-| Element | Exact text |
-|---|---|
-| Title | **Confirm Action** |
-| Context line, create | **Name your asset group to create it.** |
-| Context line, edit | **Review the name and description before saving.** |
-| Field 1 | **Name** — required, autofocused |
-| Field 2 | **Description** — required, multiline |
-| Buttons | **Cancel** / **Confirm** |
-
-Validation across the whole flow:
-
-| Rule | Where it is enforced | Message |
-|---|---|---|
-| At least one ticker or one portfolio-group member | the working surface; the primary button stays disabled until it holds | **Select at least one ticker or portfolio group** (red caption under the editor) |
-| Name is non-empty | the dialog; Confirm stays disabled | — |
-| Description is non-empty | the dialog; Confirm stays disabled | — |
-| Name is not already taken | the dialog, **create mode only**, case-insensitive against the groups already loaded in your list | **This name already exists** |
-| No ticker code on two exchanges within one group | the server, on create and update | **Ticker codes appear in multiple exchanges: {code} (EX1, EX2); …** — HTTP 406 |
-| Group is not referenced by a live study | the server, on update | **This asset group is currently used in a study and cannot be edited.** — HTTP 409 |
-
-> [!NOTE]
-> Description is effectively **required**, even though the database column is nullable and the API accepts `null`. Confirm does not enable until both fields are filled.
+- The same ticker symbol can't appear under two different exchanges within one group — if it does, you'll get a clear error naming the conflicting symbol and exchanges.
+- If the group is already used by a study, you can't save changes to it until that reference is removed.
 
 > [!WARNING]
-> Names are **not** guaranteed unique. The collision check runs only in create mode, only client-side, and only against the rows your browser has loaded; the server's create path performs no uniqueness check, and there is no unique index on the name column. Only **Duplicate** allocates a guaranteed-free name.
+> Names aren't guaranteed to be unique. When you're creating a new group, Fintela checks the name you type against the groups already loaded in your list and warns you if it looks like a duplicate — but that check only runs against what's currently loaded, and it doesn't apply when editing. If you specifically need a guaranteed-unique name, use **Duplicate** on an existing group instead, which always finds a free name for you.
 
-The primary button reads **Create asset group** in create mode and **Save changes** otherwise, and is disabled while saving or while the universe is empty. **Cancel** runs the shared leave guard: **"Leave without saving?"**, with **Keep editing**, **Leave, keep the draft** and **Discard and leave**.
+The save button reads **Create asset group** or **Save changes**, depending on whether you're creating or editing, and it's disabled while saving or while your selection is empty. If you try to leave without saving, Fintela asks whether you want to keep editing, leave your draft in place, or discard it.
 
-Unsaved work is kept as a draft, badged **Unsaved draft** or **Unsaved changes**. When a draft is restored — or [Fintelligent](/docs/fintelligent) left one — a banner appears reading **"Fintelligent left an unsaved draft here"**, **"You left unsaved changes here"** or **"Restored from your previous session"**, with the body **"This is not the saved version. Review it before saving, or discard it to go back to what's saved."** and the actions **Keep the draft** / **Discard and restore**. Saving while a draft is unreviewed is refused with **"Review the draft before saving"**. Drafts are keyed per group; create mode has its own slot, and the view page has a separate read-only slot so opening "view" never surfaces someone's abandoned edit.
+Speaking of drafts: if you leave the editor with unsaved changes, Fintela keeps them for you. The next time you come back — even if [Fintelligent](/docs/fintelligent) started the draft on your behalf — you'll see a banner letting you review it before deciding whether to keep it or start fresh from what's actually saved. You won't be allowed to save on top of an unreviewed draft without looking at it first.
 
-### What the save sends
+### What gets saved
 
-Create issues `POST /data_clusters`:
+When you confirm, Fintela records the group's name, description, and your exact selection of tickers and portfolio group members. Nothing about how you found them — the market you searched, the filters you set, the sort order, the "Include no-data" toggle — is saved; only the resulting list is. Once your group is created or updated, you're taken back to the Asset Groups registry.
 
-```http
-POST /data_clusters
-Content-Type: application/json
+### Other ways an asset group gets created
 
-{
-  "name": "US Large Cap Momentum",
-  "description": "Top 200 by market cap, RSI over 60",
-  "tickers_id": [101, 204, 3391],
-  "basket_members": [
-    { "basket_id": "3f2b...", "injection_mode": "curve" }
-  ]
-}
-```
+Beyond the builder, an asset group can also be created for you automatically:
 
-Edit issues `PUT /data_clusters` with the same fields plus `data_cluster_id`. Both respond with the group id, wrapped in the standard `{"data": …}` envelope.
+| Trigger | What happens |
+|---|---|
+| **Save as asset group**, on a launched study's frozen universe panel | Takes the exact universe your study actually ran on and saves it as a new group, named after the study by default. You can only do this once your study has been launched and has a frozen runnable universe — if it doesn't yet, you'll be told to launch it first. These groups show up normally in your registry |
+| Picking a platform grouping (like a sector or an index) as a universe in the [study builder](/docs/studies) | Fintela resolves the grouping's current membership into a group behind the scenes. Picking the same grouping again later refreshes that group's membership, but never renames it. These groups are hidden from your registry — you never manage them directly |
+| **Duplicate**, from the row action menu | Copies an existing group's description, tickers, and portfolio group members into a new, uniquely-named group |
 
-**Nothing about the screener state is persisted** — not the exchange, not the filters, not the sort, not the "Include no-data" switch. On success the draft is discarded and you are returned to `/asset-groups`.
-
-### Derived creation paths
-
-Three endpoints create a group without going through the builder.
-
-| Path | Trigger | Behaviour |
-|---|---|---|
-| `POST /data_clusters/from_study` | **Save as asset group** on a study's frozen universe panel | Requires a launched study with a frozen runnable universe; otherwise **"Study {id} has no frozen runnable universe yet — launch it first, then save the universe it ran on."** (406). Default name is `<study name> · runnable universe`. Rows created this way **do** appear in the registry, with no lineage badge |
-| `POST /data_clusters/from_grouping` | the study builder, when you pick a platform grouping as a universe | Resolves the grouping's **current** membership. Deduplicated per organization and grouping: an existing derived row has its membership refreshed but **never its name**. These rows are **hidden from this registry** |
-| `POST /data_clusters/{id}/duplicate` | the **Duplicate** row action | Copies description, tickers and members; allocates `"<name> (copy)"` with numeric suffixes on collision; responds `201 Created` |
-
-All three consume a quota slot.
+Each of these counts against your plan's asset-group limit, the same as creating one by hand.
 
 ## Execution modes
 
-### Asset groups have no execution mode
+### Asset groups don't have an execution mode
 
-Across the [registries](/docs/registries), an execution mode says **where the code runs**:
+Across the other [registries](/docs/registries), an execution mode describes where your code actually runs:
 
-- **Internal** — you write Python inside Fintela against a deterministic function signature, and the platform compiles and runs it on its own infrastructure.
-- **External** — you host the logic yourself, in any language, on your own infrastructure, so it can reach private data Fintela never sees.
+- **Internal** — you write your logic directly inside Fintela, in Python, and the platform runs it for you.
+- **External** — you host your own logic on your own systems, in any language, so it can use private data or models Fintela never sees, and connect it to Fintela to be scored and traded.
 
-**Neither applies to asset groups.** An asset group carries no code, so there is nothing to compile, nothing to pin as a validated snapshot, and no endpoint to call. The object has no `execution_type` field at any layer, the registry has no Internal/External filter or column, and the editor has no compile step — the save path described above is its whole lifecycle. There is no way to "bring your own" universe by pointing Fintela at a service you host: the membership is a list of platform instrument ids plus your own portfolio-group ids, and both must already exist in the platform.
+**Neither applies to asset groups**, because an asset group doesn't contain any code — there's nothing to run, so there's no Internal/External choice to make. You won't find an execution-mode filter or column on this registry, and there's no equivalent of "bring your own universe" by pointing Fintela at something you host: a group's membership is always built from Fintela's own instrument list plus your own portfolio groups, both of which already exist inside the platform.
 
-For the same reason, per-resource visibility does not exist here. Visibility was rescoped to code resources only, and a trigger forces organization visibility on every asset-group write.
+For the same reason, asset groups don't have per-group visibility controls the way strategies or fitness functions might — every asset group you create is automatically visible to your whole organization.
 
 ### Where Internal and External do apply
 
-The execution-mode split belongs to the code registries. If you are looking for it, these are the pages:
+If you're looking for the Internal/External choice, it lives on the code-carrying registries instead:
 
-| Registry | Where to read about its modes |
+| Registry | Where to read about it |
 |---|---|
 | Strategies | [Strategies](/docs/strategies), [External strategies](/docs/external-strategies) |
 | Fitness functions | [Fitness functions](/docs/fitness-functions), [External fitness](/docs/external-fitness) |
 | Risk managers | [Risk managers](/docs/risk-managers) |
 | The concept itself | [Execution modes](/docs/execution-modes) |
 
-An external strategy still needs an asset group for its universe. The universe is supplied by the platform either way — external execution changes where your *logic* runs, not where the instrument list comes from.
+An externally-run strategy still needs an asset group to define its universe, the same as an internal one does. Choosing External changes where your strategy's *logic* runs — it never changes where the tradeable instrument list comes from.
 
-### The two axes that resemble a mode
+### Two choices that can look like a mode, but aren't
 
-Two choices in the builder can look like a mode and are not:
+Two settings in the builder are easy to mistake for an execution-mode-style choice. They aren't:
 
-| Axis | Values | What it actually controls |
+| Choice | Options | What it actually affects |
 |---|---|---|
-| Membership kind | tickers, portfolio-group curves, or both | what series the price panel contains. A members-only group is legal and is the portfolio-of-portfolios case |
-| Discovery exchange | **US**, **Crypto**, **Forex** | which market the screener searches. It **scopes discovery, not the saved set** — changing it never touches your selection, and a single group can legitimately span several markets |
+| Membership kind | Tickers, portfolio group curves, or both | What instruments end up in the group. A group made entirely of portfolio groups is perfectly valid |
+| Discovery exchange | US, Crypto, Forex | Which market the screener is currently searching. It only scopes your search — switching it never touches what you've already selected, and a single group can hold instruments from more than one market |
 
-### Programmatic access
+### Using asset groups outside Fintela
 
-| Method | Path | Permission | Quota |
-|---|---|---|---|
-| `GET` | `/data_clusters` | `data_cluster:read` | — |
-| `POST` | `/data_clusters` | `data_cluster:create` | +1 |
-| `PUT` | `/data_clusters` | `data_cluster:update` | — |
-| `DELETE` | `/data_clusters` | `root:all` | — |
-| `GET` | `/data_clusters/metadata` | `data_cluster:read` | — |
-| `GET` | `/data_clusters/basket_holdings_tickers` | `data_cluster:read` | — |
-| `POST` | `/data_clusters/from_study` | `data_cluster:create` | +1 |
-| `POST` | `/data_clusters/from_grouping` | `data_cluster:create` | +1 |
-| `POST` | `/data_clusters/{id}/duplicate` | `data_cluster:create` | +1 |
-| `GET` | `/data_clusters/{id}/last_date` | `data_cluster:read` | — |
-| `GET` | `/data_clusters/{id}/date_coverage` | `data_cluster:read` | — |
-| `GET` | `/data_clusters/{id}/meta-quality` | `data_cluster:read` | — |
+If you want to pull your asset groups into your own tools, spreadsheets, or dashboards, the read-only Developer API lets you do that securely. You'll need a personal access key, which you can generate from your account settings — see [API authentication](/docs/api-authentication).
 
-`GET /data_clusters` accepts one query parameter, `created_by`, and **only the value `me`** (matched case-insensitively); anything else is rejected with 400 and the message `` `created_by` only accepts the value `me` ``. `GET /data_clusters/metadata` takes `data_cluster_ids` as a comma-separated list.
-
-The public Developer API exposes exactly one read-only endpoint:
-
-```http
-GET /v1/data_clusters
-Authorization: Bearer <api-key>
-```
-
-It returns `id`, `name`, `description`, `ticker_count` and `created_at` per group, newest first, scoped to your organization. Authentication is header-only — there is no `?api_key=` form. There is **no create, update or delete** for asset groups on the Developer API, and unlike the in-app list this one **does not hide grouping-derived rows**. See [Asset Groups API](/docs/api-asset-groups) and [API authentication](/docs/api-authentication).
+The API returns each group's name, description, ticker count, and creation date, scoped to your own organization, newest first. It's strictly read-only: there's no way to create, edit, or delete an asset group through it, so it can never change anything in your account by accident. See [Asset Groups API](/docs/api-asset-groups) for details.

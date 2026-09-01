@@ -4,66 +4,47 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 6
 published: true
-updated: 2026-08-20
-summary: Every portfolio metric Fintela computes, with its exact key, definition and where it appears.
-keywords: metrics, sharpe, sortino, calmar, cagr, max drawdown, win rate, volatility, definitions, reference, keys
+updated: 2026-09-01
+summary: Every performance metric Fintela calculates, explained in plain language — what each one measures, how to read it, and where it shows up in the app.
+keywords: metrics, sharpe ratio, sortino ratio, calmar ratio, cagr, max drawdown, win rate, volatility, definitions, reference
 ---
 
-Every number Fintela ranks by, charts, tabulates or optimizes toward comes from one compiled catalog
-of **35 metrics** — 26 computed from a portfolio's own equity curve and closed trades, and 9
-computed against a benchmark. Each entry carries a stable `metric_name`, a unit, a direction and a
-one-line description, and that entry is what every surface reads: the metric picker, the comparison
-tables, the fitness objective list, the Markets screener and the API's `metric_name` parameter all
-resolve against the same list. This page is the definitive source for what each one means and how it
-is computed. Where the code does not pin a convention, that is said rather than guessed.
+Every number Fintela ranks by, charts, tabulates, or lets you optimize toward comes from one shared
+list of **35 metrics** — 26 calculated from a portfolio's own equity curve and closed trades, and 9
+calculated against a benchmark. Each metric has a name, a unit, a direction (whether higher or lower
+is better), and a plain-language definition, and every screen in Fintela — the metric picker,
+comparison tables, the objective list you choose from when setting up a search, the Market screener,
+and anything you pull through the API — reads from this same list. This page is the definitive
+source for what each metric means and how it's calculated.
 
 ## What a metric is here
 
-A metric is an entry in `Metrics::catalog()` or `Metrics::benchmark_catalog()`
-(`crates/portfolio-model/src/portfolio_metrics.rs`) plus, per organization, any promoted fitness
-function. Every entry carries six fields:
+Every metric in Fintela — whether it's one of the 35 built in, or a custom metric your organization
+has promoted from a fitness function — carries the same properties. Knowing them makes every table,
+tooltip, and picker in the product easier to read.
 
-| Field | Values | What it controls |
+| Property | What it means | Where you'll notice it |
 |---|---|---|
-| `name` | e.g. `sharpe_ratio` | The key used everywhere — the `metric_name` column, the `metric_name` query parameter, the frontend's metric maps. |
-| `unit` | `%`, `annualized %`, `return %`, `ratio`, `dimensionless`, `days`, `score` | How the value is rendered (see [Display and formatting](#display-and-formatting)). |
-| `direction` | `higher_is_better`, `lower_is_better`, `informational` | Default sort order, heat colouring, and whether the metric can be an optimization objective at all. |
-| `category` | `return`, `risk`, `risk_adjusted`, `recovery`, `distribution`, `trade`, `optimizer`, `benchmark` | Grouping in pickers. Note the UI relabels some of these — see [Display and formatting](#display-and-formatting). |
-| `requires_normalization` | boolean | True when the raw value grows with the length of the period, so comparing it across stages of unequal length is misleading. True for exactly three metrics: `total_return`, `max_drawdown_duration`, `recovery_factor`. |
-| `applies_to_tickers` | boolean | Whether the metric is meaningful for a plain price series. False for `omega_ratio`, `profit_factor`, `win_rate`, `payoff_ratio`, `trade_win_rate`, `trade_profit_factor`, `avg_trade_duration` and `expectancy`. |
+| Name | The short identifier for the metric (e.g. `sharpe_ratio`). It's what you select in the metric picker and filters, and — if you pull data into your own tools — the identifier you'd use there too. | Metric picker, comparison tables, API |
+| Unit | How the value is expressed: a percentage, an annualized percentage, a ratio, a plain number, or a count of days. Determines how it's formatted — see [Display and formatting](#display-and-formatting). | Every table and card |
+| Direction | Whether a higher or lower value is better — or whether the metric is purely informational with no "better" direction at all. Drives sort order, colour-coding, and whether the metric can be chosen as a search objective. | Sort order, heat colours, info tooltip |
+| Category | A rough grouping — return, risk, risk-adjusted, recovery, distribution, trade, or benchmark — used to organize the metric picker. The UI labels a few of these slightly differently; see [Display and formatting](#display-and-formatting). | Metric picker, heatmap |
+| Needs normalization | True for three metrics whose raw value naturally grows the longer the period you measure, which makes comparing them across stages of very different lengths misleading. | `total_return`, `max_drawdown_duration`, `recovery_factor` |
+| Works on a plain ticker | Whether the metric makes sense for a raw price series with no trades attached to it, not just a portfolio. It's `false` for a handful of trade-based metrics — see below. | Market screener, Data Explorer |
 
-### The catalog endpoint
+> [!TIP] Pulling this same list into your own tools
+> If you use the read-only [Developer API](/docs/api-trials-portfolios) to bring your results into
+> your own dashboards, the same reference list — names, units, directions, definitions, and any
+> custom metrics your organization has promoted — is available there too, so your own tooling never
+> drifts out of sync with what you see in Fintela.
 
-```http
-GET /metrics
-```
+## Portfolio metrics
 
-Returns a flat array — the 26 core entries, then the 9 benchmark entries, then the organization's
-promoted fitness metrics in name order. Requires the `portfolios:read` permission, the same one that
-guards the whole portfolios surface.
-
-| Response field | Type | Notes |
-|---|---|---|
-| `name` | string | The canonical key. |
-| `unit` | string | As above. |
-| `direction` | string | `higher_is_better` / `lower_is_better` / `informational`. |
-| `description` | string | The one-line definition quoted in the tables below. |
-| `category` | string | As above. |
-| `applies_to_tickers` | boolean | `false` for every promoted metric. |
-| `is_custom` | boolean | `true` only for a promoted fitness function. |
-| `fitness_id` | integer or null | `developers.fitness.id` behind a custom metric; `null` for built-ins. |
-| `display_label` | string or null | `null` for built-ins, whose labels the client derives from the name. |
-
-If the caller's organization cannot be resolved, the endpoint degrades to the built-ins rather than
-failing — a picker missing its custom entries is still usable.
-
-## Core catalog
-
-The 26 entries of `Metrics::catalog()`. **Label** is what the UI renders: for a built-in it is
-derived from the key by replacing underscores with spaces and title-casing each word, so it is
-predictable but not always pretty (`var_95` reads `Var 95`). **Definition** is the catalog
-`description`, verbatim — it is also the body of the tooltip behind the info icon next to any metric
-label.
+These are the 26 metrics calculated from a portfolio's own performance — its equity curve and its
+closed trades. **Label** is what you'll actually see in the app: for a built-in metric it's generated
+from the name (underscores become spaces, each word capitalized), so it's predictable but not always
+polished — `var_95` becomes `Var 95`. **Definition** is the exact text shown when you hover the info
+icon next to any metric label.
 
 | Key | Label | Unit | Direction | Definition |
 |---|---|---|---|---|
@@ -72,15 +53,15 @@ label.
 | `volatility` | `Volatility` | `annualized %` | lower | Annualized standard deviation of returns. Measures how much returns fluctuate. |
 | `max_drawdown` | `Max Drawdown` | `%` | lower | Largest peak-to-trough decline. Represents the worst-case loss scenario during the period. |
 | `average_drawdown` | `Average Drawdown` | `%` | lower | Mean depth of all drawdowns recorded during the period. |
-| `max_drawdown_duration` | `Max Drawdown Duration` | `days` | lower | Number of TRADING days spent below the previous peak during the deepest drawdown. Counted in bars, so a calendar span is roughly a third longer. |
+| `max_drawdown_duration` | `Max Drawdown Duration` | `days` | lower | Number of trading days spent below the previous peak during the deepest drawdown. Counted in trading days, so the calendar span is roughly a third longer. |
 | `ulcer_index` | `Ulcer Index` | `%` | lower | Root mean square of daily drawdowns. Penalizes deep and prolonged drawdowns more than simple volatility. |
 | `var_95` | `Var 95` | `annualized %` | lower | Value at Risk at 95% confidence, annualized: the loss the worst 5% of days imply over a year. |
 | `cvar_95` | `Cvar 95` | `annualized %` | lower | Conditional Value at Risk, annualized: average loss on the worst 5% of days. More conservative than VaR. |
-| `sharpe_ratio` | `Sharpe Ratio` | `ratio` | higher | Excess return per unit of total risk (volatility). Values > 1 are acceptable; > 2 are strong. |
+| `sharpe_ratio` | `Sharpe Ratio` | `ratio` | higher | Excess return per unit of total risk (volatility). Values above 1 are acceptable; above 2 are strong. |
 | `sortino_ratio` | `Sortino Ratio` | `ratio` | higher | Like Sharpe but penalizes only downside volatility. More relevant for asymmetric strategies. |
 | `calmar_ratio` | `Calmar Ratio` | `ratio` | higher | CAGR divided by max drawdown. Highly sensitive to extreme drawdowns. |
-| `martin_ratio` | `Martin Ratio` | `ratio` | higher | CAGR divided by Ulcer Index. More robust variant of Calmar for prolonged drawdowns. |
-| `omega_ratio` | `Omega Ratio` | `ratio` | higher | Ratio of positive to negative returns relative to a threshold. Values > 1 mean gains outweigh losses. |
+| `martin_ratio` | `Martin Ratio` | `ratio` | higher | CAGR divided by Ulcer Index. A more robust variant of Calmar for prolonged drawdowns. |
+| `omega_ratio` | `Omega Ratio` | `ratio` | higher | Ratio of positive to negative returns relative to a threshold. Values above 1 mean gains outweigh losses. |
 | `profit_factor` | `Profit Factor` | `ratio` | higher | Sum of positive returns divided by the absolute sum of negative returns. |
 | `recovery_factor` | `Recovery Factor` | `ratio` | higher | Total return divided by max drawdown. Indicates how much return was generated per unit of peak drawdown risk. |
 | `skewness` | `Skewness` | `dimensionless` | higher | Asymmetry of the return distribution. Positive values indicate more extreme positive outliers. |
@@ -90,413 +71,381 @@ label.
 | `payoff_ratio` | `Payoff Ratio` | `ratio` | higher | Average winning day return divided by the average losing day return (absolute value). |
 | `trade_win_rate` | `Trade Win Rate` | `%` | higher | Percentage of closed trades that ended in profit. |
 | `trade_profit_factor` | `Trade Profit Factor` | `ratio` | higher | Profit factor across individual trades: total profit from winning trades divided by total loss from losing trades. |
-| `avg_trade_duration` | `Avg Trade Duration` | `days` | **lower** | Average holding period of closed trades in days. |
+| `avg_trade_duration` | `Avg Trade Duration` | `days` | **lower** | Average holding period of closed trades, in days. |
 | `expectancy` | `Expectancy` | `return %` | higher | Average expected return per trade as a percentage of capital. |
-| `fitness` | `Fitness` | `score` | higher | Optimizer fitness score used during strategy search. Higher means better alignment with the configured objective. |
+| `fitness` | `Fitness` | `score` | higher | Your search objective's score for this trial. Higher means a better match to what you configured the search to optimize for. |
 
-> [!WARNING] `win_rate` and `trade_win_rate` are different statistics
-> `win_rate` counts **days** with a positive return. `trade_win_rate` counts **closed round-trips**
-> that ended in profit. The same split applies to `profit_factor` (daily returns) versus
-> `trade_profit_factor` (per-trade). `payoff_ratio` is per-day and has no per-trade twin in this
-> catalog.
+> [!WARNING] `Win Rate` and `Trade Win Rate` are different statistics
+> `Win Rate` counts **days** with a positive return. `Trade Win Rate` counts **closed round-trips**
+> that ended in profit. The same split applies to `Profit Factor` (daily returns) versus
+> `Trade Profit Factor` (per trade). `Payoff Ratio` is per-day and has no per-trade counterpart in
+> this list.
 
-### How each core metric is computed
+### How each metric is calculated
 
-Everything except the four trade aggregates and `fitness` is reduced from the portfolio's daily
-equity (NAV) series. Before any reducer runs, the series is preprocessed identically on every
-surface: it is split on its missing-value pattern with each segment's boundaries trimmed, then
-zeros become missing and values are forward-filled up to the last real observation. A non-finite
-result is dropped, so the metric reports "no value" rather than a nonsense number.
+Everything except the four trade-based metrics and Fitness is calculated from the portfolio's daily
+value (NAV) series. That series is cleaned up the same way everywhere in Fintela before any
+calculation runs, so the same input always produces the same numbers — and a calculation that can't
+produce a sane result reports "no value" rather than a misleading one.
 
-Daily return is `r_t = (P_t − P_{t−1}) / P_{t−1}`; a zero denominator yields a missing return.
+Daily return is `(today's value − yesterday's value) ÷ yesterday's value`; a day with no prior value
+to compare against has no return.
 
-| Key | Convention |
+| Key | How it's calculated |
 |---|---|
-| `total_return` | `last / first − 1` over the period's NAV. |
-| `compound_annual_growth_rate` | `(last / first)^(1 / years) − 1`, where `years` is the **calendar** span between the period's first and last NAV date divided by 365.25 — the same derivation for named stages, for `overall` and for the nine rolling windows. |
-| `volatility` | Sample standard deviation (denominator `n − 1`) of daily returns, multiplied by `√252`. Needs at least 3 NAV points. |
-| `max_drawdown` | `max over t of (running_peak − P_t) / running_peak`. Reported as a **positive** fraction. |
-| `average_drawdown` | Mean over every observation of `(peak_t − P_t) / peak_t`. |
-| `max_drawdown_duration` | Longest run of consecutive observations strictly below the running peak, counted in **bars** — trading days on a daily series, never calendar days. |
-| `ulcer_index` | `sqrt(mean of squared drawdown ratios)` over every observation. |
-| `var_95` | Negated 5th percentile of daily returns (linear-interpolation quantile, numpy's default), multiplied by `√252`. Needs at least 20 finite daily returns, otherwise no value. |
-| `cvar_95` | Negated mean of the daily returns at or below the 5th percentile, multiplied by `√252`. Needs at least 20 finite daily returns. |
-| `sharpe_ratio` | `mean(excess daily return) / sample sd (n − 1) × √252`. The stored metric uses a **risk-free rate of zero**; see [Risk-free-rate variants](#risk-free-rate-variants). Needs at least 2 NAV points. |
-| `sortino_ratio` | `mean(excess daily return) / downside deviation × √252`, where downside deviation is the root-mean-square of `min(excess return, 0)` over **all** observations — a population denominator `n`, not `n − 1`. |
-| `calmar_ratio` | `compound_annual_growth_rate / max_drawdown`. No value when max drawdown is exactly 0. |
-| `martin_ratio` | `compound_annual_growth_rate / ulcer_index`. No value when the Ulcer Index is exactly 0. |
-| `omega_ratio` | `Σ max(r − τ, 0) / Σ max(τ − r, 0)` with the threshold `τ` fixed at **0**. |
-| `profit_factor` | `Σ positive daily returns / abs(Σ negative daily returns)`. No value when there are no losing days. |
-| `recovery_factor` | `total_return / max_drawdown`, **without** an absolute value — a losing portfolio therefore reports a negative recovery factor rather than ranking alongside a winning one. |
-| `skewness` | Third central moment (population, `÷ n`) divided by the cube of the sample standard deviation (`n − 1`). Needs at least 3 returns. |
-| `excess_kurtosis` | Fourth central moment (population, `÷ n`) divided by the square of the sample variance (`n − 1`), minus 3. Needs at least 4 returns. |
-| `tail_ratio` | 95th percentile divided by the absolute 5th percentile of daily returns. Needs at least 20 finite returns. |
-| `win_rate` | Share of daily returns strictly greater than 0. |
-| `payoff_ratio` | Mean winning daily return divided by the absolute mean losing daily return. Needs at least one of each. |
-| `trade_win_rate` | Closed trades whose return percentage is strictly greater than 0, divided by all closed trades. |
-| `trade_profit_factor` | Sum of winning trade return percentages divided by the absolute sum of losing ones. A trade whose return is exactly 0 counts as a **loser**. No value when there are no losers. |
-| `avg_trade_duration` | Mean **calendar** days from entry to exit across closed trades. Contrast `max_drawdown_duration`, which is in trading days. |
-| `expectancy` | `trade_win_rate × mean winning trade return + (1 − trade_win_rate) × mean losing trade return`, over closed trades. Needs at least one winner and one loser. |
-| `fitness` | Not reduced from equity. It is whatever the study's fitness objective returned for the trial, written by the optimizer at the `overall` stage. |
+| `total_return` | `last value / first value − 1` over the period's NAV. |
+| `compound_annual_growth_rate` | `(last / first)^(1 / years) − 1`, where `years` is the **calendar** span between the period's first and last date divided by 365.25 — the same formula for named stages, for the overall period, and for the nine rolling windows. |
+| `volatility` | Standard deviation of daily returns, annualized by multiplying by √252 (the typical number of trading days in a year). Needs at least 3 data points. |
+| `max_drawdown` | The largest drop from a running peak to a later low, as a **positive** percentage. |
+| `average_drawdown` | The average depth below the running peak, across every day in the period. |
+| `max_drawdown_duration` | The longest run of consecutive **trading** days spent below the running peak, during the single deepest drawdown. |
+| `ulcer_index` | Root mean square of the drawdown depth across every day in the period. |
+| `var_95` | The negated 5th-percentile daily return, annualized by multiplying by √252. Needs at least 20 days of return data, otherwise no value is shown. |
+| `cvar_95` | The negated average of the daily returns at or below the 5th percentile, annualized. Same 20-day minimum as VaR. |
+| `sharpe_ratio` | Average excess daily return divided by the standard deviation of daily returns, annualized. Always calculated with a **0% risk-free rate** — see [Risk-free-rate variants](#risk-free-rate-variants) for the version using the real rate. Needs at least 2 data points. |
+| `sortino_ratio` | Like Sharpe, but the denominator only measures the volatility of down days, not all days — so two portfolios with identical Sharpe can have very different Sortino if one's volatility comes mostly from up days. |
+| `calmar_ratio` | CAGR divided by Max Drawdown. No value when Max Drawdown is exactly 0. |
+| `martin_ratio` | CAGR divided by the Ulcer Index. No value when the Ulcer Index is exactly 0. |
+| `omega_ratio` | Sum of gains above a 0% threshold divided by the sum of losses below it. |
+| `profit_factor` | Sum of positive daily returns divided by the absolute sum of negative daily returns. No value when there are no losing days. |
+| `recovery_factor` | `Total Return / Max Drawdown`, **without** taking an absolute value — so a losing portfolio reports a negative recovery factor rather than a small positive number that looks better than it is. |
+| `skewness` | A measure of how lopsided the distribution of daily returns is. Needs at least 3 returns. |
+| `excess_kurtosis` | A measure of how much more extreme the tails of the return distribution are than a normal, bell-curve distribution. Needs at least 4 returns. |
+| `tail_ratio` | 95th percentile divided by the absolute 5th percentile of daily returns. Needs at least 20 returns. |
+| `win_rate` | Share of days with a return strictly greater than 0. |
+| `payoff_ratio` | Average winning-day return divided by the absolute average losing-day return. Needs at least one of each. |
+| `trade_win_rate` | Closed trades with a positive return, divided by all closed trades. |
+| `trade_profit_factor` | Sum of winning trades' return percentages divided by the absolute sum of losing trades' return percentages. A trade with an exact 0% return counts as a **loser**. No value when there are no losers. |
+| `avg_trade_duration` | Average **calendar** days from entry to exit across closed trades — contrast `max_drawdown_duration`, which counts trading days. |
+| `expectancy` | `(win rate × average winning trade) + ((1 − win rate) × average losing trade)`, across closed trades. Needs at least one winner and one loser. |
+| `fitness` | Not calculated from the equity curve at all — it's whatever value your search objective produced for that trial. See [Metrics as optimization objectives](#metrics-as-optimization-objectives). |
 
-> [!CAUTION] Volatility, VaR and CVaR are annualized server-side
-> The reducers emit daily numbers; the `√252` lift is applied once, where the metric set is
-> assembled, because Sharpe sitting beside them in the same table already is annualized. Never
-> re-annualize these three in your own analysis of a value the API returned.
+> [!CAUTION] Volatility, VaR and CVaR are already annualized
+> Fintela always annualizes these three (multiplying the daily figure by √252) before showing them,
+> the same way Sharpe is. Don't re-annualize a value you've pulled from Fintela — it's already there.
 
-> [!NOTE] Trade aggregates are grafted on, not derived from the curve
-> An equity curve records what the account was worth each day and says nothing about the round-trips
-> that produced it. `trade_win_rate`, `trade_profit_factor`, `avg_trade_duration` and `expectancy`
-> are computed from closed trades and merged into the metric set afterwards, so any surface that
-> only has a price series leaves all four empty. Trades are attributed to a stage by **exit date**,
-> which is what makes the per-stage counts sum to the whole-life count with nothing double-counted.
+> [!NOTE] Trade-based metrics need actual trades, not just a price history
+> An equity curve tells you what an account was worth each day — it says nothing about the
+> individual buy/sell round-trips that produced it. `Trade Win Rate`, `Trade Profit Factor`,
+> `Avg Trade Duration`, and `Expectancy` are calculated from your closed trades and merged in
+> separately, so anywhere that only has a bare price series (a ticker in the Market screener, for
+> instance) shows all four as empty. A trade counts toward whichever stage it was closed in, which
+> is why the per-stage totals always add up to the full-history total with nothing counted twice.
 
-## Benchmark-relative catalog
+## Benchmark-relative metrics
 
-Nine metrics that require a benchmark series. They are computed from two pre-aligned daily-return
-series and need at least **3** finite paired observations; below that every one of the nine is null.
+These nine metrics compare your portfolio against a benchmark you choose — a market index, another
+portfolio, or any asset available in Fintela. They need at least **3** matching days of return data
+for both series; below that, all nine show no value.
 
 | Key | Label | Unit | Direction | Definition |
 |---|---|---|---|---|
 | `alpha` | `Alpha` | `annualized %` | higher | Annualized return attributable to the strategy beyond what the benchmark explains. |
-| `beta` | `Beta` | `ratio` | **informational** | Sensitivity of strategy returns to benchmark movements. Beta > 1 amplifies market moves. |
-| `correlation` | `Correlation` | `ratio` | **informational** | Pearson correlation between strategy and benchmark daily returns. |
-| `information_ratio` | `Information Ratio` | `ratio` | higher | Excess return over benchmark per unit of tracking error. Measures consistency of outperformance. |
-| `treynor_ratio` | `Treynor Ratio` | `ratio` | higher | Excess return per unit of systematic risk (beta). Rewards outperformance without market exposure. |
+| `beta` | `Beta` | `ratio` | **informational** | Sensitivity of strategy returns to benchmark movements. Beta above 1 amplifies market moves. |
+| `correlation` | `Correlation` | `ratio` | **informational** | How closely the strategy's daily returns move with the benchmark's. |
+| `information_ratio` | `Information Ratio` | `ratio` | higher | Excess return over the benchmark per unit of tracking error. Measures consistency of outperformance. |
+| `treynor_ratio` | `Treynor Ratio` | `ratio` | higher | Excess return per unit of market exposure (beta). Rewards outperformance without market exposure. |
 | `up_capture` | `Up Capture` | `%` | higher | Fraction of benchmark gains captured by the strategy during up markets. |
 | `down_capture` | `Down Capture` | `%` | **lower** | Fraction of benchmark losses suffered by the strategy during down markets. Lower is better. |
-| `tracking_error` | `Tracking Error` | `annualized %` | lower | Volatility of the return difference against the benchmark — how far the strategy wanders from it. The denominator of the information ratio. |
-| `r_squared` | `R Squared` | `ratio` | **informational** | Share of the strategy's variance the benchmark explains (correlation squared, 0 to 1). High means it moves with the market; low means its risk comes from somewhere else. |
+| `tracking_error` | `Tracking Error` | `annualized %` | lower | Volatility of the return difference against the benchmark — how far the strategy wanders from it. |
+| `r_squared` | `R Squared` | `ratio` | **informational** | Share of the strategy's variance the benchmark explains, from 0 to 1. High means it moves with the market; low means its risk comes from somewhere else. |
 
-### How each benchmark metric is computed
+### How each benchmark metric is calculated
 
-`r_p` is the portfolio's daily return, `r_b` the benchmark's, `rf_daily` the annual risk-free rate
-divided by 252 (zero for the base perspective). Covariance and variance use the sample denominator
-`n − 1`.
+`r_p` is your portfolio's daily return, `r_b` the benchmark's, and `rf` the annual risk-free rate
+divided by 252 (zero, unless you're looking at a risk-free-rate variant — see below).
 
-| Key | Convention |
+| Key | How it's calculated |
 |---|---|
-| `beta` | `Cov(r_p, r_b) / Var(r_b)`. No value when the benchmark's variance is 0. |
-| `alpha` | Jensen's alpha, annualized: `(mean_p − rf_daily) × 252 − beta × ((mean_b − rf_daily) × 252)`. Requires a beta. |
-| `information_ratio` | `mean(r_p − r_b) × √252 / sd(r_p − r_b)`. No value when the active return never varies. |
-| `treynor_ratio` | `(mean_p − rf_daily) × 252 / beta`. No value when beta is exactly 0. |
-| `up_capture` | Mean `r_p` over days where `r_b > 0`, divided by the mean `r_b` on those same days. |
-| `down_capture` | Mean `r_p` over days where `r_b < 0`, divided by the mean `r_b` on those same days. |
-| `correlation` | `Cov(r_p, r_b) / (sd_p × sd_b)`. |
-| `tracking_error` | `sd(r_p − r_b) × √252`. Zero is a **real** answer here, not a missing one — a portfolio whose active return never varies tracks the benchmark exactly. |
-| `r_squared` | `correlation²`, derived from the correlation above rather than recomputed, so the two can never disagree about a degenerate sample. |
+| `beta` | Covariance of `r_p` and `r_b`, divided by the variance of `r_b`. No value when the benchmark's variance is 0. |
+| `alpha` | Jensen's alpha, annualized: the portfolio's excess return minus beta times the benchmark's excess return. Requires a beta to already exist. |
+| `information_ratio` | Average of `(r_p − r_b)`, annualized, divided by the standard deviation of `(r_p − r_b)`. No value when the difference never varies. |
+| `treynor_ratio` | The portfolio's annualized excess return divided by beta. No value when beta is exactly 0. |
+| `up_capture` | Average `r_p` on days the benchmark was up, divided by the average `r_b` on those same days. |
+| `down_capture` | Average `r_p` on days the benchmark was down, divided by the average `r_b` on those same days. |
+| `correlation` | Covariance of `r_p` and `r_b`, divided by the product of their standard deviations. |
+| `tracking_error` | Standard deviation of `(r_p − r_b)`, annualized. A perfectly benchmark-tracking portfolio shows exactly 0 here — that's a real answer, not a missing one. |
+| `r_squared` | Correlation, squared. |
 
-> [!NOTE] `beta`, `correlation` and `r_squared` carry no direction
-> Their direction is `informational`, deliberately. A high R² is the goal for an index replicator and
-> a red flag for a market-neutral book, so the platform will not claim a direction on your behalf.
-> One consequence: none of the three can be an optimization objective — Optuna requires a direction.
+> [!NOTE] `Beta`, `Correlation` and `R Squared` carry no direction
+> Their direction is deliberately `informational`. A high R² is the goal for an index replicator and
+> a red flag for a market-neutral book, so Fintela won't claim a direction on your behalf. One
+> consequence: none of the three can be chosen as a search objective, since an objective needs to
+> know whether higher or lower counts as better.
 
 ## Risk-free-rate variants
 
-Four metrics depend on the risk-free rate. Fintela persists both perspectives side by side: the
-catalog metric at **rf = 0**, and a second value recomputed with the real annualized rate as of the
-period's end date, under a `_rf`-suffixed name.
+Four metrics depend on what "risk-free" return you compare against. Fintela shows both perspectives
+side by side: the standard metric assuming a 0% risk-free rate, and a second version — named with an
+`_rf` suffix — recalculated using the real risk-free rate as of that period's end date.
 
-| Variant key | Base metric | Rendered label |
+| Variant | Based on | Shown as |
 |---|---|---|
-| `sharpe_ratio_rf` | `sharpe_ratio` | `Sharpe Ratio (RF)` |
-| `sortino_ratio_rf` | `sortino_ratio` | `Sortino Ratio (RF)` |
-| `alpha_rf` | `alpha` | `Alpha (RF)` |
-| `treynor_ratio_rf` | `treynor_ratio` | `Treynor Ratio (RF)` |
+| `sharpe_ratio_rf` | `Sharpe Ratio` | `Sharpe Ratio (RF)` |
+| `sortino_ratio_rf` | `Sortino Ratio` | `Sortino Ratio (RF)` |
+| `alpha_rf` | `Alpha` | `Alpha (RF)` |
+| `treynor_ratio_rf` | `Treynor Ratio` | `Treynor Ratio (RF)` |
 
-The rate comes from the `UST_3M` series, read as-of the period's end date, so a stage that closed
-years ago keeps the rate that was current then. Until that series is ingested the `_rf` rows are
-simply absent and the rf = 0 figures stand alone. In the tables that show them, `_rf` rows appear as
-their own rows and inherit the base metric's unit, direction and tooltip.
+The real rate is drawn from 3-month U.S. Treasury yields as of the period's end date, so a stage that
+closed years ago keeps the rate that was current back then. If that rate isn't available yet for a
+given date, the `_rf` row is simply left out and only the 0%-rate figure shows. Wherever both appear,
+the `_rf` row sits alongside its base metric and shares the same unit, direction, and tooltip.
 
-> [!WARNING] `_rf` names are not valid `metric_name` values
-> The API's metric-name gate accepts only the 35 catalog names plus your organization's
-> `custom:` metrics. A request carrying `metric_name=sharpe_ratio_rf` is rejected. The `_rf` values
-> are readable as rows of a metrics response, not as a ranking key.
+> [!WARNING] `_rf` values aren't something you can select on their own
+> The identifier you use to rank, filter, or query a metric only accepts the 35 built-in names plus
+> your organization's custom metrics. `_rf` rows show up automatically alongside their base metric
+> wherever results are displayed, but you can't target `sharpe_ratio_rf` directly as a stand-alone
+> metric.
 
 ## Custom metrics from promoted fitness functions
 
-Any non-built-in fitness function can be promoted to a first-class metric for one organization. See
-[fitness functions](/docs/fitness-functions) for the promotion flow; what matters here is how the
-result behaves as a metric.
+Any fitness function you've written yourself can be promoted into a first-class metric for your
+organization — after that, it behaves exactly like a built-in one: selectable, sortable, and
+rankable everywhere. See [Fitness Functions](/docs/fitness-functions) for how promotion works; this
+section covers how the result behaves once it's a metric.
 
 | Property | Rule |
 |---|---|
-| Wire name | Always `custom:<slug>`. The prefix is load-bearing: built-in and custom names share one flat namespace, so without it a function named `sharpe_ratio` would shadow the built-in for the whole organization. |
-| Slug rules | Lowercase letters, digits and underscores only; non-empty; at most 110 characters; must not already carry the `custom:` prefix. |
-| Label | Server-supplied `display_label`. The UI must use it — the built-in derivation would turn `custom:my_score` into `Custom:My Score`. |
-| Description | Auto-generated as `Custom metric from the fitness function "<display_label>".` |
-| `direction` | One of the same three strings, defaulting to `higher_is_better` (a fitness function is maximized). |
-| `applies_to_tickers` | Always `false` — a fitness function scores a simulation period, which a bare price series does not have. |
-| Parameters | Every declared hyperparameter must be pinned to one concrete value at promotion time, or the number would not be comparable across portfolios. |
-| Computed at | `train`, `validation` and `out_of_sample` only. `real_life_performance` is deliberately excluded because its end date moves every run, which would make the score change meaning day to day. |
-| Cadence | Scored daily by the metrics worker, last in the run. A failure there degrades that column but does not fail the run. |
+| Name | Always shown as `custom:<your-slug>` — the prefix keeps your custom metrics from ever colliding with a built-in one that happens to share a name. |
+| Slug | Lowercase letters, digits, and underscores only, up to 110 characters. |
+| Label | Whatever display name you gave it when you promoted it — shown exactly as you set it, not auto-generated. |
+| Description | Auto-generated as "Custom metric from the fitness function '\<your label\>'." |
+| Direction | Higher-is-better by default, since a fitness function is something you're trying to maximize, unless you set it otherwise. |
+| Works on a plain ticker | Never — a fitness function scores a full simulation, which a bare price series doesn't have. |
+| Parameters | Any hyperparameter your fitness function takes must be locked to one fixed value when you promote it, so the resulting number means the same thing every time it's compared. |
+| Stages available | Training, validation, and out-of-sample only. Real-life performance is deliberately excluded, since its end date keeps moving as your portfolio trades — which would make the score mean something different every day. |
+| Refresh | Recalculated once a day for every portfolio it applies to. If the calculation fails for one portfolio, only that portfolio's value is affected. |
 
-Built-in fitness objectives **cannot** be promoted — they already are metrics. Attempting it returns
-`400` with `Built-in fitness objectives are already metrics and cannot be promoted`.
+Built-in objectives can't be promoted this way — they're already metrics.
 
-Once promoted, a custom metric is selectable, sortable and rankable exactly like a built-in: it
-appears in the same `GET /metrics` list (flagged `is_custom: true`) and is a valid `metric_name`
-for the whole organization.
+Once promoted, your custom metric shows up in the same metric list as everything else, flagged as
+custom, and can be used as a `metric_name` anywhere in your organization.
 
 ## Stages and windows
 
-The same metric has a different value for every period it is measured over. A metric is always read
-at one of two kinds of period.
+The same metric reads differently depending on what period it's measured over. Fintela measures
+every metric at one of two kinds of period.
 
-**Named stages** — the study's own date windows:
+**Named stages** — your study's own date ranges:
 
-| Stage | Bounds | Present when | Stored in |
-|---|---|---|---|
-| `train` | The study's configured training dates | Always | `developers.portfolio_metrics` |
-| `validation` | The study's configured validation dates | Always | `developers.portfolio_metrics` |
-| `out_of_sample` | The study's configured out-of-sample dates | Only when both OOS dates are set | `developers.portfolio_metrics` |
-| `real_life_performance` | The day after the last configured period through the last equity bar | Only when equity has genuinely advanced past the last configured period | `developers.portfolio_metrics` |
-| `overall` | The whole curve, not date-anchored | Always | `public.entity_metrics` (`window_type = 'overall'`) — **except** `fitness`, which lives in `developers.portfolio_metrics` at stage `overall` |
+| Stage | Covers | Present when |
+|---|---|---|
+| Train | Your study's configured training dates | Always |
+| Validation | Your study's configured validation dates | Always |
+| Out-of-sample | Your study's configured out-of-sample dates | Only when you've set both out-of-sample dates |
+| Real-life performance | From the day after your last configured period through the most recent value | Only once the portfolio has actually traded past its configured periods |
+| Overall | The whole equity curve, not anchored to any configured dates | Always |
 
-Train and validation report the study's **configured** timeframe and are not clipped to the data
-actually available.
+Train and validation always reflect the dates you configured for the study, even if the data
+actually available doesn't fully cover that range.
 
-**Rolling windows** — nine periods anchored to the curve's own last equity date for a portfolio (and
-to today for a ticker), all stored in `public.entity_metrics` under `window_type`:
+**Rolling windows** — nine more periods, anchored to the most recent date on the curve (or to today,
+for a plain ticker):
 
-| `window_type` | Lookback |
+| Window | Covers |
 |---|---|
-| `mtd` | First day of the anchor's calendar month |
-| `qtd` | First day of the anchor's calendar quarter |
-| `ytd` | 1 January of the anchor's year |
-| `trailing_1m` | anchor − 30 days |
-| `trailing_3m` | anchor − 90 days |
-| `trailing_6m` | anchor − 180 days |
-| `trailing_1y` | anchor − 365 days |
-| `trailing_3y` | anchor − 1095 days |
-| `trailing_5y` | anchor − 1825 days |
+| `mtd` | Month to date |
+| `qtd` | Quarter to date |
+| `ytd` | Year to date |
+| `trailing_1m` | Trailing 1 month |
+| `trailing_3m` | Trailing 3 months |
+| `trailing_6m` | Trailing 6 months |
+| `trailing_1y` | Trailing 1 year |
+| `trailing_3y` | Trailing 3 years |
+| `trailing_5y` | Trailing 5 years |
 
-Both tables are row-per-metric: `(portfolio_id, stage, metric_name, value)` and
-`(entity_type, entity_id, window_type, metric_name, value)`. That is why adding a metric to the
-catalog needs no database migration.
-
-Two stage vocabularies are persisted, because the writers disagree on spelling: the optimizer (which
-writes `out_of_sample` but never a real-life row) and the metrics worker's benchmark-relative pass
-use the long names, while the metrics worker's regular stage pass writes `oos` and `rlp`. Both are
-normalized to the long names before they reach the wire, so a client only ever sees `out_of_sample`
-and `real_life_performance`.
-
-> [!NOTE] Two out-of-sample rows can coexist, and they differ
-> For the same portfolio and metric, the optimizer's row (measured during the trial simulation) and
-> the metrics worker's row (recomputed from the persisted equity) both genuinely exist and carry
-> different values. Which one a reader shows depends on the reader: the study optimization-history
-> queries prefer the canonical spelling, so `out_of_sample` wins over `oos`, while the stage ranking
-> endpoint deliberately keeps the best value per portfolio across both spellings.
+> [!NOTE] You may see two different out-of-sample values for the same metric
+> When a strategy is optimized, its out-of-sample metric is measured once, during that original
+> search. Later, Fintela recalculates the same metric from the portfolio's actual saved performance
+> history — and the two numbers can genuinely differ slightly. Which one you're looking at depends
+> on where you are: a study's optimization-history view shows the original search-time value, while
+> stage-ranking views keep whichever of the two is more favorable for each portfolio.
 
 ### Which stages a study actually has
 
-Not every stage exists for every study, and not every metric has been computed for every stage. Ask:
+Not every study has every stage, and not every metric has a value at every stage — a study without
+out-of-sample dates configured simply has no out-of-sample numbers. The dashboard's metric picker
+checks this automatically: a metric with no data at all for your study is disabled with the caption
+**No data for this study**, while one that has data in some stages but not the one you've currently
+selected shows the softer, still-selectable hint **No data in the selected stage**.
 
-```http
-GET /portfolios/metrics/availability?study_id=42
-```
+### When metric values are calculated
 
-The response maps each `metric_name` to the list of stages that actually carry a value for that
-study. The dashboard's metric picker uses exactly this to disable a metric with the caption
-**`No data for this study`**, and to show the softer, still-selectable hint
-**`No data in the selected stage`**.
+| When | What gets (re)calculated |
+|---|---|
+| When a search finishes evaluating a trial | That trial's stage values, its overall value, its Fitness score, and its rolling windows |
+| Every time a live portfolio advances (a new trading day closes) | Its rolling windows, its real-life-performance Fitness score, its overall Fitness score, and — if it has one — its benchmark-relative values |
+| Once a day, automatically | Named-stage values across all your studies, portfolio-level overall figures, and any custom metrics your organization has promoted |
 
-### Who writes the values, and when
+The daily refresh never touches the rolling windows tied to a live portfolio — those stay tied to
+whatever last updated that portfolio's actual trading history, so the two can never disagree.
 
-| Writer | Writes | Cadence |
-|---|---|---|
-| The optimizer, at trial registration | The named stages, the `overall` row, `fitness` at `overall`, and the nine rolling windows | Once, when the trial's equity is registered |
-| The portfolio updater | The same rolling windows, refreshed, plus `fitness` at `real_life_performance` and at `overall` and the benchmark-relative rows for both | On every real-life-performance advance |
-| `metrics-updater` | The named stages, the portfolio `overall` window, and the daily custom-metric pass | Once a day, `cron(0 13 * * ? *)` |
-
-`metrics-updater` deliberately does **not** write the portfolio rolling windows: they belong to
-whoever wrote the equity they summarize, so the two writers cannot disagree.
-
-> [!CAUTION] Metrics do not update live
-> There is no polling, websocket or auto-refresh on any portfolio surface. Values are read from
-> storage and cached client-side; a metric recomputed by the daily worker appears on your next
-> navigation or reload, not while you watch.
+> [!CAUTION] Metrics don't update live
+> There's no automatic refresh on any portfolio screen. Metrics are read from what's stored and
+> cached in your browser — a number recalculated by the daily refresh appears the next time you
+> reload or navigate to that page, not while you're watching it.
 
 ## Where each metric appears
 
-| Surface | Metrics shown |
+| Screen | Metrics shown |
 |---|---|
-| **Metric picker** on the [Portfolios Dashboard](/docs/portfolios-dashboard) and [Optimization Dashboard](/docs/optimization-dashboard) | Every name from `GET /metrics`. Any name containing `fitness` is pinned above a divider; the rest follow. |
-| **Ranking card stat strip** | Exactly three: `sharpe_ratio` (`Sharpe`), `alpha` (`Alpha`), `beta` (`Beta`). |
-| **Comparison KPI strip** | `total_return` (Leader, Dispersion), `sharpe_ratio` (Median Sharpe), `max_drawdown` (Worst Drawdown). |
-| **Summary KPI cards** on the Performance tab | Seven, each at a preferred stage: `fitness` (overall), `sharpe_ratio` (OOS), `max_drawdown` (OOS), `compound_annual_growth_rate` (overall), `total_return` (overall), `win_rate` (OOS), `profit_factor` (overall). |
-| **Metrics scorecard / detail table** on the Performance tab | Every metric persisted for that portfolio, plus benchmark rows and `_rf` rows, one column per active stage plus a `Window` column. |
-| **`Metrics Comparison` heatmap** | Everything the portfolio has, minus the 14 advanced metrics in the next row. |
-| **`Advanced Metrics`** accordion | Exactly 14: `skewness`, `excess_kurtosis`, `tail_ratio`, `up_capture`, `down_capture`, `information_ratio`, `treynor_ratio`, `beta`, `alpha`, `correlation`, `payoff_ratio`, `recovery_factor`, `omega_ratio`, `martin_ratio`. |
-| **Headline figures** on the Profile tab | `total_return` and `compound_annual_growth_rate` at `overall`; `max_drawdown` and `sharpe_ratio` at `out_of_sample`, falling back to `overall`. |
-| **Metric matrix** in the [Portfolio Manager](/docs/portfolio-manager) | The 25 value-bearing core names minus the four trade aggregates — 21 columns — plus the 9 benchmark metrics when a benchmark is requested. `fitness` is absent: the equity path never computes it. |
-| **Indicators screener** in [Market](/docs/market) and the Data Explorer inspection drawer | Only names with `applies_to_tickers: true`. |
-| **Fitness objective picker** | The 27 built-in objectives listed below. |
+| **Metric picker** on the [Portfolios Dashboard](/docs/portfolios-dashboard) and [Optimization Dashboard](/docs/optimization-dashboard) | Every metric available to your organization, built-in and custom. Anything with "Fitness" in the name is pinned above a divider; everything else follows. |
+| **Ranking card stat strip** | Exactly three: Sharpe, Alpha, Beta. |
+| **Comparison KPI strip** | Total Return (leader and dispersion), Sharpe Ratio (median), Max Drawdown (worst). |
+| **Summary KPI cards** on the Performance tab | Seven headline numbers, each shown at its most relevant stage: Fitness (overall), Sharpe Ratio (out-of-sample), Max Drawdown (out-of-sample), CAGR (overall), Total Return (overall), Win Rate (out-of-sample), Profit Factor (overall). |
+| **Metrics scorecard / detail table** on the Performance tab | Every metric your portfolio has a value for, plus benchmark and risk-free-rate rows, one column per stage. |
+| **Metrics Comparison heatmap** | Everything your portfolio has, except the 14 advanced metrics listed next. |
+| **Advanced Metrics accordion** | Exactly 14: Skewness, Excess Kurtosis, Tail Ratio, Up Capture, Down Capture, Information Ratio, Treynor Ratio, Beta, Alpha, Correlation, Payoff Ratio, Recovery Factor, Omega Ratio, Martin Ratio. |
+| **Headline figures** on the Profile tab | Total Return and CAGR (overall); Max Drawdown and Sharpe Ratio (out-of-sample, falling back to overall if out-of-sample isn't available). |
+| **Metric matrix** in the [Portfolio Manager](/docs/portfolio-manager) | The 21 value-bearing portfolio metrics (everything except the 4 trade-based ones), plus the 9 benchmark metrics whenever you've set a benchmark. Fitness isn't shown here. |
+| **Indicators screener** in [Market](/docs/market) and the [Data Explorer](/docs/data-explorer) inspection drawer | Only metrics that work on a plain ticker — see [What a metric is here](#what-a-metric-is-here). |
+| **Objective picker** when setting up a search | The 27 built-in objectives — see [Metrics as optimization objectives](#metrics-as-optimization-objectives). |
 
-Per-metric definitions do not vary by surface — the same tooltip, unit and direction follow the
-metric everywhere, because every surface reads them off the one catalog. For what each screen does
-with them, see [portfolio detail](/docs/portfolio-detail) and
-[analyzing results](/docs/analyzing-results).
+A metric's definition, unit, and direction never change from one screen to another — every screen
+reads them off the same reference list. For what each screen actually does with these numbers, see
+[Portfolio Detail](/docs/portfolio-detail) and [Analyzing Results](/docs/analyzing-results).
 
 ## Display and formatting
 
-How a value is rendered is derived from its `unit`, so there is one answer rather than a per-screen
-opinion:
+How a value is displayed follows directly from its unit, so it's consistent everywhere rather than a
+different convention per screen.
 
-| `unit` | Rendering | Applies to |
+| Unit | Shown as | Applies to |
 |---|---|---|
-| `days` | Whole number with a `d` suffix | `max_drawdown_duration`, `avg_trade_duration` |
-| Anything containing `%` | A 0–1 fraction shown ×100 with a `%` suffix, 1 decimal by default | `%`, `annualized %`, `return %` metrics |
-| Everything else (`ratio`, `dimensionless`, `score`) | A plain number, 3 decimals by default, **never** ×100 | Sharpe, Sortino, Calmar, Martin, Omega, profit factor, payoff ratio, recovery factor, tail ratio, skewness, excess kurtosis, beta, correlation, R², information ratio, Treynor, and `fitness` |
+| Days | A whole number with a "d" suffix | Max Drawdown Duration, Avg Trade Duration |
+| Any percentage unit | A percentage with one decimal place | Total Return, CAGR, Alpha, and other `%` / `annualized %` metrics |
+| Ratio, plain number, or score | A plain number with three decimal places, never shown as a percentage | Sharpe, Sortino, Calmar, Martin, Omega, Profit Factor, Payoff Ratio, Recovery Factor, Tail Ratio, Skewness, Excess Kurtosis, Beta, Correlation, R², Information Ratio, Treynor, and Fitness |
 
-The percent set is exactly: `total_return`, `compound_annual_growth_rate`, `alpha`, `expectancy`,
-`max_drawdown`, `average_drawdown`, `ulcer_index`, `volatility`, `win_rate`, `trade_win_rate`,
-`var_95`, `cvar_95`, `up_capture`, `down_capture`, `tracking_error`. `beta`, `correlation` and
-`r_squared` are deliberately excluded — they are quoted as 0-to-1 figures, not percentages.
+The metrics shown as percentages are: Total Return, CAGR, Alpha, Expectancy, Max Drawdown, Average
+Drawdown, Ulcer Index, Volatility, Win Rate, Trade Win Rate, VaR 95, CVaR 95, Up Capture, Down
+Capture, and Tracking Error. Beta, Correlation, and R² are deliberately shown as plain 0-to-1 numbers
+rather than percentages.
 
-Category labels in the UI do not match the catalog's `category` field one for one. The
-`Metrics Comparison` heatmap — the one surface that groups rows by category — uses `Performance`,
-`Risk`, `Risk-Adjusted`, `Distribution`, `Trade`, `Benchmark` and an `Other` bucket for anything
-unmapped, and files several metrics differently from the catalog: `fitness` and `win_rate` under
-`Performance`, `recovery_factor` and `payoff_ratio` under `Risk-Adjusted`. The metric picker does
-not group by category at all — it pins the fitness names above a divider and lists the rest below.
+The category groupings you see in the UI don't map one-for-one onto the categories described
+earlier. The Metrics Comparison heatmap — the one screen that groups metrics by category — uses
+Performance, Risk, Risk-Adjusted, Distribution, Trade, Benchmark, and an Other bucket for anything
+that doesn't fit; it also groups Fitness and Win Rate under Performance, and Recovery Factor and
+Payoff Ratio under Risk-Adjusted, a little differently from how they're categorized elsewhere. The
+metric picker doesn't group by category at all — it just pins Fitness-related names above a divider
+and lists everything else below.
 
-Hovering the info icon beside any metric label shows the label, the catalog description, `Unit:`
-followed by the raw unit string, and one of `↑ Higher is better`, `↓ Lower is better` or
-`— Informational`.
+Hovering the info icon next to any metric label shows its full definition, its unit, and one of
+↑ Higher is better, ↓ Lower is better, or — Informational.
 
 ## Using a metric name in the API
 
-Every endpoint that ranks or filters takes `metric_name` and validates it against the catalog plus
-your organization's promoted metrics.
+Every metric name shown throughout this page — `sharpe_ratio`, `max_drawdown`, and so on — is also
+the identifier you'd use if you bring your results into your own tools through Fintela's read-only
+[Developer API](/docs/api-trials-portfolios). You get access to it with a personal access key from
+your account settings; because it's read-only, pulling data through it can never accidentally change
+anything in your portfolios or studies.
 
-```http
-GET /portfolios/stage/n_top?study_id=42&stage=out_of_sample&metric_name=sharpe_ratio&n_top=10&asc=false
-```
+You can use a metric name to rank or filter your studies and portfolios by any stage or rolling
+window, or to pull a stored value straight from a results table. A name that isn't one of the 35
+built-ins or one of your organization's custom metrics is rejected, as is a stage that isn't one of
+the 14 accepted values (the five named stages plus the nine rolling windows) — either way you'll get
+a plain-language error rather than a value that shouldn't exist. Calls that let you weight several
+timeframes together require those weights to add up to 1.0.
 
-| Failure | Status | Message |
-|---|---|---|
-| Name is not a catalog entry and not one of your organization's custom metrics | **406** | `Unknown metric: '<name>'` |
-| `stage` is not one of the 14 accepted values | **406** | `Not valid stage found` |
-| `study_id` is not visible to your organization | **406** | `Not valid study id found` |
+Full detail on limits and error messages lives in [API Errors](/docs/api-errors); the shape of a
+results response is covered in [Trials and Portfolios](/docs/api-trials-portfolios).
 
-The accepted `stage` values are the five named stages plus the nine rolling windows listed above.
-Ranking endpoints that take weighted timeframes reject weights that do not sum to 1.0.
-
-To read stored values rather than a ranking:
-
-```http
-GET /portfolios/metrics?portfolio_ids=1201,1202
-```
-
-The response is keyed `portfolio_id → stage → metric_name → value`, and carries whatever is stored —
-including benchmark and `_rf` rows. The public developer API uses the same canonical names under
-`include=metrics`. See [trials and portfolios](/docs/api-trials-portfolios) and
-[API errors](/docs/api-errors).
-
-> [!NOTE] The picker id in a URL is not the metric key
-> `?metric=` on the dashboards is a 1-based position in the alphabetically sorted list of metric
-> names, not a catalog id. It shifts whenever a metric is added to the catalog or your organization
-> promotes one, so a `?metric=7` copied from a screenshot is not a durable reference. The API's
-> `metric_name` is.
+> [!NOTE] The number in a dashboard URL isn't the metric's real identifier
+> A `metric=` number you sometimes see in a dashboard's URL is just its position in an alphabetically
+> sorted list — it shifts every time a metric is added to the catalog or your organization promotes a
+> new custom one, so it's not something worth bookmarking or sharing. The metric's name
+> (`sharpe_ratio`, `custom:my_score`, and so on) is the durable reference.
 
 ## Metrics as optimization objectives
 
-A study can optimize a built-in metric directly, without writing any code, by selecting one of the
-**27** platform-seeded `BUILTIN` fitness objectives. Each one is named after the metric it scores and
-carries that metric's direction.
+When you set up a search, you can optimize directly toward any built-in metric — no code required —
+by choosing one of the **27** built-in objectives. Each is named after, and scored the same way as,
+the metric it corresponds to.
 
-Available as objectives — every core metric except the exclusions below, plus six benchmark ones:
+Available as an objective — every portfolio metric except the four trade-based ones and Fitness
+itself, plus six of the benchmark metrics:
 
-`total_return`, `compound_annual_growth_rate`, `volatility`, `max_drawdown`, `average_drawdown`,
-`max_drawdown_duration`, `ulcer_index`, `var_95`, `cvar_95`, `sharpe_ratio`, `sortino_ratio`,
-`calmar_ratio`, `martin_ratio`, `omega_ratio`, `profit_factor`, `recovery_factor`, `skewness`,
-`excess_kurtosis`, `tail_ratio`, `win_rate`, `payoff_ratio`, `alpha`, `information_ratio`,
-`treynor_ratio`, `up_capture`, `down_capture`, `tracking_error`.
+`Total Return`, `CAGR`, `Volatility`, `Max Drawdown`, `Average Drawdown`, `Max Drawdown Duration`,
+`Ulcer Index`, `VaR 95`, `CVaR 95`, `Sharpe Ratio`, `Sortino Ratio`, `Calmar Ratio`, `Martin Ratio`,
+`Omega Ratio`, `Profit Factor`, `Recovery Factor`, `Skewness`, `Excess Kurtosis`, `Tail Ratio`,
+`Win Rate`, `Payoff Ratio`, `Alpha`, `Information Ratio`, `Treynor Ratio`, `Up Capture`,
+`Down Capture`, `Tracking Error`.
 
 | Not available as an objective | Why |
 |---|---|
-| `trade_win_rate`, `trade_profit_factor`, `avg_trade_duration`, `expectancy` | Not derivable from the equity series the objective is handed. |
-| `beta`, `correlation`, `r_squared` | Direction is `informational`; the optimizer requires a direction. |
-| `fitness` | It is the objective's own output, not an objective. |
+| Trade Win Rate, Trade Profit Factor, Avg Trade Duration, Expectancy | These can't be calculated purely from the equity curve a search evaluates while it runs. |
+| Beta, Correlation, R² | They're informational only — there's no "higher is better" or "lower is better" for them, and an objective needs one. |
+| Fitness | It's the objective's own output, not something you can also optimize toward. |
 
-The six benchmark-relative objectives require a benchmark on the study. Launching one without a
-benchmark is blocked with the message *"This study optimizes `<metric>`, which is measured against a
-benchmark, but no benchmark is set. Choose one, or optimize a metric that does not need a
-baseline."* Only built-in objectives are gated this way — a user-written fitness function may
-compute alpha however it likes. See [studies](/docs/studies) for where the benchmark is set.
+The six benchmark-relative objectives need a benchmark set on the study. If you try to launch a
+search without one, Fintela blocks it with a message explaining that the chosen objective needs a
+benchmark, and suggesting you either set one or choose an objective that doesn't need one. This check
+only applies to built-in objectives — a fitness function you write yourself can reference a benchmark
+however you like. See [Studies](/docs/studies) for where you set a study's benchmark.
 
-> [!WARNING] Minimizing `tracking_error` alone converges on holding the benchmark
-> That is the right answer for an index replicator and the wrong one for anything with a thesis.
-> Pair it with a return objective unless replication is the goal.
+> [!WARNING] Optimizing for Tracking Error alone converges on just holding the benchmark
+> Minimizing Tracking Error by itself pushes a search toward a portfolio that simply mirrors the
+> benchmark — the right outcome if you're building an index replicator, and the wrong one for
+> anything meant to outperform. Pair it with a return objective unless replication is actually the
+> goal.
 
 ## What is not a metric
 
-Three families of numbers look like catalog metrics and are not. Keep them apart.
+Three other kinds of numbers in Fintela look like the metrics on this page and aren't — worth telling
+apart.
 
-```text
-  catalog metric            rolling curve series        robustness statistic
-  ───────────────           ────────────────────        ────────────────────
-  one value per             one value per DAY,          one value per portfolio
-  (portfolio, period)       over a sliding window       or per study
-  from Metrics::catalog()   from /portfolios/*_vector   from the overfitting tables
-  e.g. sharpe_ratio         e.g. the Sharpe chart       e.g. DSR, PSR, PBO, SR₀
-```
+| | One value per... | Where you'll see it |
+|---|---|---|
+| **Catalog metric** (this page) | Portfolio and period — e.g. Sharpe Ratio, out-of-sample | Metric picker, scorecards, rankings |
+| **Rolling curve series** | Day, over a sliding window | Performance charts |
+| **Robustness statistic** | Portfolio or study, computed once | Overfitting / robustness tables |
 
-- **Rolling curve series.** The Drawdown, Volatility, Rate of Change and Sharpe charts plot
-  `equity`, `drawdown`, `rate_of_change`, `sharpe` and `volatility` series fetched per portfolio.
-  The rolling **Sharpe** in particular is a deliberately different formula from the `sharpe_ratio`
-  metric: window rate-of-change over intra-window volatility, **unannualized**, with no risk-free
-  term. A chart reading 0.4 and a metric reading 1.8 are not in conflict. See
-  [visualizations](/docs/visualizations).
-- **Robustness statistics.** Deflated Sharpe, Probabilistic Sharpe, the luck threshold SR₀, the
-  degradation z-scores and the study-level PBO are computed once at study finalization into their
-  own tables. They are not catalog metrics, are not selectable in the metric picker, and cannot be
-  used as a `metric_name`.
-- **Trade columns.** The per-trade `Return`, `P&L`, `MFE` and `MAE` columns on the Transactions tab
-  are properties of one round-trip, not portfolio metrics.
+- **Rolling curve series.** The Drawdown, Volatility, Rate of Change, and Sharpe charts each plot a
+  daily value over a sliding window, one point per day. The rolling Sharpe line in particular uses a
+  deliberately different formula from the `Sharpe Ratio` metric on this page: it compares recent
+  return to recent volatility over a short window, isn't annualized, and doesn't subtract a
+  risk-free rate. A chart reading 0.4 next to a metric card reading 1.8 isn't a contradiction — they
+  answer different questions. See [Visualizations & Plots](/docs/visualizations).
+- **Robustness statistics.** Deflated Sharpe, Probabilistic Sharpe, the luck threshold, degradation
+  scores, and probability-of-backtest-overfitting are calculated once, when a study finishes, as a
+  separate check on whether its results look like real skill or luck. They're not on the metric
+  list, don't appear in the metric picker, and can't be selected as a ranking or objective metric.
+- **Trade columns.** The Return, P&L, MFE, and MAE columns you see on the Transactions tab describe
+  one individual trade, not the portfolio as a whole — they aren't portfolio metrics.
 
-## Adding a metric to the catalog
+## Requesting a new metric
 
-Two paths, with very different blast radii.
+There are two ways a new metric comes into being, and they work very differently.
 
-| Path | Scope | Who can do it | Deploy needed |
-|---|---|---|---|
-| Promote a fitness function | One organization | Anyone with `fitness:update` | None — one API call |
-| Add to the compiled catalog | Every organization | Platform engineering | Yes |
+| Path | Available to | How fast |
+|---|---|---|
+| Promote a fitness function you've written | Just your organization | Immediately — no release needed |
+| Add a new built-in metric to the platform | Every Fintela organization | Requires a product release from the Fintela team |
 
-The platform path touches one reducer in `algebra-core`, then six places in
-`crates/portfolio-model/src/portfolio_metrics.rs` — the `Metrics` field, `catalog()`, `to_map()`,
-`default()` and `zeros()`, the panel reduction, and the single-series `From` impl — then the
-frontend's `WindowMetrics` type and the detail table's window-key map. **No database migration**:
-both metric tables are row-per-metric. `metrics-updater`, the backend, the simulation engine and the
-frontend must be redeployed, and the indicators updater, optimizer and portfolio updater rebuilt
-because they bundle the same crate.
+If you have logic for evaluating a strategy that isn't already covered by a built-in metric, writing
+it as a [fitness function](/docs/fitness-functions) and promoting it is the fastest path — anyone
+with permission to manage fitness functions in your organization can do it, and it's usable
+everywhere a built-in metric is, immediately. If instead you think a metric would be valuable for
+every Fintela user, reach out to your account contact or support — adding it to the platform-wide
+catalog is a larger change that ships in a future release.
 
-A metric missing from `to_map()` is never persisted and never sortable, even if it appears in
-`catalog()` — that is the persistence gate, separate from the validation gate `catalog()` provides.
-`fitness` is in the catalog but not in `to_map()`, which is exactly why the optimizer writes it by
-hand.
+## Known limitations
 
-> [!NOTE] The internal guide is partly stale
-> `docs/adding-a-portfolio-metric.md` sections 5 and 6 point at a zoom-metrics bar that is dead code
-> and a summary-cards file that no longer exists. Steps 1 through 4 and the redeploy table are
-> current.
+A few small inconsistencies exist today. None of them affect the underlying numbers — only how a
+handful of screens present them.
 
-## Known drift and gaps
-
-Stated rather than smoothed over, because each one is visible if you look for it.
-
-- **`tracking_error` is missing from the client-side lower-is-better set.** The catalog marks it
-  `lower_is_better`; the frontend mirror in `metricsHelpers.ts` lists ten names and does not include
-  it. Surfaces that read the server's `direction` field are correct; the ones that consult the local
-  set will pick a "best" stage and colour a delta as though higher tracking error were better.
-- **The `Trade` group header is untranslated.** The heatmap groups rows by category and looks each
-  header up in the locale file. Six of the seven categories have an entry; `Trade` has none, so it
-  falls back to the literal English string in every language.
-- **`fitness` has no `Window` value.** The equity-zoom Window column has no mapping for it, so that
-  cell always renders an em dash even when the metric has values at every stage.
-- **Rolling-window rows can be missing for old studies.** The nine portfolio windows are written
-  only by the two writers of the equity curve. A study whose windows predate that arrangement has
-  named-stage values but no window values, and ranking by a rolling window will find nothing for it.
+- **Tracking Error's "best" highlight can be backwards.** Tracking Error is a lower-is-better metric,
+  and the ↓ arrow next to its name is always correct — but on some screens, the automatic
+  highlighting of the "best" stage or portfolio for Tracking Error doesn't respect that, and may
+  highlight the higher value instead. If you're comparing Tracking Error across stages, trust the
+  numbers and the ↓ indicator over any highlight colour.
+- **The "Trade" category label doesn't translate.** On the Metrics Comparison heatmap, six of the
+  seven category headers respect your language setting; "Trade" currently always shows in English
+  regardless of which language you've selected.
+- **Fitness has no rolling-window value.** The Window column has nothing to show for the Fitness
+  metric, so that cell always displays a dash — even though Fitness does have values at your
+  training, validation, and out-of-sample stages.
+- **Very old studies may be missing rolling-window data.** The nine rolling windows (MTD, QTD, YTD,
+  and the trailing periods) are only populated by processes introduced after a certain point; a study
+  created well before that will still have all its named-stage values, but ranking by a rolling
+  window may come up empty for it.

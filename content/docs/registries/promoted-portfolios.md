@@ -4,411 +4,344 @@ section: Registries
 sectionOrder: 3
 order: 8
 published: true
-updated: 2026-08-20
-summary: The durable portfolio a promoted trial becomes — the only thing a portfolio group can be built from.
+updated: 2026-09-01
+summary: The permanent portfolio a promoted trial becomes — the only kind of portfolio you can add to a portfolio group.
 keywords: promoted portfolio, managed portfolio, promotion, trial, snapshot, immutable, lineage, registry
 ---
 
-A promoted portfolio is the durable, study-independent copy an optimization trial becomes when you promote it. Promotion takes a full isolation snapshot — the strategy code and parameters, the concrete trial parameters, the runnable universe, the fitness and risk-manager configuration, the date windows — and copies the trial's holdings, equity and orders into a parallel data plane. From that moment the copy is frozen: editing the [strategy](/docs/strategies), the [risk managers](/docs/risk-managers) or the [asset group](/docs/asset-groups) it came from never changes it, and deleting the source [study](/docs/studies) leaves it intact. It is also the only object a [portfolio group](/docs/portfolio-groups) can hold, which makes this registry the single definition of what is investable.
+A promoted portfolio is the permanent, independent copy a trial becomes once you promote it out of a [study](/docs/studies). Promoting takes a complete snapshot — the strategy's code and parameters, the exact assets it's allowed to trade, its [fitness function](/docs/fitness-functions) and [risk manager](/docs/risk-managers) settings, its date ranges — and copies over its entire performance history: holdings, equity curve, and orders. From that moment the copy is frozen. Editing the [strategy](/docs/strategies), the risk managers, or the [asset group](/docs/asset-groups) it came from never touches it, and deleting the source study leaves it untouched. This registry is also the only place a [portfolio group](/docs/portfolio-groups) can draw its members from — so it's the definitive list of everything you can actually trade.
 
 ## Overview and purpose
 
 ### Trials are not portfolios
 
-The platform's taxonomy splits two things that both get called "a portfolio" in casual speech.
+Fintela draws a firm line between two things that both get casually called "a portfolio."
 
-| Object | Stored in | What it is | Lifetime |
+| Term | What it is | Where you see it | Lifetime |
 |---|---|---|---|
-| **Trial** | `developers.portfolios` — one row per study and trial number | A single parameterisation the optimizer evaluated inside a study. Written by the optimizer, read by the [portfolios dashboard](/docs/portfolios-dashboard). | Belongs to its study. Deleting the study takes it with it. |
-| **Promoted portfolio** | `developers.managed_portfolios` | An independent copy with its own id, carrying a by-value snapshot of everything the daily updater needs. | Survives deletion of the study, the trial and even the strategy. |
+| **Trial** | One parameter combination the optimizer evaluated inside a study | The [Portfolios dashboard](/docs/portfolios-dashboard) | Belongs to its study — delete the study and every trial in it goes too |
+| **Promoted portfolio** | A separate, independent copy of a trial you chose to keep | This registry | Survives deletion of its study, its trial, and even its original strategy |
 
-Everywhere in this documentation, "promoted portfolio" and the internal name *managed portfolio* refer to the same object. The registry label, the delete confirmation and the toasts all say promoted portfolio; the database table, the HTTP paths (`/portfolio_manager/managed*`) and the quota key (`managed_portfolios`) all say managed.
+> [!NOTE]
+> You may occasionally see this called a "managed portfolio" in an older message or error — it's the same object. "Promoted portfolio" is the name used everywhere else in the product.
 
 ### What consumes a promoted portfolio
 
 | Consumer | How it uses one |
 |---|---|
-| [Portfolio groups](/docs/portfolio-groups) | A group member *is* a promoted portfolio. The group wizard's member-selection step renders this registry's own table. |
-| The daily updater | Extends each enrolled portfolio one bar at a time by reading the frozen snapshot, never the live strategy. |
-| [Live trading](/docs/live-trading) | Runs on portfolio-group operations — one level above a promoted portfolio, never on a single one directly. |
-| [Developer API](/docs/api-trials-portfolios) | `GET /v2/portfolios` and `GET /v2/portfolios/{id}` expose them read-only. |
+| [Portfolio groups](/docs/portfolio-groups) | A group's members *are* promoted portfolios — the group wizard's member-picker is literally this registry, filtered down to what you select. |
+| Daily updates | Extends each enrolled portfolio's performance one trading day at a time, based on its frozen snapshot rather than the live strategy. |
+| [Live trading](/docs/live-trading) | Runs on portfolio groups — one level up from a single promoted portfolio, never on one directly. |
+| [Developer API](/docs/api-trials-portfolios) | Lets you pull your promoted portfolios and their results into your own tools or dashboards, read-only. |
 
 ### Where the registry lives
 
-Promoted Portfolios is deliberately kept **out of the primary sidebar**. In the app drawer it sits inside the collapsible **More Options** flyout, third in the list, after Fitness and Risk Managers and before Data Explorer, Laboratory and Fintelligent. The sidebar entry reads **Promoted Portfolios**.
+Promoted Portfolios is deliberately kept **out of the main sidebar**. In the app drawer it sits inside the **More Options** flyout, third in the list, after Fitness and Risk Managers and before Data Explorer, Laboratory, and Fintelligent. The entry reads **Promoted Portfolios**.
 
-Hiding it from the nav does not unmount it. The route stays fully registered, so `/promoted-portfolios` deep-links, bookmarks and back/forward navigation all behave normally. See [navigation](/docs/navigation) for how the flyout works.
+Being tucked away doesn't make it hard to reach directly — a bookmarked link, or the URL typed straight into your browser, opens it normally. See [navigation](/docs/navigation) for how the flyout works.
 
 > [!NOTE]
-> There is no command-palette entry for this registry, and no onboarding tour targets it. Reach it through More Options, or by URL.
+> This registry isn't in the command palette, and no onboarding tour points to it. Reach it through More Options, or by a direct link.
 
-### Routes
+### Opening a specific promoted portfolio
 
-| Path | What it renders |
-|---|---|
-| `/promoted-portfolios` | The registry — card grid or table, depending on your saved view mode. |
-| `/promoted-portfolios/view/:id` | **Not a screen.** Resolves the id to its source trial and replaces the history entry with the [Portfolio Analysis](/docs/portfolio-detail) page for that trial. Falls back to `/promoted-portfolios` when the id is unknown or its source trial is gone. |
-| `/promoted-portfolios/edit/:id` | Identical redirect. There is no editor — the page treats any path containing `/view/` or `/edit/` as a deep link. |
-
-The redirect target is `/analysis/portfolios/{trial id}/profile?studyId={study id}`. The `profile` segment comes from the `investorView` feature flag, which ships on; with the flag off the redirect lands on the bare Performance route instead. While a deep link is resolving the list renders nothing, so it never flashes behind the redirect.
+There's no standalone detail page for a single promoted portfolio. Clicking into one — or opening a bookmarked link to one — takes you straight to that trial's [Portfolio Analysis](/docs/portfolio-detail) page instead, since that's where the charts and performance detail actually live. If the source trial no longer exists, the link falls back to this registry's list rather than showing a broken page.
 
 ### What this registry cannot do
 
-There is no create, no edit, no duplicate, no rename, no unpromote and no archive. A promoted portfolio is a frozen snapshot, so there is nothing to edit; re-promoting the same trial is a no-op because promotion is idempotent. The only two operations are **View in Portfolio Analysis** and **Delete**.
+There's no create, no edit, no duplicate, no rename, no un-promote, and no archive here. A promoted portfolio is a frozen snapshot, so there's nothing to edit — and promoting the same trial again simply hands you back the copy you already made, rather than creating a second one. The only two things you can do from this registry are **view a promoted portfolio's source trial** and **delete it**.
 
 ## Registry table view
 
-### Screen states
+### Loading, error, and empty states
 
 | State | What you see |
 |---|---|
-| Loading | A skeleton title bar and a card with six skeleton rows. |
-| Error | A card with bold red text: **"Could not load the promoted portfolios."** |
-| List | The registry itself. |
+| Loading | A placeholder title bar and card while your promoted portfolios load |
+| Error | A message telling you the list couldn't load |
+| Loaded | The registry itself |
 
-Empty state, in both card and table mode:
+The empty state, in both card and table mode:
 
 > No portfolios have been promoted yet. Promote one from the Portfolios dashboard and it will appear here.
 
 ### Toolbar
 
-A sticky single row: the title on the left, every control pushed right.
+A single row pinned to the top: the title on the left, everything else pushed to the right.
 
-| Control | Exact label or tooltip | Behaviour |
-|---|---|---|
-| Title | **Promoted Portfolios** | — |
-| Filter | Tooltip and aria-label **Filter** | Opens the filter panel. Carries a badge with the number of active filters. |
-| View mode | Segmented control, aria-label **View mode**, options **List view** and **Card view** | Switches the body between the card grid and the table. |
-| Choose columns | Tooltip **Choose columns**, aria-label **Choose visible columns**, menu heading **Visible columns** | Toggles column visibility. **Disabled whenever you are in Card view.** |
-| Refresh | Tooltip and aria-label **Refresh** | Re-fetches the registry and the portfolio-group name caches that reference it. |
-| Primary button | **Promote portfolios**, with a `+` icon | Navigates to `/analysis/portfolios`. It creates nothing here — it takes you to the surface where promotion happens. |
+| Control | What it does |
+|---|---|
+| Title | Reads **Promoted Portfolios** |
+| Filter | Opens the filter panel; shows a badge with how many filters are currently active |
+| View mode | Switches between **List view** (table) and **Card view** (grid) |
+| Choose columns | Lets you show or hide columns — only available in List view |
+| Refresh | Reloads the list, along with any portfolio group names shown alongside it |
+| **Promote portfolios** | Takes you to the [Portfolios dashboard](/docs/portfolios-dashboard), where promotion actually happens — it doesn't create anything on this page |
 
 > [!WARNING]
-> The primary button is not "+ New". Nothing on this page creates a promoted portfolio.
+> That button isn't "add new." Nothing on this page creates a promoted portfolio — you always promote starting from a trial on the Portfolios dashboard.
 
-Two toolbar affordances that other registries have are **absent** here: there is no **View documentation** button, and there is no registry-specific **Actions** dropdown.
+Two things you'll find on other registries but not here: a **View documentation** shortcut, and a page-specific **Actions** menu.
 
-There is also **no free-text search box**. The `?q=` parameter is inert on this route. Search by name through the **Name** text filter in the filter panel.
+There's also no free-text search box on this page. Search by name using the **Name** filter in the filter panel instead.
 
 ### Columns
 
-Every column below is defined once and shared by the table, the card grid and the portfolio-group wizard's picker, so the three cannot disagree about a value. The order below is also the order of the Choose columns menu.
+Every column below is defined once and shared by the table, the card grid, and the portfolio group wizard's picker, so all three always agree on a value. The order below also matches the **Choose columns** menu.
 
-| # | Header | Align | Shown by default | Cell contents |
-|---|---|---|---|---|
-| 1 | **Name** | left | Yes | The frozen snapshot name, bold, truncated with the full name on hover. |
-| 2 | **Strategy** | left | Yes | The strategy name **frozen at promotion**. In the table and the wizard picker it links to the strategy; on a card it is plain text. |
-| 3 | **Author** | left | Yes | The username of the author of the originating strategy, frozen by value. **Not recorded** when unknown. |
-| 4 | **Study** | left | Yes | Live lineage — the source study's display name, or **Not available** when the study is gone. |
-| 5 | **CAGR** | right | Yes | Percent, one decimal. `—` when null. |
-| 6 | **Sharpe** | right | Yes | Plain number, three decimals. `—` when null. |
-| 7 | **Max drawdown** | right | Yes | Percent, one decimal. `—` when null. |
-| 8 | **Status** | left | Yes | The profitability chip — see below. |
-| 9 | **Total return** | right | No | Percent, one decimal. |
-| 10 | **Portfolio Groups** | right | No | `—` when the portfolio is in none; otherwise a chip with the count, whose tooltip lists the group names. |
-| 11 | **Daily updates** | left | No | **On** or **Off**. |
-| 12 | **Data points** | right | No | The number of NAV observations behind the metrics. `—` when zero. |
-| 13 | **Date promoted** | left | Yes | Short US date, for example `Aug 18, 2026`. `—` when absent. |
+| # | Column | Shown by default | What it shows |
+|---|---|---|---|
+| 1 | **Name** | Yes | The frozen snapshot's name, truncated with the full name on hover |
+| 2 | **Strategy** | Yes | The strategy's name, **frozen at the moment of promotion**. Links to the strategy in the table and the wizard picker; plain text on a card. |
+| 3 | **Author** | Yes | The username of whoever authored the original strategy, frozen by value. Reads **Not recorded** when unknown. |
+| 4 | **Study** | Yes | The source study's name, or **Not available** once that study is gone |
+| 5 | **CAGR** | Yes | Percent, one decimal. Dash when there isn't enough history yet. |
+| 6 | **Sharpe** | Yes | Three decimals. Dash when there isn't enough history yet. |
+| 7 | **Max drawdown** | Yes | Percent, one decimal. Dash when there isn't enough history yet. |
+| 8 | **Status** | Yes | The profitability chip — see below |
+| 9 | **Total return** | No | Percent, one decimal |
+| 10 | **Portfolio Groups** | No | Dash if the portfolio belongs to none; otherwise a chip with the count, with a tooltip listing the group names |
+| 11 | **Daily updates** | No | **On** or **Off** |
+| 12 | **Data points** | No | How many performance observations back the metrics. Dash when there are none yet. |
+| 13 | **Date promoted** | Yes | For example, `Aug 18, 2026` |
 
-Numeric cells use tabular figures and sort on the **raw** number, so `-18.4%` sorts below `-2.1%` instead of lexically. The table opens sorted by **Date promoted**, newest first.
+Numbers sort by their real value rather than as text — so `-18.4%` correctly sorts below `-2.1%`. The table opens sorted by **Date promoted**, newest first.
 
 > [!NOTE]
-> Four columns — Total return, Portfolio Groups, Daily updates and Data points — are hidden until you enable them in **Choose columns**, and that menu is disabled in Card view. Switch to List view first.
-
-The table's per-column filter funnels are switched off on this registry. The toolbar funnel is the only filter surface, so what you see is always what the URL says.
+> Four columns — Total return, Portfolio Groups, Daily updates, and Data points — are hidden until you turn them on in **Choose columns**, which is only available in List view. Switch to List view first if you want them.
 
 ### Status chip
 
-The chip reads the portfolio's total return over its whole managed equity curve.
+The chip reflects the portfolio's total return over its entire performance history since being promoted.
 
-| Condition | Chip | Style |
-|---|---|---|
-| Total return is null | **No data** | Outlined, default colour, with a tooltip |
-| Total return is zero or positive | **Profitable** | Outlined green |
-| Total return is negative | **Unprofitable** | Outlined red |
+| Condition | Chip |
+|---|---|
+| No performance history yet | **No data** |
+| Total return is zero or positive | **Profitable** |
+| Total return is negative | **Unprofitable** |
 
 The **No data** tooltip:
 
 > This portfolio has no equity history yet, so its profitability cannot be determined. It will be filled in after the next daily update.
 
-**No data** is a real third state, not a rendering fallback. Metrics are computed from the managed equity curve, and **fewer than two NAV points yields no metrics at all** — every one of CAGR, Sharpe, Max drawdown and Total return comes back null, Data points reads `—`, and the chip reads No data. A freshly promoted portfolio that has not been extended yet does not show `0%`; it shows dashes.
+**No data** is a real third state, not a placeholder. Every one of CAGR, Sharpe, Max drawdown, and Total return needs at least two data points to compute at all — with fewer than that, they all show dashes and the chip reads **No data**. A freshly promoted portfolio that hasn't had a daily update yet won't show `0%`; it shows dashes until there's something to measure.
 
 > [!CAUTION]
-> The Sharpe ratio in this registry is computed with a **zero risk-free rate**. It is not risk-adjusted against any benchmark rate. See [metrics reference](/docs/metrics-reference) for how each metric is defined.
+> The Sharpe ratio shown in this registry uses a **zero risk-free rate** — it isn't adjusted against any benchmark rate. See [metrics reference](/docs/metrics-reference) for how each metric is defined.
 
 ### Filters
 
-The filter panel is backed by the URL: every active field becomes an `f_` query parameter named after the field, written as a history replacement. A filtered registry view is therefore shareable and bookmarkable, and tweaking a filter does not spam your back button.
+Every filter you set updates the page's link, so a filtered view is easy to bookmark or hand to a teammate — and adjusting filters won't clutter up your browser's back button.
 
-| Field | Kind | URL parameter | Values |
-|---|---|---|---|
-| Name | Text, placeholder **Contains…** | `f_name` | Substring match on the portfolio name |
-| Strategy | Multi-select | `f_strategy` | The distinct frozen strategy names, with **Unknown strategy** for rows that have none |
-| Author | Multi-select | `f_author` | The distinct frozen author usernames, with **Not recorded** for rows that have none |
-| Study | Multi-select | `f_study` | The distinct study names, with **Not available** for rows whose study is gone |
-| Status | Multi-select | `f_status` | **Profitable**, **Unprofitable**, **No data** |
-| CAGR | Number range | `f_cagr` | Raw fraction |
-| Sharpe | Number range | `f_sharpe_ratio` | Raw number |
-| Max drawdown | Number range | `f_max_drawdown` | Raw fraction |
-| Portfolio Groups | Number range | `f_baskets` | The number of groups holding the portfolio |
-| Date promoted | Date range | `f_created_at` | The promotion timestamp |
+| Field | Kind | What it matches |
+|---|---|---|
+| Name | Text | Any part of the portfolio's name |
+| Strategy | Multi-select | The frozen strategy name — includes **Unknown strategy** for the rare row without one |
+| Author | Multi-select | The frozen author's username — includes **Not recorded** for rows without one |
+| Study | Multi-select | The source study's name — includes **Not available** for rows whose study is gone |
+| Status | Multi-select | **Profitable**, **Unprofitable**, **No data** |
+| CAGR | Number range | — |
+| Sharpe | Number range | — |
+| Max drawdown | Number range | — |
+| Portfolio Groups | Number range | How many groups the portfolio belongs to |
+| Date promoted | Date range | — |
 
 > [!WARNING]
-> The percentage filters take **fractions, not percentages**. A cell rendering `5.2%` holds `0.052`, so a CAGR minimum of `0.05` is the filter you want — `5` matches nothing.
+> The percentage filters expect **fractions, not percentages**. A cell showing `5.2%` holds `0.052` underneath, so a CAGR minimum of `0.05` is what finds it — typing `5` matches nothing.
 
-Panel chrome is shared with every registry: title **Filters**, **Clear all**, per-field **Clear**, **From** and **To** for dates, **Min** and **Max** for numbers, and an **{{count}} active** badge on the funnel.
+Every field can be cleared on its own, or all at once with **Clear all**; date fields use **From**/**To**, number fields use **Min**/**Max**, and a badge on the filter button always shows how many filters are active.
 
 ### Card view
 
-The view toggle switches between the table and a card grid, and your choice is remembered per registry in local storage under `fintela.registry.promotedPortfolios.viewMode`. **Cards is the product default**, so a first visit lands on the grid.
+Your choice between table and cards is remembered the next time you open this registry. **Cards are the default**, so a first visit shows the grid rather than the table.
 
-A card shows the name as its title, the strategy as its subtitle, and then Status, CAGR, Sharpe, Max drawdown and Date promoted as meta rows.
+A card shows the portfolio's name as its title, the strategy as a subtitle, and then Status, CAGR, Sharpe, Max drawdown, and Date promoted underneath.
 
-Cards render exactly the same filtered rows as the table — they are not a subset — but they ignore column visibility entirely, and the strategy name on a card is **plain text, not a link**. Clicking anywhere on a card opens its action menu.
+Cards show exactly the same filtered results as the table — never a subset — but column visibility doesn't apply to them, and the strategy name on a card is plain text rather than a link. Click anywhere on a card to open its action menu.
 
 ### Row action menu
 
-Clicking a row or a card opens an actions popover anchored to it — below the row in List view, beside the card in Card view, and as a bottom sheet on small screens. Its header shows the portfolio's name, with a **Close** button.
+Clicking a row or a card opens a small menu of actions next to it — or, on a small screen, a sheet that slides up from the bottom. Its header shows the portfolio's name, with a **Close** button.
 
 There are exactly two actions.
 
-| Action | What it does | Disabled when |
+| Action | What it does | When it's disabled |
 |---|---|---|
-| **View in Portfolio Analysis** | Opens the source trial on the [Portfolio Analysis](/docs/portfolio-detail) surface. It is a real link, so Cmd-click and middle-click open a new tab. | The source trial is gone. Tooltip: *"The source study was deleted, so there is no portfolio page to open."* |
-| **Delete** | Opens the delete confirmation. | The portfolio belongs to at least one portfolio group. |
+| **View in Portfolio Analysis** | Opens the source trial on the [Portfolio Analysis](/docs/portfolio-detail) page. It's a real link, so Cmd-click or middle-click opens it in a new tab. | The source trial no longer exists — the source study was deleted, so there's no page left to open |
+| **Delete** | Opens the delete confirmation | The portfolio belongs to at least one portfolio group |
 
-The blocked-delete tooltip is pluralised:
-
-- One group: `Used by the portfolio group {{baskets}}. Remove it from that portfolio group before deleting it.`
-- More than one: `Used by {{count}} portfolio groups ({{baskets}}). Remove it from them before deleting it.`
-
-`{{baskets}}` is the comma-separated list of group names.
+When Delete is disabled because of group membership, the tooltip names the specific group (or groups) to remove it from first.
 
 ### Delete confirmation and what it removes
 
-The confirmation dialog is titled **Confirm Action**, with **Cancel** and **Confirm** buttons; Confirm is disabled while the delete is in flight. Its body:
+The confirmation dialog asks you to confirm before anything happens:
 
 > Delete the promoted portfolio "{{name}}"? Its stored history is removed permanently. The source trial and study are not affected.
 
 > [!NOTE]
-> The dialog title and the two button labels are hardcoded English and are not translated, unlike every other string on this page.
+> This dialog's title and buttons always show in English, regardless of your language setting — everything else on this page is translated.
 
-On success a green toast reads **"Promoted portfolio deleted"**. Deleting cascades away that portfolio's managed equity, managed holdings, managed orders and refresh-status row. The source trial, its study and its strategy are untouched.
+Confirming permanently deletes the portfolio's stored performance history — its equity curve, holdings, and orders. The trial and study it was promoted from are separate objects and are never touched.
 
-The server refuses a delete while any portfolio group still lists the portfolio, with **HTTP 409** and this message:
-
-```text
-this promoted portfolio is a member of {basket_count} basket(s) ({basket_names}); remove it from them before deleting it
-```
-
-The registry disables the action for those rows precisely so you read *why* instead of discovering the 409. Reaching it means a stale list or a direct API call. A delete against an id that does not exist in your organization is a **404 "Managed portfolio not found"** — never a silent success.
+If the portfolio still belongs to a portfolio group, deletion is blocked with an explanation of which group(s) to remove it from first — the registry disables the action for exactly this reason, so you see why up front instead of hitting an error. Trying to delete one that's already gone (for example, from a stale page) shows a clear "not found" message rather than pretending it worked.
 
 > [!CAUTION]
-> Delete is a hard delete. There is no archive, no soft-delete column, and no undo. It does free a quota slot immediately.
+> Deleting is permanent. There's no archive, no soft delete, and no undo. It does free up a slot in your promoted-portfolio limit immediately.
 
 ### Why a cell is blank
 
-Two columns can go empty, and they mean different things.
+Two columns can go blank, and they mean different things.
 
-| Cell | Reason | Consequence |
+| Cell | Why it's blank | What it means for you |
 |---|---|---|
-| **Strategy** shows a name but no link | The strategy was deleted — including a soft delete, which drops the link before the row is purged. Tooltip: *"This portfolio's source strategy can't be opened — it was deleted. The name shown is the one frozen when it was promoted."* | None. The name you see is the frozen one and stays correct. |
-| **Study** reads **Not available** | The source study was deleted or soft-deleted. Tooltip: *"The source study was deleted. The promoted portfolio is unaffected — it keeps its own frozen snapshot — but it can no longer be traced back to a study."* | **View in Portfolio Analysis** is disabled, because that surface is keyed by trial id. |
+| **Strategy** shows a name but isn't a link | The strategy was deleted, including simply archived | Nothing to worry about — the name shown is the one frozen at promotion time, and it stays accurate |
+| **Study** reads **Not available** | The source study was deleted or archived | **View in Portfolio Analysis** is disabled, since that page needs the original trial to exist |
 
-The strategy *name* and the *author* are frozen by value and survive a full purge. The strategy *link*, the *study* and the *trial* are live lineage and disappear with their rows. Renaming a strategy does not retitle a promoted portfolio and does not update the Strategy column.
+The strategy's name and author are frozen values, so they survive even a full deletion of the study, trial, and strategy. The links to the strategy, study, and trial are live references, so they disappear along with whatever they point to. Renaming a strategy afterward never retitles a promoted portfolio or updates its Strategy column.
 
 ### The same table inside the portfolio group wizard
 
-The [portfolio group](/docs/portfolio-groups) creation wizard and the create-group dialog both embed this registry as a selection table, reading the same rows, the same columns and the same URL-backed filter state.
+The [portfolio group](/docs/portfolio-groups) creation wizard and the create-group dialog both reuse this exact registry as a picker — same rows, same columns, same filters.
 
 | Difference | In the picker |
 |---|---|
 | Visible columns | Name, Strategy, CAGR, Sharpe, Max drawdown, Status |
-| Column widths | Fixed pixel widths with horizontal scrolling, in compact density |
-| Filters | The wizard shows Name, Strategy, Study and Status inline, with the rest behind **More Filters**. The dialog shows only the funnel button. |
-| Selection | A checkbox column, plus a **{{count}} selected** chip whose delete affordance clears the whole selection |
-| Aria label | **select promoted portfolios** |
-| Empty state | **Loading promoted portfolios…** while loading, otherwise **No promoted portfolios match the current search and filters.** |
+| Layout | Fixed-width columns with horizontal scrolling, in a more compact view |
+| Filters | The wizard shows Name, Strategy, Study, and Status directly, with the rest tucked behind **More Filters**. The simpler create-group dialog just shows the filter button. |
+| Selecting | A checkbox per row, plus a running **{{count}} selected** chip you can use to clear your whole selection at once |
+| Empty state | **Loading promoted portfolios…** while loading, or **No promoted portfolios match the current search and filters.** |
 
-The selected count is computed from the selection, never from the visible rows, so filtering a selected row off screen does not deselect it. Because the filter state is the shared URL store, a half-built group survives a page reload.
+Your selected count always reflects your actual selection, not just what's currently visible, so filtering a selected row out of view never silently deselects it. And because your filters live in the page's link, a half-built group survives an accidental page reload.
 
-## Creation wizard and advanced options
+## Promoting a trial into this registry
 
 ### There is no creation wizard
 
-This registry has no create flow at all. A promoted portfolio comes into existence exactly one way — by promoting a trial — and everything a wizard would normally ask you is derived instead: the name is minted, the snapshot is copied from the trial and its study, and daily-update enrollment is fixed. There is nothing to fill in and nothing to name.
+Unlike other registries, there's no "create new" flow here. A promoted portfolio comes into being exactly one way — by promoting a trial — and everything a setup wizard would normally ask you is decided automatically: the name is generated, the snapshot is copied straight from the trial and its study, and it's enrolled in daily updates. There's nothing to name and nothing to configure.
 
-What follows documents the promotion flow itself: where you trigger it, what it validates, what it names the result, and what it freezes.
+The rest of this section walks through that promotion flow itself: where you trigger it, what has to be true first, what the result is named, and exactly what gets frozen into it.
 
 ### Where you trigger promotion
 
-| Surface | Control | Exact copy |
+| Surface | Control | What it says |
 |---|---|---|
-| [Portfolios dashboard](/docs/portfolios-dashboard) card | Per-card button | **Promote**, tooltip **"Promote this trial into the Portfolio Groups"**. Once promoted it flips to **Promoted**, tooltip **"Already promoted to the Portfolio Groups"**. |
-| Portfolios dashboard card menu | Action-menu item | Secondary text **"Add this trial to the Portfolio Groups as a managed portfolio"** |
-| Portfolios dashboard bulk bar | Appears once two or more cards are checked | **Promote Selected** / **Promote Selected ({{count}})**, tooltip **"Promote every checked trial into the Portfolio Groups in one go"**. A chip reads **"{{count}} already promoted"**; when every checked trial is already promoted the button disables and the tooltip becomes **"Every checked trial is already promoted"**. |
-| [Portfolio Analysis](/docs/portfolio-detail) header | Per-portfolio promote control | — |
-| [Portfolio group](/docs/portfolio-groups) membership | **Implicit.** Putting a raw trial id into a group promotes it first. | — |
+| [Portfolios dashboard](/docs/portfolios-dashboard) card | Per-trial button | **Promote**, tooltip "Promote this trial into the Portfolio Groups." Once promoted it becomes **Promoted**, tooltip "Already promoted to the Portfolio Groups." |
+| Portfolios dashboard card menu | Menu item | "Add this trial to the Portfolio Groups as a managed portfolio" |
+| Portfolios dashboard bulk bar | Appears once two or more trials are checked | **Promote Selected**, with a count. A chip shows how many of your selection are already promoted; if every checked trial is already promoted, the button disables. |
+| [Portfolio Analysis](/docs/portfolio-detail) header | A promote control for that one trial | — |
+| [Portfolio group](/docs/portfolio-groups) membership | **Implicit** — adding a raw trial straight into a group promotes it automatically first | — |
 
-Already-promoted ids are filtered out of a bulk request rather than sent.
+Trials you've already promoted are simply skipped in a bulk request rather than resubmitted.
 
 > [!WARNING]
-> Implicit promotion is silent. Adding a trial to a portfolio group creates a promoted portfolio and consumes a quota slot without any promote confirmation, which is why rows can appear in this registry that you never promoted by hand. An id that is neither a promoted portfolio nor a promotable trial is rejected with `id {id} is neither a managed portfolio nor a promotable trial in this organization`.
+> Adding a trial straight into a portfolio group promotes it silently, with no separate confirmation, and it counts against your promoted-portfolio limit just like an explicit promote does. That's why you can sometimes find a portfolio in this registry that you never promoted by hand.
 
-Toasts, all from the shared bundle:
+Toasts you'll see:
 
-| Outcome | Toast |
+| Outcome | Message |
 |---|---|
-| Single promotion | **Promoted to the Portfolio Groups** |
-| Bulk, all succeeded | **{{count}} portfolio promoted** / **{{count}} portfolios promoted** |
-| Bulk, partial | Warning **{{count}} trial could not be promoted** / **{{count}} trials could not be promoted**, with the individual failure reasons joined by ` · ` as the detail |
+| Single promotion | "Promoted to the Portfolio Groups" |
+| Bulk, all succeeded | "{{count}} portfolio(s) promoted" |
+| Bulk, partial | A warning that some trials couldn't be promoted, with the specific reason for each one |
 
-### Pre-flight validation
+### What has to be true before you can promote
 
-Promotion validates everything before it writes anything. These run in order.
+Promotion checks everything up front, before it changes anything.
 
-| # | Check | Result when it fails |
+| # | What has to be true | If it isn't |
 |---|---|---|
-| 1 | Permission `portfolios:read` | 403 |
-| 2 | Quota `managed_portfolios` — charged for the whole batch up front | **402**, see below |
-| 3 | The trial belongs to your organization | **404 "Portfolio not found"** for a single promote; a `failed` entry with the same message inside a batch |
-| 4 | Idempotency — a promoted portfolio already exists for this trial in this organization | Not a failure. The existing id is returned and no second row is created. Checks 5 and 6 are re-run against the existing snapshot, so a repeat call can still be refused. |
-| 5 | The strategy's execution type is `INTERNAL`, case-insensitively | **400** — see the Execution modes section below |
-| 6 | If the parent study is a Mode-1 meta-strategy, no attached risk manager may be `sector_cap` or `country_cap` | **400**, message below |
-
-The meta refusal from the promote endpoints, verbatim:
-
-```text
-trial portfolio {id} has a sector_cap/country_cap risk manager and its parent study is a Mode-1
-meta-strategy (portfolio-of-baskets); those act on per-ticker sector/country metadata that baskets
-do not have, so they are degenerate on a meta-portfolio. Remove the sector_cap/country_cap
-attachment(s) before promoting. Other risk managers are fully supported on meta-portfolios.
-```
-
-Every other [risk manager](/docs/risk-managers) is fully supported on a meta-portfolio.
-
-A trial whose study was soft-deleted, or that does not exist in your organization, never reaches those checks: a trial's readability is resolved through its parent study, which must belong to your organization and must not be soft-deleted, so the request is refused at check 3 with **404 "Portfolio not found"**.
-
-> [!NOTE]
-> Idempotency is enforced by a uniqueness constraint on the organization plus the source trial. One promoted copy per trial per organization — a repeat promote is a no-op that returns the existing id, never a duplicate row.
+| 1 | You have permission to view portfolios in your organization | You'll see a permission error |
+| 2 | You have room left in your promoted-portfolio limit for the whole batch | You'll be prompted to buy more room or free up a slot (see below) |
+| 3 | The trial belongs to your organization and its study hasn't been deleted | You'll see a "not found" message for that trial |
+| 4 | You haven't already promoted this exact trial | Nothing goes wrong — you're simply handed back the portfolio that already exists, so promoting twice never creates a duplicate |
+| 5 | The strategy behind the trial is an **Internal** strategy, not an **External** one | You'll see a message explaining that only Internal strategies can be promoted — see [Execution modes](#execution-modes) below |
+| 6 | If the study combines other portfolios (a "portfolio of portfolios"), none of its risk managers are Sector Cap or Country Cap | You'll be asked to remove those risk managers first — every other [risk manager](/docs/risk-managers) works fine on this kind of portfolio |
 
 ### Naming
 
-The name is minted by the server as the study's display name, a space-slash-space, then `trial` and the trial number:
+Fintela names the result for you automatically, combining the study's name with the trial number — for example:
 
-```text
-Momentum v3 / trial 17
-```
+> Momentum v3 / trial 17
 
-There is **no name field at promotion time and no rename anywhere** — not in this registry, not on the API. The name is part of the frozen snapshot, so renaming the study afterwards does not retitle the portfolio.
+There's no name field to fill in when you promote, and no way to rename a promoted portfolio afterward — the name is part of the frozen snapshot, so renaming the original study later never retitles portfolios you already promoted from it.
 
-> [!NOTE]
-> The name uses the study's *display name* — the label you set. Studies also carry an internal immutable key that is never rendered anywhere in the product.
+### What gets captured and locked in
 
-### What the snapshot freezes
+Promotion captures everything below in one step, so a half-promoted portfolio can never exist.
 
-This is the promoted portfolio's equivalent of an advanced options panel: everything below is captured by value, in one transaction, so a partially-promoted portfolio cannot exist.
-
-| Frozen item | What it captures |
+| What's captured | In plain terms |
 |---|---|
-| Strategy name | The strategy's name at promotion time |
-| Author | The strategy's creator and username — the only fact that survives a full purge of the study, trial and strategy |
-| Execution type, execution details, parameters | The strategy's runtime contract |
-| Lookback mode and lookback function code | The strategy's lookback definition |
-| Cluster type | Derived from the universe's exchanges, falling back to `generalized` |
-| Pipeline graph | The study's launch snapshot of the strategy's data pipeline, minus its bindings; falls back to the strategy's live graph, then to an empty graph |
-| Concrete parameters | The trial's own parameter values, each as a name, value and distribution |
-| Strategy universe | The **study-gated runnable universe** — the asset group's tickers intersected with the study's launch universe, in asset-group order. Falls back to the whole asset group when the study froze no universe. |
-| Fitness universe, fitness snapshot, fitness parameters | The [fitness function](/docs/fitness-functions)'s execution type, execution details and parameters, plus the study's fitness parameters |
-| Risk manager configs and state | Copied from the trial |
-| Risk manager pipelines | Each attached risk manager's frozen pipeline graph, keyed by attachment id, preferring the study's launch snapshot |
-| Parameter ranges | From the study |
-| Date windows | Train start and end, validation start and end, out-of-sample start and end |
-| Seed | The trial's historical rebalancing signal |
-| Meta flag and members | Whether the study was a portfolio-of-groups, and which groups |
-| Benchmark | Preferred from the study's launch snapshot binding, falling back to the study's benchmark |
+| Strategy details | The strategy's name, its author, its code and parameters, and the exact parameter values used in this trial |
+| Tradable universe | The precise list of assets the strategy was allowed to trade, as of the moment you promoted |
+| Fitness and risk settings | The [fitness function](/docs/fitness-functions) and every attached [risk manager](/docs/risk-managers), exactly as configured for this trial |
+| Date ranges | The training, validation, and out-of-sample windows used to produce this trial |
+| Starting point | The trial's original historical starting signal, so its rebalancing pattern stays identical going forward |
+| Benchmark | The benchmark this portfolio is measured against |
+| Portfolio-of-portfolios structure | If the study combined other portfolios, which ones and how they're combined |
 
-The time series are **copied, not re-simulated**: holdings, equity and orders are lifted from the trial as they stand, so the managed record is identical to the trial you picked.
+Its performance history — holdings, equity curve, and orders — is copied exactly as it stood in the trial, not recalculated.
 
 > [!WARNING]
-> Promotion does not run a backtest and does not re-optimize anything. If the numbers look wrong, the trial's numbers were wrong — see [analyzing results](/docs/analyzing-results).
+> Promotion never re-runs a backtest and never re-optimizes anything. If a trial's numbers looked wrong before you promoted it, they'll look exactly the same afterward — see [analyzing results](/docs/analyzing-results) if something seems off.
 
 ### What stays live
 
-Three references are deliberately kept live rather than frozen, because they are link targets rather than inputs:
+Three references are deliberately kept live rather than frozen, because they're links rather than inputs:
 
-| Reference | Behaviour |
+| Reference | What happens if the original is deleted |
 |---|---|
-| Strategy id | Powers the Strategy column's link. Goes null when the strategy is purged, and the link disappears while the strategy is merely soft-deleted. |
-| Source trial id | Powers **View in Portfolio Analysis**. Set to null when the trial is deleted. |
-| Study id and name | Powers the Study column. Reads **Not available** once the study is deleted or soft-deleted. |
+| Link to the strategy | Disappears once the strategy is deleted — even just archived. The Strategy column keeps its frozen name either way. |
+| Link to the source trial ("View in Portfolio Analysis") | Stops working once the trial is deleted |
+| Link to the study | The Study column reads **Not available** once the study is deleted or archived |
 
-### What becomes immutable
+### What can't be changed afterward
 
-Because the daily updater reads the snapshot instead of the live entities, nothing you do to the source objects afterwards reaches a promoted portfolio.
+Because your promoted portfolio runs off its own frozen copy rather than the live strategy, nothing you do to the original objects afterward reaches it.
 
-| You change | Effect on the promoted portfolio |
+| You change… | Effect on the promoted portfolio |
 |---|---|
-| Edit or rename the strategy | None. The Strategy column keeps the frozen name; only the link may disappear. |
-| Edit the risk managers | None. The frozen configs and pipelines keep running. |
-| Edit the asset group | None. The frozen universe keeps running. |
-| Delete the study | The row survives untouched. Study reads **Not available** and View in Portfolio Analysis is disabled. |
-| Delete the strategy | The row survives. The frozen name and author remain; the link goes. |
-| Delete the promoted portfolio | Permanent, and only possible when no portfolio group holds it. |
+| Edit or rename the strategy | None — the Strategy column keeps showing the frozen name; only its link may disappear |
+| Edit the risk managers | None — the frozen settings keep running as they were |
+| Edit the asset group | None — the frozen tradable universe keeps running as it was |
+| Delete the study | The portfolio survives untouched. Study reads **Not available** and **View in Portfolio Analysis** is disabled. |
+| Delete the strategy | The portfolio survives with its frozen name and author intact; only the link goes |
+| Delete the promoted portfolio itself | Permanent, and only possible once it belongs to no portfolio group |
 
-### Batch promotion and quota
+### Promoting multiple trials at once, and your portfolio limit
 
-Bulk promotion sends one request for the whole selection. Duplicates are collapsed and your order is preserved.
+You can select several trials on the Portfolios dashboard and promote them all in one action. Selecting the same trial twice never creates two copies, and the order you picked them in is preserved.
 
-| Limit | Value | Refusal |
-|---|---|---|
-| Maximum trials per request | **50** | 400 `cannot promote more than 50 trials in one request (got N)` |
-| Empty selection | Rejected | 400 `trial_portfolio_ids must not be empty` |
+- You can promote up to **50 trials** in a single batch.
+- You can't submit an empty selection.
 
-Batch promotion is **partial success by contract**: the response separates what was promoted from what failed, and one un-promotable trial never discards the rest. Organization scoping is checked per id for exactly that reason.
+If some trials in a batch qualify and others don't — say, one uses an External strategy — the request is a partial success: everything valid goes through, and you get a clear reason for each one that didn't.
 
-Promotion is quota-gated on `managed_portfolios`. The default free-tier cap is **5**, counted as a plain row count, so deleting a promoted portfolio frees a slot immediately. The whole batch is charged up front. Refusal is **HTTP 402** with:
-
-> Your plan includes {limit} managed portfolios and you already have {used}. Existing ones keep working — buy tokens to create more, or delete one to make room.
-
-The app intercepts that response globally and opens the token purchase dialog rather than showing a red toast. In that dialog the resource is named **promoted portfolios**, not the raw quota key. Organizations that have purchased tokens bypass the cap entirely. See [tokens and billing](/docs/tokens-and-billing).
+Promoting counts against your promoted-portfolio limit. The default plan includes **5**, counted as a simple total of how many you currently have, so deleting one frees a slot right away. **The whole batch is checked against your limit up front**, before anything is promoted. If you're over your limit, Fintela opens the token purchase dialog automatically rather than just showing an error, so you can buy more room or free up a slot by deleting an existing promoted portfolio. See [tokens and billing](/docs/tokens-and-billing).
 
 > [!NOTE]
-> The registry page itself is never entitlement-locked or blurred. Only the act of promoting is capped.
+> Browsing this registry is never limited or locked — only the act of promoting a new trial is capped.
 
 ### After promotion: daily updates
 
-A fresh promotion is enrolled in daily updates — the **Daily updates** column reads **On**. That flag exists so the portfolio can be extended one bar at a time by the updater.
+A freshly promoted portfolio is automatically enrolled in daily updates — its **Daily updates** column reads **On**. This is what lets Fintela extend the portfolio's performance history one trading day at a time without any action from you.
 
-There is **no per-portfolio toggle for it, in the UI or on any API**. The only writes to it come from the portfolio-group layer, when a group is created with daily updates on or when its membership is synced, and both of those only ever turn it **on**, never off. The developer API endpoint that once changed it was removed.
+There's no switch to turn daily updates off for an individual promoted portfolio, here or anywhere else. The only thing that changes this setting is whether the portfolio belongs to a [portfolio group](/docs/portfolio-groups) with daily updates enabled — and that can only ever turn updates on, never off.
 
 ## Execution modes
 
-The Internal/External split is a property of the [strategy](/docs/external-strategies) a trial came from, not something you choose here. For promoted portfolios it is a hard gate.
+Whether a trial's strategy is Internal or External is a property of the [strategy](/docs/external-strategies) it came from, not something you choose here. For promoted portfolios, it's a hard requirement.
 
 ### Internal only
 
-Only trials whose strategy has execution type `INTERNAL` — Python that runs inside Fintela against the platform's deterministic function signature — can be promoted. The check is case-insensitive, it runs before anything is written, and it is re-run on the idempotent path, so a copy promoted before the guard existed is still refused today.
+Only trials built from an **Internal** strategy — one written and run inside Fintela's own strategy editor — can be promoted into this registry. This check applies consistently, including to a portfolio you're re-promoting.
 
-The reason is the daily updater. Extending a portfolio one bar at a time means re-executing the strategy on the platform's own schedule, against the platform's own data; the updater supports Internal strategies only.
+The reason is daily updates. Extending a portfolio one trading day at a time means Fintela re-running your strategy's logic on its own schedule, against its own market data — and that only works for strategies that live inside the platform.
 
-### External is refused
+### External strategies can't be promoted
 
-External strategies — the ones you host yourself, in any language, on your own infrastructure and against your own private data — **cannot be promoted, and therefore cannot exist in this registry at all.**
+An [External strategy](/docs/external-strategies) — one you run yourself, in whatever language or infrastructure you choose, against your own private data — **can never be promoted, and can never appear in this registry.**
 
-The refusal carries two different wordings depending on which path produced it, so quote the one you actually saw. From the promote endpoints — the single promote and the batch alike:
-
-```text
-trial portfolio {id} uses an EXTERNAL strategy ({execution_type}); managed daily-update mode
-supports INTERNAL strategies only, so it cannot be promoted or tracked
-```
-
-From the portfolio-group path, when an id is resolved into a group member:
-
-```text
-portfolio {id} uses an EXTERNAL strategy ({execution_type}); it cannot daily-extend (managed
-mode supports INTERNAL only), so it cannot be in a tracked basket. Remove it from the basket.
-```
+If you try, you'll see a clear message explaining that only Internal strategies support daily updates — whether you're promoting a single trial, promoting a batch, or trying to add one directly into a portfolio group.
 
 ### What that rules out
 
@@ -416,15 +349,15 @@ mode supports INTERNAL only), so it cannot be in a tracked basket. Remove it fro
 |---|---|
 | Optimizing it in a study and inspecting the resulting trials | Yes — see [external strategies](/docs/external-strategies) |
 | Promoting one of those trials | **No** |
-| Putting one in a [portfolio group](/docs/portfolio-groups) | **No** — group membership requires a promoted portfolio, so the same refusal fires |
+| Adding one to a [portfolio group](/docs/portfolio-groups) | **No** — group membership requires a promoted portfolio, so the same rule applies |
 | Daily updates on it | **No** |
-| [Live trading](/docs/live-trading) it through group operations | **No**, because it can never become a group member |
+| [Live trading](/docs/live-trading) it through group operations | **No**, since it can never become a group member |
 
-### Where the gate does not reach
+### What the Internal-only rule doesn't affect
 
-The gate reads the **strategy's** execution type and nothing else.
+This rule only looks at the **strategy's** execution type — nothing else about the trial.
 
-- A study that used an **External fitness function** promotes normally. The fitness function's execution type is frozen into the snapshot but is never checked. See [external fitness](/docs/external-fitness).
-- Risk managers are not gated by execution type at all; the only risk-manager refusal is the meta-strategy `sector_cap` / `country_cap` case described above.
+- A study that scored its trials with an [External fitness function](/docs/external-fitness) promotes just fine. The fitness function's settings are frozen into the snapshot, but its execution type is never checked.
+- Risk managers aren't affected by Internal/External at all — the only risk-manager restriction is the Sector Cap / Country Cap rule for portfolio-of-portfolios studies, described above.
 
-For the full picture of how Internal and External differ across the platform, see [execution modes](/docs/execution-modes).
+For the full picture of how Internal and External strategies differ across Fintela, see [execution modes](/docs/execution-modes).

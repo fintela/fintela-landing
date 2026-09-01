@@ -4,517 +4,397 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 4
 published: true
-updated: 2026-08-20
-summary: Host your signal generator on your own infrastructure, in any language, behind an HTTP endpoint Fintela calls for every trial.
-keywords: external strategy, simulate endpoint, http, signal, self-hosted, max_concurrency, timeout, ssrf, private data
+updated: 2026-09-01
+summary: Run your own trading logic on your own systems, in any language, and connect it to Fintela so it can be scored and traded alongside strategies you build in the app.
+keywords: external strategy, self-hosted strategy, own infrastructure, trading signal, max concurrency, timeout, private data, own language
 ---
 
-An external strategy is an HTTP endpoint that you own. Fintela stores the URL and two
-HTTP-client settings and nothing else — no code, no data, no credentials. When a study runs,
-Fintela POSTs a parameter sample to `{your-endpoint}/simulate` and reads back a signal. Your
-implementation language, your dependencies, your private feeds and your alpha stay on your
-servers.
+An external strategy lets you run your own trading logic on your own systems — in any
+language, using any data or models you like — and plug it into Fintela so it can be scored,
+tested and traded alongside the strategies you build directly in the app. Fintela only ever
+holds three things about it: where your service lives, how long to wait for a response, and
+how many calls it can handle at once. Your code, your data, your models and your edge never
+leave your own infrastructure — Fintela just sends over the numbers to test and reads back the
+trading signal you produce.
 
 ## What Fintela stores
 
-For an external strategy the entire stored configuration is the `execution_details` object:
+Setting up an external strategy is deliberately minimal. Fintela remembers three things about
+your endpoint: its address, how long to wait for a response, and how many requests it's
+allowed to handle at once. Everything else about the strategy — its name, description, the
+parameters you've declared and how far back it needs price history — is the same metadata
+Fintela keeps for any strategy, used to build the study's search space and load the right
+price history. None of your logic, your data or your credentials ever reach Fintela.
 
-```json
-{
-  "endpoint": "https://api.example.com/strategy",
-  "timeout": 30,
-  "max_concurrency": 4
-}
-```
+This is the core trade-off between the two ways of building a strategy. With
+[Internal execution](/docs/execution-modes) you write your logic directly in Fintela's own
+editor and it runs inside the product. With External, Fintela never sees your code — only the
+trading signal it produces. In exchange, you're responsible for keeping your own service up,
+fast and correct.
 
-Everything else on the strategy record — its name, description, declared parameters and
-`required_lookback` snippet — is metadata Fintela needs to build a search space and warm the
-price panel. Nothing about your implementation is transmitted or retained.
-
-This is the practical reason to choose External over Internal: with
-[Internal execution](/docs/execution-modes) you paste Python into Fintela's editor and it runs
-in Fintela's compiler sandbox. With External, Fintela never sees the code that produces the
-signal. The trade is that you own uptime, latency and correctness of your own service.
-
-> [!NOTE] Where the boundary actually is
-> Fintela still loads a price panel for every study and runs the simulation, portfolio
-> construction, risk managers and fitness evaluation on its side. Your endpoint is responsible
-> for exactly one thing: mapping a parameter sample and a date window to a signal.
+> [!NOTE] Where the line is drawn
+> Fintela still handles everything else in a study: loading price history, running the
+> simulation, building the portfolio, applying risk managers and scoring the result. Your
+> service has exactly one job — turn a set of parameter values and a date range into a trading
+> signal.
 
 ## Registering the endpoint
 
-Create the strategy from the Strategies registry, then pick **External** on the segmented
-control in the editor header (the third option, **Rule-based**, is permanently disabled —
-"Rule-based strategies are coming soon.").
+Create the strategy from the [Strategies](/docs/strategies) registry, then choose **External**
+from the options at the top of the editor. A third option, **Rule-based**, appears but isn't
+available yet — Fintela shows it as coming soon.
 
-### Endpoint fields
+### The three settings
 
-The external centre zone of the editor has exactly three fields.
+The External panel of the editor asks for exactly three things.
 
-| Field | Label | Input | Default | Validation |
-|---|---|---|---|---|
-| `endpoint` | **Endpoint** | text, placeholder `https://api.example.com/strategy` | empty | required — "Endpoint is required" |
-| `max_concurrency` | **Max Concurrency** | number, `min=1`, `step=1` | `4` | integer ≥ 1 — "Must be a positive integer" |
-| `timeout` | **Timeout (seconds)** | number, `min=1`, `step=1` | `30` | integer ≥ 1 — "Must be a positive integer" |
+| Setting | What it is | Default | Rule |
+|---|---|---|---|
+| **Endpoint** | The web address of your service | — | Required |
+| **Max Concurrency** | How many requests your service can handle at the same time | 4 | Whole number, 1 or more |
+| **Timeout (seconds)** | How long Fintela waits for your service to answer before giving up | 30 | Whole number, 1 or more |
 
-`endpoint` is a **base URL**. Fintela appends `/simulate` to it after stripping a trailing
-slash, so `https://api.example.com/strategy` is called at
-`https://api.example.com/strategy/simulate`.
+**Endpoint** is the base address of your service — Fintela always calls a fixed sub-path under
+whatever base address you register, so you register the address up to (but not including)
+that final piece. The exact path your service needs to answer on is covered in the
+[Python · FastAPI](/docs/python-fastapi) and [Node.js · Express](/docs/node-express) build
+guides.
 
-Typing a plain `http://` URL shows a warning-coloured helper text under the field:
+Typing a plain `http://` address shows a friendly warning under the field:
 
-> Unencrypted (http://) — the request and your endpoint's reply travel in cleartext. Fine for
-> testing; use https:// in production.
+> Unencrypted (http://) — data traveling between Fintela and your service won't be encrypted.
+> Fine while you're testing; switch to https:// once you're running for real.
 
-That message is advisory only. It never sets a field error and never disables Save. What is
-actually enforced is covered under "Endpoint address rules" below.
+That's advisory only — using `http://` never blocks you from saving. What Fintela does
+enforce is covered next, under "Endpoint address rules".
 
-Below the three fields the editor shows a **Validation universe** picker, prefaced by:
+Below the three settings, the editor offers an optional **validation universe** picker:
 
-> Optional: tickers sent to your endpoint's /simulate (as a `tickers` body key) at validation
-> and in production — a universe-parametric endpoint can use them to scope its output.
-> Endpoints that ignore it are unaffected.
+> Optional: choose a validation universe and Fintela includes that list of tickers every time
+> it calls your service, both during validation and once your strategy is live. If your
+> service can narrow its output to a given ticker list, use this; if it ignores the list,
+> nothing changes for you.
 
 ### Execution type is fixed at creation
 
-The Internal/External control is enabled only in create mode; on an existing strategy both
-options are disabled. There is no conversion path — to move a strategy from Internal to
-External, create a new one.
+You choose Internal or External only when you first create the strategy — on an existing
+strategy, both options are locked. There's no way to convert one into the other; if you want
+to switch, create a new strategy instead.
 
-The parameters panel and the **required_lookback function** snippet editor work identically
-for external strategies. Declare every parameter your endpoint expects: those declarations
-become the study's search space, and the sampled values are what arrives in the request body.
+The parameter panel and the `required_lookback` snippet — where you tell Fintela how much
+price history your logic needs — work exactly the same for external strategies as internal
+ones. Every parameter you declare becomes part of the study's search space, and whatever
+values get sampled are what your service receives on each call.
 
 ## Endpoint address rules
 
-Fintela screens the endpoint twice — once when you save it, and again before it opens a
-connection. Both screens are about *addresses*, not TLS.
+Fintela checks your endpoint's address twice: once when you save it, and again every single
+time it's about to call it. Both checks are only about the address itself — not about
+encryption.
 
-### The save-time screen
+### The save-time check
 
-`POST /strategies` and `PUT /strategies` reject the payload before it reaches the database.
-The screen makes no network call, so an endpoint that is not up yet still saves.
+When you save the strategy, Fintela checks that the address you typed is well-formed and
+points somewhere on the public internet:
 
-| Rejected | Message |
+- Must be a normal web address (`http://` or `https://`) — nothing else is accepted.
+- Must include a host — a domain name or a public IP address.
+- Can't be `localhost` or point back at your own machine.
+- Can't be a private or internal-network address — the kind only reachable from inside a
+  company or home network — since Fintela has to be able to reach it from the outside.
+- Can't contain stray whitespace or unusual characters.
+
+This check doesn't try to connect to your service, so it's fine to register an address before
+your service is even running. Any port is accepted — Fintela doesn't restrict which one you
+use. If the address fails any of these checks, saving is blocked and you'll see a clear
+message telling you what's wrong.
+
+### The call-time check
+
+Before Fintela actually opens a connection to your service — for validation, a backtest, a
+study trial, or a live extend — it re-checks that the address resolves to a public location.
+If your address ever starts pointing at a private or internal address (for example, after a
+change to how your domain is configured), calls are refused with a clear message until it's
+fixed.
+
+Fintela never follows redirects from your service, so your endpoint can't accidentally — or
+intentionally — redirect a call somewhere else.
+
+### https is optional
+
+The address check for external strategies isn't about encryption — it exists purely to make
+sure Fintela can reach your service on the public internet. You can register either an
+`http://` or an `https://` address, and both are checked exactly the same way.
+
+> [!TIP] Choose https:// for privacy, not because it's required
+> Using `https://` keeps the parameter values and signals traveling between Fintela and your
+> service encrypted, which is a sensible default for anything running for real. Plain
+> `http://` is accepted, but the trade-off is confidentiality, not access — it works just as
+> reliably, it just isn't private.
+
+## What Fintela sends to your service
+
+Every call — a validation check, a one-off backtest, a live study trial, or a daily live-
+portfolio update — sends your service the same basic information:
+
+- **A date range** — the window the signal needs to cover.
+- **Parameter values** — one value for each parameter you declared on the strategy, the
+  specific combination being tested on this call.
+- **A ticker list**, only if you've configured a validation universe.
+
+Your service is expected to look at that date range and those parameter values, and hand back
+a signal for the entire window in a single response — not one call per trading day.
+
+The window is never just a single day. During validation it's the window you've configured
+for testing (a six-month range by default, if you haven't set one). Inside a study it's the
+trial's training period through its out-of-sample period, or through validation's end if the
+study has no out-of-sample segment.
+
+> [!WARNING] External fitness functions work the other way around
+> If you also use an [external fitness function](/docs/external-fitness), keep in mind its
+> inputs are structured differently from a strategy's — the two aren't interchangeable. Don't
+> reuse the same handler for both.
+
+### The ticker list
+
+When your strategy has a validation universe attached — either an asset group or an explicit
+list of tickers — Fintela includes that list on every call. Inside a study, the list is the
+study's own [asset group](/docs/asset-groups), narrowed to whatever was actually tradeable
+when the study launched. If no universe is configured, no ticker list is sent — your service
+just gets the parameter values.
+
+This is meant to be optional to use: a service that ignores the ticker list behaves exactly
+the same as one that never received it. A service built to pay attention to it can narrow its
+own output to just those tickers.
+
+> [!CAUTION] Don't name a parameter "tickers"
+> Fintela reserves that name for the ticker list itself, and the two conflict. During
+> validation, your parameter wins and the ticker list is silently dropped, with a warning that
+> a strategy parameter named "tickers" is blocking it. Inside a study, it's the reverse — the
+> ticker list overwrites your parameter's value. Either way the result isn't what you want, so
+> pick a different parameter name.
+
+## What your service needs to return
+
+Your service should respond with a signal: for each date, which tickers to hold, and how much
+of the portfolio to put into each one.
+
+| Field | Meaning |
 |---|---|
-| Leading, trailing or embedded whitespace or control characters | `EXTERNAL endpoint must not contain whitespace or control characters` |
-| Unparseable URL | `EXTERNAL endpoint is not a valid URL ({error}): '{endpoint}'` |
-| Any scheme other than `http` or `https` | `EXTERNAL endpoint must use http:// or https:// (got 'ftp').` |
-| No host | `EXTERNAL endpoint must include a host` |
-| Host `localhost` or `*.localhost` | `EXTERNAL endpoint host must not be loopback/localhost` |
-| A literal IP that is not publicly routable | `EXTERNAL endpoint host {ip} must be a publicly routable address, not a private, loopback, link-local or reserved one` |
+| Position | Long or Short |
+| Allocation | The fraction of the portfolio to put into that ticker on that date, from just above 0 up to 1 (100%) |
 
-All six return **HTTP 406 Not Acceptable** with `kind: "not_acceptable"`.
+Any other information your response includes is simply ignored — only the signal itself is
+read.
 
-Blocked literal ranges include RFC1918 (`10/8`, `172.16/12`, `192.168/16`), loopback,
-link-local (`169.254/16`, which covers the cloud metadata address `169.254.169.254` and the
-ECS credential address `169.254.170.2`), broadcast, documentation, unspecified, multicast,
-`0.0.0.0/8`, `100.64/10` CGNAT and `240/4`; for IPv6 `::1`, `::`, `ff00::/8`, `fc00::/7`,
-`fe80::/10`, plus the translation prefixes `2002::/16` (6to4) and `64:ff9b::/96` (NAT64).
-Alternate IPv4 spellings are normalised first, so `http://2130706433/`, `http://0x7f.1/` and
-`http://127.1/` are all rejected as loopback.
+### Rules your signal has to follow
 
-There is **no port allowlist**. A public host on any port is accepted, including `:7032`,
-`:8080` and `:22`.
+At validation, your signal goes through the same checks as a strategy you build inside
+Fintela. Each of these breaks the response if it isn't followed:
 
-> [!TIP] http:// is accepted on purpose
-> TLS was never the SSRF control — `https://10.0.0.5` is exactly as internal as
-> `http://10.0.0.5` — and requiring it locks out every endpoint that is a bare public IP with
-> no domain and therefore no publicly trusted certificate. What is enforced is a publicly
-> routable host. Plain `http` costs you confidentiality, not access.
+- The signal must include at least one date — an empty response is rejected.
+- Every date must be a real calendar date.
+- Every ticker must be given both a Position and an Allocation.
+- Position must be exactly Long or Short.
+- Allocation must be a real, finite number, greater than 0, and no more than 1 (100%).
+- Allocations for tickers on the same date can't add up to more than 100% (Fintela allows for
+  tiny rounding differences, but not more).
 
-### The call-time screen
-
-Before the first connection from any caller, the host is resolved and **every** address it
-resolves to is classified. If any one of them is private, loopback, link-local, reserved,
-multicast or unspecified — including IPv4-mapped IPv6 forms — the call is refused before a
-socket exists. A host that answers with both a public and a private record is refused.
-
-Every refusal message opens with the same prefix, `Your endpoint address is not allowed:`,
-and then names the reason:
-
-```text
-Your endpoint address is not allowed: the host '10.0.0.5' is a private, loopback or
-otherwise internal address. Fintela only calls publicly routable addresses.
-```
-
-An unresolvable host produces `Your endpoint address is not allowed: the host '{host}' does
-not resolve to any IP address. Check the spelling and that its DNS record is published.`
-
-Redirects are never followed — the compiler and sandbox clients set `follow_redirects=False`
-explicitly — so a public URL cannot bounce Fintela's egress into an internal target.
-
-### `https` is never required
-
-Fintela's Rust `ssrf-guard` crate carries a stricter screen that **requires `https`**. The
-strategy path reuses exactly one thing from it — the IP-classification function
-`ip_is_blocked`, inside the save-time screen above — and never its scheme rule.
-
-So do not conclude from `ssrf-guard` that an external strategy endpoint has to be HTTPS.
-Both strategy screens accept `http` and `https` alike; the choice is yours.
-
-## The request Fintela sends
-
-Every caller — validation, the sandbox, a study and the live portfolio updater — sends the
-same request. Dates travel in the **query string**; parameters travel in the **JSON body**.
-
-```http
-POST /simulate?start_date=2024-01-01&end_date=2024-12-31
-Content-Type: application/json
-
-{
-  "fast_period": 10,
-  "slow_period": 30,
-  "tickers": ["AAPL", "MSFT"]
-}
-```
-
-| Location | Name | Type | Notes |
-|---|---|---|---|
-| query | `start_date` | string, `YYYY-MM-DD` | Start of the requested window. |
-| query | `end_date` | string, `YYYY-MM-DD` | End of the requested window. |
-| body | one key per declared parameter | number, or string for a categorical | The sampled value for this call. |
-| body | `tickers` | array of strings | Additive; present only when a universe is configured. |
-
-The body is a flat object — there is no envelope and no nesting. The keys are exactly the
-parameter names you declared on the strategy.
-
-The window is not a single trading day. At validation it is the window you configured
-(defaulting to `2025-01-01` → `2025-06-30` when no validation universe dates are set); in a
-study it is the study's train start through its out-of-sample end, or the validation end when
-the study has no out-of-sample segment. Your endpoint returns the whole signal for that window
-in one response.
-
-> [!WARNING] External fitness is the inverse
-> An [external fitness function](/docs/external-fitness) receives its parameters in the query
-> string and its simulation payload in the body. If you maintain both, do not copy the
-> handler.
-
-### The tickers key
-
-When the strategy has a validation universe (an asset group or an explicit ticker list), the
-resolved ticker codes are added to the body as `tickers`. In a study the value is the
-launch-frozen, runnable-narrowed universe of the study's [asset group](/docs/asset-groups) as
-plain ticker codes. When no universe is configured the key is absent and the body is exactly
-the parameter map.
-
-The key is additive by design: an endpoint that ignores unknown JSON keys is unaffected. A
-universe-parametric endpoint can use it to scope its output.
-
-> [!CAUTION] Never declare a parameter named `tickers`
-> The two paths disagree. At validation, a parameter named `tickers` wins and the universe is
-> not forwarded, with the warning *"validation_universe tickers were not forwarded to the
-> endpoint: a strategy parameter named 'tickers' already occupies that body key."* In a study,
-> the universe overwrites your parameter. Pick another name.
-
-## The response Fintela expects
-
-Answer `200` with a JSON object carrying a top-level `signal` key. The value is
-date → ticker → position.
-
-```json
-{
-  "signal": {
-    "2024-01-02": {
-      "AAPL": { "position": "L", "allocation": 0.5 },
-      "MSFT": { "position": "L", "allocation": 0.5 }
-    },
-    "2024-02-01": {
-      "AAPL": { "position": "S", "allocation": 0.3 }
-    }
-  }
-}
-```
-
-Any extra top-level keys are ignored. Only `signal` is read.
-
-### Signal validation rules
-
-At validation, the `signal` object goes through exactly the same validator as an internal
-strategy's return value. Each rule below rejects the whole response.
-
-| Rule | Message when violated |
-|---|---|
-| `signal` is a dict | `Output must be a dict, got {type}` |
-| At least one date entry | `Output dict is empty — strategy must return at least one date entry` |
-| Every date key parses as `YYYY-MM-DD` | `Date key '{key}' is not in YYYY-MM-DD format` |
-| Each date maps to a dict | `Value for date '{date}' must be a dict, got {type}` |
-| Ticker keys are non-null strings | `Ticker key must be a string, got {type}` |
-| Each ticker maps to a dict | `Trade for ticker '{ticker}' on '{date}' must be a dict, got {type}` |
-| `position` present | `Trade for '{ticker}' on '{date}' missing key 'position'` |
-| `position` is `"L"` or `"S"` | `'position' for '{ticker}' on '{date}' must be 'L' or 'S', got '{value}'` |
-| `allocation` present | `Trade for '{ticker}' on '{date}' missing key 'allocation'` |
-| `allocation` is a number | `'allocation' for '{ticker}' on '{date}' must be a number, got {type}` |
-| `allocation` is finite | `On date '{date}', an allocation resolved to {value} — allocations must be finite numbers.` |
-| `allocation` greater than zero | `On date '{date}', an allocation resolved to {value} — allocations must be greater than zero.` |
-| `allocation` at most 1 | `On date '{date}', an allocation resolved to {value} — allocations must be at most 1 (100%).` |
-| Allocations on a date sum to at most 1 | `On date '{date}', allocations sum to {sum} (> 1.0, excess: {excess}). Strategies must emit weights that fit in the unit budget.` |
-
-Two consequences worth reading twice: an allocation of exactly `0` is **rejected** — filter
-out assets you do not intend to trade rather than emitting a zero weight — and the per-date
-sum is checked against `1.0` with a tolerance of `1e-6`, so normalise before returning.
-
-Every ticker you emit must exist in the study's asset group. Validation warns about this
-ahead of time; a study fails the trials that violate it.
+Two things worth remembering: an allocation of exactly zero is rejected outright — if you
+don't want to hold a ticker on a given date, leave it out of your response rather than
+including it at 0%. And every ticker you return has to belong to the study's asset group;
+Fintela warns you about this during validation, and any trial that violates it in a live study
+will fail.
 
 ## Validating the endpoint
 
-Pressing Save in the editor submits an async validation job to
-`POST /validate/external/strategy`, which answers `202 Accepted` with
-`{"job_id": ..., "status": "pending"}`; the editor polls the job and only opens the naming
-and confirmation dialog once it passes. Before the request goes out, the editor requires a
-**test value on every declared parameter** ("All parameters must have test values for
-validation") and, for categorical parameters, at least one choice and a test value inside it.
+When you press Save on a new external strategy, Fintela runs it through a validation check
+before the strategy is finalized — the confirmation dialog only appears once it passes. Before
+that check can run, every declared parameter needs a test value (and, for a categorical
+parameter, at least one choice with a test value).
 
-The validation run calls your endpoint **twice**:
+The check calls your service twice:
 
-1. Once over the requested window.
-2. Once with `end_date` extended by **730 days**, to prove the signal is causal.
+1. Once over the window you're testing.
+2. Once more with the end date pushed roughly two years further out, to prove your signal
+   doesn't use information it shouldn't have.
 
-If a date that appeared in the first response is missing from the second, or a ticker set,
-`position` or `allocation` for a past date changed, the save is rejected with a
-`data_leakage` failure — for example *"Data leakage detected on '{date}' for '{ticker}':
-position changed from 'L' to 'S' when future data was added."*
+If the signal for any past date changes between those two calls — a different ticker set, a
+different position, a different allocation — Fintela flags it as a data-leakage problem and
+blocks the save. In other words: your signal for a given date has to stay the same no matter
+how far into the future Fintela asks, because in reality your strategy will never have seen
+that future data when it was actually deciding. Your service should be able to handle being
+asked for a window that extends well past the data it's actually using, and simply return the
+same historical signal either way.
 
-Your endpoint must therefore tolerate an `end_date` far beyond your data. Returning the same
-past signal in both runs is the whole point of the check.
+### If validation fails
 
-### Validation failures
-
-| `error_type` | Cause | Message |
-|---|---|---|
-| `endpoint_error` | Refused by the address screen | `Your endpoint address is not allowed: …` |
-| `endpoint_error` | Non-2xx response | `Endpoint returned HTTP {status}: {first 500 bytes of body}` |
-| `endpoint_error` | Transport failure | A diagnosis-specific message — TLS version mismatch, untrusted certificate, DNS, refused connection, or timeout |
-| `invalid_response` | Body is not JSON | `Endpoint response is not valid JSON` |
-| `invalid_response` | No top-level `signal` | `Endpoint response must be a JSON object with a 'signal' key` |
-| `invalid_output` | Signal fails a rule above | The validator message from the table |
-| `invalid_output` | The extended run fails a rule | `Invalid output from extended run (end_date={date}) during data-leakage check: {error}` |
-| `data_leakage` | A past signal changed | `Data leakage detected …` |
-
-A successful validation can still return warnings. The most common one names tickers outside
-the configured universe:
-
-> Your endpoint returned N ticker(s) not in the selected Data Cluster: […]. Those trials will
-> fail with a missing-tickers error unless you add them to the cluster or stop emitting them —
-> an external strategy's signal universe must be a subset of the cluster.
-
-> [!NOTE] External saves carry no validation receipt
-> Internal strategies cannot be saved without a fresh, matching server-side validation receipt.
-> External strategies have no such gate: the only server-side check on the write path is the
-> endpoint address screen. The editor still runs validation before saving, but a direct API
-> write does not require it.
-
-## Where your endpoint is called from
-
-Four independent callers reach your `/simulate`, with different clients and different budgets.
-
-| Caller | When | Calls |
-|---|---|---|
-| Compiler validation | Save / Validate in the editor | 2 per validation (short window + extended window) |
-| Strategy sandbox | "Run a backtest" | 1 per run |
-| Optimizer | While a study runs | 1 per trial |
-| Portfolio updater | Daily extend of a live portfolio | 1 per extend, after a health probe |
-
-### Timeouts, retries and connections
-
-| Caller | Timeout | Retries | Retried on |
-|---|---|---|---|
-| Compiler validation | fixed **30 s** — the stored `timeout` is ignored | 1 attempt + **2** retries, linear backoff 1 s then 2 s | connect error, connect timeout, read timeout, pool timeout, protocol error |
-| Strategy sandbox | the stored `timeout` (60 s if the record carries none) | 1 attempt + **3** retries, full-jitter exponential backoff, base 1 s, ceiling 8 s | connect error, connect timeout, pool timeout, protocol error, and HTTP 429/502/503/504 |
-| Optimizer | the stored `timeout` | same as the sandbox | same as the sandbox |
-| Portfolio updater | the stored `timeout` | same as the sandbox | same as the sandbox |
-
-Raising **Timeout (seconds)** does not lengthen the validation timeout. If your endpoint needs
-more than 30 seconds to answer a validation window, shrink the window with a validation
-universe date range rather than raising the field.
-
-A **read timeout is deliberately not retried** by the sandbox, optimizer or updater: the
-request was accepted, so retrying only doubles the load on an already-slow service. Only the
-validation client retries read timeouts.
-
-Connection behaviour is fixed and small: the sandbox, optimizer and updater clients each hold
-at most **2 connections**, with a keep-alive expiry of **30 seconds** (the validation client is
-one-shot). Set `timeout_keep_alive` to at least 30 s on your server (uvicorn defaults to 5 s),
-or Fintela will periodically reuse a socket your server has already closed.
-
-## Max concurrency and study fan-out
-
-**Max Concurrency is not a connection limit.** Every client pool is hard-coded to 2
-connections regardless of what you set. It is the *worker budget* the dispatcher gives a study
-that has an external component.
-
-| Situation | Budget |
+| What went wrong | What it usually means |
 |---|---|
-| Study has no external component | Not used — the study gets its default task layout |
-| Only the strategy is external | the strategy's `max_concurrency` |
-| Strategy and fitness both external, different endpoints | `min(strategy, fitness)` |
-| Strategy and fitness both external, same endpoint | `min(strategy, fitness) / 2`, floored, minimum 1 |
-| `max_concurrency` missing or not positive | Treated as unbounded; the study falls back to the internal layout |
+| Address rejected | Your endpoint's address didn't pass the address check above |
+| Your service returned an error | Something went wrong on your end responding to the request |
+| Connection problem | Your service was unreachable, refused the connection, or didn't respond in time |
+| Response wasn't understood | The reply wasn't valid data, or didn't include a signal at all |
+| Signal broke a rule | One of the signal rules above wasn't followed |
+| Data leakage detected | The signal for a past date changed when Fintela asked further into the future |
 
-Two endpoints count as the same when their URLs match after trimming, dropping a trailing
-slash and lowercasing.
+A successful validation can still come back with warnings. The most common one flags tickers
+your service returned that fall outside the study's asset group — those trials will later fail
+with a missing-ticker error unless you either add the tickers to the group or stop returning
+them; an external strategy's signal has to stay within the asset group it's paired with.
 
-The budget becomes a **single** optimizer task whose worker pool is that size, and the
-optimizer then caps the per-batch fan-out at **32** — a value above 32 buys nothing. The
-budget also sets the memory floor for that task: 4 GiB at a budget of 8 or below, 8 GiB up to
-32, 16 GiB above that. A study whose sizing model predicts more than the floor gets more.
+> [!NOTE] Validation is a safety net, not a guarantee
+> Saving a strategy you build in Fintela's own editor always requires passing this check
+> first. For an external strategy, the in-app editor runs the same check before it lets you
+> save — but if you or your team manage strategies through [Fintela's API](/docs/api-strategies)
+> instead of the editor, saves made that way aren't gated behind it. Either way, always run
+> Validate yourself and read the result before trusting a new external strategy in a live
+> study — it confirms Fintela can talk to your service and that your signal is shaped
+> correctly, not that your trading logic itself is sound.
 
-> [!TIP] Size it to your server, not to your ambition
-> A budget higher than your service can accept turns into a burst of simultaneous `/simulate`
-> connections and shows up as refused connections on pruned trials. Serve the endpoint with at
-> least two workers, then set Max Concurrency to what those workers can actually hold.
+## When your endpoint gets called
 
-## Failure semantics in a study
+| Situation | How often your service is called |
+|---|---|
+| Saving or validating the strategy | Twice — the two calls described above |
+| Running a one-off backtest | Once |
+| A study is running | Once per trial |
+| A live portfolio extends for the day | Once, right after Fintela confirms your service is responding |
 
-A study never retries a trial. Once the bounded HTTP retries above are exhausted, whatever
-went wrong **prunes that trial** — the study keeps going with the remaining trials, and each
-pruned trial carries a classified failure you can read in the study's errors panel.
+### Timeouts and retries
 
-| Kind | Trigger | What the user is told |
+How long Fintela waits for a response depends on the situation:
+
+- **Saving or validating** always waits up to 30 seconds, no matter what you've set in
+  Timeout. If your service genuinely needs longer than that to answer a validation window,
+  shrink the window itself (using a validation universe date range) rather than raising the
+  Timeout field — raising it has no effect on validation.
+- **A backtest, a study trial, or a live extend** waits however long you've set in Timeout.
+
+If Fintela can't even open a connection — your service isn't accepting requests, or the
+network is having a bad moment — it retries a handful of times with short pauses before giving
+up. But once your service accepts the request and then simply takes too long to answer,
+Fintela does not retry that call outside of Save/Validate — retrying an already-slow service
+just adds more load to it, so a slow trial is skipped once rather than piled on.
+
+## Max Concurrency and how studies use it
+
+**Max Concurrency isn't a connection limit** — that's fixed on Fintela's side no matter what
+you set. It's the worker budget a study gives itself when it includes an external strategy or
+fitness function: essentially, how many trials the study is allowed to run against your
+service at the same time.
+
+| Situation | Budget given to the study |
+|---|---|
+| Neither the strategy nor its fitness function is external | Not used — the study runs with its normal default sizing |
+| Only the strategy is external | Uses the strategy's Max Concurrency |
+| Strategy and fitness are both external, on different endpoints | The lower of the two Max Concurrency settings |
+| Strategy and fitness are both external, on the same endpoint | Half the lower setting (rounded down, at least 1) — since both calls share the same service |
+| Max Concurrency left blank or set to zero | Treated as unlimited; the study falls back to its normal default sizing |
+
+Two endpoints count as "the same" once you ignore a trailing slash and letter case in the
+address.
+
+Even a high Max Concurrency won't push a study past roughly 32 simultaneous calls to your
+endpoint — beyond that point, giving your service more headroom doesn't make the study faster.
+
+> [!TIP] Size it to your service, not your ambition
+> Setting Max Concurrency higher than your service can actually accept just means a burst of
+> connections gets refused, and those trials get pruned. Run your service with at least two
+> workers so it can handle more than one request at a time, then set Max Concurrency to what
+> those workers can really support.
+
+## What happens when a trial fails
+
+A study never retries a trial. Once the automatic retries above are used up, whatever went
+wrong prunes that one trial — the study keeps going with the rest, and every pruned trial's
+exact reason is available in the study's errors panel.
+
+| Label in the errors panel | What happened | What to do |
 |---|---|---|
-| `ENDPOINT_BLOCKED` | Refused by the address screen | Fintela can only call endpoints on publicly routable addresses. This endpoint's host doesn't resolve, or it resolves to a private or internal address. Publish it on a public address and relaunch. |
-| `ENDPOINT_REFUSED` | Connection refused | Your endpoint refused the connection — it wasn't accepting requests at that moment. Keep it running continuously and serve it with at least two workers. |
-| `ENDPOINT_TOO_SLOW` | Read timeout | Your endpoint accepted the request but didn't answer in time. Make it faster, add workers, or raise its timeout. |
-| `ENDPOINT_UNREACHABLE` | Connect or pool timeout | Fintela couldn't open a connection to your endpoint in time — it's overloaded or unreachable. Check that it's online, add workers, or raise its timeout. |
-| `ENDPOINT_DROPPED_CONNECTION` | Keep-alive socket closed mid-reuse | Your endpoint closed the connection while Fintela was reusing it. Set its keep-alive timeout to at least 30 seconds. |
-| `ENDPOINT_SERVER_ERROR` | HTTP 5xx | Your endpoint returned an error of its own. Check its logs for the failing request. |
-| `ENDPOINT_REJECTED_REQUEST` | HTTP 4xx | Your endpoint rejected Fintela's request. Check its address, its authentication, and the request body it expects. |
-| `EXTERNAL_BAD_RESPONSE` | 200 with the wrong shape | Your endpoint replied in the wrong format. It must return JSON with a top-level "signal" object: date → ticker → position and allocation. |
-| `SIGNAL_TICKERS_NOT_IN_CLUSTER` | Signal names tickers outside the asset group | Your strategy traded tickers that aren't in this study's Asset Group. Add them to the group, or make your strategy return only tickers the group contains. |
+| Endpoint blocked | Your endpoint's address failed Fintela's address check | Fintela can only call endpoints on public, routable addresses. Publish your service somewhere reachable from the internet and relaunch. |
+| Endpoint refused | Your service refused the connection | It wasn't accepting requests at that moment — keep it running continuously, with at least two workers. |
+| Endpoint too slow | Your service accepted the request but didn't answer in time | Make it faster, add capacity, or raise Timeout. |
+| Endpoint unreachable | Fintela couldn't connect in time | Check that your service is online, add capacity, or raise Timeout. |
+| Connection dropped | Your service closed the connection while Fintela was reusing it | Keep connections open for at least 30 seconds before closing them. |
+| Endpoint error | Your service returned an error of its own | Check your service's own logs for the failing request. |
+| Request rejected | Your service rejected Fintela's request | Check the address, and make sure your service doesn't require authentication Fintela can't provide. |
+| Unexpected response | Your service replied in the wrong shape | It must return the signal shape described above: dates mapped to tickers, each with a Position and an Allocation. |
+| Tickers outside asset group | Your signal named tickers that aren't in the study's asset group | Add them to the asset group, or stop returning tickers the group doesn't include. |
 
-`ENDPOINT_BLOCKED` is the one failure Fintela catches before the first trial: the optimizer
-screens both external endpoints at preflight, so a bad address fails the study once with a
-clear verdict instead of producing N identical prunes and an opaque "0 complete trials".
+Fintela checks both your strategy's and your fitness function's endpoint addresses before a
+study's very first trial runs, so a bad address fails the whole study once, with a clear
+reason — instead of quietly pruning every single trial and leaving you looking at zero
+completed trials with no explanation.
 
-A trial pruned on a bad response shape carries the full contract in its message:
+A trial pruned for a bad response carries the full expectation in its message, along the
+lines of:
 
-```text
-Your external strategy endpoint returned a response that is not the expected shape: it must
-be JSON with a top-level "signal" object mapping date -> ticker -> {"position": "L"|"S",
-"allocation": number}.
-```
+> Your external strategy endpoint returned a response that isn't the shape Fintela expects —
+> it must be a signal mapping dates to tickers, each with a Position ("Long" or "Short") and an
+> Allocation.
 
 ## Authentication and secrets
 
-**Fintela sends no credentials to your endpoint.** There is no API-key field, no header
-configuration, no bearer token, no request signing and no shared secret in the external
-strategy record — the stored configuration is the three keys shown at the top of this page and
-nothing more. Requests arrive with a JSON content type and no `Authorization` header.
+Fintela never sends any credentials to your endpoint. There's no field for an API key, no
+custom headers, no signing and no shared secret anywhere in an external strategy's setup —
+every call arrives with just the date range, parameter values and optional ticker list, no
+authentication attached.
 
-The one lever the contract leaves you is the URL itself: a hard-to-guess path segment survives
-into every call, because Fintela appends `/simulate` to whatever base path you registered
-(`https://api.example.com/s/7f3c…` is called at `https://api.example.com/s/7f3c…/simulate`).
+Because of that, your service has to accept unauthenticated requests from Fintela — if it
+answers with an authentication error, every trial will fail. The one thing standing between
+the open internet and your service is the address itself: making it hard to guess, for example
+by including a long random segment in the path, is a reasonable way to keep out unwanted
+traffic, since that hard-to-guess piece stays part of every call Fintela makes.
 
-An endpoint that answers unauthenticated calls with a 401 or 403 will prune every trial as
-`ENDPOINT_REJECTED_REQUEST`, so a scheme Fintela cannot satisfy is not an option.
+> [!WARNING] Plain http:// means plain text
+> If you register an `http://` address, the parameter values Fintela sends and the signal you
+> return travel over the network unencrypted. That's your call to make about your own service,
+> but make it knowingly — use `https://` if that matters to you.
 
-> [!WARNING] Cleartext over plain http
-> On an `http://` endpoint the parameter values Fintela sends and the signal you return cross
-> the network unencrypted. That is your call to make about your own infrastructure, but make
-> it knowingly.
+## Live portfolios and the daily health check
 
-## Live portfolios and the health probe
+Once a portfolio backed by an external strategy goes to [live trading](/docs/live-trading),
+the daily extend adds one extra step: before asking for the day's signal, Fintela first checks
+that your service is up and responding, with a strict 5-second limit. If that check fails for
+any reason — your service is down, slow to answer, or returns anything other than success —
+that day's extend fails outright and no signal is generated, rather than Fintela guessing or
+using stale data.
 
-When a portfolio backed by an external strategy is promoted to
-[live trading](/docs/live-trading), the daily extend adds one requirement that no other caller
-has: before generating the day's signal, the updater calls
+A live portfolio always uses your strategy's current, saved settings — not a frozen snapshot
+the way a study does. If you update your endpoint's address, the change takes effect on the
+very next daily extend. Studies that are already running are different: they keep using
+whichever endpoint was registered when they launched, so editing the address afterward doesn't
+affect them.
 
-```http
-GET /health
-```
+## Building your endpoint
 
-on your base URL with a **5-second** timeout, and requires a 2xx. If it fails — unreachable,
-timed out, or any non-success status — the update fails with `External strategy API health
-check failed: {reason}` and no signal is generated that day.
+Building the service itself is ordinary web-service work: it needs to accept the parameter
+values and date range described above and return a signal in the shape Fintela expects, plus
+answer a simple health check so it can back a live portfolio. You can build it in any language
+or framework — Fintela only cares about the address it can call and the shape of what comes
+back.
 
-A live portfolio also reads the **current** strategy record, not the version snapshot a study
-was pinned to. Editing the endpoint of a strategy that backs a live portfolio takes effect on
-the next extend; already-launched studies keep running against the endpoint stored in their
-pinned version.
-
-## Reference implementation
-
-The whole contract in one handler. Parameters and the optional `tickers` list arrive in the
-body; the dates arrive as query parameters.
-
-```python
-from fastapi import FastAPI, Query
-from pydantic import BaseModel
-
-app = FastAPI()
-
-class SignalResponse(BaseModel):
-    signal: dict
-
-@app.post("/simulate", response_model=SignalResponse)
-def simulate(params: dict, start_date: str = Query(...), end_date: str = Query(...)):
-    # `params` is the JSON body: your sampled parameters, plus an optional
-    # `tickers` list (the chosen validation universe) — safe to ignore.
-    universe = params.get("tickers")  # optional; None when no universe is set
-    return SignalResponse(signal={
-        "2024-01-02": {
-            "AAPL": {"position": "L", "allocation": 0.5},
-        },
-    })
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-```
-
-The same shape in Node:
-
-```js
-import express from "express";
-
-const app = express();
-app.use(express.json());
-
-app.post("/simulate", (req, res) => {
-  const { start_date, end_date } = req.query;
-  const { tickers, ...params } = req.body;
-
-  res.json({
-    signal: {
-      "2024-01-02": {
-        AAPL: { position: "L", allocation: 0.5 },
-        MSFT: { position: "L", allocation: 0.5 },
-      },
-    },
-  });
-});
-
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
-
-app.listen(8000, () => {});
-```
-
-Test it before registering:
-
-```bash
-curl -X POST "https://api.example.com/strategy/simulate?start_date=2024-01-01&end_date=2024-12-31" \
-     -H "Content-Type: application/json" \
-     -d '{"fast_period": 10, "slow_period": 30}'
-```
-
-Full walkthroughs live in [Python · FastAPI](/docs/python-fastapi) and
-[Node.js · Express](/docs/node-express).
+For a full, working walkthrough, see [Python · FastAPI](/docs/python-fastapi) or
+[Node.js · Express](/docs/node-express) — pick whichever matches your team's stack. Test your
+service on your own before registering it in Fintela, the same way you'd test any web service
+you're about to depend on.
 
 ## What external strategies do not get
 
-Honest limits, all of them enforced rather than stylistic:
+Honest limits, all of them real:
 
 | Not available | Why |
 |---|---|
-| Data sources / injected kwargs | Your endpoint receives only parameters, dates and the optional `tickers` list. Fintela's injectable sources cannot reach it, so the editor hides the section entirely. |
-| The Python code editor and live as-you-type validation | There is no code on Fintela's side. |
-| Ticker sample size | There is no synthetic fixture to sample; the validation universe is the exact ticker list. |
-| Restore from version history | Versions are recorded, but restoring a snapshot into the editor is offered only for internal strategies. |
-| The breaking-change dialog on save | It fires only for internal strategies with launched studies. |
-| Rule-based (declarative) strategies | Rejected server-side: "Rule-based (declarative) strategies are not supported yet." Declarative rule trees are a risk-manager feature. |
+| Fintela's built-in data feeds | Your service only receives parameter values, the date range and (if configured) a ticker list — it can't pull in any of Fintela's own data sources directly. If your signal needs other data, your own service has to supply it. |
+| The in-app code editor and live validation-as-you-type | There's no code living on Fintela's side to check — your logic runs entirely on your own service. |
+| Sample-ticker convenience for validation | There's no built-in sample list to draw from; validation always uses your actual, configured ticker list. |
+| Restoring a past version into the editor | Past versions are still recorded, but restoring one directly into the editor is only available for strategies you build in Fintela. |
+| The breaking-change warning on save | That warning only applies to strategies you build in Fintela's own editor with studies already launched against them. |
+| Rule-based (declarative) strategies | Not available yet for any strategy type — this style of strategy is currently only offered for [risk managers](/docs/risk-managers). |
 
-External execution is not unique to strategies. See
-[Execution modes](/docs/execution-modes) for the full matrix,
-[External fitness](/docs/external-fitness) for the fitness contract — which inverts the
-query-string/body split — and [Strategies](/docs/strategies) for the registry itself.
+External execution isn't unique to strategies. See [Execution modes](/docs/execution-modes)
+for the full picture across strategies and fitness functions,
+[External fitness](/docs/external-fitness) for how the fitness-function version works — its
+inputs are structured the other way around — and [Strategies](/docs/strategies) for the
+registry where you create and manage them all.

@@ -4,149 +4,132 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 1
 published: true
-updated: 2026-08-20
-summary: The AI assistant built into Fintela — what it is, how to talk to it, and what it can reach.
-keywords: fintelligent, ai, assistant, chat, conversation, agent, prompts, streaming, fintela-ai
+updated: 2026-09-01
+summary: Fintelligent is Fintela's built-in AI assistant — what it can do for you, where to find it, and how to chat with it.
+keywords: fintelligent, ai assistant, chat, conversations, trading strategies, portfolios, ai tokens, prompts
 ---
 
-Fintelligent is the AI assistant built into Fintela. It reads your workspace — studies, portfolios,
-strategies, fitness functions, risk managers, asset groups, market data — and it can act on it:
-fill an open editor, draft a study, navigate the app, ask you a structured question, and produce a
-PDF report. It is a conversation, not a registry: there is no list of "Fintelligent" objects to
-create and manage, only conversations, the drafts it leaves in editors, and the runs it starts.
+Fintelligent is the AI assistant built into Fintela. Ask it about your studies, portfolios,
+strategies, fitness functions, risk managers, asset groups, or market data, and it can act on your
+behalf: fill in an open editor for you, draft a new study, walk you to the right page in the app,
+ask you a clarifying question when it needs a decision, and put together a PDF report. It's a
+conversation, not a catalog — there's no list of "Fintelligent" items to create and manage. What
+sticks around is your conversations, the drafts it leaves behind in editors for you to review, and
+the runs it starts.
 
 ## What Fintelligent is
 
 | Aspect | Detail |
 |---|---|
-| **Interface** | A chat. One session, rendered on two surfaces: the full page at `/ai/fintelai` and the floating panel available on every other page. |
-| **Model** | DeepSeek. `deepseek-v4-pro` is the default; the conversation's own `preferred_model` / `last_model` override it when set. There is no model picker in the UI. |
-| **Billing** | Fintela **AI Tokens** — a currency separate from the compute Fintela Tokens. A chat turn costs 0 compute tokens. See [Tokens and billing](/docs/tokens-and-billing). |
-| **Authority** | Every backend call the agent makes replays your own JWT, so it sees exactly what you see and nothing more. Conversations, drafts and runs are scoped per user within your organization. |
-| **Status** | Beta. The floating panel carries a **"Beta"** chip and the line *"Fintelligent is in active development — you may occasionally see bugs or incomplete answers."* |
+| **Interface** | A chat you can open two ways: as a dedicated full-page conversation, or as a floating panel available from anywhere else in the app. |
+| **AI model** | Fintelligent runs on a general-purpose AI model chosen by Fintela. There's no model picker — the same assistant is used throughout. |
+| **Cost** | Chatting with Fintelligent is billed in Fintela **AI Tokens** — a balance separate from the compute tokens you spend running studies and optimizations. See [Tokens and billing](/docs/tokens-and-billing). |
+| **What it can see** | Fintelligent only sees what you can see. It works within your own account and organization, so it never surfaces another user's or another organization's data. |
+| **Status** | Beta. Expect the occasional rough edge — the floating panel carries a **"Beta"** chip and a note that you may see bugs or incomplete answers. |
 
 Two things Fintelligent is **not**:
 
-- **Not a registry.** It has no table view, no create wizard, no execution modes. Its own persisted
-  artifacts are conversations (this page), drafts and runs
+- **Not a catalog.** There's no table view or "create new" wizard for Fintelligent itself — what it
+  leaves behind is conversations (this page), drafts, and runs
   ([Drafts and runs](/docs/fintelligent-drafts-and-runs)).
-- **Not an adviser.** A disclaimer sits permanently under the composer on both surfaces:
+- **Not an adviser.** A disclaimer sits permanently under the message box wherever you chat:
   *"Fintela is a research tool, not an investment adviser. Output is informational only and not
   investment advice."*
 
 > [!NOTE]
-> This page documents the surface — where the chat lives and how it behaves. For the catalogue of
-> what Fintelligent can actually do, see [Fintelligent capabilities](/docs/fintelligent-capabilities).
-> For how its edits get reviewed and saved, see
-> [Drafts and runs](/docs/fintelligent-drafts-and-runs).
+> This page covers where the chat lives and how to use it day to day. For the full catalog of what
+> Fintelligent can actually do — reading your data and taking action — see
+> [Fintelligent capabilities](/docs/fintelligent-capabilities). For how its suggested edits get
+> reviewed and saved, see [Drafts and runs](/docs/fintelligent-drafts-and-runs).
 
 ## Where Fintelligent lives
 
-The dedicated **AI section was removed from the sidebar.** Fintelligent now sits inside the
-sidebar's **"More Options"** flyout, as its sixth and last entry. Everything else about it is
-global chrome.
+Fintelligent doesn't have its own section in the sidebar. You'll find it tucked under **More
+Options**, as the last entry there. Beyond that, it's reachable from anywhere in the app through a
+few consistent entry points:
 
-| Entry point | Where | Behaviour |
+| Entry point | Where | What happens |
 |---|---|---|
-| Sidebar → **More Options** → **Fintelligent** | Desktop sidebar flyout | Navigates to `/ai/fintelai` |
-| Launcher pill | Bottom centre, desktop only (`md` and up) | Tooltip **"Ask Fintelligent"**; hovering or clicking it opens the floating panel |
-| Mobile bottom nav | Item labelled `Fintelligent` | Toggles the floating panel; carries a dot badge while a run is live |
-| Run chip | Fixed pill above the launcher, every page and every screen size | **"Fintelligent is working"** / **"Fintelligent needs you"**; opens the floating panel on that conversation |
-| Notification bell | `agent_*` notifications | Deep-link to `/ai/fintelai/c/:conversationId`, falling back to `/ai/fintelai` |
+| Sidebar → **More Options** → **Fintelligent** | Desktop sidebar | Opens the full-page chat |
+| Launcher button | Bottom center of the screen, desktop only | Hover or click to pop open the floating chat over whatever page you're on |
+| Mobile navigation | **Fintelligent** tab in the bottom bar | Opens the floating panel; shows a dot badge while a reply is still in progress |
+| Run indicator | A small pill that follows you around the app | Reads **"Fintelligent is working"** or **"Fintelligent needs you"** — tap it to jump back into that conversation |
+| Notifications | Notification bell | Takes you straight to the conversation that triggered the notification |
 
-Both floating surfaces — the launcher pill and the panel — are suppressed on `/ai/fintelai` and
-anything below it. That page *is* the chat, so the bubble would overlay its own composer.
+The floating launcher and panel don't appear while you're already on the full-page chat, since
+that page *is* the conversation — you don't need a shortcut to something you're already looking
+at.
 
-The panel has no header chrome and no close button: it is the transcript, the composer bar and the
-beta notice, nothing else. It collapses on a deliberate click outside it or on Escape, which brings
-the launcher pill back. Collapsing never aborts a running turn.
+The floating panel itself is deliberately minimal: just the conversation, the message box, and the
+beta notice, with no extra header. Click outside it or press Escape to collapse it back down to
+the launcher button. Collapsing it never interrupts a reply that's still coming in.
 
-### Routes
+### Moving between conversations
 
-| Route | What renders |
-|---|---|
-| `/ai/fintelai` | Conversation list |
-| `/ai/fintelai/new` | A fresh, not-yet-created conversation |
-| `/ai/fintelai/c/:conversationId` | An existing conversation |
-
-`/new` and `/c/:conversationId` resolve to the same component, so sending the first message from
-`/new` swaps the URL to `/c/<id>` without remounting the view or interrupting the stream.
+Your chat has three views: your list of past conversations, a blank slate for starting a new one,
+and an existing conversation you're continuing. Starting a new conversation and continuing an
+existing one feel like the same screen — the moment you send your first message from a blank
+conversation, it seamlessly becomes a saved conversation, without interrupting the reply that's
+already streaming in or reloading the page.
 
 ## Who can use it
 
-**Permission.** The single Fintelligent permission is the JWT client role `fintela-ai:read`
-(Keycloak description: *"Can read and use the Fintelligent features"*). It is carried by the
-composite roles **`manager`** and **`owner`**. **`analyst` does not carry it.** The SPA also
-accepts `root:all`, which `owner` and `admin` carry.
+Fintelligent is available to **Manager** and **Owner**-level accounts. **Analyst**-level accounts
+don't currently have access to it.
 
-> [!WARNING]
-> The permission gate is **navigational**. Without `fintela-ai:read` (or `root:all`) the
-> **Fintelligent** entry is filtered out of the More Options flyout — but the routes mount with no
-> role guard, the floating launcher and panel are not role-gated at all, and the conversation API
-> authorizes on ownership rather than on role. Treat the role as controlling *discoverability*,
-> not access.
+Unlike [Laboratory](/docs/laboratory), Fintelligent doesn't sit behind a locked, blurred preview
+when your organization hasn't purchased tokens — instead, everyone gets to use it right away, with
+a daily message cap until your organization activates full usage:
 
-**Entitlement lock: none.** Fintelligent declares no entitlement `lock`, so unlike Laboratory it
-never renders behind a blurred, data-free preview.
-
-**Free-tier daily cap.** For an organization that has not activated (no purchase, and enforcement
-switched on), the entitlements API reports an `agent_messages` cap — **10 messages per day** in the
-default policy, counted from billed chat turns in the last 24 hours. The **floating panel** is the
-surface that renders it: at three messages or fewer remaining it shows
-**"{{remaining}} of {{limit}} messages left today"**, and at the cap it disables the composer with
-the placeholder **"You've used all of today's messages"**, the send-button tooltip **"Daily limit
-reached. It resets tomorrow."** and a **"Buy tokens"** button linking to the account page's Tokens
-section. Activated organizations get `limit: null` and see none of this.
+**Free-tier daily cap.** If your organization hasn't purchased tokens yet, you get **10 free
+messages per day** in Fintelligent, based on your usage over the last 24 hours. The floating panel
+keeps you posted along the way: once you're down to three or fewer messages for the day, it shows
+how many you have left, and once you hit the cap, the message box locks with a note that your
+limit resets tomorrow, plus a **"Buy tokens"** button that takes you straight to the Tokens section
+of your account. Once your organization has purchased tokens, this daily cap goes away entirely.
 
 ## Starting and resuming a conversation
 
-A conversation is created by your **first message**, not by opening the page. Until then `/new`
-holds a draft with no server-side row.
-
-```text
-  New chat                    First send                    Thereafter
-  ────────                    ──────────                    ──────────
-  /ai/fintelai/new    ──▶     POST …/conversations/_/…   ──▶  /ai/fintelai/c/<id>
-  (no row yet)                backend creates the row         (URL replaced, stream
-                              and streams the reply           never interrupted)
-```
+A conversation isn't created until you actually send your first message — opening a blank chat
+window doesn't create anything on its own. Type your message and hit send: Fintelligent saves the
+conversation, starts replying, and the conversation quietly becomes a permanent one in your list —
+nothing about the reply is interrupted while that happens.
 
 | Action | How |
 |---|---|
-| Start fresh | **"New chat"** in the list header (desktop), the floating **New conversation** button on the mobile list, or the `+` control in the composer |
-| Resume | Click a row in the list, follow an `agent_*` notification, or click the run chip |
-| Hand off to the panel | **"Continue on floating chat"** in the full-page composer — targets the conversation, opens the panel and navigates you to `/`. Disabled until a conversation exists, and while a turn is streaming |
+| Start fresh | **"New chat"** in the conversation list, the `+` in the message box, or the New conversation button on mobile |
+| Resume | Click a conversation in your list, follow a notification, or tap the run indicator pill |
+| Switch to the floating panel | **"Continue on floating chat"** in the full-page message box — moves your current conversation into the panel. Not available until you've sent at least one message, or while a reply is still coming in |
 
-Resuming an existing conversation with prior messages shows a one-shot info banner reading
-**"Resuming conversation"**. It auto-dismisses after 3 seconds, or immediately on click, and never
-appears on `/new`.
+Reopening a conversation with earlier messages briefly shows a **"Resuming conversation"** banner
+at the top. It disappears on its own after a few seconds, or right away if you tap it, and never
+shows up on a brand-new conversation.
 
-Your unsent draft text is kept per conversation in `sessionStorage` under the key
-`fintelai-draft-<conversationId>` (or `fintelai-draft-new`), so navigating away and back does not
-lose what you were typing. Switching conversations swaps the draft and clears any attached code
-snippets.
+If you start typing and then navigate away, your unsent draft is kept for you locally in your
+browser, so you can pick up exactly where you left off. Switching to a different conversation swaps
+in that conversation's own draft, and clears any code snippet you had attached.
 
 ## The conversation list
 
-`/ai/fintelai` lists your own conversations within your organization — never anyone else's.
+Your conversation list shows only your own conversations, and only within your own organization —
+never anyone else's.
 
 ### Header and search
 
 | Control | Detail |
 |---|---|
-| Title | `Fintelligent` |
+| Title | Fintelligent |
 | Subtitle | **"Your past conversations"** |
-| Primary action (desktop) | **"New chat"** button with a `+` icon |
-| Primary action (mobile) | Floating action button, aria-label **"New conversation"**, above the bottom nav |
-| Search field | Placeholder **"Search conversations…"**, leading search icon, a spinner while the query catches up, and a clear button labelled **"Clear search"** |
+| New conversation (desktop) | **"New chat"** button |
+| New conversation (mobile) | A floating button above the bottom navigation |
+| Search | A box with the placeholder **"Search conversations…"**, a small spinner while results catch up, and a **"Clear search"** button once you've typed something |
 
-Search is **server-side only** — there is no client-side filtering. Input is debounced 250 ms and
-matched against a Postgres full-text index over the conversation title and its last-message
-preview.
+Search looks across both conversation titles and each conversation's most recent message, and
+updates shortly after you stop typing.
 
 ### Time grouping
 
-Rows are grouped under sticky overline headers, in this order:
+Your conversations are grouped under headers, in this order:
 
 | Header | Bucket |
 |---|---|
@@ -156,369 +139,316 @@ Rows are grouped under sticky overline headers, in this order:
 | **Earlier this month** | Same calendar month, older than that |
 | **Older** | Everything else |
 
-The server returns pinned conversations first, then `updated_at` descending. Pinned rows therefore
-float to the top of whichever bucket their timestamp belongs to — not to the top of the whole list.
+Pinned conversations always float to the top of whichever time group they fall into — not
+necessarily to the very top of your whole list.
 
 ### Conversation row
 
 | Element | Detail |
 |---|---|
-| Pin glyph | Rendered in an 8px gutter when the conversation is pinned |
-| Title | Bold link to `/ai/fintelai/c/:id` |
-| Timestamp | `14:22` today · **"Yesterday"** · a weekday name (`Mon`) within a week · `May 12` beyond that. Hovering shows the full date and time |
-| Preview | The last message, clamped to two lines |
-| Footnote | **"{{count}} message"** / **"{{count}} messages"**, plus **" · used {{count}} tool"** / **" · used {{count}} tools"** when the conversation used any |
-| Overflow button | aria-label **"Conversation actions"** |
+| Pin icon | Shown next to the title when a conversation is pinned |
+| Title | The conversation's name — click to open it |
+| Timestamp | The time for today's conversations, **"Yesterday"**, a weekday name within the past week, or the date beyond that. Hover to see the exact date and time |
+| Preview | The most recent message, trimmed to two lines |
+| Message count | How many messages are in the conversation, plus how many tools it used, if any |
+| Actions | A **"⋮"** button opens the conversation's menu |
 
 ### Row actions
 
-The same four-item menu appears on the list row and in the chat header.
+The same menu appears both on a list row and inside a conversation's header.
 
 | Item | What it does |
 |---|---|
-| **Rename** | Turns the title into an inline text field. Enter saves, Escape cancels, blur saves. |
-| **Pin** / **Unpin** | Toggles the pin. Capped at **20** pinned conversations. |
-| **Export** | **Permanently disabled**, tooltip **"Export will be available soon"**. There is no export endpoint. |
-| **Delete** | Red. Opens a confirmation reading `Delete "{{title}}"? You can't undo this.` |
+| **Rename** | Turns the title into an editable field. Enter saves, Escape cancels, clicking away saves. |
+| **Pin** / **Unpin** | Pins the conversation to the top of its time group. You can pin up to **20** conversations at once. |
+| **Export** | Not available yet. |
+| **Delete** | Opens a confirmation asking if you're sure — deleting can't be undone. |
 
 > [!WARNING]
-> Delete is a soft delete server-side, but there is no UI to restore a deleted conversation. Treat
-> it as permanent.
+> Deleting a conversation is permanent. There's currently no way to restore one once it's gone, so
+> treat Delete as final.
 
-Deleting from the list shows the snackbar **"Conversation deleted"**; deleting from inside a
-conversation returns you to the list.
+Deleting from the list shows a quick confirmation toast; deleting from inside a conversation takes
+you back to your list.
 
 ### List states
 
-| State | What you see |
+| Situation | What you see |
 |---|---|
-| Loading | Six row skeletons |
-| Load error | A red alert with the server's message, or **"Couldn't load your conversations."**, and a **Retry** action |
-| Empty | The Fintelligent mark, **"No conversations yet"**, **"Ask Fintelligent anything about your studies, portfolios, or strategies."**, and a **"Start a conversation"** button |
-| No search results | A search icon and **"No conversations match"** followed by your query in italics |
-| End of list | **"End of conversations"** |
+| Loading | Placeholder rows while your conversations load |
+| Something went wrong | An error message, with a **Retry** option |
+| No conversations yet | The Fintelligent mark, **"No conversations yet"**, and a prompt to start one |
+| No search matches | **"No conversations match"**, along with your search term |
+| Reached the end | **"End of conversations"** once you've scrolled through everything |
 
-The list pages 30 conversations at a time and fetches the next page automatically when you scroll
-within 120px of the bottom.
+Your list loads in batches and quietly fetches more as you scroll toward the bottom, so you rarely
+need to click anything to see older conversations.
 
 ## The chat view
 
-```text
-┌───────────────────────────────────────────────┐
-│ ← │ Conversation title            ·  ⋮        │  ChatHeader
-├───────────────────────────────────────────────┤
-│  Resuming conversation                        │  ResumeBanner (one-shot, 3 s)
-├───────────────────────────────────────────────┤
-│  [ Load older messages ]                      │
-│                                               │
-│   ◈  assistant turn (tool chips, markdown)    │  scroll region
-│   ●  your turn                                │
-│   ◈  streaming turn …                         │
-│                            [ Jump to latest ] │
-├───────────────────────────────────────────────┤
-│  Fintelligent needs 2 decisions from you      │  AgentQuestionCard (only when asked)
-├───────────────────────────────────────────────┤
-│  ⟳ Analyzing your request…            0:07    │  AgentStatusBar (exactly one line)
-├───────────────────────────────────────────────┤
-│  ＋  📎  ⚙  [ Continue the conversation… ]  ▶ │  ChatComposer
-│  Fintela is a research tool, not an adviser…  │  disclaimer (always visible)
-└───────────────────────────────────────────────┘
-```
+From top to bottom, a conversation is laid out as:
+
+- A header with the conversation's title and a menu of actions
+- The message history — your turns and Fintelligent's replies
+- A question card, shown only when Fintelligent needs a decision from you
+- A single status line telling you what's happening right now
+- The message box, with the compliance disclaimer always visible underneath it
 
 ### Chat header
 
 | Element | Detail |
 |---|---|
-| Back | Tooltip **"Back to conversations"**, aria-label **"Back"** → `/ai/fintelai` |
-| Title | The conversation title, or **"New conversation"** before one exists. A pin glyph precedes it when pinned. |
-| Subtitle | The message count, or **"Send a message to start"** |
-| Overflow | The same Rename / Pin / Export / Delete menu as the list row. Disabled until the conversation exists. |
+| Back | Returns you to your conversation list |
+| Title | The conversation's name, or **"New conversation"** before you've sent anything. A pin icon shows if it's pinned |
+| Subtitle | How many messages are in the conversation, or a prompt to send one to get started |
+| Menu | The same Rename / Pin / Export / Delete actions as the list row. Disabled until the conversation actually exists |
 
-There is no model selector. The model resolves from the conversation's preferred or last model,
-falling back to `deepseek-v4-pro`.
+There's no model selector here — Fintelligent uses the same assistant throughout a conversation.
 
 ### Transcript and history
 
-Messages load 50 at a time, newest-first on the wire and reversed for reading. The transcript is
-**not** virtualized and does **not** auto-fetch older pages: when more history exists, a
-**"Load older messages"** button appears at the top, reading **"Loading…"** while it fetches.
+Your conversation loads the most recent messages first. If there's more history than what's shown,
+a **"Load older messages"** button appears at the top so you can pull in earlier turns on demand.
 
 | Situation | What renders |
 |---|---|
 | Empty conversation | **"Ask Fintelligent anything to get started."** |
-| All history loaded and a new turn streaming | The divider **"── End of previous conversation ──"** |
-| Transcript fetch failed | **"The transcript could not be loaded."** with a **"Try again"** button |
-| Scrolled up more than 80px while streaming | A floating **"Jump to latest"** pill |
-| Conversation returns 404 | Snackbar **"This conversation is no longer available."** and a redirect to the list |
+| All history loaded, new reply coming in | A divider marking where your earlier conversation ends and the new turn begins |
+| Couldn't load the conversation | **"The transcript could not be loaded."** with a **Try again** button |
+| Scrolled up while a reply is streaming | A floating **"Jump to latest"** button appears |
+| Conversation no longer exists | A notice that it's no longer available, and you're returned to your list |
 
-Only a genuine 404 evicts you. An expired token or a transport failure leaves you where you are —
-the conversation still exists, and it may still have a turn running in it.
+A conversation only disappears on you if it's genuinely gone (deleted, or not yours). A temporary
+connection hiccup leaves you exactly where you are — the conversation is still there, and it may
+still be working in the background.
 
 ### Message anatomy
 
-Only two message roles are ever written: **user** and **assistant**. The transcript renders your
-turns with your organization's branded avatar — a person icon when none is set — and
-Fintelligent's with its own brand mark, regardless of branding.
+Only your turns and Fintelligent's replies appear as regular messages. Your organization's own
+branding shows on your avatar; Fintelligent always keeps its own brand mark.
 
 | Part | Detail |
 |---|---|
-| **Tool-step chips** | Outlined chips at the top of an assistant bubble, one per tool the turn ran. A spinner while `calling`, a green check when `done`, a red icon on `error` with the tool's error (or **"Tool failed"**) as the tooltip. Repeats of the same label collapse into one chip with `×N`. |
-| **Body** | Markdown with GitHub tables, headings, code blocks and KaTeX maths. Tables and display maths scroll horizontally inside the bubble. |
-| **Streaming placeholder** | A spinner and **"Thinking…"** until the first text arrives. |
-| **Token caption** | **"{{formatted}} raw-tokens"** when the turn used any, plus ` · {{formatted}} AI tokens` while the turn is live. |
-| **Error caption** | The turn's own failure sentence, in red, under the bubble. |
-| **Interrupted caption** | Italic amber **"Connection lost mid-reply."** |
-| **Hover actions** | **Copy** (confirms with a green check and the tooltip **"Copied"**) and **Regenerate**. Hidden until hover on desktop, always visible on touch. |
+| **Tool steps** | Small chips at the top of a reply showing which actions Fintelligent took to answer you — a spinner while a step is running, a green check once it's done, or a red icon (with a tooltip explaining what went wrong) if a step failed. Repeated steps of the same kind collapse into one chip with a count. |
+| **Reply text** | Formatted like a document — headings, tables, code blocks, and mathematical notation all render properly. Wide tables or equations scroll sideways within the reply rather than overflowing the page. |
+| **While it's typing** | A **"Thinking…"** placeholder shows until the first words of the reply arrive. |
+| **Token usage** | A small caption shows how many tokens the turn used, plus how many AI Tokens it has cost you so far while the reply is still in progress. |
+| **If something goes wrong** | The specific reason appears in red beneath the reply. |
+| **If the connection drops mid-reply** | Italic amber text reads **"Connection lost mid-reply."** |
+| **On hover** | **Copy** (confirms with a checkmark) and **Regenerate** appear over each reply — always visible on touch devices. |
 
-**Regenerate** re-asks the nearest preceding human prompt as a fresh turn — it walks past machine
-postbacks so it never replays a stale tool result. It is offered on settled assistant turns that
-have text, and on turns that errored or were interrupted.
+**Regenerate** re-asks your most recent question as a brand-new turn, so Fintelligent doesn't just
+repeat a stale answer. It's offered on any finished reply that has text, and on any turn that
+failed or got interrupted.
 
 > [!NOTE]
-> The two token numbers mean different things. **Raw-tokens** is the model's own count for the turn
-> (`input + output + cache_write`; `cache_read` is excluded because it is already inside `input`).
-> **AI tokens** is what you were billed. The billed figure is not persisted, so it disappears when
-> you reload the conversation and only the raw total remains.
+> The two token numbers you see mean different things. The **raw** count is simply how much the
+> underlying model processed for that turn. The **AI Tokens** figure is what was actually billed
+> to your account — shown live while the reply is in progress, but not saved afterward, so once
+> you reload the conversation only the raw count remains visible.
 
-### Machine turns
+### System messages in the transcript
 
-Some user-role messages are postbacks from the browser rather than something you typed. They render
-as compact chips instead of raw JSON.
+A few entries in your conversation aren't things you typed — they're the app logging an action you
+took, shown as a short, readable line rather than as your own message:
 
-| Tag | Rendered as |
+| Situation | Shown as |
 |---|---|
-| `⟦answer⟧` | **"Answered: {{choice}}"**, or **"Skipped the question"** |
-| `⟦save-result⟧` | **"Saved"**, **"Saved — {{name}}"**, **"Save cancelled"**, or `Could not save: {{detail}}` |
-| `⟦compile-result⟧` | **"Validation passed"**, or `Validation failed: {{detail}}` — where the detail may be **"timed out"**, **"failed"** or **"Unparseable validation result"** |
-| `⟦continue⟧` | A hairline divider captioned **"Picking up where it left off"** |
+| You answered a question card | **"Answered: {{your choice}}"**, or **"Skipped the question"** if you dismissed it |
+| You saved a change to an editor | **"Saved"**, **"Saved — {{name}}"**, **"Save cancelled"**, or a note explaining why the save failed |
+| Your code was checked | **"Validation passed"**, or details on why it failed (for example, a timeout) |
+| Fintelligent picked back up after being paused | A divider reading **"Picking up where it left off"** |
 
 ### The status line
 
-Directly above the composer, **exactly one** line renders at a time, announced politely to
-assistive technology. It is the answer to "is it working, is it waiting for me, or is it done?"
+Directly above the message box, a single line always tells you what's happening right now:
 
-| State | Copy | Affordance |
-|---|---|---|
-| Busy · analyzing | **"Analyzing your request…"** | spinner |
-| Busy · exploring data | **"Exploring your data…"** | spinner |
-| Busy · writing code | **"Writing the code…"** | spinner |
-| Busy · configuring | **"Configuring…"** | spinner |
-| Busy · validating | **"Validating…"** | spinner |
-| Busy · running | **"Running…"** | spinner |
-| Waiting · editor confirm | **"Waiting for you to confirm — the Save dialog is open"** | warning colour, optional **"Reopen it"** |
-| Waiting · answer | **"Waiting for your answer"** | warning colour |
-| Waiting · input | **"Waiting for you"** | warning colour |
-| Stopped short | **"Paused — didn't finish"** | warning colour, **"Continue"** button |
-| Failed | The failure's own sentence, or **"Couldn't finish — something went wrong"** | red, **"Retry"** when the failure is retryable |
-| Finished | **"Finished"** | muted check |
+| State | Copy |
+|---|---|
+| Busy · analyzing | **"Analyzing your request…"** |
+| Busy · exploring data | **"Exploring your data…"** |
+| Busy · writing code | **"Writing the code…"** |
+| Busy · configuring | **"Configuring…"** |
+| Busy · validating | **"Validating…"** |
+| Busy · running | **"Running…"** |
+| Waiting on you · confirm a save | **"Waiting for you to confirm — the Save dialog is open"** |
+| Waiting on you · answer a question | **"Waiting for your answer"** |
+| Waiting on you · other input | **"Waiting for you"** |
+| Stopped short | **"Paused — didn't finish"**, with a **Continue** button |
+| Failed | The specific reason, or **"Couldn't finish — something went wrong"**, with **Retry** when trying again could help |
+| Finished | **"Finished"** |
 
-An elapsed clock (`m:ss`) appears on busy states only after 5 seconds — short turns do not get a
-timer.
+Once a busy state has run for more than five seconds, a small elapsed-time clock appears next to
+it — quick replies don't bother with a timer.
 
-A "waiting" claim is only made when the app can actually put the awaited control back on screen. If
-you reload and the card or dialog cannot be rebuilt, the line degrades to **"Paused — didn't
-finish"** rather than pointing at something that no longer exists.
+If you reload the page while Fintelligent is "waiting" on something that can no longer be shown to
+you (a dialog that's since closed, say), the status line falls back to **"Paused — didn't
+finish"** instead of pointing you at a control that isn't there anymore.
 
 ### Question cards
 
-When Fintelligent needs a decision it renders a blocking card above the status line, carrying one
-to six questions.
+Sometimes Fintelligent needs you to make a decision before it can continue — choosing between
+candidate risk managers, say, or confirming a setting. When that happens, a card appears above the
+status line with one to six questions.
 
 | Element | Detail |
 |---|---|
-| Title | The question itself when there is one; **"Fintelligent needs {{count}} decisions from you"** when there are several, with one tab per question |
-| Tabs | Labelled by the question's short label; a green check marks answered, a hollow circle unanswered. Tab list aria-label **"Questions in this card"** |
-| Controls | `single` → radio buttons · `multi` → checkboxes · `dropdown` → a select with the placeholder **"Choose an option"** |
-| Escape hatch | **"Other…"** unless the question forbids it, revealing a field with the placeholder **"Describe what you'd prefer"** |
-| Registry picker | Only on questions that declare a catalog: an autocomplete labelled **"Or pick any other"**, placeholder **"Search the full list…"**, empty text **"Nothing else available"**. Catalogs exist for **fitness functions** and **risk managers** only |
-| Footer | **"{{answered}} of {{total}} answered"**, **"Skip"**, and **"Answer"** — disabled until every question is answered |
-| Dismiss | The X, aria-label **"Dismiss question"** |
+| Title | The question itself, or **"Fintelligent needs {{count}} decisions from you"** with a tab per question when there's more than one |
+| Tabs | Labeled with a short version of each question; a green check marks the ones you've answered |
+| Answer controls | Single choice (radio buttons), multiple choice (checkboxes), or a dropdown, depending on the question |
+| **"Other…"** | Lets you type a free-text answer instead, when the question allows it |
+| Search a full list | On questions about fitness functions or risk managers, you can search your entire library instead of picking from the suggested options |
+| Footer | Shows how many questions you've answered, plus **Skip** and **Answer** — Answer stays disabled until every question has a response |
+| Dismiss | An X to close the card |
 
-Answering posts an `⟦answer⟧` turn back into the transcript, which is why the card can be rebuilt
-after a reload.
+Once you answer, your choice is logged into the conversation just like a message, which is why the
+card comes back correctly if you reload the page.
 
 ### The composer
 
-Controls run left to right: **New conversation** (`+`), **Attach**, **Tools**, the text field, an
-optional **"Continue on floating chat"** button, and **Send** / **Stop**.
+Left to right, the message box gives you: New conversation, Attach, Tools, the text field itself,
+an optional **"Continue on floating chat"** button, and Send.
 
 | Behaviour | Detail |
 |---|---|
-| Placeholder | **"Continue the conversation…"** (the floating panel uses **"I'm Fintelligent, how can I help you?"**) |
-| Keys | Enter sends, Shift+Enter inserts a newline. The field grows to 8 rows on the page, 6 in the panel |
-| Streaming | Send becomes Stop (tooltip **"Stop"**, aria-label **"Stop generation"**) |
-| Disclaimer | Always visible underneath, on both surfaces |
+| Placeholder text | **"Continue the conversation…"** on the full page, **"I'm Fintelligent, how can I help you?"** in the floating panel |
+| Keyboard | Enter sends your message, Shift+Enter adds a new line. The box grows as you type, up to eight lines on the full page and six in the panel |
+| While replying | Send turns into a **Stop** button so you can cancel |
+| Disclaimer | The "not investment advice" notice stays visible underneath at all times |
 
-The Send button's disabled tooltip resolves in this order, first match wins:
+If Send is greyed out, hover it to see why — you're offline, you've hit a usage limit, a reply is
+already streaming, or there's simply nothing typed yet.
 
-| Order | Tooltip | Meaning |
-|---|---|---|
-| 1 | **"You're offline"** | The browser reports no connection |
-| 2 | The lock reason | See the table below |
-| 3 | **"Streaming a reply…"** | A turn is in flight on this surface |
-| 4 | **"Type a message"** | Nothing to send |
-
-Three lock reasons exist on the full page, resolved in this order, first match wins:
-
-| Lock | Copy |
-|---|---|
-| Another browser tab owns the conversation | **"Active in another tab — close it to interact here"** |
-| A stream belonging to a different conversation is running in the shared session | **"Active in the floating panel — close it to interact here"** |
-| A validation round-trip is in flight | **"Waiting for the editor to finish validating"** |
-
-The panel's own chain is the mirror image: the daily-cap tooltip first, then **"Active in the
-full-page chat — close it to interact here"**, then **"Active in another tab — close it to interact
-here"**, then **"Fintelligent is still working on this conversation"**.
+Fintelligent only runs one active conversation at a time per account. If you already have a reply
+in progress in another browser tab or in the floating panel, the message box will tell you where
+it's busy rather than let you start a second one at once.
 
 ### Tools menu prompts
 
-The **Tools** menu (tooltip **"Tools"**) is the only suggested-prompt surface in the product. Each
-entry sends a fixed English prompt — the agent reasons in English regardless of your UI language.
+The **Tools** menu is the only built-in shortcut list in Fintelligent. Each entry sends a ready-made
+prompt for you, so you can jump straight into a common workflow:
 
-| Menu item | Prompt sent |
+| Menu item | What it asks Fintelligent to do |
 |---|---|
-| **Design a Strategy** | `I want to design a new trading strategy. Guide me step by step.` |
-| **Generate a Fitness Function** | `Help me generate a new fitness function. What should I optimize for?` |
-| **Create a Asset Group** | `I want to create a new asset group. Guide me through ticker selection and date configuration.` |
-| **Send a Study** | `I want to set up and send a new study. Guide me through the configuration.` |
-| **Design a Risk Manager** | `Help me design a risk manager to control drawdown and protect my portfolio.` |
-| **Manage Portfolios** | `Help me manage my portfolios — review, compare, and take action on them.` |
+| **Design a Strategy** | Guide you step by step through designing a new trading strategy |
+| **Generate a Fitness Function** | Help you build a new fitness function and decide what to optimize for |
+| **Create an Asset Group** | Walk you through ticker selection and date configuration for a new asset group |
+| **Send a Study** | Walk you through configuring and launching a new study |
+| **Design a Risk Manager** | Help you design a risk manager to control drawdown and protect your portfolio |
+| **Manage Portfolios** | Help you review, compare, and take action on your portfolios |
 
-Choosing one sends immediately and leaves whatever you had typed untouched.
+Choosing one sends immediately, without touching anything you'd already started typing. Note that
+these prompts are always sent in English, even if you're using Fintela in another language.
 
 ### Attachments and pasted code
 
-The **Attach** menu (tooltip **"Attach"**) offers two items.
+The **Attach** menu currently offers two options.
 
 | Item | Status |
 |---|---|
-| **Upload File** | **Not wired.** The picker opens and accepts `.pdf,.txt,.html,.htm,.xlsx,.csv`, and the chosen files appear as deletable chips — but nothing is uploaded and nothing reaches the agent. |
-| **Paste Code** | **Fully wired.** The snippet is fenced as a markdown code block and appended to your message on send. |
+| **Upload File** | You can pick a file (PDF, text, HTML, spreadsheet, or CSV) and it appears as a chip — but it doesn't actually reach Fintelligent yet. |
+| **Paste Code** | Fully working. Your snippet is added to your message as a formatted code block when you send. |
 
 > [!CAUTION]
-> Do not rely on file attachment. Selected files are shown and then discarded on send. To give
-> Fintelligent a file's contents today, paste them as code or as text in the message body.
+> Don't rely on file attachments yet — files you select are shown but not actually sent. To share a
+> file's contents with Fintelligent today, paste the text directly into your message using **Paste
+> Code**.
 
-The **Paste code** dialog carries a language selector (Python, TypeScript, JavaScript, Rust, SQL,
-JSON, YAML, Plain text) with an **"Auto-detect ({{language}})"** option, a live
-**"{{used}} / {{max}} characters"** counter, the hint **"Ctrl/Cmd+Enter to attach · Esc to close"**,
-and **"Done"** / **"Cancel"**. The limit is **50,000 characters**; beyond it the dialog refuses with
-**"Code is too long — the limit is {{max}} characters."** An attached snippet shows as a chip
-labelled **"Code snippet ({{language}})"**.
+The Paste Code dialog lets you choose a language (Python, TypeScript, JavaScript, SQL, JSON,
+YAML, or plain text) or auto-detect it, shows a running character count, and accepts up to
+**50,000 characters** — past that, it asks you to trim the snippet before you can attach it.
 
-## Streaming behaviour
+## While Fintelligent is responding
 
-A turn is a server-sent-event stream. The backend proxies the agent's frames verbatim, persists the
-assistant turn as it goes, and keeps draining even if you disconnect.
+Replies from Fintelligent appear progressively, word by word, rather than all at once, so you can
+start reading before it's finished. A few things worth knowing about what you'll see while that's
+happening:
 
-| Frame | Effect in the UI |
-|---|---|
-| `conversation` | Injected by the backend, never by the agent. Carries the resolved conversation id and sequence numbers |
-| `text` | Feeds the visible narration |
-| `text_reset` | Clears the in-progress narration — the model retracted it |
-| `tool_call` | Pushes a tool chip in the `calling` state |
-| `tool_result` | Marks that chip `done` or `error` |
-| `status` | Drives the status line; the last one is persisted with the message |
-| `title_suggestion` | Renames the conversation |
-| `usage` | Updates the live token caption (cumulative for the whole turn) |
-| `done` / `error` | Terminal |
-
-Behaviour worth knowing:
-
-- **The session outlives the surface.** The stream is owned above both chat surfaces, so closing the
-  floating panel, or navigating while the agent navigates for you, does not abort the turn. Within
-  one tab the only lock is a stream running for a *different* conversation; a second browser tab
-  locks the conversation outright.
-- **Only one narration line at a time.** After a tool boundary the next narration *replaces* the
-  previous one rather than appending, so the bubble shows the current thought, not a transcript of
-  every thought.
-- **Stop is a client abort.** Pressing Stop cancels the request; the backend still persists what it
-  received, flagged `interrupted`, and the bubble shows **"Connection lost mid-reply."**
-- **A turn that runs out of budget is resumed once, automatically.** The client posts a `⟦continue⟧`
-  turn on the first `incomplete` ending. If the very next turn also ends incomplete, it stops
-  offering and shows the **"Continue"** button instead — a turn that ran out twice is not making
-  progress.
-- **Tool results never cross the wire.** The `tool_result` frame carries the tool name and, on
-  failure, its error — never the payload. Only the model sees results.
-- **Titles.** The agent may propose one; otherwise the first turn falls back to the first 60
-  characters of your message.
+- **A reply keeps going even if you navigate away.** Closing the floating panel, or letting
+  Fintelligent take you to another page, does not interrupt what it's doing — you can always come
+  back to check on it. The only thing that locks you out is trying to run a second conversation at
+  the same time.
+- **Only the current thought is shown.** When Fintelligent moves from one step to the next — say,
+  from analyzing your request to writing code — the visible text updates to reflect that step,
+  rather than stacking every intermediate thought on top of each other.
+- **Stop ends your side of the connection.** If Fintelligent had already made progress before you
+  hit Stop, that progress is kept and marked as interrupted, and you'll see **"Connection lost
+  mid-reply."**
+- **A reply cut short by length limits picks back up automatically, once.** If it runs out of room
+  again on the very next turn, Fintelligent stops auto-continuing and shows you a **Continue**
+  button instead — a sign it may need more direction from you rather than just more room.
+- **You see the outcome of each action, not its raw output.** The tool chips tell you which action
+  ran and whether it succeeded, but the underlying data isn't dumped into the transcript — you see
+  it reflected in Fintelligent's own written answer.
+- **Conversation titles.** Fintelligent will often suggest a title for a new conversation; if it
+  doesn't, your first message is used instead.
 
 > [!NOTE]
-> Fintelligent does not render citations or source links. The provenance you get is the tool-step
-> chips, which name *which* tools ran, and the agent's own prose. When a number matters, ask it
-> which study, portfolio or ticker the number came from.
+> Fintelligent doesn't show citations or source links. What you get instead is the tool-step chips
+> — which name the actions it took — plus its own written explanation. When a number matters to
+> you, just ask Fintelligent which study, portfolio, or ticker it came from.
 
 ## Errors and limits
 
-### Send failures
+### When a message doesn't go through
 
-When a send never becomes a stream, the chat renders a red alert with the reason and — only when
-retrying could change the answer — a **"Retry"** action that re-sends your last real prompt. Retry
-is withheld on 402, 501 and 503, which return the same answer every time.
+If your message fails to send at all, you'll see an error explaining why — and, when trying again
+could actually help, a **Retry** button that resends your last message for you. Retry isn't offered
+when trying again wouldn't change the outcome, such as when your AI Token balance is the problem.
 
-In every row below, **the server's own sentence wins when it sent one**; the strings quoted are the
-client-side floor for when it did not.
+Whenever possible, Fintelligent shows its own specific explanation for what went wrong; here's what
+you'll see when it doesn't have anything more specific to add:
 
-| Condition | HTTP | What you see |
-|---|---|---|
-| Session expired / forbidden | 401, 403 | **"Your session expired — sign in again to keep going."** |
-| Rate limited | 429 | **"Too many requests right now. Give it a moment and try again."** |
-| AI agent not configured on the deployment | 503 | *"The AI agent is not configured on this deployment (AI_AGENT_BASE_URL is unset), so chat is unavailable."* — the server's own message, in place of the floor **"The assistant is unavailable on this deployment."** |
-| AI-token balance depleted | 402 | The server's sentence in a red alert, **and** the purchase dialog opens, carrying `insufficient_ai_tokens` and your available balance |
-| Open payment dispute | 402 | *"This organization is on hold while a payment dispute is resolved. Contact support — purchasing more tokens will not lift the hold."* No purchase dialog — buying more tokens does not clear it |
-| Oversized page context | 406 | The request is rejected rather than truncated (limit 32 KB of serialized JSON) |
-| Anything else | any | **"The assistant could not be reached (error {{status}})."** |
-| Request never left the browser | — | **"Connection error"** |
-
-Those rejections land *before* your message is stored, so nothing is written to the transcript.
-
-Two later failures are handled differently: if the conversation history cannot be read, or the
-upstream stream never opens, your message **stays** and the backend persists a failed assistant
-turn beside it, so there is something concrete to retry. Those turns carry one of these sentences:
-
-| Sentence | Retryable |
+| Condition | What you see |
 |---|---|
-| *the assistant is not available on this deployment* | no |
-| *the assistant refused this turn (upstream {status})* | only for 5xx |
-| *the assistant could not be reached* | yes |
-| *your conversation history could not be read* | yes |
+| Your session expired | **"Your session expired — sign in again to keep going."** |
+| Too many requests too quickly | **"Too many requests right now. Give it a moment and try again."** |
+| Fintelligent isn't available right now | A note that the assistant is unavailable |
+| You're out of AI Tokens | An alert plus a prompt to buy more tokens, showing your current balance |
+| Your account is on hold over a payment dispute | A note that the hold needs to be resolved with support — buying more tokens won't lift it on its own |
+| Too much page context attached | The message is rejected outright rather than silently cut down, so you know to trim it and try again |
+| Anything else | A generic "couldn't reach the assistant" message |
+| Never left your device | **"Connection error"** |
 
-Two more sentences come from a stream that had already opened: *"the assistant stopped responding
-mid-answer"* when it ended without a terminal status, and *"the answer could not be saved — it will
-not be here if you reload"* when persisting the turn failed.
+None of these count against you — a message that's rejected outright before Fintelligent starts
+responding is never saved to your conversation.
+
+A couple of failures happen after your message is already sent — for example, if your conversation
+history can't be loaded, or Fintelligent's reply never starts. In those cases your message stays
+visible, and a failed reply is added next to it so you have something concrete to retry, rather
+than losing your place. You may also occasionally see a note that a reply cut off without properly
+finishing, or that a finished reply couldn't be saved — in that last case, it won't be there
+anymore if you reload.
 
 ### Limits and caps
 
 | Limit | Value |
 |---|---|
-| Pinned conversations | **20** — exceeding it returns HTTP **406** with *"Cannot pin more than 20 conversations at once"* |
-| Conversations per list page | 30 (server max 100) |
-| Messages per transcript page | 50 (server max 200) |
-| History sent to the model | the 200 most recent messages |
-| Last-message preview | 240 characters |
-| Pasted code snippet | 50,000 characters |
-| Page context payload | 32 KB serialized JSON |
-| Free-tier chat messages | 10 per day when enforcement applies; uncapped once activated |
+| Pinned conversations | Up to **20** at a time |
+| History Fintelligent considers | Your most recent **200** messages |
+| Pasted code snippet | Up to **50,000** characters |
+| Free-tier chat messages | **10** per day until your organization activates full usage — uncapped after that |
 
 > [!TIP]
-> A cross-tenant conversation id returns **404**, never 403 — existence is never leaked. If a
-> conversation "disappears", it belongs to another user or another organization.
+> If a conversation seems to have vanished, Fintela never confirms whether it exists to someone who
+> shouldn't see it — so a "missing" conversation almost always just belongs to a different user or
+> a different organization, not something you accidentally deleted.
 
 ## What Fintelligent will not do here
 
-Documented so you do not go looking for them:
+Documented so you don't go looking for them:
 
 | Not available | Detail |
 |---|---|
-| **Conversation export** | The menu item exists in both menus and is permanently disabled. There is no export endpoint. |
-| **File upload** | The picker and chips render; nothing is sent. |
-| **Model picker** | Removed from the UI. The model is resolved from the conversation. |
-| **Bring-your-own LLM key** | Removed. The key is platform-managed; no per-request key is read or forwarded. |
-| **Agent-generated file downloads** | PDF reports are composed and downloaded entirely in your browser. No server-delivered file channel is in use. |
-| **Citations** | No source-link affordance exists in the transcript. |
-| **Contextual prompt chips** | The Tools menu is the only shortcut surface. |
-| **Broker and live-trading tools** | The agent's broker tool group is empty by design — live-account reads as well as mutations are withheld, so no connected-brokerage data reaches the model provider. |
-| **Panel-to-page hand-off** | The floating panel has no header controls. To reach the full page, use the sidebar entry or a notification deep link. |
+| **Conversation export** | Coming soon — the option is visible in the menu but not active yet. |
+| **File upload** | The picker works, but attached files aren't actually sent to Fintelligent yet. |
+| **Choosing a specific model** | Not available — Fintelligent always uses the same assistant. |
+| **Using your own AI provider or key** | Not supported. The AI capability is fully managed by Fintela. |
+| **Downloadable files from Fintelligent** | PDF reports are put together right in your browser rather than delivered as a file from Fintelligent itself. |
+| **Citations** | No source-link feature exists in the transcript today. |
+| **Extra suggested-prompt shortcuts** | The Tools menu is the only built-in shortcut list. |
+| **Broker access and live trading** | Fintelligent deliberately has no access to your connected brokerage accounts or live-trading tools — it can't read your live positions or place trades, by design. |
+| **Jumping from the panel to the full page** | The floating panel has no direct link to the full-page chat; use the sidebar entry or a notification instead. |
 
 ## Where to go next
 

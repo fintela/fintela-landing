@@ -4,21 +4,22 @@ section: Getting Started
 sectionOrder: 1
 order: 5
 published: true
-updated: 2026-08-20
+updated: 2026-09-01
 summary: From a blank account to your first optimization results, step by step.
-keywords: quickstart, tutorial, first study, getting started, first strategy, first results, hello world
+keywords: quickstart, tutorial, first study, getting started, first strategy, first results, first run
 ---
 
-This is the shortest real path through Fintela: build a universe, write one small Python strategy,
-bind both to a built-in objective, run a twenty-trial optimization and read what it produced. Every
-step below names the exact screen, the exact control and the exact value to type, and the strategy
-code is a complete internal strategy you can paste as-is.
+This is the fastest way to see Fintela do real work for you: build a universe of tickers, write one
+small trading strategy, pair both with a built-in scoring function, run a twenty-trial optimization,
+and read what came out the other side. Every step below tells you exactly which screen to open, which
+control to use and what to type — and the strategy code is complete and ready to paste in as-is.
 
 ## What you will build
 
-Three objects you create, in this order, bound to a fourth you only pick — `sharpe_ratio` is a
-platform-seeded built-in that already exists. All four are rows in a [registry](/docs/registries),
-so everything here is reusable afterwards.
+You will create three building blocks, in this order, and pair them with a fourth you simply pick from
+a list — `sharpe_ratio` is a built-in scoring function that's already there for you to choose. All four
+live as reusable entries in your [registry](/docs/registries), so once you've built them here, they're
+available for every future study too.
 
 ```text
   Asset Group            Strategy              Fitness (built-in)
@@ -47,8 +48,9 @@ Terms you will meet along the way are defined in [core concepts](/docs/core-conc
 need to read it first — but come back to it before your second study.
 
 > [!NOTE]
-> Nothing here needs a data source, a risk manager or an external endpoint. Those are all optional
-> layers you can add later; a study of the bare signal is the right first experiment.
+> Nothing here needs a market data feed, a risk manager or a connection to strategy code running
+> outside Fintela. Those are all optional layers you can add later — a study built on the bare
+> signal is the right first experiment.
 
 ## Step 1 — Create an asset group
 
@@ -57,9 +59,8 @@ date window belongs to the study.
 
 ### Open the builder
 
-In the sidebar, under **Registry**, click **Asset Groups** (`/asset-groups`), then **New Asset
-Group**. The header reads **Create Asset Group** / *Define a new asset group by selecting tickers
-and filters*.
+In the sidebar, under **Registry**, click **Asset Groups**, then **New Asset Group**. The header
+reads **Create Asset Group** / *Define a new asset group by selecting tickers and filters*.
 
 ### Pick the instruments
 
@@ -107,10 +108,10 @@ ticker → `{position, allocation}`.
 
 ### Open the editor
 
-Sidebar → **Registry** → **Strategies** (`/strategy`) → **New Strategy**. The header reads **Create
-Strategy** / *Define a new strategy implementation*. Leave the header's segmented control on
-**Internal**, its default. **Internal** and **External** are selectable in create mode only — an
-existing strategy can never change execution type — and the third option, **Rule-based**, is
+Sidebar → **Registry** → **Strategies** → **New Strategy**. The header reads **Create Strategy** /
+*Define a new strategy implementation*. Leave the header's segmented control on **Internal**, its
+default. **Internal** and **External** can only be chosen when you first create a strategy — you can
+never switch an existing strategy between them later — and the third option, **Rule-based**, is
 permanently disabled (*Rule-based strategies are coming soon.*).
 
 ### Replace the template code
@@ -137,7 +138,7 @@ def momentum_top_n(data, start_date, end_date, lookback=60, top_n=10):
     return out
 ```
 
-Why this passes the validator, line by line:
+Why this passes validation, line by line:
 
 | Rule | How the code satisfies it |
 |---|---|
@@ -193,18 +194,18 @@ it.* It is the only place a strategy is named.
 | **Description** | type `Hold the strongest N names by trailing return.` |
 
 The Name helper reads *Lowercase identifier — also the Python function name.* Editing the name
-lowercases it, replaces spaces with `_` and **renames the Python entry point in your code** — the
-compiler rejects a function whose name does not match the registry name. Leave it as it arrived and
-nothing is rewritten. Description is required too; **Confirm** stays disabled until both fields are
-filled. Press **Confirm**.
+lowercases it, replaces spaces with `_` and **renames the Python entry point in your code** to
+match — Fintela won't save a strategy whose function name doesn't match its registry name. Leave it
+as it arrived and nothing is rewritten. Description is required too; **Confirm** stays disabled
+until both fields are filled. Press **Confirm**.
 
 ## Step 3 — Configure the study
 
-Sidebar → **Registry** → **Studies** (`/studies`) → **New Study**. The header reads **New Study** /
-*Select asset groups, a strategy, and a fitness function, then configure and launch.*
+Sidebar → **Registry** → **Studies** → **New Study**. The header reads **New Study** / *Select asset
+groups, a strategy, and a fitness function, then configure and launch.*
 
-This is **not a stepper**. It is one screen with four blocks, an action bar and a final confirmation
-dialog that owns both writes.
+This is **not a step-by-step wizard**. It is one screen with four blocks, an action bar and a final
+confirmation dialog that both saves and launches the study.
 
 ```text
   ┌─────────────┬─────────────┬─────────────┬──────────────┐
@@ -216,8 +217,8 @@ dialog that owns both writes.
 ### Block 1 — Asset Group
 
 Open **Select asset group** and pick **Quickstart US large caps** from the **Asset Groups** option
-group. (The list also offers **Platform sets (indices, sectors, ETFs)** — picking one materializes a
-derived group behind the scenes, which is how you skip Step 1 entirely on a later study.)
+group. (The list also offers **Platform sets (indices, sectors, ETFs)** — picking one builds a
+ready-made group for you on the spot, which is how you can skip Step 1 entirely on a later study.)
 
 Leave **Start date** and **End date** as they arrive: the builder pre-selects the trailing **5
 years**, clamped to the group's own data coverage. Leave the **Advanced options** accordion closed
@@ -265,8 +266,8 @@ Open **Select fitness function** and pick **`sharpe_ratio`** — a platform-seed
 author shows as `platform`. It scores each simulated window by excess return per unit of total risk,
 and its natural direction is higher-is-better.
 
-A built-in objective renders **no** parameter section and takes **no** fitness asset group; the
-server rejects both outright. Nothing else to do in this block.
+A built-in objective shows **no** parameter section and needs **no** fitness asset group — trying to
+add either is rejected outright. Nothing else to do in this block.
 
 ### Block 4 — Optimization
 
@@ -334,9 +335,9 @@ Below the recap, a **Cost** block prices the run:
 with the note **Charged when the study launches. Whatever it doesn't use is refunded automatically
 when it finishes.** While the quote resolves it reads **Calculating cost…**.
 
-Click **Save & Launch**. The study is written and queued in one call, and you are returned to the
-registry with a **1 study created** toast — or **Study created as "…"** if the server had to
-rename it.
+Click **Save & Launch**. Your study is saved and queued to run right away, and you are returned to
+the registry with a **1 study created** toast — or **Study created as "…"** if Fintela had to rename
+it.
 
 > [!TIP]
 > **Save Draft** writes the same study without launching it and without charging tokens. A draft
@@ -355,17 +356,16 @@ and the **Progress** and **Health** meters refresh every five seconds while anyt
 > A completed study can legitimately sit below 100 % progress — that is what an exhausted finite
 > grid looks like. **Completion is signalled by the status badge, never by progress reaching 100 %.**
 
-There is no Stop, Pause or Resume action in this registry — and no `PAUSED` state anywhere in the
-product. The **Stop** button lives on the study's own
-[Optimization Dashboard](/docs/optimization-dashboard) at `/analysis/portfolios/study/<id>`.
-[Study lifecycle](/docs/study-lifecycle) covers every state, the ten-stage run pipeline and what a
-failure diagnostic tells you.
+There is no Stop, Pause or Resume action in this registry view — and no **Paused** state anywhere in
+the product. The **Stop** button lives on the study's own
+[Optimization Dashboard](/docs/optimization-dashboard). [Study lifecycle](/docs/study-lifecycle)
+covers every state a study can be in, the stages a run moves through and what a failure diagnostic
+tells you.
 
 ## Step 5 — Read the results
 
-Click the study row to open its actions popover, then **View**. That lands you on the
-[Portfolios Dashboard](/docs/portfolios-dashboard) at `/analysis/portfolios?studyId=<id>` with your
-study already selected.
+Click the study row to open its actions popover, then **View**. That takes you to the
+[Portfolios Dashboard](/docs/portfolios-dashboard) with your study already selected.
 
 ### Rank the trials
 
@@ -396,8 +396,8 @@ views — Performance, Holdings, Transactions, Risk Analytics, Robustness and Pr
 
 ### Ask whether the winner is real
 
-Switch the section tab to **Optimization Dashboard** (`/analysis/portfolios/study/<id>`). Four
-sub-views hang off it — **Overview**, **Robustness**, **Families** and **Parameters**. **Overview**
+Switch the section tab to **Optimization Dashboard**. Four sub-views sit under it — **Overview**,
+**Robustness**, **Families** and **Parameters**. **Overview**
 carries the run configuration, a **Best trial** card, a **Robustness & Overfitting** verdict and a
 **Hyperparameter Importances** panel telling you which knob actually moved the objective. With only
 twenty trials over a 1,111-point grid, treat every verdict as provisional — that is the honest
@@ -407,11 +407,11 @@ reading, and it is exactly why the next study should have a bigger budget.
 
 | Symptom | What it is |
 |---|---|
-| **Save & Launch** is disabled | The compatibility gate blocks the launch, or the cost exceeds your balance (**You don't have enough tokens for this study.**), or a memory-driven worker clamp is waiting on its **I understand this study will take longer** checkbox. **Save Draft** is never gated by any of them |
+| **Save & Launch** is disabled | The compatibility gate blocks the launch, or the cost exceeds your balance (**You don't have enough tokens for this study.**), or a very large study is waiting on your explicit confirmation via the **I understand this study will take longer** checkbox. **Save Draft** is never gated by any of them |
 | The action bar shows **This strategy can't run on the selected data — resolve the compatibility issues below.** | The compatibility report came back incompatible for this group and window. Hover for the reasons; widening the start date or picking a different group usually clears it |
 | Pressing **New Study** opens **You've reached your plan limit** | You are at the studies quota. Delete one to make room — see [tokens & billing](/docs/tokens-and-billing) |
-| The study ran fewer trials than you asked for | On a limited plan `n_trials` is **clamped silently** to the per-study ceiling, with no message in the response and no cap shown in the builder. Twenty is far below it |
-| The status badge reads **Failed** | Open the study's [Optimization Dashboard](/docs/optimization-dashboard) and read the failure notice. `FAILED` is **not** resumable — duplicate the study and relaunch |
+| The study ran fewer trials than you asked for | Your plan may silently cap the number of trials actually run to a per-study ceiling — there's no warning in the builder and no on-screen notice when it happens. Twenty trials is comfortably below that ceiling on every plan |
+| The status badge reads **Failed** | Open the study's [Optimization Dashboard](/docs/optimization-dashboard) and read the failure notice. **Failed** is **not** resumable — duplicate the study and relaunch |
 | A completed study carries a warning about secondary analysis | Robustness, families and importances are *secondary* stages. A failure there leaves the results usable — it is not a failed study |
 
 ## What you just built
@@ -428,11 +428,11 @@ reading, and it is exactly why the next study should have a bigger budget.
 | Page | Why |
 |---|---|
 | [End-to-end workflow](/docs/end-to-end-workflow) | The same path taken all the way to a deployed portfolio group |
-| [Studies](/docs/studies) | Every field on the study canvas, the row actions and the server-side validation |
-| [Strategies](/docs/strategies) | The full function contract, injected data sources, the curated library list and the sandbox |
+| [Studies](/docs/studies) | Every field on the study canvas, the row actions and how a study is validated before it launches |
+| [Strategies](/docs/strategies) | The full function contract, the data available to your code, the curated library list and how your code runs safely inside Fintela |
 | [Fitness functions](/docs/fitness-functions) | The 26 built-in objectives and how to write your own |
 | [Risk managers](/docs/risk-managers) | Stops, caps and halts the optimizer can tune alongside your parameters |
 | [Sampler selection](/docs/sampler-selection) | When the sampler matters, and which one to pick |
 | [Analyzing results](/docs/analyzing-results) | Reading a study's output properly, including overfitting |
-| [Execution modes](/docs/execution-modes) | Running your own code on your own infrastructure instead |
-| [API overview](/docs/api-overview) | Pulling finished results out over the read-only Developer API |
+| [Execution modes](/docs/execution-modes) | Running your own strategy or fitness code on your own systems instead |
+| [API overview](/docs/api-overview) | Pulling your studies, portfolios and results into your own tools over the read-only Developer API |

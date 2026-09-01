@@ -4,154 +4,148 @@ section: Workflows
 sectionOrder: 5
 order: 1
 published: true
-updated: 2026-08-20
-summary: The full lifecycle in order — asset group, strategy, optimization, promotion, deployment.
-keywords: workflow, lifecycle, end to end, asset group, strategy, study, optimize, promote, deploy, paper, live
+updated: 2026-09-01
+summary: The full workflow in order — build a universe, write a strategy, optimize it, pick a winner, and put it live.
+keywords: workflow, lifecycle, end to end, asset group, strategy, study, optimize, promote, deploy, paper trading, live trading
 ---
 
-Fintela is one pipeline, walked once: freeze a universe, write the code that trades it, choose the number that decides what "better" means, optionally bolt on guard rails, sweep the parameter space, read the candidates that fall out, keep the ones worth keeping, group them into a book, and point that book at a broker. This page walks that path in the order you actually do it. It names the screen, the button and the decisions at each step, then hands off to the page that documents that step in full — it is a map, not a substitute for the [registries](/docs/registries).
+Fintela takes you through one path, start to finish: pick the universe of instruments you want to trade, write the logic that decides what to buy and sell, choose the number that defines "better," optionally add guard rails, sweep across many parameter combinations, review what comes out, keep the configurations worth keeping, group them into a book, and connect that book to a broker. This page walks that path in the order you actually follow it — naming the screen, the button and the decision at each step — then points you to the page that covers that step in full. Treat it as a map, not a replacement for the [registries](/docs/registries) overview.
 
 ## The lifecycle at a glance
 
 ```text
-  ┌── REGISTRY ───────────────────────────────────────────────────────────┐
-  │                                                                       │
-  │   1  Asset Group        /asset-groups        the universe             │
-  │   2  Strategy           /strategy            the signal               │
-  │   3  Fitness Function   /fitness             the objective            │
-  │   4  Risk Managers      /risk-managers       guard rails (optional)   │
-  │              │                                                        │
-  │              └──────────────┐                                         │
-  │                             ▼                                         │
-  │   5  Study              /studies             one campaign → N trials  │
-  │                             │                                         │
-  └─────────────────────────────┼─────────────────────────────────────────┘
-                                ▼
-  ┌── ANALYSIS ───────────────────────────────────────────────────────────┐
-  │   6  Candidates         /analysis/portfolios   rank · compare         │
-  │   7  Promote            (same screen)          → a promoted portfolio │
-  │                             │                                         │
-  └─────────────────────────────┼─────────────────────────────────────────┘
-                                ▼
-  ┌── TRADING ────────────────────────────────────────────────────────────┐
-  │   8  Portfolio Group    /analysis/portfolio-groups   members + policy │
-  │   9  Operation          one per broker connection    paper or live    │
-  └───────────────────────────────────────────────────────────────────────┘
+  REGISTRY — build once, reuse forever
+  1  Asset Group        the universe you're allowed to trade
+  2  Strategy           the logic that decides what to hold
+  3  Fitness Function    the number that defines "better"
+  4  Risk Managers        guard rails (optional)
+          │
+          ▼
+  5  Study              one search → many candidate portfolios
 
-     back-edge: 6 ──► duplicate the study with narrower ranges ──► 5
+  ANALYSIS
+  6  Candidates         rank and compare the results
+  7  Promote            turn a winner into a permanent portfolio
+
+  TRADING
+  8  Portfolio Group    combine portfolios into one book
+  9  Operation          connect that book to a broker — paper or live
+
+     Not happy with what came out of stage 6? Duplicate the study
+     with narrower ranges and go back to stage 5.
 ```
 
-Every stage but one persists an object you can reuse — stage 6 is pure analysis and writes nothing. You build the library once and recombine it forever.
+Every stage but one leaves you with something you can reuse later — stage 6 is pure review and doesn't create anything new. You build the library once and recombine it as often as you like.
 
-| # | Stage | Where | Object it creates | Full reference |
+| # | Stage | Where in the app | What it creates | Full reference |
 |---|---|---|---|---|
-| 1 | Freeze the universe | Registry → **Asset Groups** | Asset group | [Asset groups](/docs/asset-groups) |
-| 2 | Write the signal | Registry → **Strategies** | Strategy (+ versions) | [Strategies](/docs/strategies) |
-| 3 | Choose the objective | More Options → **Fitness Functions** | Fitness function | [Fitness functions](/docs/fitness-functions) |
-| 4 | Add guard rails | More Options → **Risk Managers** | Risk manager | [Risk managers](/docs/risk-managers) |
-| 5 | Sweep the space | Registry → **Studies** | Study → trials | [Studies](/docs/studies) |
-| 6 | Read the output | Analysis → **Portfolios** | nothing — it is a read surface | [Optimization dashboard](/docs/optimization-dashboard) |
-| 7 | Keep a winner | Analysis → **Portfolios** | Promoted portfolio | [Promoted portfolios](/docs/promoted-portfolios) |
-| 8 | Assemble a book | Registry → **Portfolio Groups** | Portfolio group | [Portfolio groups](/docs/portfolio-groups) |
-| 9 | Send it to a broker | Portfolio Groups or Portfolio Manager | Operation | [Live trading](/docs/live-trading) |
+| 1 | Define your universe | Registry → **Asset Groups** | An asset group | [Asset groups](/docs/asset-groups) |
+| 2 | Write your signal | Registry → **Strategies** | A strategy (with versions) | [Strategies](/docs/strategies) |
+| 3 | Choose your objective | More Options → **Fitness Functions** | A fitness function | [Fitness functions](/docs/fitness-functions) |
+| 4 | Add guard rails | More Options → **Risk Managers** | A risk manager | [Risk managers](/docs/risk-managers) |
+| 5 | Search for the best parameters | Registry → **Studies** | A study, with many candidate portfolios | [Studies](/docs/studies) |
+| 6 | Review the results | Analysis → **Portfolios** | Nothing saved — this is where you review | [Optimization dashboard](/docs/optimization-dashboard) |
+| 7 | Keep a winner | Analysis → **Portfolios** | A promoted portfolio | [Promoted portfolios](/docs/promoted-portfolios) |
+| 8 | Build a book | Registry → **Portfolio Groups** | A portfolio group | [Portfolio groups](/docs/portfolio-groups) |
+| 9 | Trade it | Portfolio Groups or Portfolio Manager | An operation | [Live trading](/docs/live-trading) |
 
-> [!NOTE] Two sidebar sections, one flyout
-> Asset Groups, Strategies, Studies and Portfolio Groups sit in the sidebar's **Registry** section. Fitness Functions, Risk Managers and Promoted Portfolios live behind the **More Options** flyout under it. Portfolios and Portfolio Manager sit in **Analysis**. Every route deep-links whether or not its entry is visible — see [navigation](/docs/navigation).
+> [!NOTE] Where to find these in the sidebar
+> Asset Groups, Strategies, Studies and Portfolio Groups live in the sidebar's **Registry** section. Fitness Functions, Risk Managers and Promoted Portfolios sit behind the **More Options** flyout underneath it. Portfolios and Portfolio Manager are in the **Analysis** section. See [navigation](/docs/navigation) for the full map of the sidebar.
 
 ## Before you begin
 
-Nothing has to be configured before stage 1. Three things become relevant later, and it is cheaper to know them now than to discover them at stage 9.
+Nothing has to be set up before stage 1. Three things become relevant later, and it's worth knowing about them now rather than running into them at stage 9.
 
-| Thing | When it starts to matter | Notes |
+| Thing | When it matters | Notes |
 |---|---|---|
-| Token balance | Stage 5 — launching a study is a billed action | A study is charged up front for the `n_trials` it *might* run and refunded the difference on completion. See [tokens and billing](/docs/tokens-and-billing) |
-| Free-tier creation caps | Stages 1–5, 7 and 8 | Every registry meters *creation only*; reads, edits, deletes and stops are never gated. The caps are a live database setting, not a constant. Strategies, Studies, Fitness Functions and Asset Groups show a `used/limit` meter in the command bar; Risk Managers shows a headroom bar in the footer strip; Portfolio Groups and Promoted Portfolios show neither, though their quotas are still enforced server-side. See [registries](/docs/registries) |
-| A broker connection | Stage 9 only | Added under **Account settings → Broker connections**. Nothing before stage 9 needs it. See [account setup](/docs/account-setup) |
+| Token balance | Stage 5 — launching a study spends tokens | Launching a study reserves tokens up front for the number of trials it might run, and refunds whatever it doesn't use once it finishes. See [tokens and billing](/docs/tokens-and-billing) |
+| Free-tier creation limits | Stages 1–5, 7 and 8 | Every registry limits how many *new* items you can create — viewing, editing, deleting or stopping something you already have is never limited. Strategies, Studies, Fitness Functions and Asset Groups show a used/limit counter right on screen; Risk Managers shows a headroom bar; Portfolio Groups and Promoted Portfolios enforce the same kind of limit even though they don't display a counter. See [registries](/docs/registries) |
+| A broker connection | Stage 9 only | Add one under **Account settings → Broker connections** whenever you're ready to trade — nothing before stage 9 needs it. See [account setup](/docs/account-setup) |
 
-> [!WARNING] Pick Internal at stage 2 if you intend to trade this
-> An **External** strategy — one you host yourself — can be studied and analysed normally, but it **cannot be promoted**, which means it can never become a portfolio-group member and never reaches a broker. The refusal is HTTP 400: `trial portfolio {id} uses an EXTERNAL strategy ({execution_type}); managed daily-update mode supports INTERNAL strategies only, so it cannot be promoted or tracked`. The path ends at stage 6 for external work. See [execution modes](/docs/execution-modes).
+> [!WARNING] Choose Internal at stage 2 if you plan to trade this strategy
+> A strategy you host and run yourself (an **External** strategy) can be studied and analyzed like any other, but it can never be promoted — which means it can never join a portfolio group and can never reach a broker. If you want a strategy you can eventually trade live through Fintela, write it as an **Internal** strategy. External strategies are for research and comparison. See [execution modes](/docs/execution-modes).
 
 ## 1. Freeze the universe — Asset Group
 
-**`Registry → Asset Groups → New Asset Group`** (`/asset-groups`, or `/asset-groups?mode=create`)
+**Registry → Asset Groups → New Asset Group**
 
-An asset group is the frozen list of instruments a study is allowed to trade. You build it in a screener that filters the whole market by classification, size and value, and performance — but **only the resulting selection is saved**. The screen says so outright: *An Asset Group saves a fixed ticker list; filters are not re-evaluated later.* Name and description are collected by the confirm dialog at save time, not on the working surface.
+An asset group is the fixed list of instruments a study is allowed to trade. You build it using a screener that filters the whole market by classification, size, value and performance — but only the resulting list of tickers is saved, not the filters themselves. Once you save, that list is frozen: the market can keep moving, but your asset group won't silently change under you. You name and describe the group when you save it.
 
-| Decision | What turns on it |
+| Decision | What it affects |
 |---|---|
-| **Exchange** — `US`, `Crypto` or `Forex` | Scopes discovery, not the group. Switching exchanges never touches what you have already selected, so a multi-market group is built by switching and adding |
-| **Include no-data** (off by default) | Off, instruments with no recent price data are hidden. On a historical index universe you usually want them — the survivorship banner offers **Include them** rather than flipping it for you |
-| Tickers, portfolio groups, or both | A group can also hold whole [portfolio groups](/docs/portfolio-groups), injected as `BASKET:<uuid>` pseudo-tickers whose equity curve is scored like a price series. That is the portfolio-of-portfolios case |
-| Whether to build one at all | The [study](/docs/studies) builder can pick a **Platform sets (indices, sectors, ETFs)** entry directly — a curated collection, an index, a sector, a sector ETF set, a country or an industry. That materializes a derived group behind the scenes, which never appears in this registry |
+| **Exchange** — US, Crypto or Forex | Scopes what you can search for, not what you've already picked. Switching exchanges never removes tickers you've already added, so a universe spanning multiple markets is built by switching exchanges and adding to the same list |
+| **Include instruments with no recent price data** (off by default) | Leave it off for an active trading universe. Turn it on when you're building a historical or index-style universe and want delisted or dormant names included too |
+| Tickers, portfolio groups, or both | An asset group can also hold entire [portfolio groups](/docs/portfolio-groups) as if they were single instruments — their combined performance is treated like a price series. This is how you build a portfolio of portfolios |
+| Whether to build one at all | The [study](/docs/studies) builder lets you pick a ready-made universe — a curated collection, an index, a sector, a sector ETF set, a country or an industry — without visiting this screen first |
 
-> [!WARNING] An asset group has no dates
-> There is no start date, no end date, no timeframe and no data-provider field on an asset group. The date window belongs to the study. What the group *does* expose is its members' **date coverage**, which the study builder reads to clamp its own date pickers.
+> [!WARNING] An asset group has no date range
+> An asset group is just a list of instruments — it doesn't carry a start date, an end date or a chosen data source. The date range you backtest over is set later, on the study. What the asset group does provide is each instrument's own history, which the study screen uses to keep your date pickers realistic.
 
 Full reference: [Asset groups](/docs/asset-groups).
 
 ## 2. Write the signal — Strategy
 
-**`Registry → Strategies → New Strategy`** (`/strategy`, or `/strategy?mode=create`)
+**Registry → Strategies → New Strategy**
 
-A strategy answers one question per rebalancing date: which instruments do I hold, on which side, at what weight. It returns a signal — date → ticker → `{position, allocation}` — and everything downstream consumes that one dictionary. The editor is a single screen: a Monaco Python editor in the centre, a rail of collapsible sections beside it, and a naming dialog at the end.
+A strategy answers one question on every rebalancing date: which instruments should I hold, long or short, and at what weight. Everything downstream — the study, the results, the portfolio — is built from that one answer. You write it in a code editor, with a panel of settings beside it, and give it a name when you save.
 
-| Decision | What turns on it |
+| Decision | What it affects |
 |---|---|
-| **Internal** vs **External** | Chosen once and **frozen** — an existing strategy can never change execution type. Internal is Python Fintela runs; External is an endpoint you host, reachable over `http` or `https` alike. **Rule-based** is permanently disabled: *"Rule-based strategies are coming soon."* |
-| Which **parameters** to declare | These, and only these, become the optimizer's search space at stage 5. Three dtypes: **Integer**, **Float**, **Categorical** (a declared set of string choices). Every parameter needs a **Test value** before the save will validate |
-| The **lookback** declaration | Its *maximum* at stage 5 decides how much history the study needs before its start date, and therefore which tickers get excluded for insufficient warm-up |
-| Whether to sandbox first | **Run a backtest** on the row menu runs one backtest at fixed values over a group and window. It costs **1 token** and is the cheapest way to find out the code works before paying for a sweep |
+| **Internal** vs **External** | Chosen once and locked in — you can't switch a strategy from one to the other later. Internal means Fintela runs your Python code for you; External means the logic lives on your own systems and Fintela calls out to it whenever it needs a decision. (Rule-based, no-code strategies aren't available yet.) |
+| Which **parameters** you declare | Only the parameters you declare here become tunable later — this is the search space the optimizer explores at stage 5. Each one is a number (whole or decimal) or a choice from a fixed list, and each needs a sensible **Test value** before it will save |
+| The **lookback** you declare | The longest lookback your strategy needs decides how much history a study has to load before its start date — and any instrument without enough history behind it is automatically excluded |
+| Whether to test it first | **Run a backtest** from the row menu tries your strategy once, at fixed values, over a universe and window you choose. It costs a single token, making it the cheapest way to confirm the logic works before committing to a full parameter sweep |
 
-Saving is gated on a server-side validation run against a real data slice — the compiler executes your code before it will accept the write. The name you type in the naming dialog is lowercased, spaces become `_`, and it **renames the Python entry point in your code**, because the compiler rejects a function whose name does not match the registry name.
+Saving is more than storing text: Fintela runs your code against a real slice of data first, so a strategy with a bug never makes it into the registry. The name you choose becomes this strategy's identity everywhere else in the product, so pick something you'll still recognize later.
 
-> [!NOTE] Editing a strategy never rewrites a result you already have
-> Every save appends a version. Launching a study pins `strategy_version_id` and `fitness_version_id`, so a launched study keeps running against the exact version it started with.
+> [!NOTE] Editing a strategy never changes a result you already have
+> Every save creates a new version, and a study always keeps running against the exact version you launched it with — so refining a strategy afterward never quietly rewrites results you've already reviewed.
 
-Full reference: [Strategies](/docs/strategies), plus [external strategies](/docs/external-strategies) for the `POST /simulate` contract.
+Full reference: [Strategies](/docs/strategies), plus [external strategies](/docs/external-strategies) if you want to trade logic that lives on your own systems.
 
 ## 3. Choose the objective — Fitness Function
 
-**`More Options → Fitness Functions → New Fitness`** (`/fitness`, or `/fitness?mode=create`)
+**More Options → Fitness Functions → New Fitness**
 
-A fitness function reduces one simulated window — the equity curve, the metrics, the holdings, the orders, the trades — to exactly one finite number, and the sampler moves that number in one direction. Nothing else on the platform decides what "better" means, which makes this the most consequential choice on the study canvas. Two objectives over the same strategy will pick different parameters.
+A fitness function takes one simulated run — the equity curve, the metrics, the trades, everything that happened — and reduces it to a single number. The optimizer's whole job at stage 5 is to push that number in the direction you want. It's the most consequential choice on the study screen: the same strategy, optimized against two different objectives, can end up with two very different sets of parameters.
 
-| Decision | What turns on it |
+| Decision | What it affects |
 |---|---|
-| **Built-in** vs **Internal** vs **External** | Built-ins are platform-seeded and read-only: they cannot be created, edited, duplicated, deleted or sandboxed, and a study using one accepts no fitness parameters and no fitness asset group. Internal and External behave like strategies, and the type is frozen after creation |
-| Which window the score comes from | The optimizer calls the objective once per window. Only the **train** score is fed to the sampler; validation, overall and out-of-sample are computed and stored but never steer the search |
-| Direction | Set on the study, not here — it defaults to the objective's own natural direction. A `lower_is_better` built-in therefore **minimizes** under the default setting |
-| Whether you need one at all | If you only need a standard metric, skip creation entirely and pick a built-in at stage 5 |
+| **Built-in** vs **Internal** vs **External** | Built-ins are ready-made, standard metrics — Sharpe ratio, CAGR and the like — with nothing to configure and nothing to edit. Internal and External work like strategies do: you write the scoring logic yourself, or point to logic hosted on your own systems, and that choice is locked in once made |
+| Which stage of the data the score comes from | Only your **training-period** score steers the search. Validation, the full window and out-of-sample scores are all still calculated and shown to you, but none of them influence which parameters the optimizer tries next |
+| Direction | Set on the study, not here, and it defaults to the objective's natural direction — a metric like drawdown, where lower is better, is minimized by default rather than maximized |
+| Whether you need to build one at all | If a standard metric already captures what you're optimizing for, skip this step and pick a built-in when you set up your study |
 
-> [!WARNING] There is no multi-objective or Pareto mode
-> A study writes exactly one objective and one direction. **Rule-based (declarative)** fitness functions are refused by the server — `Rule-based (declarative) fitness functions are not supported yet.` — so do not plan around them.
+> [!WARNING] One objective, one direction per study
+> A study optimizes toward exactly one number, in exactly one direction — there's no multi-objective or trade-off mode. Rule-based, no-code fitness functions aren't available yet either, so plan on writing one in code if a built-in doesn't cover what you need.
 
-Full reference: [Fitness functions](/docs/fitness-functions), plus [external fitness](/docs/external-fitness).
+Full reference: [Fitness functions](/docs/fitness-functions), plus [external fitness](/docs/external-fitness) for scoring logic that runs on your own systems.
 
 ## 4. Add guard rails — Risk Managers
 
-**`More Options → Risk Managers → New Risk Manager`** (`/risk-managers`) — **optional**
+**More Options → Risk Managers → New Risk Manager** — optional
 
-A risk manager runs on every simulated bar, inspects the portfolio as it stood after the previous bar, and acts *before* the strategy is allowed to rebalance. It can close positions, trim them, or suppress the rebalance entirely. It never replaces the strategy's book, only overrides it — a risk manager can never issue `set_targets`.
+A risk manager watches the portfolio on every simulated day and can step in before the strategy rebalances — trimming a position, closing it outright, or blocking that day's rebalance entirely. It never decides what to buy; it can only restrain what the strategy already decided.
 
-| Decision | What turns on it |
+| Decision | What it affects |
 |---|---|
-| Whether to attach any on the first pass | The study builder's Optimization *why* popover says it outright: *Risk managers are OPTIONAL, and leaving them off for a first pass is usually right: a study of the bare signal tells you whether the signal works, which a stop-loss mixed in from the start would hide.* |
-| Which kind | **Built-in** (ten catalog rules), **Rule-based** (a composed rule tree, no code), **Custom code** (Python), **External HTTP**. You author the last three here; this is the only registry where rule-based is live, because both strategies and fitness functions refuse a declarative save |
-| Where you pick a built-in | **Built-ins never appear in this registry.** `/risk-managers` lists only the kinds you authored. You choose a built-in when you *attach* one at stage 5 |
-| Which parameters the optimizer tunes | Each attachment's parameters carry a **Fixed** / **Optimized** toggle. Optimized ones are sampled alongside the strategy's own, namespaced `rm_<attachment>_<param>` |
+| Whether to attach one on your first pass | It's usually worth running your first study with no risk manager attached — that tells you whether the underlying signal works on its own. Adding a stop-loss from the start can hide a weak signal behind a guard rail that's really doing the heavy lifting |
+| Which kind | **Built-in** (a catalog of ready-made rules), **rule-based** (built visually, no code), **custom code**, or an **external** service you host yourself. This is the only registry where you can build a rule visually without writing code |
+| Where you pick a built-in | Built-ins don't show up in this registry's list — you choose one directly while setting up a study at stage 5 |
+| Which parameters the optimizer tunes | Each risk manager you attach can have its own settings marked **Fixed** or **Optimized**. Optimized ones get swept alongside your strategy's own parameters |
 
-Attachment happens inside the study, in **Advanced options → Risk Managers**, where you also order the stack. The execution order legend reads **Halts / closes → Sells → Buys → Strategy rebalance**.
+You attach risk managers inside the study itself, under Advanced options, where you also choose the order they run in: halts and closes first, then sells, then buys, then finally the strategy's own rebalance.
 
-> [!CAUTION] Attachments are replace-all, and they are snapshots
-> Saving the attachment set writes the whole list — anything you left out is detached. Each attachment stores a **snapshot** of the risk manager, so editing or deleting the registry row never changes a study that already has it attached. Attachments can only be changed while a study is in `SAVED` status.
+> [!CAUTION] Changing your attached risk managers replaces the whole list, and each attachment is a snapshot
+> Saving your risk-manager selection replaces the entire list for that study — anything you leave unchecked gets detached. Each one is captured as a snapshot at the moment you attach it, so editing or deleting the risk manager in the registry afterward never changes a study that already has it. You can only change what's attached while the study is still a draft, before it launches.
 
 Full reference: [Risk managers](/docs/risk-managers).
 
 ## 5. Sweep the space — Study
 
-**`Registry → Studies → New Study`** (`/studies`, or `/studies?mode=create`)
+**Registry → Studies → New Study**
 
-A study binds exactly one strategy, one fitness function and one asset group, plus an optional ordered stack of risk managers, to a date window, a parameter search space, a sampler and a trial budget. The builder is **one screen, not a stepper**: a canvas of four blocks, an action bar, and a confirmation dialog that owns both writes.
+A study ties together exactly one strategy, one fitness function and one asset group — plus, optionally, an ordered set of risk managers — and runs it across a date range, a parameter search space, a chosen search method and a trial budget. You configure everything on one screen, then confirm.
 
 ```text
   ┌─────────────┬─────────────┬─────────────┬──────────────┐
@@ -159,186 +153,184 @@ A study binds exactly one strategy, one fitness function and one asset group, pl
   │  universe   │   signal    │  objective  │  budget +    │
   │  + window   │  + params   │  + params   │  advanced    │
   └─────────────┴─────────────┴─────────────┴──────────────┘
-             ↓ Study name  ·  Cancel  ·  Continue
+             ↓ Name your study · Cancel · Continue
                  ┌────────────────────────────┐
                  │    Confirm your study      │
-                 │ recap · cost · warnings    │
+                 │  summary · cost · warnings │
                  │ Save Draft │ Save & Launch │
                  └────────────────────────────┘
 ```
 
-Each block carries a *why* popover naming what it decides — **The universe and the period**, **What generates the positions**, **What the search is trying to improve**, **How the search runs, and what it costs**.
-
 | Block | Decisions that matter |
 |---|---|
-| **Asset Group** | **Start date** / **End date** — clamped to the group's own coverage. **Train / validation split** (70 % train), **Include out-of-sample period** (on) and **OOS size** (10 %) under Advanced options. There is **no walk-forward or rolling re-optimization**: one contiguous window, partitioned once |
-| **Strategy** | Per parameter, **Fixed** or **Optimized**, with min/max or a choices subset. Changing the strategy **wipes** the parameter configuration and every attached risk manager, so pick it before tuning anything |
-| **Fitness** | The objective, plus a fitness asset group for a custom objective. Fitness parameters are constants, never search dimensions |
-| **Optimization** | **Number of trials** (default **1000**), **Sampler** (default **TPE**), **Optimization objective** (Maximize / Minimize, defaulting to the metric's natural direction and frozen at launch), **Benchmark** (default **Auto — one per asset group**), autostop (**on**, failure threshold **30 %**), the eligibility rules, and the risk-manager stack |
+| **Asset Group** | Start date and end date, limited to what your universe actually has history for. Under Advanced options: how much of that window is used for training versus validation (70% training by default), and whether a slice is held back entirely as out-of-sample data (on by default, 10%). There's no walk-forward or rolling re-optimization here — one continuous window, split once |
+| **Strategy** | For each parameter, mark it **Fixed** or let the optimizer search it, with a range or a set of choices. Changing which strategy you're using clears any parameter settings and any attached risk managers, so pick your strategy before you start tuning |
+| **Fitness** | Your objective, plus (for a custom objective) the universe it's scored against. Fitness settings are always fixed constants — the optimizer never searches them |
+| **Optimization** | Number of trials (1000 by default), search method (TPE by default), whether you're maximizing or minimizing (defaults to the metric's natural direction, locked once you launch), which benchmark to compare against (automatic — one per asset group — by default), whether to auto-stop on a high failure rate (on by default, 30% threshold), which instruments are eligible, and your risk-manager stack |
 
-Two derived facts the block shows you rather than making you compute:
+Two things the screen works out for you rather than leaving you to calculate:
 
-- **Search space: {{size}} combinations** when every non-fixed parameter is finite. When the budget exceeds the grid, the study stops early once every combination has run.
-- The **Cost** block in the confirm dialog, priced from the real trial budget, plus any memory surcharge, against your balance. *Charged when the study launches. Whatever it doesn't use is refunded automatically when it finishes.*
+- **Search space size**, shown whenever every parameter you're searching has a finite range. If your trial budget is larger than the whole search space, the study simply stops early once it has tried every combination.
+- **Cost**, priced from your trial budget plus a surcharge for larger universes, shown against your current balance before you confirm. You're only charged when the study launches, and whatever it doesn't use is refunded automatically when it finishes.
 
-> [!NOTE] Creating a study does not start it
-> **Save Draft** lands the study in `SAVED` and costs nothing. **Save & Launch** queues it and charges it. A draft can also be launched later from the registry row action **Launch**. Only `SAVED` studies can be edited or launched — after that both row actions are disabled, **Edit** with *Study has already been launched and is immutable.* and **Launch** with *Study has already been launched.*
+> [!NOTE] Saving a study doesn't start it
+> **Save Draft** saves the study with nothing charged and nothing running — you can launch it later. **Save & Launch** queues it immediately and starts the charge. A draft can also be launched later from its row in the registry. Once a study has launched, its setup is locked — you can no longer edit it, only duplicate it into a fresh draft.
 
-Once queued, the run moves `QUEUED → RUNNING → COMPLETED`, with **Progress** and **Health** on the registry row refetching every 5 seconds while anything is active. There is no pause. Stop lives on the results page, not on the registry.
+Once launched, a study moves from queued, to running, to completed, and its registry row keeps its progress and health up to date every few seconds while it's active. There's no pause button on a running study — stopping happens from the results screen, not from the registry.
 
-Full reference: [Studies](/docs/studies) for every field, [study lifecycle](/docs/study-lifecycle) for the stages and failure reasons, [sampler selection](/docs/sampler-selection) for which sampler to pick.
+Full reference: [Studies](/docs/studies) for every setting, [study lifecycle](/docs/study-lifecycle) for what each stage means and why a study might fail, [sampler selection](/docs/sampler-selection) for which search method to pick.
 
 ## 6. Read the output — candidate portfolios
 
-**`Analysis → Portfolios`** (`/analysis/portfolios`; the study's row action **View** opens `/analysis/portfolios?studyId=<id>`)
+**Analysis → Portfolios** (or click **View** on a study's row to jump straight to its results)
 
-Every trial that completed is a candidate portfolio — a full backtest for one parameter set, with its equity curve, trades, holdings and metrics across every stage. This surface is where you rank them, overlay them, and decide whether the winner is skill or the luckiest of N backtests. Everything is URL-driven, so any view you reach is a link you can share.
+Every trial your study completes becomes a candidate portfolio — a full backtest for one specific combination of parameters, complete with its own equity curve, trades, holdings and metrics. This is where you rank candidates against each other, compare them side by side, and judge whether your best result reflects a real edge or just the luckiest run out of many. Every view you build here has its own shareable link.
 
-| Surface | Route | What it answers |
-|---|---|---|
-| **Portfolios Dashboard** | `/analysis/portfolios` | Which candidates rank best on a chosen metric over a chosen stage, and how they compare side by side |
-| **Optimization Dashboard** | `/analysis/portfolios/study/:studyId` | Per-study analysis in four sub-views — **Overview**, **Robustness**, **Families**, **Parameters** |
-| **Portfolio Analysis** | `/analysis/portfolios/:portfolioId…` | One candidate in detail — Performance, Holdings, Transactions, Risk Analytics, Robustness, Profile |
+| Screen | What it's for |
+|---|---|
+| **Portfolios Dashboard** | Ranking every candidate on a metric you choose, over a stage you choose, and comparing them side by side |
+| **Optimization Dashboard** | Digging into one study's results in depth — an overview, a robustness check, family groupings and parameter importance |
+| **Portfolio Analysis** | Digging into one candidate in detail — performance, holdings, transactions, risk analytics, robustness and profile |
 
-The decisions here are analytical, not configuration:
+The decisions here are all about how you read the results, not about configuring anything new:
 
-- **Rank by which metric, on which stage.** The filter bar's **Metric**, **Study**, **Top N** and **Rank by** controls set what every card, chart and table on the screen means. Ranking on train alone tells you nothing you did not already optimize for.
-- **Is this a family or a fluke?** The Optimization Dashboard's **Robustness** view carries the PBO estimate and a verdict — **Well trained** / **Borderline** / **Overfit risk** / **Uncertain** — and **Families** shows whether your top performers collapse into one behavioural cluster.
-- **Which parameters actually mattered.** **Parameter importance** and the parameter-vs-metric plots tell you where to narrow the ranges on the next pass.
+- **Rank by which metric, on which stage.** The filter bar's **Metric**, **Study**, **Top N** and **Rank by** controls decide what every chart and table on the screen means. Ranking purely on the training stage only confirms what you already optimized for — it tells you nothing new.
+- **Is this a real edge or a fluke?** The Optimization Dashboard's **Robustness** view gives you an overfitting estimate and a plain verdict — **well trained**, **borderline**, **overfit risk** or **uncertain** — and its **Families** view shows whether your top results are genuinely different strategies or just variations on the same behavior.
+- **Which parameters actually mattered.** **Parameter importance** and the parameter-versus-metric charts show which settings moved the needle, so you know where to narrow your search on the next pass.
 
-> [!NOTE] A completed study can legitimately sit below 100 % progress
-> Progress counts trials in a terminal state against `n_trials`. An exhausted finite grid completes early. Completion is signalled by **status**, never by progress reaching 1.0.
+> [!NOTE] A finished study doesn't always show 100% progress
+> Progress reflects how many trials have finished out of your budget. If your search space is smaller than your trial budget, the study can complete early — once every combination has been tried, there's nothing left to run. Check the status, not the progress bar, to know a study is actually done.
 
 Full reference: [Portfolios dashboard](/docs/portfolios-dashboard), [optimization dashboard](/docs/optimization-dashboard), [portfolio detail](/docs/portfolio-detail), [analyzing results](/docs/analyzing-results), [metrics reference](/docs/metrics-reference).
 
 ## 7. Keep a winner — promote
 
-**`Analysis → Portfolios`** → the card's **Promote** control, or the bulk bar's **Promote Selected**
+**Analysis → Portfolios** → the card's **Promote** control, or **Promote Selected** for several at once
 
-Promotion turns a trial — a study artifact that dies with its study — into a **promoted portfolio**: a durable, study-independent copy with its own id. It takes a full isolation snapshot (the strategy code and parameters, the concrete trial parameters, the runnable universe, the fitness and risk-manager configuration, the date windows, the seed) and copies the trial's holdings, equity and orders into a parallel data plane.
+A trial only exists as long as its study does — delete the study and its trials go with it. Promoting a trial turns it into a **promoted portfolio**: a permanent, independent copy with its own identity that survives even if you later change or delete the study that produced it. Promoting captures a full snapshot — the strategy and its exact parameters, the universe it traded, the fitness and risk-manager setup, the date range, and everything it earned or held during the backtest.
 
-| Entry point | Control |
+| Where to promote | How |
 |---|---|
-| Card on the dashboard | The per-card **Promote** button, which flips to **Promoted** once done; the same action in the card's menu carries the secondary text *"Add this trial to the Portfolio Groups as a managed portfolio"* |
-| Bulk bar (appears once two or more cards are checked, after a deliberate selection) | **Promote Selected ({{count}})** — *"Promote every checked trial into the Portfolio Groups in one go"* |
-| Portfolio Analysis header | The per-portfolio promote control |
-| Portfolio group creation | **Implicit** — putting a raw trial into a group promotes it first, silently |
+| A card on the dashboard | Click **Promote** — it becomes **Promoted** once done |
+| A batch of results | Select two or more, then click **Promote Selected** to promote them all in one action |
+| An individual candidate's detail page | Use the promote control in the header |
+| Building a portfolio group | Adding a raw trial straight into a portfolio group promotes it automatically along the way |
 
-| Decision | What turns on it |
+| Decision | What it affects |
 |---|---|
-| How many to keep | Promotion consumes the `managed_portfolios` quota, charged for the whole batch up front. At most **50** trials per request |
-| Whether the trial is even promotable | The source strategy must be `INTERNAL`. A Mode-1 meta-strategy trial carrying a `sector_cap` or `country_cap` risk manager is also refused |
-| Naming | There is none to make. The server mints `<study display name> / trial <n>`, and **there is no rename anywhere** |
+| How many to promote at once | Promoting counts against your promoted-portfolio limit, charged for the whole batch at once, up to **50** trials in a single action |
+| Whether a trial can be promoted at all | Only trials built on **Internal** strategies can be promoted — trials on External strategies, and certain meta-strategy configurations, can't be |
+| Naming | Fintela names it for you from the study and trial number — there's currently no way to rename a promoted portfolio afterward |
 
-> [!WARNING] Promotion freezes, it does not re-simulate
-> The time series are copied as they stand — no backtest is re-run and nothing is re-optimized. From that moment, editing the strategy, the risk managers or the asset group never changes the promoted copy, and deleting the source study leaves it intact. Promotion is idempotent: a second promote of the same trial returns the existing id.
+> [!WARNING] Promoting locks in a snapshot — it doesn't re-run anything
+> A promoted portfolio's history is copied exactly as it stood at the moment you promoted it — nothing is re-simulated or re-optimized. From then on, changing the original strategy, risk managers or asset group never touches the promoted copy, and deleting the source study leaves it untouched. Promoting the same trial twice just returns the same portfolio — it won't create a duplicate.
 
 Full reference: [Promoted portfolios](/docs/promoted-portfolios).
 
 ## 8. Assemble a book — Portfolio Group
 
-**`Registry → Portfolio Groups → Create Portfolio Group`** (`/analysis/portfolio-groups/groups/create`)
+**Registry → Portfolio Groups → Create Portfolio Group**
 
-A portfolio group is a named container holding a set of promoted portfolios plus **one shared trading configuration**. It answers three questions about a book of strategies: how is it weighted, how often is it re-weighted, and how do its orders reach a broker. It is also the only object you can deploy — you never trade a single promoted portfolio directly.
+A portfolio group is a named collection of promoted portfolios that share one trading setup. It answers three questions for the whole book: how is capital weighted across members, how often does it re-weight, and how do its orders reach a broker. It's also the only thing you actually deploy to trade — you never send a single promoted portfolio to a broker on its own.
 
-Like the other creation surfaces this is **one screen with a right-hand rail**: a promoted-portfolios picker in the centre, **Advanced options** (collapsed) and **Selection preview** (expanded) beside it, and a naming dialog at the end.
+Like the other setup screens, you pick members on one side, adjust advanced settings and preview the result beside it, then name and save.
 
-| Decision | What turns on it |
+| Decision | What it affects |
 |---|---|
-| **Members** | Chosen from exactly the [Promoted Portfolios](/docs/promoted-portfolios) registry — same columns, same filters. At least one is required, or Save is blocked with **Select at least one promoted portfolio to continue.** |
-| **Allocation method** | Seven, in two groups. **Free**: Equal weight, Manual. **Premium (tokens)**: Metric-proportional, Metric-responsive, Risk parity, Volatility target, Mean reversion. A premium method opens a one-time unlock dialog and blocks Save until confirmed; the charge commits in the same transaction as the group |
-| **Periodic rebalance** | Off by default. Turning it on seeds **Rebalance every (data-days)** at `30`. Off means *Static: the group allocates once and holds until you change it.* The cadence is data-days on the valuation calendar, not calendar days |
-| **Daily update** | Not a decision — a static chip reading **Daily update ON**, hardcoded. *"When on, each portfolio in the group extends daily. Required before the group can be deployed."* |
+| **Members** | Chosen from your [Promoted Portfolios](/docs/promoted-portfolios). You need at least one before you can save |
+| **Allocation method** | Equal weight and manual weighting are included free. Metric-proportional, metric-responsive, risk parity, volatility target and mean reversion are premium methods, billed with tokens the first time you use one |
+| **Periodic rebalancing** | Off by default, meaning the group allocates once and holds until you change it. Turn it on to have the group re-weight automatically on a set schedule — every 30 trading days to start, adjustable from there |
+| **Daily update** | Always on for a portfolio group — each member's performance is extended day by day automatically. This is required before a group can be deployed to trade |
 
-There is a second route to the same object: on the Portfolios dashboard, a selection plus the bulk action **Create portfolio group** — tooltip *Build a Portfolio Group from the selected portfolios* — auto-promotes whatever it needs and lands you on the new group.
+There's a second way to reach this same screen: from the Portfolios dashboard, select several candidates and use the bulk action **Create portfolio group** — it promotes whatever isn't promoted yet and takes you straight to the new group.
 
-> [!NOTE] Portfolio Groups and Portfolio Manager are different screens
-> `/analysis/portfolio-groups` (Registry section) is the administrative half — membership, allocation, cadence, execution policy. `/analysis/portfolio-manager` (Analysis section) is the monitoring half — equity, metrics, holdings, trades, robustness, and the group's Operations tab.
+> [!NOTE] Portfolio Groups and Portfolio Manager are two different screens
+> **Portfolio Groups** (in the Registry section) is where you manage membership, allocation, rebalancing cadence and trading setup. **Portfolio Manager** (in the Analysis section) is where you monitor the group — its equity curve, metrics, holdings, trades, robustness and its live trading activity.
 
 Full reference: [Portfolio groups](/docs/portfolio-groups), [portfolio manager](/docs/portfolio-manager).
 
 ## 9. Send it to a broker — Operation
 
-**`Registry → Portfolio Groups →` row action `Deploy Portfolio Group`**, or **`Analysis → Portfolio Manager → open a group → Operations → Trade with your brokerage`** (`/analysis/portfolio-manager/:basketId/operations`)
+**Registry → Portfolio Groups →** row action **Deploy Portfolio Group**, or **Analysis → Portfolio Manager → open a group → Operations → Trade with your brokerage**
 
-An operation is one deployment of one group against one broker connection. The group holds the shared trading rules; the operation holds the capital, the status and its own rebalance clock. `UNIQUE (basket_id, connection_id)` means a group can hold at most one operation per connection — and can therefore run paper and live at the same time, on two different connections.
+An operation is one deployment of one portfolio group against one connected broker account. The portfolio group defines the trading rules; the operation holds the capital you're committing, its current status and its own rebalancing schedule. A group can have at most one operation per broker connection — which means the same group can run in paper trading and live trading at the same time, as long as they're on two separate connections.
 
-| Decision | What turns on it |
+| Decision | What it affects |
 |---|---|
-| **Brokerage account** | A select over your **active** connections only, each with an environment chip — orange for `live`, blue for paper |
-| Paper or live | **There is no per-group live/paper switch.** The environment is a property of the connection you pick, set when the connection is created. Creating a `live` connection is refused platform-wide unless `ALLOW_LIVE_BROKER_TRADING` is on, which is **off by default**; paper is always allowed |
-| **Capital to trade ($)** | `min=1`, must be greater than 0. *"The total amount available to this trading session."* Above the connection's per-tick notional cap the launch is refused rather than silently truncated |
-| Execution override | Optional, per operation: **Order type**, **Time in force**, **Limit offset (bps)**. Off by default, in which case the group's own execution policy applies |
+| **Brokerage account** | Choose from your active broker connections — each one is labeled paper or live |
+| Paper or live | There's no separate paper/live switch when you deploy — it's determined entirely by which connection you pick. Paper trading is always available; live trading is enabled per account through your broker connection settings |
+| **Capital to trade** | The dollar amount you're committing to this operation. If it's above what your connection allows per trade, the deployment is refused rather than silently adjusted |
+| Execution override | Optional — set a specific order type, time-in-force, or limit offset for this operation only. Leave it off to use the portfolio group's own trading setup |
 
-Creating an operation and launching it are two separate calls, and creation alone does not trade — but the two entry points differ in how far they take you. **Deploy Portfolio Group** on the registry row does both in one go, creating the operation and then launching it. **Trade with your brokerage** on the Operations tab stops at `DRAFT`, and you launch it afterwards from the operation's own row. The lifecycle is:
+Creating an operation and launching it are two separate steps, and creating one doesn't place any trades. **Deploy Portfolio Group** does both at once — it creates the operation and launches it immediately. **Trade with your brokerage** creates it as a draft first, so you can review it before launching from its own row.
 
 ```text
-  DRAFT ──launch──► ACTIVE ⇄ PAUSED
+  Draft ──launch──► Active ⇄ Paused
                       │        │
-                      └────────┴──stop──► STOPPED ──re-initiate──► DRAFT
+                      └────────┴──stop──► Stopped ──restart──► Draft
 ```
 
 | Status | Meaning |
 |---|---|
-| `DRAFT` | Created, never launched. No capital at work |
-| `ACTIVE` | Trading |
-| `PAUSED` | Positions held, rebalancing stopped |
-| `STOPPED` | Liquidated and finished; history is kept |
+| **Draft** | Created, not yet launched — no capital committed yet |
+| **Active** | Trading |
+| **Paused** | Positions are held, but rebalancing has stopped |
+| **Stopped** | Positions liquidated and closed out; history is kept |
 
-The server runs a real preflight at both create and launch, and every refusal names its own fix. The ones that catch people out are all upstream decisions coming home: an empty group, members that are not up to date, members that are not on daily updates, `EXTERNAL` members that cannot daily-extend, meta-portfolios whose holdings have not been flattened, and short crypto or unmargined shorts the broker will not take.
+Before creating or launching an operation, Fintela checks your setup and tells you exactly what to fix if something's wrong. The most common reasons a launch is blocked all trace back to earlier decisions: an empty portfolio group, members that aren't up to date, members that aren't on daily updates, members built on External strategies (which can't extend daily), portfolio-of-portfolios members that haven't been flattened, and short positions your broker won't allow.
 
-> [!CAUTION] Live means real capital — but the exit is never locked
-> Only the direction that *adds* exposure is entitlement-gated — creating an operation, launching one and resuming to `ACTIVE` require the `broker_paper_trading` feature, which also gates creating a broker connection of either environment. Pausing, stopping and returning to `DRAFT` stay open on every tier: the exit is never locked. Start on a paper connection.
+> [!CAUTION] Live trading uses real capital — but you can always exit
+> Only the actions that add exposure — creating an operation, launching it, or resuming it — require live/paper trading access on your plan. Pausing, stopping and returning to draft always stay available, on every plan, so you're never locked into a position you can't exit. Start on a paper connection until you trust the behavior.
 
-Full reference: [Live trading](/docs/live-trading), and [portfolio groups](/docs/portfolio-groups) for the operation tabs, orders, allocations and end-of-day reconciliation.
+Full reference: [Live trading](/docs/live-trading), and [portfolio groups](/docs/portfolio-groups) for operation details, orders, allocations and daily reconciliation.
 
 ## Iterating — the loop back to stage 5
 
-The first study almost never produces the configuration you keep. The intended loop is short:
+Your first study almost never gives you the configuration you end up keeping. The usual loop is short:
 
-1. Read **Parameter importance** and the parameter-vs-metric plots on the Optimization Dashboard.
-2. On the study's registry row, choose **Duplicate**. The builder opens pre-seeded from that study, in create mode, with a fresh name and no API call yet.
-3. Narrow the ranges, or pin the parameters that turned out not to matter to a **Fixed** value — a smaller finite grid finishes sooner and explores more of what is left.
-4. **Save & Launch**, and compare the two studies on the dashboard.
+1. Look at **Parameter importance** and the parameter-versus-metric charts on the Optimization Dashboard.
+2. From the study's row in the registry, choose **Duplicate**. This opens the study builder pre-filled with the same setup, under a new name, ready to edit — nothing is created yet.
+3. Narrow your ranges, or fix any parameter that turned out not to matter to a single value. A smaller, more focused search finishes faster and explores more of what's actually left to explore.
+4. **Save & Launch**, then compare the two studies side by side on the dashboard.
 
-A study that is `COMPLETED` or `STOPPED` can also be resumed with a larger `n_trials`, but that path is API-only — **there is no resume button anywhere in this build**, and `FAILED` studies are never resumable.
+A completed or stopped study can also be resumed with a larger trial budget through the [Developer API](/docs/api-studies), though there's currently no resume button in the app itself — and a failed study can never be resumed.
 
-A second loop starts at stage 6 rather than stage 2: **Derive / Optimize RMs** on a candidate creates one risk-manager-optimization study per selected portfolio, tuning guard rails against a signal you have already validated. Those studies go **straight to `QUEUED`** — they never sit as drafts.
+There's a second loop that starts from stage 6 instead of stage 2: **Derive / Optimize risk managers** on a candidate creates a new study — one per selected portfolio — that tunes guard rails around a signal you've already validated. These studies launch right away; they don't sit as drafts first.
 
 ## Gates that stop the path
 
-Each of these is documented in full on the page that owns it. They are collected here because each one is decided at an early stage and only bites at a later one.
+Each of these is documented in full on the page that owns it. They're collected here because each one is decided at an early stage and only bites at a later one.
 
-| Gate | Decided at | Bites at |
+| Gate | Decided at | Shows up at |
 |---|---|---|
-| An **External** strategy cannot be promoted | Stage 2, and frozen there | Stage 7 — HTTP 400, and the path ends |
-| A launched study is immutable | Stage 5 | Any later edit — duplicate it instead |
-| Risk-manager attachments can only change while `SAVED` | Stage 4 / 5 | Any post-launch change to the stack |
-| A group must have **Daily update ON** and fresh members | Stage 8 | Stage 9 launch preflight |
-| Creation quotas | Every registry | Only on create — never on read, edit, delete or stop |
-| Token balance | Stage 5 (launch) and premium allocation methods (stage 8) | **Save Draft** is never gated by cost; **Save & Launch** is |
+| An External strategy can never be promoted | Stage 2, and locked in from then on | Stage 7 — the promote action is blocked, and the path ends there |
+| A launched study can't be edited | Stage 5 | Any later change — duplicate it instead |
+| Attached risk managers can only be changed while a study is still a draft | Stage 4 / 5 | Any change you want to make after launch |
+| A portfolio group needs daily update on and up-to-date members | Stage 8 | The launch check at stage 9 |
+| Creation limits | Every registry | Only when creating something new — never when viewing, editing, deleting or stopping |
+| Token balance | Launching a study (stage 5) and premium allocation methods (stage 8) | Saving a draft is always free; launching or upgrading is what's charged |
 
 ## Shortcuts through the path
 
-The nine stages are the full route. Four surfaces let you skip parts of it.
+The nine stages are the full route. Four screens let you skip parts of it.
 
 | Shortcut | What it replaces |
 |---|---|
-| **Platform sets** in the study builder's asset-group picker | Stage 1 entirely — pick a curated collection, an index, a sector, a sector ETF set, a country or an industry, and a derived group is materialized for you |
-| A **built-in** fitness function | Stage 3 — no authoring, no parameters, no fitness asset group |
-| The [Laboratory](/docs/laboratory) | Stages 2–4 — a notebook, a live Python kernel and the registry editors on one page, promoting working code straight into a registry resource |
-| [Fintelligent](/docs/fintelligent) | Stages 1–5 as *drafts* — its default path opens, fills and hands back the create forms for asset groups, strategies, studies, fitness functions and risk managers, and always ends with you clicking Confirm. It also holds a secondary, direct API path (`create_study`, `launch_study`, `stop_study`, `resume_study`, `duplicate_study`) that persists with no dialog, so a launch it makes for you spends tokens. There is no `delete_study` tool. See [Fintelligent capabilities](/docs/fintelligent-capabilities) |
+| Ready-made universes in the study builder | Stage 1 entirely — pick a curated collection, an index, a sector, a sector ETF set, a country or an industry, and Fintela builds the universe for you |
+| A built-in fitness function | Stage 3 — no writing, no settings, no extra universe to configure |
+| The [Laboratory](/docs/laboratory) | Stages 2 through 4 — a notebook where you can experiment with live Python and promote working code straight into the registry once you're happy with it |
+| [Fintelligent](/docs/fintelligent) | Stages 1 through 5, as drafts it prepares for you — it fills in the setup screens for asset groups, strategies, studies, fitness functions and risk managers, and always waits for you to confirm before anything is created. It can also act more directly on request — creating, launching, stopping, resuming or duplicating a study for you — so a launch it makes on your behalf does spend tokens; it currently can't delete a study for you. See [Fintelligent capabilities](/docs/fintelligent-capabilities) |
 
 ## Where to go next
 
 | Page | What it covers |
 |---|---|
-| [Quickstart](/docs/quickstart) | The same path, compressed to one worked example |
-| [Core concepts](/docs/core-concepts) | The vocabulary each stage assumes |
-| [Registries](/docs/registries) | The conventions all seven registry pages share, so the individual pages do not repeat them |
-| [Analyzing results](/docs/analyzing-results) | Stage 6 as a workflow rather than a screen reference |
+| [Quickstart](/docs/quickstart) | The same path, compressed into one worked example |
+| [Core concepts](/docs/core-concepts) | The vocabulary each stage assumes you already know |
+| [Registries](/docs/registries) | The conventions shared by every registry, so the individual pages don't have to repeat them |
+| [Analyzing results](/docs/analyzing-results) | Stage 6 as a workflow, not just a screen reference |
 | [Live trading](/docs/live-trading) | Stage 9 in full, including monitoring, drift and stopping |
 | [Study lifecycle](/docs/study-lifecycle) | What a study is doing between launch and completion |
-| [Execution modes](/docs/execution-modes) | Internal vs External, and exactly where External does not apply |
-| [Optimizer architecture](/docs/optimizer-architecture) | How a launched study becomes tasks, workers and trials |
-| [Visualizations](/docs/visualizations) | Every chart the analysis stages render |
+| [Execution modes](/docs/execution-modes) | Internal versus External, and exactly where External doesn't apply |
+| [Optimizer architecture](/docs/optimizer-architecture) | How a launched study turns into finished results |
+| [Visualizations](/docs/visualizations) | Every chart the analysis screens show you |

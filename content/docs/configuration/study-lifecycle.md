@@ -4,493 +4,403 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 3
 published: true
-updated: 2026-08-20
-summary: Every state a study and a trial can be in, and what moves them between states.
-keywords: lifecycle, state machine, queued, running, completed, failed, paused, stopped, pruned, resume, heartbeat, soft delete
+updated: 2026-09-01
+summary: Every status a study and its trials can be in, what causes it to change, and what you can do at each stage.
+keywords: lifecycle, study status, trial status, queued, running, completed, failed, stopped, pruned, resume, autostop, delete study, stalled run
 ---
 
-A study has exactly one execution status at any moment, and each of its trials has its own,
-separate state. The study status lives in `developers.study_runtime_status.last_status` — the
-`developers.studies` row itself has no status column at all — and takes exactly six values. Trial
-state is the Postgres enum `developers.trialstate` and takes exactly five. This page is the
-complete map: every value, every transition, what writes it, and how stalls, stops, resumes and
-deletes behave.
+Every study you run in Fintela is always in exactly one status, and every trial inside that study
+has its own status too. This page walks through what each status means, what moves a study — or a
+trial — from one status to the next, and what you can do (stop, resume, delete) at each stage.
 
 ## Study statuses
 
-Six values, defined in `frontend/src/domains/studies/types.ts` and written by the backend, the
-optimization-dispatcher and the status-updater.
+Every study you launch sits in exactly one of six statuses at a time. You'll see it as a badge in
+the Studies registry and at the top of a study's results page:
 
-| `last_status` | Meaning | Registry badge | Study results badge |
-|---|---|---|---|
-| `SAVED` | Created and never launched. Editable. | `Draft` | `Draft` |
-| `QUEUED` | Launch accepted and paid for; waiting on the dispatcher. | `Queued` | `Queued` |
-| `RUNNING` | At least one optimizer task is live in ECS. | `Running` | `Running` |
-| `COMPLETED` | Every task of the current run finished, and the `optimize` stage succeeded. | `Completed` | `Completed` |
-| `FAILED` | A core stage failed, or a task failed with no evidence that `optimize` succeeded. | `Failed` | `Failed` |
-| `STOPPED` | Every task finished after a user-requested stop. | `Stopped` | `Stopped` |
-
-The registry badge (`StudyStatusIconBadge`) matches case-insensitively and also accepts three
-legacy aliases when it meets them on the wire: `PENDING` renders as `Queued`, and `COMPLETE` /
-`FINISHED` render as `Completed`. An unrecognised value renders verbatim; a `null` status renders
-as an em dash.
-
-> [!WARNING] A study is never `PAUSED`
-> `PAUSED` is not one of the six values, is not in any study enum, column or endpoint, and no
-> button writes it. (A *basket operation* in Portfolio Manager does have a `PAUSED` status — a
-> different domain entirely.) The in-app help drawer's lifecycle block still lists `PAUSED` as a
-> study state; that copy is stale.
-
-### Desired status
-
-`study_runtime_status.desired_status` is the target the reconcilers steer toward. It takes three
-values.
-
-| `desired_status` | Set when |
+| Status | What it means |
 |---|---|
-| `SAVED` | On create and on duplicate, alongside `last_status = 'SAVED'`. |
-| `RUNNING` | On launch and on resume. |
-| `STOPPED` | On `POST /studies/stop`, on autostop, and by the status-updater once every task of the run is terminal. |
+| Draft | Created but not launched. You can still edit every setting. |
+| Queued | Launched (and paid for); waiting for compute to become available. |
+| Running | At least part of your optimization is actively executing. |
+| Completed | Every trial in the run finished, and the core optimization step succeeded. |
+| Failed | A required step failed, or every trial failed with nothing to indicate the optimization succeeded. |
+| Stopped | You requested a stop, and every trial has wound down. |
 
-Stops and autostops work through this field: the study-level intent is written first, and the
-status-updater sends the ECS stop signal on its next tick.
+If you're reading study data through the developer API, you might occasionally come across the
+older labels **Pending** or **Finished** — they mean exactly the same thing as Queued and
+Completed.
 
-### Display status and the UI verdict
+> [!WARNING] There is no "Paused" status
+> A study can't be paused — it only ever sits in one of the six statuses above. (A *basket* in
+> Portfolio Manager can show a Paused status, but that's a completely different feature.) If you
+> spot "Paused" mentioned in in-app help text somewhere, treat it as outdated — it isn't a status
+> you'll actually run into for a study.
 
-`GET /studies/lifecycle` adds `display_status`, which is `execution_status` except for one
-display-only value: it is `STOPPING` while `stop_requested_at` is set and `execution_status` is
-still `RUNNING` or `QUEUED`. `STOPPING` is never persisted.
+### Why status doesn't update the instant you click something
 
-The SPA renders a derived verdict (`studyVerdict`), never `execution_status` directly, because a
-completed study whose post-run analysis failed must not paint red next to a 100% health badge.
-`stopping` is tested first and wins over everything below it.
+When you launch, stop, or resume a study, Fintela records what you asked for right away — but the
+badge you see reflects what's actually happening, and that can take a few moments to catch up. For
+example, clicking Stop tells the platform to wind the run down; the badge won't flip to Stopped
+until every trial that was in flight has actually finished.
 
-| Verdict | Condition | Label shown |
-|---|---|---|
-| `stopping` | `display_status = STOPPING` | `Stopping` |
-| `draft` | `execution_status = SAVED` | `Draft` |
-| `queued` | `execution_status = QUEUED` | `Queued` |
-| `running` | `execution_status = RUNNING` | `Running` |
-| `completed` | `COMPLETED`, no secondary stage failed or pending | `Completed` |
-| `completed_with_warnings` | `COMPLETED`, at least one secondary stage `FAILED` | `Completed` |
-| `completed_pending` | `COMPLETED`, at least one secondary stage still unproduced | `Completed` |
-| `failed` | `execution_status = FAILED` | `Failed` |
-| `stopped` | `execution_status = STOPPED` | `Stopped` |
+### Status badges and what they really mean
 
-`results_usable` on the lifecycle payload is independent of any warning: it is true when the
-`optimize` stage succeeded, so a `completed_with_warnings` study still has trustworthy portfolios.
-For a legacy run that has no stage rows at all, it falls back to "terminal, with at least one
-completed trial".
+While a stop is in progress, you'll briefly see a **Stopping** badge instead of Running or Queued —
+it disappears once the study has actually settled on Stopped.
 
-## Study state machine
+A Completed badge always means your results are ready to use, but there's a bit more nuance to it.
+After the core optimization finishes, Fintela runs a few additional analysis steps — robustness
+checks, strategy families, parameter importance — that add extra insight but aren't required for
+you to trust your results. If one of these extra steps doesn't finish, or fails outright, your
+study still shows Completed; you might just notice it labeled **Completed with warnings**, letting
+you know one of the extras is missing or didn't work out. Either way, your portfolios and trial
+results are safe to use. Occasionally you'll see this right after a study finishes simply because
+one of the extra steps is still being produced in the background — give it a few minutes and check
+back.
+
+## How a study's status changes over time
+
+Here's the full picture of how a study moves between statuses:
 
 ```text
-                    POST /studies                    POST /studies
-                    (launch_now: false)              (launch_now: true)
-                          │                                │
-                          ▼                                │
-                       SAVED ───── POST /studies/:id/launch ┤
-                          │         (CAS on last_status)    │
-                          │                                 ▼
-   POST /studies/risk-manager-optimization ───────────►  QUEUED
-                                                           │    ▲
-                                    dispatcher launches    │    │ OOM retry:
-                                    the first ECS task     │    │ next memory tier,
-                                                           ▼    │ ≤ 3×, automatic
-                                                        RUNNING ┘
-                                                           │
-              ┌────────────────────────────┬───────────────┴───────────────┐
-              │                            │                               │
-   all tasks terminal,          all tasks terminal,             all tasks terminal,
-   optimize SUCCEEDED           a core stage FAILED             stop_requested_at set
-              │                            │                               │
-              ▼                            ▼                               ▼
-          COMPLETED                     FAILED                          STOPPED
-              │                                                            │
-              │              POST /studies/resume                          │
-              └──────────────────────────┬─────────────────────────────────┘
-                                         ▼
-                                      QUEUED
+   Draft ──(Launch)──► Queued ──(compute becomes available)──► Running
+                                                                    │
+                            ┌───────────────────┬──────────────────┴──────────────────┐
+                            │                   │                                     │
+                     every trial done      a required step               you requested
+                     successfully           fails                        a stop
+                            │                   │                                     │
+                            ▼                   ▼                                     ▼
+                       Completed              Failed                              Stopped
+                            │                                                        │
+                            └───────────────────────(Resume)────────────────────────-┘
+                                                      │
+                                                      ▼
+                                                   Queued (a new run)
 
-   DELETE /studies  ──►  deleted_at set (from ANY state) ──► purged
+   Delete removes a study permanently from any of the statuses above.
 ```
 
-`FAILED` is terminal: it is not resumable by hand, and nothing re-queues a study out of it. The
-out-of-memory retry described below is **not** a `FAILED → QUEUED` edge — it runs earlier in the
-same status-updater tick and re-queues the study *before* the aggregation that would have written
-`FAILED`, so no failure event or notification is ever emitted for it.
+Once a study reaches Failed, that's final — nothing resumes or retries it for you automatically.
+The one exception: if a run only failed because it ran out of memory and a larger compute size is
+still available, Fintela retries it for you before it ever shows as Failed — see
+[Automatic retry after a memory error](#automatic-retry-after-a-memory-error) below.
 
-## Transition triggers
+## What moves a study between statuses
 
-| From | Event | To | Written by |
-|---|---|---|---|
-| — | `POST /studies` with `launch_now: false` | `SAVED` / desired `SAVED` | Backend, in the create transaction |
-| — | `POST /studies` with `launch_now: true` | `SAVED`, then immediately launched | Backend; create commits first, then calls the same `launch` path |
-| — | `POST /studies/:study_id/duplicate` | `SAVED` / desired `SAVED` | Backend; runtime status is not copied from the source |
-| — | `POST /studies/risk-manager-optimization` | `QUEUED` / desired `RUNNING` | Backend; these studies skip `SAVED` entirely |
-| `SAVED` | `POST /studies/:study_id/launch` | `QUEUED` / desired `RUNNING` | Backend, compare-and-set on `last_status = 'SAVED'` |
-| `QUEUED` | Dispatcher launches the run's first ECS task | `RUNNING`, `started_at` set | optimization-dispatcher |
-| `QUEUED` | Self-heal: a task row already carries an `ecs_task_arn` but the promotion write was lost | `RUNNING`, `started_at` set | status-updater (Phase 1.5) |
-| `QUEUED` | Every launch failed — task rows exist, all terminal, at least one carries a `failure_message` | `FAILED` | status-updater |
-| `RUNNING` | Every task of the run is terminal, `optimize` reached `SUCCEEDED` | `COMPLETED` | status-updater |
-| `RUNNING` | Every task terminal, a core stage is `FAILED` (or no stage evidence and a task failed) | `FAILED` | status-updater |
-| `RUNNING` | Every task terminal and `stop_requested_at` is set | `STOPPED` | status-updater |
-| `RUNNING` | Every task terminal after an out-of-memory kill, with a larger memory tier still available | `QUEUED`, `run_seq + 1` | status-updater (Phase 1.6, before the aggregation) |
-| `COMPLETED` \| `STOPPED` | `POST /studies/resume` | `QUEUED`, `run_seq + 1` | Backend |
-| any | `DELETE /studies` | `deleted_at` set; row leaves every read | Backend |
+| From | What causes it | To |
+|---|---|---|
+| — | You save a new study without launching it | Draft |
+| — | You launch a study immediately when creating it | Draft, then immediately Queued |
+| — | You duplicate a study | Draft (the copy always starts fresh, no matter the original's status) |
+| — | You launch directly into a risk-manager optimization | Queued (skips Draft entirely) |
+| Draft | You click Launch | Queued |
+| Queued | Compute becomes available and your run starts | Running |
+| Queued | Every attempt to start the run failed | Failed |
+| Running | Every trial finishes and the core optimization step succeeds | Completed |
+| Running | A required step fails, or every trial fails with nothing to show the optimization succeeded | Failed |
+| Running | You requested a stop and every trial has wound down | Stopped |
+| Running | The run ran out of memory and a larger compute size is still available | Queued (retried automatically) |
+| Completed or Stopped | You resume the study | Queued (a new run) |
+| Any status | You delete the study | Removed |
 
-The launch path clears `finished_at`, `stop_requested_at`, `stop_requested_by`, `failure_message`
-and `failure_diagnostic` in the same transaction as the status flip, opens the `queued` stage, and
-issues `NOTIFY optimization_dispatch` so the dispatcher wakes within milliseconds instead of
-waiting for its poll interval.
+Launching a study — whether it's a fresh launch or a resume — always clears out any leftover
+failure details from a previous attempt, so you'll never see a stale error message sitting on a run
+that hasn't actually failed.
 
-A stop beats a failure in the aggregation rule: because a stop is delivered as `SIGTERM`, the
-tasks it kills record failures, and reporting the user's own stop back as "failed" would blame
-them for their own action. The test is `stop_requested_at`, which only `POST /studies/stop` writes
-— not `desired_status`, which autostop also sets.
+If you stop a study yourself, it settles on **Stopped** rather than **Failed**, even though the
+trials that were interrupted technically end in an error — because a stop you asked for shouldn't
+be reported back to you as if something went wrong.
 
 ## Stages inside a run
 
-While a study is `RUNNING`, the finer-grained state lives in `developers.study_stages`, one row per
-`(study_id, run_seq, stage)`. `GET /studies/lifecycle` always returns the full ordered pipeline,
-synthesizing a status for any stage with no row: `PENDING` while the study is still live, and once
-it is terminal, `PENDING` for a missing *secondary* stage (still owed, and often produced out of
-band) but `SKIPPED` for a missing *core* stage (a legacy run that was never instrumented — nothing
-is coming).
+While a study is Running, its results page shows a more detailed pipeline so you can see exactly
+where things stand. Each stage carries its own status — pending, running, done, failed, or skipped
+— so you can tell at a glance which step a run stalled on or which one caused a failure.
 
-| Stage key | Label | Kind |
-|---|---|---|
-| `queued` | `Queued` | core |
-| `provisioning` | `Starting up` | core |
-| `data_loading` | `Data loading` | core |
-| `strategy` | `Strategy` | core |
-| `fitness` | `Fitness` | core |
-| `preflight` | `Pre-flight` | core |
-| `optimize` | `Optimization` | core |
-| `robustness` | `Robustness` | secondary |
-| `families` | `Families` | secondary |
-| `importances` | `Parameter importances` | secondary |
-
-Three further stage names exist in the vocabulary but are non-positional — they say where a failure
-came from rather than occupy wall clock: `validation` (`Before launch`), `runtime`
-(`While running`) and `unknown`.
-
-Each stage row carries a `status` of `PENDING`, `RUNNING`, `SUCCEEDED`, `FAILED` or `SKIPPED`, plus
-`attempts`, `failures`, a `diagnostic`, and an `origin` of `inline`, `out_of_band`, `recovered` or
-`backfill`. `out_of_band` and `backfill` rows have no honest duration — the work happened on
-another machine, or the boundary was inferred from an artifact timestamp — so the payload sends
-`duration_seconds: null` rather than a misleading number. `inline` and `recovered` rows keep theirs.
-
-> [!NOTE] A secondary-stage failure is not a failed study
-> `robustness`, `families` and `importances` run after the study's deliverable already exists. A
-> failure there yields `COMPLETED` with `degraded: true` and `results_usable: true` — never a red
-> "Failed" study. Roughly a quarter of studies get at least one secondary artifact out of band,
-> after the study already reads `COMPLETED`, which is why the lifecycle query keeps polling at 60 s
-> for up to 30 minutes past `finished_at`.
-
-## Heartbeats and stall detection
-
-`developers.study_task_status.last_heartbeat` is per ECS task. The lifecycle payload reports
-`MAX(last_heartbeat)` across the study's tasks **for the current `run_seq`**.
-
-| Field | Rule |
+| Stage | Kind |
 |---|---|
-| `last_heartbeat` | Written by the dispatcher when it launches a task, and by the status-updater every time the task's ECS status changes. |
-| `heartbeat_stale` | `true` when `execution_status = 'RUNNING'` and more than 300 s have passed since `last_heartbeat` — or since `started_at` when there is no heartbeat at all (`HEARTBEAT_STALE_SECS = 5 * 60`). With neither timestamp it stays `false`. |
+| Queued | Core |
+| Starting up | Core |
+| Data loading | Core |
+| Strategy | Core |
+| Fitness | Core |
+| Pre-flight | Core |
+| Optimization | Core |
+| Robustness | Extra |
+| Families | Extra |
+| Parameter importances | Extra |
 
-`heartbeat_stale` is computed by the backend and served on `GET /studies/lifecycle`. Nothing in the
-app reads the flag — the study Overview prints the raw **Last heartbeat** timestamp, but no surface
-renders a stalled badge. Treat it as an API signal, not a UI state.
+Core stages are the ones your study can't finish without — if one of them fails, the study fails.
+Extra stages run after your results already exist; they add further analysis, but a study is still
+Completed and fully usable even if one of them doesn't finish.
 
-Three separate mechanisms clean up after a dead run:
+You might also see a failure attributed to "Before launch" or "While running" rather than one of
+the named stages above — that just tells you roughly when in the process something went wrong, not
+a step your study passes through.
 
-- **Stuck at `QUEUED`.** If a dispatcher tick launched the tasks but the `RUNNING` promotion write
-  was lost, the status-updater's next sweep promotes the study itself, guarded on at least one task
-  row carrying an `ecs_task_arn`. A study whose launches all failed never gets an ARN, so it is
-  deliberately left for the aggregation to resolve to `FAILED` — which is also what makes its
-  tokens visible to the refund sweep.
-- **Task no longer known to ECS.** The status-updater marks the task `STOPPED`, nulls its
-  `ecs_task_arn`, and — if the task had started — records a `RUN_LOST` diagnostic, unless the task
-  already wrote a more specific one. A task that never started is closed without inventing a
-  failure.
-- **Orphaned trials.** Trials still in `RUNNING` on a study that finished more than 10 minutes ago
-  are stamped with the `TRIAL_ABANDONED` diagnostic — *This trial was still running when the study
-  stopped, so it never produced a result.* — and moved to `FAIL`. The 10-minute grace exists so a
-  task that is mid-shutdown gets to write its own, more specific reason first.
+> [!NOTE] An extra-stage hiccup doesn't fail your study
+> Robustness, Families, and Parameter importances run after your study's actual deliverable — its
+> trial results and portfolios — already exists. If one of them fails, your study still shows
+> Completed (labeled as degraded), and your results remain fully usable. It's common for one of
+> these extras to finish a little later, even after the study already reads Completed — Fintela
+> keeps checking for up to 30 minutes after your study finishes in case one is still on its way.
+
+## Detecting a stalled run
+
+Fintela keeps track of whether your study's run is still actively making progress. A study's
+Overview page shows a **Last heartbeat** timestamp — the last time the run confirmed it was still
+alive. If a study has been Running for more than 5 minutes with no update at all, it's flagged
+internally as stalled — you won't see a dedicated badge for this anywhere in the app, but it's what
+triggers the recovery steps below.
+
+Three things happen automatically if a run goes quiet:
+
+- **Stuck at Queued.** If your run actually started but the status update was missed, Fintela
+  catches this on its next check and corrects the study's status for you — no action needed on your
+  part.
+- **Part of a run disappears.** If a piece of your run is lost for some reason, Fintela marks that
+  piece as stopped and records why, when it can.
+- **Orphaned trials.** If a trial is still showing Running more than 10 minutes after its study has
+  already finished, Fintela marks it as failed with the note *This trial was still running when the
+  study stopped, so it never produced a result.* The 10-minute grace period gives a trial that's
+  genuinely wrapping up a chance to report its own, more specific reason first.
 
 ## Autostop
 
-Setting `autostop_min_health` on a study lets the platform end it early when too many trials are
-failing.
+Turning on a minimum health threshold (autostop) for a study lets Fintela end it early if too many
+trials are failing, so you're not left waiting — or paying — for a run that clearly isn't going to
+produce good results.
 
-| Condition | Value |
+| Rule | Detail |
 |---|---|
-| Minimum terminal trials before the check fires | 10 |
-| Health formula | `1 − failed_trials / total_trials`, over terminal trials only, health-neutral reasons excluded from both sides |
-| Trigger | Health strictly below `autostop_min_health` |
-| Effect | A failure message is stamped on every still-active task, then `desired_status = 'STOPPED'` |
-| Terminal status | `FAILED`, with the diagnostic kind `AUTOSTOPPED_LOW_HEALTH` |
+| Won't trigger until | At least 10 trials have finished |
+| How health is measured | Share of finished trials that did not fail (duplicate configurations and trials the engine couldn't evaluate don't count against you) |
+| What triggers it | Health drops below the threshold you set |
+| What happens | Any trials still running are stopped, and the study ends |
+| Status you'll see | Failed, labeled "Stopped automatically" |
 
-Autostop does **not** set `stop_requested_at`, which is exactly why the study lands on `FAILED`
-rather than `STOPPED`, and why it never displays as `STOPPING`. The user-facing copy is *Stopped
-automatically* (title) / *Stopped early: low health* (label), it carries `severity: "warning"` rather
-than `error`, and its suggested-action codes are `view_trials`, `resume` and `edit_code` — of which
-only **See trial errors** and **Edit strategy code** actually render (see
-[trial failure reasons](#trial-failure-reasons)).
+Autostop always ends a study as Failed rather than Stopped, because it isn't something you asked
+for in the moment — it's the platform protecting you from a run that isn't working out. You'll see
+it labeled **Stopped automatically**, with the note *Stopped early: low health*, shown as a warning
+rather than an error. From there you can jump straight to **See trial errors** or **Edit strategy
+code** to see what went wrong and fix it (see [trial failure reasons](#trial-failure-reasons)).
 
-## Automatic retry after an out-of-memory kill
+## Automatic retry after a memory error
 
-An OOM kill is the one failure the platform retries by itself. Every condition below has to hold:
-every task of the run is terminal, an OOM was observed, `desired_status` is not `STOPPED`, at least
-one trial is not yet `COMPLETE`/`PRUNED`, and completed + pruned trials are still below `n_trials`.
-That last one is what stops a study that OOM'd *after* its trial loop already finished from paying
-for a full re-run that cannot change the outcome.
+Sometimes a run needs more memory than Fintela initially allocated for it. This is the one kind of
+failure the platform handles for you automatically — retrying your study before it ever shows up as
+Failed — as long as:
 
-| Property | Value |
+- your run hasn't already used up its full trial budget (if it had, a retry couldn't change the
+  outcome, so it doesn't happen)
+- you haven't already asked to stop the study
+- a larger compute size is still available to try
+
+| | |
 |---|---|
-| Memory tiers, in order (MiB) | `49152` → `73728` → `98304` → `122880` |
-| Maximum escalations per study | 3 (`chk_studies_task_size_escalations` allows 0–3) |
-| Status written | `QUEUED` / desired `RUNNING`, `run_seq + 1`, `finished_at`, `failure_message` and `failure_diagnostic` cleared |
-| Trials | The dead task's still-`RUNNING` trials are reaped to `FAIL`, scoped to that task's ARN so siblings are untouched |
-| Cost to you | None — no ledger row is written; the under-estimate was the platform's |
+| Maximum automatic retries | 3, each at a larger compute size |
+| Status you'll see | Queued again, as a new run |
+| Trials | Any trial still running on the affected piece is marked failed; the rest of your trials are untouched |
+| Cost to you | None — you are not charged for the retry |
 
-The escalation runs *before* the tick's aggregation step, so the study goes straight from its dead
-run back to `QUEUED` and never surfaces as `FAILED` in between — no `StudyFailed` event, no failure
-notification. A study that OOMs at the largest available shape is skipped by this sweep and settles
-on `FAILED`, with the diagnostic kind `OUT_OF_MEMORY`. See
-[optimizer architecture](/docs/optimizer-architecture) for how task shape is chosen in the first
-place.
+Because this retry happens before Fintela finalizes the run's outcome, you'll typically never see a
+Failed status flash by — the study just goes straight back to Queued. Only if a run runs out of
+memory at the largest available size does it settle on **Failed**, labeled *Ran out of memory*. See
+[optimizer architecture](/docs/optimizer-architecture) for more on how compute size is chosen for
+your studies.
 
 ## Stopping a study
 
-```http
-POST /studies/stop?study_ids=41,42
-```
+You can stop a running study from its results page. Look for the **Stop study** button — it's
+active whenever the study is currently running, and disabled (with a tooltip reading *Only running
+studies can be stopped.*) otherwise.
 
-Ids go in the **query string**, not the body. The response is `200 {"data": [41, 42]}`.
+Clicking it opens a confirmation:
 
-| Check | Failure |
-|---|---|
-| Permission `study:create` | `403` — `Missing permission 'study:create'` |
-| Every id belongs to your organization | `406` — `One or more study ids do not belong to your organization` |
-| **Every** requested study has `desired_status = 'RUNNING'` | `406` — `This study isn't running, so there's nothing to stop.` |
+- **Stop study?**
+- *This action will stop the study immediately. Running trials may be interrupted and this action cannot be undone.*
+- **Cancel** / **Stop study**
 
-The precondition is all-or-nothing: one non-running id rejects the whole call.
+You'll need permission to manage studies in your organization to stop one — if you don't have it,
+Fintela lets you know rather than silently doing nothing. And if you try to stop a study that isn't
+currently running, you'll see a message telling you there's nothing to stop.
 
-In the app, Stop lives only on the study results page (`Registry → Studies → View`, which opens
-`/analysis/portfolios?studyId=<id>`). The button is labelled **Stop study**; it is disabled unless
-the live runtime status is running, with the tooltip **Only running studies can be stopped.** The
-confirmation dialog reads:
+There's no Stop option in the Studies registry's row menu — that menu only offers **Launch**,
+**View**, **Edit**, **Duplicate**, and **Delete** (see [studies](/docs/studies) for more on the
+registry). To stop a study, open it first.
 
-- Title: **Stop study?**
-- Body: **This action will stop the study immediately. Running trials may be interrupted and this action cannot be undone.**
-- Buttons: **Cancel** / **Stop study**
-
-There is no Stop action in the Studies registry row menu — that menu has exactly five entries:
-**Launch**, **View**, **Edit**, **Duplicate**, **Delete**. See [studies](/docs/studies) for the
-registry surface.
-
-Stopping is not instantaneous. The backend records the intent; the status-updater signals ECS on
-its next tick; the study reads `Stopping` in the meantime and settles on `STOPPED` once every task
-is terminal. Trials that were in flight are reaped to `FAIL`; trials already settled are kept.
+> [!NOTE] Stopping isn't instant
+> Clicking Stop records your request right away, but the study still needs a moment to wind down
+> every trial that's in progress. You'll see a **Stopping** badge in the meantime; it settles on
+> **Stopped** once everything has actually finished. Trials that were mid-run get marked as failed
+> (they didn't produce a usable result); trials that had already finished keep whatever result they
+> got.
 
 ## Resuming a study
 
-```http
-POST /studies/resume
-Content-Type: application/json
+Resuming lets you pick up a Completed or Stopped study and give it more trials to run, rather than
+starting over from scratch.
 
-{ "study_id": 42, "additional_trials": 500 }
-```
+> [!WARNING] Resume isn't available yet
+> There's currently no Resume button anywhere in the app — not in the registry, not on a study's
+> results page — and the read-only developer API doesn't expose it either. If you want to build on
+> a study that already finished or was stopped, duplicate it (from the registry row menu) and
+> relaunch with a larger trial count instead. What follows is how resume behaves once it becomes
+> available.
 
-| Check | Failure |
-|---|---|
-| Permission `study:create` | `403` — `Missing permission 'study:create'` |
-| Study belongs to your organization | `406` — `Study does not belong to your organization` |
-| `last_status` is `COMPLETED` or `STOPPED` | `406` — `Only studies that finished or were stopped can be resumed.` |
-| The finite grid still has unexplored configurations | `406` — `Search space exhausted: this study's finite grid has {grid} configuration(s) and {executed} distinct configuration(s) already ran. There is nothing left to explore.` |
-
-`FAILED` studies cannot be resumed — `check_for_resumable_studies` accepts only `COMPLETED` and
-`STOPPED`. Duplicate and relaunch instead.
-
-The grid gate counts **distinct parameter configurations**, not trials, because duplicate configs
-are recorded as `grid_duplicate` prunes and would otherwise overstate coverage. When the grid is
-finite but not exhausted, `additional_trials` is silently trimmed so the new total lands exactly on
-the grid size.
-
-A successful resume, in one transaction:
-
-| Change | Detail |
-|---|---|
-| `studies.n_trials` | `+= additional_trials` (after any grid trim) |
-| `last_status` / `desired_status` | `QUEUED` / `RUNNING` |
-| `run_seq` | `+= 1` — this counts as a new run, so notifications and stage rows do not collide with the previous one |
-| Cleared | `started_at`, `finished_at`, `stop_requested_at`, `stop_requested_by`, `failure_message`, `failure_diagnostic` |
-| `portfolio_update_status` | The study's daily-recompute row is deleted |
-| `study_stages` | The `queued` stage is reopened for the new `run_seq` |
-
-Every trial and portfolio from earlier runs is kept; the new trials accumulate on top. Because
-`n_trials` grows, reported progress drops back below 100% the moment the resume commits.
-
-> [!NOTE] Resume has no UI and does not wake the dispatcher
-> The SPA ships the mutation (`useResumeStudy`) and a success toast, but no component calls it —
-> there is no Resume control in the registry row menu, on the study results page, or in the
-> Fintelligent action bus. In practice resume is API-only. And unlike launch, resume does not issue
-> `NOTIFY optimization_dispatch`, so a resumed study waits for the dispatcher's next poll rather
-> than starting within milliseconds.
+- Only studies that are Completed or Stopped can be resumed — a Failed study can't be; duplicate
+  and relaunch it instead.
+- If your study searches a finite set of parameter combinations and every combination has already
+  been tried, there's nothing left to explore, and resume is blocked with a message telling you so.
+- You choose how many additional trials to add. If the remaining set of combinations is smaller
+  than what you asked for, Fintela quietly caps the number so your new total lands exactly on what's
+  actually left to try.
+- Resuming counts as a new run: your trial budget goes up by however many additional trials you
+  asked for, every trial and portfolio from before is kept, and the new trials build on top of them.
+  Because the total budget just grew, don't be surprised if the Progress meter briefly drops back
+  below 100% right after you resume — it recovers as the new trials complete.
+- A resumed study may take a little longer to actually start than a freshly launched one.
 
 ## Deleting a study
 
-```http
-DELETE /studies
-Content-Type: application/json
+Deleting removes a study — and everything produced by it — permanently.
 
-[41, 42]
-```
+Open the Studies registry, select the study (or studies) you want to remove, and choose **Delete**.
+Deleting a single study asks you to confirm: *Are you sure you want to delete the selected study?
+If any, associated data will also be deleted.* Deleting multiple studies at once does **not** ask
+for confirmation, so double-check your selection before you click it.
 
-The body is a bare JSON array of study ids. The permission checked is **`root:all`**, not a
-studies-specific one — stricter than every other study route.
+Deleting a study requires a higher level of account permission than everyday actions like
+launching, editing, or stopping — if your account can't delete studies, talk to whoever manages
+permissions for your organization.
 
-Deletion sets `developers.studies.deleted_at` and returns in milliseconds. The row immediately
-disappears from every read: the dispatcher's selection query, the registry list, and each
-`study_ids` endpoint all filter on `deleted_at IS NULL`.
-
-> [!CAUTION] Soft delete is not a recycle bin
-> There is no retention window, no restore endpoint and no undelete UI. A background worker in the
-> backend picks up the oldest soft-deleted study on its next tick (default `CLEANUP_INTERVAL_SECS`
-> is 300) and permanently purges it in bounded chunks — portfolios and their cascade first, then
-> trials, then the study row. The bounding exists so a ten-thousand-portfolio study does not blow
-> the statement timeout; it is not a grace period.
-
-In the registry, single-row **Delete** opens a confirmation reading *Are you sure you want to
-delete the selected study? If any, associated data will also be deleted.* The bulk **Delete**
-action fires with no confirmation dialog.
+> [!CAUTION] There's no undo
+> Once you delete a study, it's gone. There's no recycle bin, no restore option, and no grace
+> period — the study disappears from your account immediately, and everything behind it (trials,
+> portfolios, and their results) is permanently removed shortly afterward. Larger studies are
+> cleaned up over a short window in the background rather than all at once, but that's just how the
+> removal is processed — it is not a chance to change your mind.
 
 ## Trial states
 
-The Postgres enum `developers.trialstate`, unchanged from Optuna's own schema:
+Each trial inside a study has its own status:
 
-| State | Meaning |
+| Status | What it means |
 |---|---|
-| `WAITING` | Row allocated, not yet dispatched |
-| `RUNNING` | In flight — the optimizer writes every row of a batch up front via `ask()`, so a row's existence means "requested", not "started work" |
-| `COMPLETE` | Succeeded; the fitness value was reported back to the sampler |
-| `PRUNED` | Settled without a value — a duplicate grid point, a `NaN` fitness, or an explicit prune raised during signal generation or fitness evaluation |
-| `FAIL` | Hard failure: a batched simulation error, a per-payload engine error, or a trial reaped after its task died |
+| Waiting | This trial's slot has been created but hasn't been picked up to run yet. |
+| Running | This trial is currently being evaluated. |
+| Complete | This trial finished successfully and produced a usable result. |
+| Pruned | This trial ended early without a usable result — for example, it was a duplicate parameter combination, or its fitness value came back invalid. |
+| Fail | This trial hit an error and did not complete. |
 
-`COMPLETE`, `PRUNED` and `FAIL` are the three terminal states. Both study meters count only those:
+Complete, Pruned, and Fail are the three ways a trial can end. Both of the study-level meters below
+only count trials that have reached one of these three.
 
-| Meter | Formula | Source |
-|---|---|---|
-| Progress | `min(terminal_trials / n_trials, 1)` — `null` when `n_trials = 0` | `GET /studies/progress` |
-| Health | `1 − failed_trials / total_trials` — `null` when `total_trials = 0` | `GET /studies/health` |
+| Meter | What it tells you |
+|---|---|
+| Progress | How much of your requested trial budget has been used: (Complete + Pruned + Fail trials) ÷ trials requested. |
+| Health | Of the trials that reached an outcome, what share did **not** fail: 1 − (Failed trials ÷ finished trials). |
 
-Progress is clamped at 1 because a sibling task's in-flight batch can settle after the grid is
-already covered. Conversely, a `COMPLETED` study can legitimately sit below 100%: when a finite
-grid is exhausted before `n_trials` is reached, the run ends early. **Completion is signalled by
-status, never by progress reaching 1.0.**
+Progress can't go above 100% — occasionally a batch of trials that was already in flight finishes
+just after your target is technically reached, and that extra work is simply capped rather than
+shown as over 100%. On the other hand, a Completed study can legitimately show less than 100%
+progress: if your study searches a finite set of parameter combinations and runs out of new ones to
+try before reaching your requested trial count, it finishes early. **Completion is always signalled
+by the study's status, never by the Progress meter reaching 100%** — don't wait for the bar to fill
+before checking the badge.
 
-The registry's Health tooltip reads **Share of trials that produced a usable result.** and its
-Progress tooltip **Completed trials over the total requested.** followed by ` · <completed>/<n_trials>`.
-Neither column is sortable — both refetch every 5 s and would reorder rows under the cursor. (A
-`?sort=` pasted into the URL still orders them; the columns simply have no clickable header.)
+In the Studies registry, the Health column tooltip reads *Share of trials that produced a usable
+result.* and Progress reads *Completed trials over the total requested.*, followed by a running
+count like `340/500`. Neither column can be sorted by clicking its header — both refresh
+automatically every few seconds, and letting you sort them would make rows jump around while you're
+looking at them.
 
 ## Trial failure reasons
 
-A trial that does not complete carries two system attributes in
-`developers.trial_system_attributes`:
+When a trial doesn't complete, Fintela records a short reason so you can see what happened at a
+glance, plus a more structured breakdown that powers the app's error views and suggested next
+steps.
 
-| Key | Contents |
-|---|---|
-| `failure_reason` | A one-line string. For recognized classes it is a curated sentence; for unrecognized ones it is the raw text, because the public API and the frontend's legacy pattern table both match on it. |
-| `failure_diagnostic` | The structured record: `{ stage, kind, message, source_key, tickers, user_line, suggested_actions[], raw, params?, detail?, severity? }`. `raw` is always `null` over the wire. |
-
-The SPA keys its copy off `kind`, never off `message` — 72 kinds have translated copy in
-`failures.json`. Buckets in the error summary collapse by `kind` as well, so identical failures
-that interpolate different tickers or counts render as one bar.
-
-These reason strings are a documented contract and are written verbatim:
-
-| `failure_reason` | Trial state | Written when |
+| What you might see | Result | Why |
 |---|---|---|
-| `grid_duplicate: configuration already evaluated` | `PRUNED` | The sampler handed back a point this task already evaluated on a finite grid, pruned before any simulation |
-| `engine_artifact: the engine stopped this trial before it could be evaluated (watchdog timeout in a risk manager)` | `PRUNED` | The engine preempted the batch twice and the trial was never evaluated |
-| `nan_fitness` | `PRUNED` | Train, validation or overall fitness came back `NaN` |
-| `period_metrics_out_of_bounds: [...]` | `PRUNED` | The engine returned no metrics for the train, validation or overall period |
-| `pruned_during_fitness` | `PRUNED` | The fitness evaluator raised a prune carrying no message. An external fitness endpoint's transport failures come through the same branch, but keep their own reason text |
-| `signal_generation_pruned` | `PRUNED` | Signal generation raised a prune with no message |
-| `runtime_terminated_before_trial_completed: {error}` | `FAIL` | The task exited through its error path and reaped its own still-running trials |
-| `This trial was still running when the study stopped, so it never produced a result.` | `FAIL` | The status-updater reaped an orphan 10 minutes after the study finished |
+| "grid_duplicate: configuration already evaluated" | Pruned | This exact combination of parameters was already tried elsewhere in your study. |
+| "engine_artifact: the engine stopped this trial before it could be evaluated (watchdog timeout in a risk manager)" | Pruned | The simulation engine couldn't evaluate this trial in time and gave up on it — not a fault in your strategy. |
+| "nan_fitness" | Pruned | The fitness calculation came back as an invalid number for this trial. |
+| "period_metrics_out_of_bounds" | Pruned | No usable performance data came back for one of the periods being evaluated. |
+| "pruned_during_fitness" | Pruned | Your fitness logic itself signaled that this trial should be skipped. If you're using an external fitness endpoint, a connection problem there is reported with its own, more specific reason. |
+| "signal_generation_pruned" | Pruned | Your strategy logic itself signaled that this trial should be skipped. |
+| "runtime_terminated_before_trial_completed" | Fail | The run hit an error partway through, and this trial didn't get to finish (the exact message includes more detail on what happened). |
+| "This trial was still running when the study stopped, so it never produced a result." | Fail | The study ended, or was stopped, before this trial could complete. |
 
-> [!TIP] Two reasons are health-neutral
-> `grid_duplicate` and `engine_artifact` are excluded from **both** the numerator and the
-> denominator of every health ratio, from the autostop check, and from every error surface. A grid
-> study prunes duplicates by design, and a trial the engine could not evaluate is an absence rather
-> than a failure. Every other prune counts as a failure.
+> [!TIP] Two of these don't count against your health score
+> "grid_duplicate" and "engine_artifact" are excluded from your study's Health number entirely —
+> they're not really failures, just the platform pruning duplicate work or an evaluation it
+> genuinely couldn't complete. Every other Pruned or Fail result counts against Health.
 >
-> They still count toward **progress**, and that divergence is deliberate: health asks "of the
-> trials that produced an outcome, how many failed?", while progress asks "how much of the trial
-> budget is spent?" — and both of these spent one `ask()` against `n_trials` and are never retried.
+> They still count toward Progress, though, and that's intentional: Health answers "of the trials
+> that produced an outcome, how many failed?", while Progress answers "how much of my trial budget
+> have I used?" — and both of these used up a trial slot either way.
 
-Everything else is classified into a diagnostic kind. The run-level kinds the platform itself
-produces — as opposed to the ones the optimizer derives from a strategy or fitness error — are:
+Everything else gets classified into a broader category with a plain-language title you'll see on
+the study's failure notice. These are the categories the platform itself can produce, separate from
+failures that come from your own strategy or fitness code:
 
-| Kind | Title shown |
+| Title you'll see | When it happens |
 |---|---|
-| `OUT_OF_MEMORY` | Ran out of memory |
-| `RUN_INTERRUPTED` | Run was interrupted |
-| `HOST_TERMINATED` | The machine was shut down |
-| `CAPACITY_UNAVAILABLE` | No compute available |
-| `STARTUP_FAILED` | The run never started |
-| `LAUNCH_REJECTED` | Couldn't start the run |
-| `RUN_LOST` | Lost track of the run |
-| `RUN_FAILED_UNKNOWN` | Stopped unexpectedly |
-| `AUTOSTOPPED_LOW_HEALTH` | Stopped automatically |
-| `TRIAL_ABANDONED` | Trial didn't finish |
+| Ran out of memory | The run needed more memory than was available, even at the largest size Fintela tried. |
+| Run was interrupted | The run was cut off before it could finish, for reasons outside your study itself. |
+| The machine was shut down | The underlying compute for your run was shut down mid-way. |
+| No compute available | Fintela couldn't find capacity to run your study when it tried to start it. |
+| The run never started | Your study failed before any trial could begin. |
+| Couldn't start the run | Fintela rejected the run before it began. |
+| Lost track of the run | Fintela lost contact with part of your run and couldn't recover it. |
+| Stopped unexpectedly | The run ended without a specific reason being captured. |
+| Stopped automatically | Autostop ended the study because health dropped below your threshold (see [Autostop](#autostop)). |
+| Trial didn't finish | This trial was still in progress when its study ended. |
 
-Each diagnostic carries a list of suggested action *codes*. Fourteen labels exist: **Duplicate &
-relaunch**, **Duplicate & change Asset Group**, **Duplicate & reduce scope**, **Duplicate & change
-dates**, **Edit strategy code**, **Edit data pipelines**, **Edit risk manager**, **Edit fitness
-function**, **Edit endpoint settings**, **See trial errors**, **Resume study**, **Run again**,
-**Contact support**, **Buy tokens**.
+If you're pulling this information through the developer API, you'll see these same categories
+represented as short codes rather than the full titles above.
 
-A code only becomes a button where the surface wired a handler for it, and where the target id
-exists — otherwise it is silently dropped rather than rendered dead. On a failed study's notice
-that means the edit links, **See trial errors**, and exactly one duplicate button: the four
-duplicate actions all open the same flow, so only the most specific one the diagnostic asked for is
-kept. **Resume study**, **Contact support** and **Buy tokens** have no handler wired anywhere in
-this build, and **Run again** is wired only in the strategy and fitness sandboxes.
+Depending on what went wrong, a failure notice may offer one or more suggested next steps as
+buttons. The full set of possible suggestions is: **Duplicate & relaunch**, **Duplicate & change
+Asset Group**, **Duplicate & reduce scope**, **Duplicate & change dates**, **Edit strategy code**,
+**Edit data pipelines**, **Edit risk manager**, **Edit fitness function**, **Edit endpoint
+settings**, **See trial errors**, **Resume study**, **Run again**, **Contact support**, and **Buy
+tokens**.
 
-For trials that fail inside a user-hosted endpoint, see
+Not every suggestion above is currently clickable everywhere it's shown — in this version of
+Fintela, a failed study's notice will realistically offer you the relevant edit link, **See trial
+errors**, and at most one duplicate option (Fintela picks the single most relevant one rather than
+showing all four). **Resume study**, **Contact support**, and **Buy tokens** aren't available as
+buttons anywhere yet, and **Run again** only appears inside the strategy and fitness sandboxes, not
+on a study's own failure notice.
+
+If a trial fails because of code you've connected from outside Fintela, see
 [external strategies](/docs/external-strategies) and
-[external fitness](/docs/external-fitness).
+[external fitness](/docs/external-fitness) for how those failures are reported.
 
-## Reading lifecycle state over the API
+## Checking on your studies from outside the app
 
-| Endpoint | Returns | Notes |
-|---|---|---|
-| `GET /studies/lifecycle?study_ids=<csv>` | The whole execution state per study | Single source of truth: `execution_status`, `desired_status`, `display_status`, `current_stage`, the full `stages` array, `heartbeat_stale`, `eta`, `progress`, `health`, `results_usable`, `degraded`, `failure_diagnostic` |
-| `GET /studies/status?study_ids=<csv>` | `last_status`, `desired_status`, timestamps, `failure_diagnostic` | The registry status column reads only this, never the 60-second-stale metadata snapshot |
-| `GET /studies/progress?study_ids=<csv>` | `{id: number\|null}` | The only progress source — the registry has no fallback |
-| `GET /studies/health?study_ids=<csv>` | `{id: number\|null}` | |
-| `GET /studies/errors?study_ids=<csv>` | `{ error_summary[], failed_trials[] }` | Per-trial reasons and diagnostics |
+Everything covered on this page — status, progress, health, stage-by-stage detail, and trial errors
+— is visible directly in the app: the Studies registry, a study's Overview, and its results page.
+While a study is active, these views refresh automatically every few seconds so you don't have to
+reload; once a study is finished, they stop polling.
 
-All five require `study:read`. Polling adapts to state: 5 s while any study is `QUEUED`, `RUNNING`
-or `PENDING`, widened to 30 s while the realtime stream is connected, and stopped entirely once
-everything is terminal. `GET /studies/metadata` and `GET /studies` cache for 60 s and never poll.
+If you'd rather pull this information into your own tools or dashboards, Fintela also offers a
+read-only developer API. Generate a personal access key from your account settings, and you can
+securely fetch your studies' status, progress, health, and trial-level errors into your own systems.
+It's read-only by design — nothing in the developer API can launch, stop, resume, or delete a
+study, or change anything else about your account. Every action that spends tokens or starts
+compute has to go through the app itself, which keeps your billing and your running studies
+consistent. See the [studies API](/docs/api-studies) guide for details on getting started, and
+[API errors](/docs/api-errors) for how error responses are structured.
 
-The public developer API carries read-only copies of the study reads — among them
-`/studies/metadata`, `/studies/progress`, `/studies/health`, `/studies/status` and
-`/studies/errors`. It does **not** expose `/studies/lifecycle`, and it exposes no mutation at all:
-every route on that service is a `GET`, because launching, stopping, resuming and deleting all move
-optimizer workload and the app backend is the only place with the token ledger in the path. See
-[studies API](/docs/api-studies) and [API errors](/docs/api-errors).
+If you try to do something a study's current status doesn't allow — launching a study that's
+already running, editing one that's already launched, or changing its risk managers after launch —
+you'll see a clear message explaining why, for example:
 
-Errors on the stop and resume routes use `406 Not Acceptable`, not `400`. A state-transition
-rejection is `409 Conflict`, and its message is prefixed `Invalid study status transition:`:
-
-| Attempt | Message |
-|---|---|
-| Launch an already-launched study | `This study has already been launched, so it can't be launched again. Duplicate it to run a new one. (study {id})` |
-| Edit an already-launched study | `This study has already been launched, so it can't be edited. Duplicate it to change anything. (study {id})` |
-| Change the risk managers of an already-launched study | `This study has already been launched, so its risk managers can't be changed. Duplicate it to attach different ones. (study {id})` |
+- *This study has already been launched, so it can't be launched again. Duplicate it to run a new one.*
+- *This study has already been launched, so it can't be edited. Duplicate it to change anything.*
+- *This study has already been launched, so its risk managers can't be changed. Duplicate it to attach different ones.*
