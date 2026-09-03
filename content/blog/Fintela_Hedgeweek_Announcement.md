@@ -7,8 +7,6 @@ tags: Awards
 published: true
 ---
 
-![Alt text](https://i.postimg.cc/sDFrMNX5/Crowd-Card-Hedgeweek-USAwards2026-6a99946e88cbd.png)
-
 ## Why This Matters
 
 The asset management industry is undergoing rapid transformation driven by growing data complexity, tighter margins, and rising client expectations for transparency and performance. Solutions that can turn that complexity into clear, actionable insight are becoming essential rather than optional.
@@ -32,6 +30,10 @@ Fintela looks forward to representing this work at the Hedgeweek US Awards 2026 
 This recognition would not be possible without the dedication of the Fintela team and the trust of our clients, whose partnership continues to shape and validate the platform's direction.
 
 ---
+
+![Alt text](https://i.postimg.cc/sDFrMNX5/Crowd-Card-Hedgeweek-USAwards2026-6a99946e88cbd.png)
+
+
 
 **Fintela — Future Investing.**
 
