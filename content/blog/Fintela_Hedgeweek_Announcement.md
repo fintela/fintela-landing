@@ -7,6 +7,8 @@ tags: Awards
 published: true
 ---
 
+![Alt text](https://i.postimg.cc/sDFrMNX5/Crowd-Card-Hedgeweek-USAwards2026-6a99946e88cbd.png)
+
 ## Why This Matters
 
 The asset management industry is undergoing rapid transformation driven by growing data complexity, tighter margins, and rising client expectations for transparency and performance. Solutions that can turn that complexity into clear, actionable insight are becoming essential rather than optional.
