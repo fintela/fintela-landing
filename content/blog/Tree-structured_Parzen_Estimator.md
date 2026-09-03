@@ -11,7 +11,7 @@ published: true
 
 
 
-Most people who run a study never open the optimization engine panel, and when they do, TPE is usually already selected, quietly doing the work. It's worth actually looking at what it's doing, because the math underneath is simpler than the name suggests, and it explains a few things about why it behaves the way it does.
+Most people who run a study never open the optimization engine panel, and when they do, TPE is usually already selected. It's worth actually looking at what it's doing, because the math underneath is simpler than the name suggests, and it explains a few things about why it behaves the way it does.
 
 ## The problem it's solving
 
