@@ -2,7 +2,7 @@
 title: Welcome to the Fintela blog
 author: Fintela Team
 date: 2026-07-28
-excerpt: What we plan to write about here — research notes, engineering write-ups, and practical guides for building quantitative strategies on Fintela.
+excerpt: What we plan to write about here: research notes, engineering write-ups, and practical guides for building quantitative strategies on Fintela.
 tags: Announcements
 published: true
 ---
