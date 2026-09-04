@@ -57,7 +57,7 @@ export const DocPage = () => {
     <DocsLayout index={index} current={summary ?? doc} toc={toc}>
       {status === 'loading' && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-          <CircularProgress size={28} sx={{ color: '#667eea' }} />
+          <CircularProgress size={28} sx={{ color: '#2f6395' }} />
         </Box>
       )}
 
@@ -73,7 +73,7 @@ export const DocPage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'rgba(102, 126, 234, 0.08)',
+              bgcolor: 'rgba(47, 99, 149, 0.08)',
               color: 'primary.main',
               '& svg': { fontSize: '2rem' },
             }}
@@ -92,7 +92,7 @@ export const DocPage = () => {
             sx={{
               display: 'inline-block',
               mt: 4,
-              color: '#4a5de8',
+              color: '#2f6395',
               fontWeight: 600,
               fontSize: '0.92rem',
               textDecoration: 'none',
@@ -201,7 +201,7 @@ export const DocPage = () => {
               fontSize: '0.88rem',
               fontWeight: 600,
               transition: 'color 0.18s',
-              '&:hover': { color: '#667eea' },
+              '&:hover': { color: '#2f6395' },
             }}
           >
             <GitHub sx={{ fontSize: '1.05rem' }} />

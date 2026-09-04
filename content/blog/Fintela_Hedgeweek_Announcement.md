@@ -31,6 +31,6 @@ This recognition would not be possible without the dedication of the Fintela tea
 
 ---
 
-**Fintela — Future Investing.**
+**Fintela: Future Investing.**
 
 *\#Fintela \#HedgeweekAwards2026 \#Fintech \#FutureInvesting \#AssetManagement*  

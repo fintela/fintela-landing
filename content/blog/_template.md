@@ -2,7 +2,7 @@
 title: Post title goes here
 author: Your Name
 date: 2026-01-01
-excerpt: One or two sentences for the card. Optional — if you omit it, the first paragraph of the body is used instead. Cards truncate at ~150 characters.
+excerpt: One or two sentences for the card. Optional. If you omit it, the first paragraph of the body is used instead. Cards truncate at ~150 characters.
 tags: Research, Engineering
 published: false
 ---
@@ -12,14 +12,14 @@ published: false
   template never appears on /blog.
 
   The filename becomes the URL: copying this to `my-post.md` publishes it at
-  /blog/my-post. Renaming a file later changes its URL and breaks existing links —
-  add a `slug:` field to pin the URL independently of the filename.
+  /blog/my-post. Renaming a file later changes its URL and breaks existing links,
+  so add a `slug:` field to pin the URL independently of the filename.
 
   Everything below shows what the renderer supports. Raw HTML (including this
   comment) is stripped, never rendered.
 -->
 
-Open with a paragraph that stands on its own — it becomes the card excerpt when
+Open with a paragraph that stands on its own: it becomes the card excerpt when
 `excerpt:` is omitted.
 
 ## A section heading

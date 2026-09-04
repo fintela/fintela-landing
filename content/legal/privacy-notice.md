@@ -10,23 +10,23 @@ In accordance with Mexico's Federal Law on Protection of Personal Data Held by P
 
 ## First. Personal Data Collected
 
-The Company may collect, without limitation, identification and contact data (name, address, email, phone number), financial and asset-related data necessary to provide the service, and technical data derived from use of the Platform.
+The Company may collect, without limitation, identification and contact data (name, address, email, phone number), financial and asset related data necessary to provide the service, and technical data derived from use of the Platform.
 
-Additionally, our public website (fintela.io) uses Microsoft Clarity, a web-analytics and session-replay service provided by Microsoft Corporation, which sets cookies to collect aggregated usage data — such as pages visited, clicks, and heatmaps — to help us improve the site. This data is processed by Microsoft and may be transferred to the United States.
+Additionally, our public website (fintela.io) uses Microsoft Clarity, a web analytics and session replay service provided by Microsoft Corporation, which sets cookies to collect aggregated usage data, such as pages visited, clicks, and heatmaps, to help us improve the site. This data is processed by Microsoft and may be transferred to the United States.
 
 ---
 
 ## Second. Purposes of Processing
 
-Personal data will be used for the following primary purposes: verifying the Data Subject's identity, maintaining their file, providing the services offered through the Platform, complying with legal and regulatory obligations, and preventing fraud or unauthorized use. Data may secondarily be used to send service-related promotional communications, which the Data Subject may opt out of through the means indicated in Clause Five.
+Personal data will be used for the following primary purposes: verifying the Data Subject's identity, maintaining their file, providing the services offered through the Platform, complying with legal and regulatory obligations, and preventing fraud or unauthorized use. Data may secondarily be used to send service related promotional communications, which the Data Subject may opt out of through the means indicated in Clause Five.
 
 ---
 
 ## Third. Data Transfers
 
-The Company may transfer the Data Subject's personal data to third-party execution, custody, technology infrastructure, and payment-processing providers, to the extent strictly necessary to provide the service, as well as to competent authorities upon valid legal request. Such transfers may involve sending personal data outside of Mexico, in which case appropriate measures will be adopted to ensure their protection in accordance with applicable law.
+The Company may transfer the Data Subject's personal data to third party execution, custody, technology infrastructure, and payment processing providers, to the extent strictly necessary to provide the service, as well as to competent authorities upon valid legal request. Such transfers may involve sending personal data outside of Mexico, in which case appropriate measures will be adopted to ensure their protection in accordance with applicable law.
 
-In particular, to operate the Platform's artificial-intelligence assistant ("Fintelligent"), the Company uses the services of DeepSeek, an artificial-intelligence service provider domiciled in the People's Republic of China. To generate the responses requested by the Data Subject, the information submitted to the assistant — including the content of the Data Subject's queries and the strategies and data they process on the Platform — is transferred to and processed by that provider outside of Mexico, in the People's Republic of China. By using the Fintelligent assistant, the Data Subject expressly consents to this international transfer of their data.
+In particular, to operate the Platform's artificial intelligence assistant ("Fintelligent"), the Company uses the services of DeepSeek, an artificial intelligence service provider domiciled in the People's Republic of China. To generate the responses requested by the Data Subject, the information submitted to the assistant, including the content of the Data Subject's queries and the strategies and data they process on the Platform, is transferred to and processed by that provider outside of Mexico, in the People's Republic of China. By using the Fintelligent assistant, the Data Subject expressly consents to this international transfer of their data.
 
 ---
 
@@ -40,7 +40,7 @@ The Company has adopted reasonable administrative, technical, and physical secur
 
 The Data Subject has the right, at any time, to access, rectify, and cancel their personal data, as well as to object to its processing or withdraw consent previously granted, by submitting a request to privacy@fintela.io accompanied by documentation evidencing their identity. The Company will respond within the timeframes provided under applicable law.
 
-Currently, the exercise of these rights, including account cancellation and data deletion, is handled manually through the email address indicated in the preceding paragraph; the Platform does not have a self-service mechanism for these purposes.
+Currently, the exercise of these rights, including account cancellation and data deletion, is handled manually through the email address indicated in the preceding paragraph; the Platform does not have a self service mechanism for these purposes.
 
 ---
 
@@ -70,4 +70,4 @@ Questions regarding this Notice may be directed to privacy@fintela.io.
 
 ---
 
-Fintela — https://fintela.io · Momento Capital — https://www.momentocapital.com
+Fintela: https://fintela.io · Momento Capital: https://www.momentocapital.com

@@ -28,8 +28,8 @@ const styles: Record<Variant, { color: string; bg: string; icon: ReactNode; labe
     label: 'Warning',
   },
   tip: {
-    color: '#667eea',
-    bg: 'rgba(102,126,234,0.07)',
+    color: '#06b6d4',
+    bg: 'rgba(6,182,212,0.07)',
     icon: <LightbulbOutlinedIcon sx={{ fontSize: 18 }} />,
     label: 'Tip',
   },

@@ -29,7 +29,7 @@ export const BlogCard = ({ post }: { post: BlogPostSummary }) => {
         flexDirection: 'column',
         height: '100%',
         textDecoration: 'none',
-        border: '2px solid rgba(102, 126, 234, 0.1)',
+        border: '2px solid rgba(47, 99, 149, 0.1)',
         transition: 'all 0.3s',
         '&:hover': {
           borderColor: accent,

@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { bySection } from './format';
+import { palette } from '../theme/tokens';
 import type { DocSummary, DocsIndex } from './types';
 
 interface DocsSidebarProps {
@@ -83,14 +84,14 @@ const SidebarLink = ({
       fontSize: '0.875rem',
       fontWeight: active ? 600 : 500,
       color: active ? '#fff' : 'text.secondary',
-      background: active ? 'linear-gradient(135deg, #667eea 0%, #4a5de8 100%)' : 'transparent',
-      boxShadow: active ? '0 6px 14px rgba(102,126,234,0.25)' : 'none',
+      background: active ? palette.blue : 'transparent',
+      boxShadow: active ? '0 6px 14px rgba(47,99,149,0.25)' : 'none',
       textDecoration: 'none',
       position: 'relative',
       transition: 'color 0.18s, background 0.18s',
       '&:hover': active
         ? undefined
-        : { color: 'text.primary', bgcolor: 'rgba(102,126,234,0.06)' },
+        : { color: 'text.primary', bgcolor: 'rgba(47,99,149,0.06)' },
     }}
   >
     <Box

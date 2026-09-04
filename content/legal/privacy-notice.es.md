@@ -12,7 +12,7 @@ De conformidad con la Ley Federal de Protección de Datos Personales en Posesió
 
 Momento Capital podrá recabar del Titular, de manera enunciativa mas no limitativa, datos de identificación y contacto (nombre, domicilio, correo electrónico, teléfono), datos financieros y patrimoniales necesarios para la prestación del servicio, así como datos técnicos derivados del uso de la Plataforma.
 
-Adicionalmente, nuestro sitio web público (fintela.io) utiliza Microsoft Clarity, un servicio de analítica web y grabación de sesiones proporcionado por Microsoft Corporation, que instala cookies para recopilar datos agregados de uso —tales como páginas visitadas, clics y mapas de calor— con el fin de mejorar el sitio. Dichos datos son tratados por Microsoft y pueden transferirse a Estados Unidos.
+Adicionalmente, nuestro sitio web público (fintela.io) utiliza Microsoft Clarity, un servicio de analítica web y grabación de sesiones proporcionado por Microsoft Corporation, que instala cookies para recopilar datos agregados de uso, tales como páginas visitadas, clics y mapas de calor, con el fin de mejorar el sitio. Dichos datos son tratados por Microsoft y pueden transferirse a Estados Unidos.
 
 ---
 
@@ -26,7 +26,7 @@ Los datos personales serán utilizados para las siguientes finalidades primarias
 
 Momento Capital podrá transferir los datos personales del Titular a terceros proveedores de servicios de ejecución, custodia, infraestructura tecnológica y procesamiento de pagos, en la medida estrictamente necesaria para la prestación del servicio, así como a autoridades competentes cuando medie requerimiento legal válido. Dichas transferencias podrán implicar el envío de datos personales fuera del territorio nacional, en cuyo caso se adoptarán las medidas necesarias para garantizar su protección conforme a la legislación aplicable.
 
-En particular, para operar el asistente de inteligencia artificial de la Plataforma ("Fintelligent"), Momento Capital utiliza los servicios de DeepSeek, proveedor de servicios de inteligencia artificial domiciliado en la República Popular China. Para generar las respuestas solicitadas por el Titular, la información que este proporciona al asistente —incluyendo el contenido de sus consultas y las estrategias y datos que procesa en la Plataforma— se transfiere a dicho proveedor y es tratada por él fuera del territorio nacional, en la República Popular China. Al utilizar el asistente Fintelligent, el Titular consiente expresamente esta transferencia internacional de sus datos.
+En particular, para operar el asistente de inteligencia artificial de la Plataforma ("Fintelligent"), Momento Capital utiliza los servicios de DeepSeek, proveedor de servicios de inteligencia artificial domiciliado en la República Popular China. Para generar las respuestas solicitadas por el Titular, la información que este proporciona al asistente, incluyendo el contenido de sus consultas y las estrategias y datos que procesa en la Plataforma, se transfiere a dicho proveedor y es tratada por él fuera del territorio nacional, en la República Popular China. Al utilizar el asistente Fintelligent, el Titular consiente expresamente esta transferencia internacional de sus datos.
 
 ---
 
@@ -70,4 +70,4 @@ Para cualquier consulta relacionada con el presente Aviso, el Titular podrá dir
 
 ---
 
-Fintela — https://fintela.io · Momento Capital — https://www.momentocapital.com
+Fintela: https://fintela.io · Momento Capital: https://www.momentocapital.com

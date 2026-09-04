@@ -50,7 +50,7 @@ export const BlogPostPage = () => {
 
           {status === 'loading' && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-              <CircularProgress size={28} sx={{ color: '#667eea' }} />
+              <CircularProgress size={28} sx={{ color: '#2f6395' }} />
             </Box>
           )}
 
@@ -66,7 +66,7 @@ export const BlogPostPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: 'rgba(102, 126, 234, 0.08)',
+                  bgcolor: 'rgba(47, 99, 149, 0.08)',
                   color: 'primary.main',
                   '& svg': { fontSize: '2rem' },
                 }}

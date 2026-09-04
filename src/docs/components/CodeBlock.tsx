@@ -79,7 +79,7 @@ export const CodeBlock = ({
         borderRadius: 2.5,
         overflow: 'hidden',
         background: 'linear-gradient(180deg, #14182b 0%, #0f1325 100%)',
-        border: '1px solid rgba(102,126,234,0.18)',
+        border: '1px solid rgba(47,99,149,0.18)',
         boxShadow: '0 14px 36px rgba(11,16,32,0.18)',
       }}
     >
@@ -125,7 +125,7 @@ export const CodeBlock = ({
                   right: 6,
                   bottom: 0,
                   height: 2,
-                  background: active === idx ? 'linear-gradient(90deg, #667eea, #f093fb)' : 'transparent',
+                  background: active === idx ? 'linear-gradient(90deg, #efc03c, #e53540)' : 'transparent',
                   borderRadius: 2,
                 },
               }}

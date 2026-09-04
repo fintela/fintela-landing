@@ -5,15 +5,12 @@ export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
+      // light/dark are derived automatically from `main` by createTheme.
       main: palette.blue,
-      light: palette.blueSoft,
-      dark: palette.blueDark,
       contrastText: '#ffffff',
     },
     secondary: {
       main: palette.crimson,
-      light: palette.crimsonSoft,
-      dark: palette.crimsonDark,
       contrastText: '#ffffff',
     },
     text: {

@@ -4,14 +4,15 @@ import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { FeatureCard } from '../primitives/FeatureCard';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
+import { accents } from '../../theme/tokens';
 
 const features = [
-  { key: 'ai', accent: '#efc03c' },
-  { key: 'laboratory', accent: '#7c3aed' },
-  { key: 'bayesian', accent: '#10b981' },
-  { key: 'allocation', accent: '#ec4899' },
-  { key: 'crossMarket', accent: '#2f6395' },
-  { key: 'liveTrading', accent: '#ef4444' },
+  { key: 'ai', accent: accents[0] },
+  { key: 'laboratory', accent: accents[1] },
+  { key: 'bayesian', accent: accents[2] },
+  { key: 'allocation', accent: accents[3] },
+  { key: 'crossMarket', accent: accents[4] },
+  { key: 'liveTrading', accent: accents[5] },
 ] as const;
 
 export const FeaturesSection = () => {

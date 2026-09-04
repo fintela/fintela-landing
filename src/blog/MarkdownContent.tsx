@@ -11,6 +11,7 @@ import { CodeBlock } from '../docs/components/CodeBlock';
 import { Callout } from '../docs/components/Callout';
 import type { Language } from '../docs/syntax/highlight';
 import { inlineCode } from '../docs/components/Prose';
+import { palette } from '../theme/tokens';
 
 /**
  * Renders a Markdown body from `content/` — a blog post, or a documentation page.
@@ -232,7 +233,7 @@ function buildComponents({
                 display: 'inline-flex',
                 alignItems: 'center',
                 verticalAlign: 'middle',
-                '&:hover': { color: '#667eea' },
+                '&:hover': { color: palette.blue },
               }}
             >
               <LinkIcon sx={{ fontSize: '0.7em' }} />
@@ -289,11 +290,11 @@ function buildComponents({
                   : {}),
               })}
           sx={{
-            color: '#4a5de8',
+            color: palette.blue,
             textDecoration: 'none',
-            borderBottom: '1px solid rgba(102,126,234,0.35)',
+            borderBottom: '1px solid rgba(47,99,149,0.35)',
             transition: 'border-color 0.18s, color 0.18s',
-            '&:hover': { color: '#667eea', borderBottomColor: '#667eea' },
+            '&:hover': { color: palette.blue, borderBottomColor: palette.blue },
           }}
         >
           {children}
@@ -322,7 +323,7 @@ function buildComponents({
           fontSize: { xs: '1rem', md: '1.075rem' },
           lineHeight: 1.8,
           '& li': { my: 1 },
-          '& li::marker': { color: '#667eea' },
+          '& li::marker': { color: palette.blue },
           // GFM task lists: the checkbox replaces the bullet rather than joining it.
           '& li:has(> input[type="checkbox"])': { listStyle: 'none', ml: -2.5 },
           '& input[type="checkbox"]': {
@@ -330,7 +331,7 @@ function buildComponents({
             width: 15,
             height: 15,
             verticalAlign: '-2px',
-            accentColor: '#667eea',
+            accentColor: palette.blue,
           },
         }}
       >
@@ -347,7 +348,7 @@ function buildComponents({
           fontSize: { xs: '1rem', md: '1.075rem' },
           lineHeight: 1.8,
           '& li': { my: 1 },
-          '& li::marker': { color: '#667eea', fontWeight: 700 },
+          '& li::marker': { color: palette.blue, fontWeight: 700 },
         }}
       >
         {children}
@@ -377,9 +378,9 @@ function buildComponents({
             px: 3,
             py: 0.5,
             borderLeft: '3px solid',
-            borderColor: '#667eea',
+            borderColor: palette.blue,
             background:
-              'linear-gradient(90deg, rgba(102,126,234,0.06) 0%, rgba(102,126,234,0) 100%)',
+              'linear-gradient(90deg, rgba(47,99,149,0.06) 0%, rgba(47,99,149,0) 100%)',
             borderRadius: '0 10px 10px 0',
             '& p': { color: 'text.primary', fontStyle: 'italic' },
           }}
@@ -455,7 +456,7 @@ function buildComponents({
               verticalAlign: 'top',
             },
             '& th': {
-              bgcolor: 'rgba(102,126,234,0.05)',
+              bgcolor: 'rgba(47,99,149,0.05)',
               color: 'text.primary',
               fontWeight: 700,
               whiteSpace: 'nowrap',
@@ -477,7 +478,7 @@ function buildComponents({
           height: '1px',
           border: 0,
           background:
-            'linear-gradient(90deg, transparent, rgba(102,126,234,0.35) 50%, transparent)',
+            'linear-gradient(90deg, transparent, rgba(47,99,149,0.35) 50%, transparent)',
         }}
       />
     ),

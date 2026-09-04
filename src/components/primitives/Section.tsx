@@ -1,6 +1,7 @@
 import { Box, Container } from '@mui/material';
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
+import { palette, gradients } from '../../theme/tokens';
 
 interface SectionProps {
   id?: string;
@@ -21,11 +22,10 @@ const paddingY = {
 } as const;
 
 const backgrounds = {
-  default: '#ffffff',
-  muted: '#fafbfc',
-  gradient:
-    'linear-gradient(180deg, rgba(239,192,60,0.03) 0%, rgba(229,53,64,0.03) 50%, rgba(47,99,149,0.04) 100%)',
-  ink: 'linear-gradient(180deg, #0b1020 0%, #131835 100%)',
+  default: palette.surface,
+  muted: palette.surfaceMuted,
+  gradient: gradients.brandFaint,
+  ink: gradients.ink,
 } as const;
 
 export const Section = ({

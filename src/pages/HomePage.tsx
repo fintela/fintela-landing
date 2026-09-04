@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import { Header } from '../components/Header/Header';
 import { HeroSection } from '../components/sections/HeroSection';
 import { TrustBar } from '../components/sections/TrustBar';
+import { ProductDemoSection } from '../components/sections/ProductDemoSection';
 import { WorkflowSection } from '../components/sections/WorkflowSection';
 import { FeaturesSection } from '../components/sections/FeaturesSection';
 import { FintelAgentSection } from '../components/sections/FintelAgentSection';
@@ -70,6 +71,7 @@ export const HomePage = () => {
       <Header activeSection={activeSection} onNavigate={scrollToSection} />
       <HeroSection />
       <TrustBar />
+      <ProductDemoSection />
       <WorkflowSection />
       <FeaturesSection />
       {/* <QuantumSamplersSection /> */}
