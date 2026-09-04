@@ -7,8 +7,12 @@ tags: Research
 published: true
 ---
 
-Ten tickers, eight countries, one climate index adapted from an actuarial standard that was originally built to price insurance risk rather than to trade equities. That's the starting point for climate_pok, a strategy we backtested that combines price momentum with a monthly climate anomaly score across a small universe of agriculture linked stocks.
+![Alt text](https://img.magnific.com/fotos-premium/agricultor-trabajando-su-campo-examinando-crecimiento-plantas-tabaco_795422-8812.jpg
+)
 
+
+
+Ten tickers, eight countries, one climate index adapted from an actuarial standard that was originally built to price insurance risk rather than to trade equities. That's the starting point for climate_pok, a strategy we backtested that combines price momentum with a monthly climate anomaly score across a small universe of agriculture-linked stocks.
 
 
 ## Where the idea comes from

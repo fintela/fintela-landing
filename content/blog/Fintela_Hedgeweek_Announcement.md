@@ -2,7 +2,7 @@
 title: Fintela Shortlisted for New Solution Product of the Year
 author: Fintela Team
 date: 2026-08-11
-excerpt: Hedgeweek US Awards 2026
+excerpt: This shortlisting is a meaningful milestone, but it's also a signal of where Fintela is headed. The team remains focused on continuing to innovate, refine, and expand the platform's capabilities to meet the evolving needs of the asset management industry.
 tags: Awards
 published: true
 ---
@@ -31,6 +31,10 @@ This recognition would not be possible without the dedication of the Fintela tea
 
 ---
 
-**Fintela: Future Investing.**
+![Alt text](https://i.postimg.cc/sDFrMNX5/Crowd-Card-Hedgeweek-USAwards2026-6a99946e88cbd.png)
+
+
+
+**Fintela — Future Investing.**
 
 *\#Fintela \#HedgeweekAwards2026 \#Fintech \#FutureInvesting \#AssetManagement*  
