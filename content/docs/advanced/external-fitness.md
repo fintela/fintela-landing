@@ -62,7 +62,7 @@ service, so a plain domain or path prefix is all you need to register.
 
 If you enter an address starting with `http://` instead of `https://`, the editor shows a warning
 that the request and the reply will travel unencrypted. It's only a warning — it won't stop you
-from saving — but see [Plain http works, but isn't private](#plain-http-works-but-isnt-private)
+from saving — but see [Plain http works, but isn't private](#plain-http-works-but-isn-t-private)
 below for what that actually costs you.
 
 ### Internal or external is a one-time choice
@@ -205,7 +205,7 @@ is read.
 When you test the endpoint before saving, Fintela also checks that the value you return is
 actually a number, so make sure the test values you declare for your parameters produce a real
 score rather than triggering an edge case — see
-[When a period can't be scored](#when-a-period-cant-be-scored) for what to do instead when a
+[When a period can't be scored](#when-a-period-can-t-be-scored) for what to do instead when a
 period genuinely has no valid score.
 
 ## How your score is used
@@ -354,7 +354,7 @@ rest. Each failed trial carries a specific reason you can read in the study's er
 | Your service returned an error of its own | A message pointing you to your own service's logs. |
 | Your service rejected the request | A message asking you to check the address and whatever your service expects from the request. |
 | Your service replied in the wrong shape | A message saying the reply wasn't in the expected format. |
-| Your service returned "not a number" | The message described under [When a period can't be scored](#when-a-period-cant-be-scored). |
+| Your service returned "not a number" | The message described under [When a period can't be scored](#when-a-period-can-t-be-scored). |
 
 If your address isn't reachable at all, Fintela catches that once, up front, when the study is
 being set up — so a bad address fails the study clearly and immediately, instead of quietly

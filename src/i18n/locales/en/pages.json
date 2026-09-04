@@ -143,7 +143,7 @@
     "hero": {
       "chip": "Insights & Tutorials",
       "title": "Fintela Blog",
-      "subtitle": "Insights, tutorials, and best practices for quantitative finance and algorithmic trading."
+      "subtitle": "Insights, tutorials, and practical guides for quantitative finance and algorithmic trading."
     },
     "readMore": "Read More",
     "readTime": "{{minutes}} min read",
