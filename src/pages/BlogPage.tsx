@@ -37,7 +37,7 @@ export const BlogPage = () => {
           pt: { xs: 8, md: 12 },
           pb: { xs: 4, md: 8 },
           background:
-            'linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%)',
+            'linear-gradient(180deg, rgba(47, 99, 149, 0.05) 0%, rgba(229, 53, 64, 0.05) 100%)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -49,7 +49,7 @@ export const BlogPage = () => {
             right: -100,
             width: 400,
             height: 400,
-            background: 'radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(47, 99, 149, 0.1) 0%, transparent 70%)',
             borderRadius: '50%',
             filter: 'blur(60px)',
           }}
@@ -83,7 +83,7 @@ export const BlogPage = () => {
         <Container maxWidth="lg">
           {status === 'loading' && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-              <CircularProgress size={28} sx={{ color: '#667eea' }} />
+              <CircularProgress size={28} sx={{ color: '#2f6395' }} />
             </Box>
           )}
 
@@ -139,7 +139,7 @@ const EmptyState = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'rgba(102, 126, 234, 0.08)',
+        bgcolor: 'rgba(47, 99, 149, 0.08)',
         color: 'primary.main',
         '& svg': { fontSize: '2rem' },
       }}

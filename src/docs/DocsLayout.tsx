@@ -126,8 +126,8 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
               minWidth: { xs: 44, sm: 220 },
               transition: 'border-color 0.18s, box-shadow 0.18s',
               '&:hover': {
-                borderColor: 'rgba(102,126,234,0.4)',
-                boxShadow: '0 0 0 3px rgba(102,126,234,0.08)',
+                borderColor: 'rgba(47,99,149,0.4)',
+                boxShadow: '0 0 0 3px rgba(47,99,149,0.08)',
               },
             }}
           >
@@ -363,7 +363,7 @@ const PrevNextCard = ({
       gridColumn: direction === 'next' ? { xs: 'auto', sm: 2 } : undefined,
       flexDirection: direction === 'next' ? 'row-reverse' : 'row',
       textAlign: direction === 'next' ? 'right' : 'left',
-      '&:hover': { borderColor: 'rgba(102,126,234,0.4)', transform: 'translateY(-1px)' },
+      '&:hover': { borderColor: 'rgba(47,99,149,0.4)', transform: 'translateY(-1px)' },
     }}
   >
     {direction === 'next' ? (

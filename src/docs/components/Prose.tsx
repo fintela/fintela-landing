@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
+import { palette } from '../../theme/tokens';
 
 /** Inline code style — reusable. Plain object so it can be nested into `sx`. */
 export const inlineCode = {
@@ -10,7 +11,7 @@ export const inlineCode = {
   borderRadius: 0.75,
   bgcolor: 'rgba(11,16,32,0.05)',
   border: '1px solid rgba(11,16,32,0.06)',
-  color: '#4a5de8',
+  color: palette.blue,
   whiteSpace: 'nowrap',
 } as const;
 
@@ -25,11 +26,11 @@ export const P = ({ children }: { children: ReactNode }) => (
       '& code': inlineCode,
       '& strong': { color: 'text.primary', fontWeight: 600 },
       '& a': {
-        color: '#667eea',
+        color: palette.blue,
         textDecoration: 'none',
         borderBottom: '1px solid transparent',
         transition: 'border-color 0.18s',
-        '&:hover': { borderBottomColor: '#667eea' },
+        '&:hover': { borderBottomColor: palette.blue },
       },
     }}
   >
@@ -54,7 +55,7 @@ export const Ul = ({ children }: { children: ReactNode }) => (
       fontSize: { xs: '0.95rem', md: '1rem' },
       lineHeight: 1.75,
       '& li': { my: 0.75 },
-      '& li::marker': { color: '#667eea' },
+      '& li::marker': { color: palette.blue },
       '& code': inlineCode,
       '& strong': { color: 'text.primary', fontWeight: 600 },
     }}

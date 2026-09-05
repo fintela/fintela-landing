@@ -4,7 +4,7 @@ section: Getting Started
 order: 99
 published: false
 updated: 2026-01-01
-summary: One or two sentences describing the page. Optional — if you omit it, the first paragraph of the body is used. Index cards truncate at ~150 characters.
+summary: One or two sentences describing the page. Optional. If you omit it, the first paragraph of the body is used. Index cards truncate at ~150 characters.
 keywords: extra, search, terms
 ---
 
@@ -16,7 +16,7 @@ keywords: extra, search, terms
   The FILENAME becomes the URL, not the folder: copying this to
   `content/docs/api/rate-limits.md` publishes it at /docs/rate-limits. Folders are
   for humans reading the repo; `section:` is what groups the page on the site.
-  Renaming a file changes its URL and breaks existing links — add a `slug:` field
+  Renaming a file changes its URL and breaks existing links, so add a `slug:` field
   to pin the URL independently of the filename.
 
   Because the filename alone decides the URL, two files anywhere in the tree cannot
@@ -25,7 +25,7 @@ keywords: extra, search, terms
   Raw HTML (including this comment) is stripped, never rendered.
 -->
 
-Open with a paragraph that stands on its own — it becomes the index card excerpt
+Open with a paragraph that stands on its own: it becomes the index card excerpt
 and the page's lead paragraph when `summary:` is omitted.
 
 ## A section heading

@@ -6,6 +6,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { KbdKey } from './components/KbdKey';
 import { searchDocs } from './search';
 import { truncate } from '../content/format';
+import { palette } from '../theme/tokens';
 import type { DocsIndex } from './types';
 
 interface DocsSearchProps {
@@ -180,9 +181,9 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    bgcolor: selected === idx ? 'rgba(102,126,234,0.08)' : 'transparent',
+                    bgcolor: selected === idx ? 'rgba(47,99,149,0.08)' : 'transparent',
                     borderLeft: '3px solid',
-                    borderLeftColor: selected === idx ? '#667eea' : 'transparent',
+                    borderLeftColor: selected === idx ? palette.blue : 'transparent',
                   }}
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -219,7 +220,7 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
                   <ArrowForwardIcon
                     sx={{
                       fontSize: 16,
-                      color: selected === idx ? '#667eea' : 'text.disabled',
+                      color: selected === idx ? palette.blue : 'text.disabled',
                       opacity: selected === idx ? 1 : 0.5,
                     }}
                   />

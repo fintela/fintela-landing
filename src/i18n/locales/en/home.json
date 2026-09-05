@@ -4,17 +4,24 @@
     "titleAccent": "Intelligent Investment",
     "marketWords": ["US Stocks", "Forex", "Global Markets"],
     "subtitlePrefix": "Create investment strategies across",
-    "subtitleSuffix": "in a single, AI-native, cloud, quant finance ecosystem",
+    "subtitleSuffix": "in a single, AI native, cloud, quant finance ecosystem",
     "ctaSecondary": "See how it works"
   },
   "trustBar": {
-    "title": "Trusted by capital allocators and quantitative funds"
+    "title": "Teams building with Fintela"
+  },
+  "productDemo": {
+    "eyebrow": "Product Demo",
+    "title": "See Fintela",
+    "titleAccent": "in action.",
+    "description": "A full walkthrough of the platform is on its way, from strategy creation to live deployment.",
+    "comingSoon": "Demo coming soon"
   },
   "workflow": {
     "eyebrow": "The Platform",
     "title": "One pipeline.",
     "titleAccent": "Every step connected.",
-    "description": "No more file exports, local scripts, or stitched-together tools. Every stage feeds the next, all in the browser, all reproducible.",
+    "description": "No more file exports, local scripts, or stitched together tools. Every stage feeds the next, all in the browser, all reproducible.",
     "diagramLabel": "Fintela platform workflow: six connected steps",
     "centerName": "FINTELA",
     "centerSub": "PLATFORM",
@@ -22,27 +29,27 @@
       "dataClusters": {
         "label": "Asset Groups",
         "sub": "Market universe",
-        "desc": "Define your investable universe. Reusable snapshots of market data across equities, ETFs, forex and global indices — every backtest reproducible."
+        "desc": "Define your investable universe. Reusable snapshots of market data across equities, ETFs, forex and global indices, with every backtest reproducible."
       },
       "strategies": {
         "label": "Strategies",
         "sub": "Trading logic",
-        "desc": "Write strategies as Python functions in the in-app editor — or describe them in English and let Fintelligent generate the code, parameters, and ranges."
+        "desc": "Write strategies as Python functions in the in app editor, or describe them in English and let Fintelligent generate the code, parameters, and ranges."
       },
       "fitness": {
         "label": "Fitness",
         "sub": "Define \"good\"",
-        "desc": "Compose objective functions from 20+ metrics — Sharpe, Sortino, Calmar, max drawdown — and reuse them across studies."
+        "desc": "Compose objective functions from 20+ metrics (Sharpe, Sortino, Calmar, max drawdown) and reuse them across studies."
       },
       "studies": {
         "label": "Studies",
         "sub": "Bayesian search",
-        "desc": "Launch thousands of trials in parallel. Bayesian optimization focuses search on promising regions; results validated on train, val, and out-of-sample windows."
+        "desc": "Launch thousands of trials in parallel. Bayesian optimization focuses search on promising regions; results validated on train, val, and out of sample windows."
       },
       "portfolios": {
         "label": "Portfolios",
         "sub": "Analyze results",
-        "desc": "Browse ranked portfolios, full equity curves, parameter importance, and trade-level drill-down. Export PDF reports on demand."
+        "desc": "Browse ranked portfolios, full equity curves, parameter importance, and trade level drill down. Export PDF reports on demand."
       },
       "liveAgents": {
         "label": "Live Trading",
@@ -60,8 +67,8 @@
         "label": "Experiments / week"
       },
       "faster": {
-        "num": "10×",
-        "label": "Faster than legacy"
+        "num": "1",
+        "label": "Unified pipeline"
       }
     }
   },
@@ -69,7 +76,7 @@
     "eyebrow": "Capabilities",
     "title": "Built for",
     "titleAccent": "serious quant work.",
-    "description": "Institutional-grade infrastructure as a product — opinionated where it matters, flexible where it counts.",
+    "description": "Configurable infrastructure: strong defaults out of the box, full control when you need it.",
     "items": {
       "ai": {
         "title": "AI that operates the platform",
@@ -77,63 +84,63 @@
       },
       "laboratory": {
         "title": "One lab for your whole workflow",
-        "description": "Strategies, fitness functions, and risk managers in a single workbench. Prototype, compile, and publish to a cross-org catalog."
+        "description": "Strategies, fitness functions, and risk managers in a single workbench. Prototype, compile, and publish to a cross org catalog."
       },
       "python": {
-        "title": "Python-first, no setup",
-        "description": "Plain Python strategies in-app with NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY. Named parameters, typed ranges, version history. Zero local install."
+        "title": "Python first, no setup",
+        "description": "Plain Python strategies in app with NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY. Named parameters, typed ranges, version history. Zero local install."
       },
       "bayesian": {
-        "title": "Intelligent and fast optimization",
+        "title": "Bayesian optimization",
         "description": "Intelligent search over thousands of trials with train/validation/OOS by default."
       },
       "strategyClustering": {
         "title": "See your distinct strategies",
-        "description": "Cluster optimization trials by equity-curve correlation to reveal genuinely distinct strategies, their representative curves, and which family holds your best trial."
+        "description": "Cluster optimization trials by equity curve correlation to reveal genuinely distinct strategies, their representative curves, and which family holds your best trial."
       },
       "paramImportances": {
         "title": "Know which knobs matter",
-        "description": "fANOVA and mean-decrease-impurity reveal each hyperparameter's share of performance variance, with train vs. validation contrast to flag overfitting and bootstrap confidence intervals."
+        "description": "fANOVA and mean decrease impurity reveal each hyperparameter's share of performance variance, with train vs. validation contrast to flag overfitting and bootstrap confidence intervals."
       },
       "metaStrategies": {
-        "title": "Meta-strategies on baskets",
-        "description": "Portfolios of portfolios: feed basket equity curves into higher-level strategies for capital allocation. Basket holdings can also be read as signals. Meta-portfolios trade live like any strategy."
+        "title": "Meta strategies on baskets",
+        "description": "Portfolios of portfolios: feed basket equity curves into higher level strategies for capital allocation. Basket holdings can also be read as signals. Meta portfolios trade live like any strategy."
       },
       "allocation": {
-        "title": "Advanced portfolio allocation",
-        "description": "Weight baskets with risk parity, volatility targeting, and momentum/mean-reversion tilts. Identical in backtest and live. Basic methods free; advanced unlock per basket with tokens."
+        "title": "Portfolio allocation",
+        "description": "Weight baskets with risk parity, volatility targeting, and momentum/mean reversion tilts. Identical in backtest and live. Basic methods free; advanced unlock per basket with tokens."
       },
       "crossMarket": {
-        "title": "Cross-market by design",
+        "title": "Cross market by design",
         "description": "One strategy engine across equities, indices, ETFs, forex and global markets. One mental model, every asset class."
       },
       "liveTrading": {
         "title": "Live long/short trading",
-        "description": "Promote any backtested portfolio to live execution through your connected brokerage with real-time order logs and one-click pause."
+        "description": "Promote any backtested portfolio to live execution through your connected brokerage with real time order logs and one click pause."
       },
       "privacy": {
         "title": "Private by default, shared on your terms",
-        "description": "Keep everything private, then share selectively with colleagues or your organization. Publish results-only dashboards that hide code and hyperparameters."
+        "description": "Keep everything private, then share selectively with colleagues or your organization. Publish results only dashboards that hide code and hyperparameters."
       }
     }
   },
   "quantum": {
     "eyebrow": "New · Quantum optimization",
-    "title": "Search smarter with a",
+    "title": "Explore parameter space with a",
     "titleAccent": "quantum core.",
-    "description": "Wrap your hyperparameter search in a quantum optimization algorithm, run on an emulated quantum computer. Your simulations and fitness stay classical and unchanged — only the search itself goes quantum.",
+    "description": "Wrap your hyperparameter search in a quantum optimization algorithm, run on an emulated quantum computer. Your simulations and fitness stay classical and unchanged. Only the search itself goes quantum.",
     "capabilities": {
       "qaoa": {
         "title": "QAOA optimization",
-        "desc": "We recast your search space as a QUBO and let the Quantum Approximate Optimization Algorithm — on a quantum-circuit simulator — decide where to look next."
+        "desc": "We recast your search space as a QUBO and let the Quantum Approximate Optimization Algorithm, running on a quantum circuit simulator, decide where to look next."
       },
       "qkernel": {
-        "title": "Quantum-kernel Bayesian search",
-        "desc": "A Gaussian-process search whose kernel is measured from a quantum feature map, comparing configurations inside a quantum state space."
+        "title": "Quantum kernel Bayesian search",
+        "desc": "A Gaussian process search whose kernel is measured from a quantum feature map, comparing configurations inside a quantum state space."
       },
       "hardwareReady": {
-        "title": "Emulated today, hardware-ready tomorrow",
-        "desc": "Built on PennyLane: the very same study can target real quantum processors — AWS Braket, IBM Quantum — the day you flip the switch."
+        "title": "Emulated today, hardware ready tomorrow",
+        "desc": "Built on PennyLane: the very same study can target real quantum processors (AWS Braket, IBM Quantum) the day you flip the switch."
       }
     },
     "panel": {
@@ -142,29 +149,29 @@
       "captionBefore": "Your search space,",
       "captionHighlight": "explored on a quantum circuit."
     },
-    "note": "Experimental. An emulator is a research edge and a bridge to real quantum hardware — it reimagines how the search explores, not how fast it runs."
+    "note": "Experimental. An emulator is a research tool and a bridge to real quantum hardware: it reimagines how the search explores, not how fast it runs."
   },
   "fintelAgent": {
     "eyebrow": "Fintelligent",
     "title": "An AI that actually",
     "titleAccent": "runs the platform.",
-    "description": "Not a chatbot pasted on top. Fintelligent is wired into every data source and every action — built to do the work, not just describe it.",
+    "description": "Not a chatbot pasted on top. Fintelligent is wired into your data sources and the platform's actions, built to do the work, not just describe it.",
     "capabilities": {
       "readsData": {
         "title": "Reads your data",
-        "desc": "Any metric, any equity curve, any trade, any study — answered in plain English with sources."
+        "desc": "Any metric, any equity curve, any trade, any study, answered in plain English with sources."
       },
       "generatesStrategies": {
         "title": "Generates strategies",
-        "desc": "Describe an idea — Fintelligent writes the Python, configures parameters, and stages the form for review."
+        "desc": "Describe an idea, and Fintelligent writes the Python, configures parameters, and stages the form for review."
       },
       "operatesUi": {
         "title": "Operates the UI",
-        "desc": "\"Open study 8 and clone it.\" \"Switch to Markets.\" Every page and action reachable by intent."
+        "desc": "\"Open study 8 and clone it.\" \"Switch to Markets.\" Pages and actions reachable by intent."
       },
       "transparent": {
-        "title": "Always transparent",
-        "desc": "Every tool call is visible. Every irreversible action waits for your explicit confirmation."
+        "title": "Transparent by design",
+        "desc": "Tool calls are visible, and irreversible actions wait for your explicit confirmation."
       }
     },
     "chat": {
@@ -173,19 +180,19 @@
       "online": "online",
       "userMessage1": "Run 500 optimization trials on my momentum strategy. Use the Sharpe fitness and the SP500 cluster.",
       "planTitle": "Plan",
-      "planBody": "Launch study with: strategy = MomentumV3, fitness = Sharpe, cluster = SP500 (2019–2025), 500 trials, train/val/OOS split 70/15/15.",
-      "awaitingConfirmation": "Awaiting confirmation — irreversible action",
+      "planBody": "Launch study with: strategy = MomentumV3, fitness = Sharpe, cluster = SP500 (2019 to 2025), 500 trials, train/val/OOS split 70/15/15.",
+      "awaitingConfirmation": "Awaiting confirmation: irreversible action",
       "userMessage2": "Confirm.",
       "launchedTitle": "Study #142 launched",
-      "launchedBody": "312 / 500 trials complete. Best Sharpe 2.41 (train) → 1.94 (OOS). Live progress on the Studies page.",
-      "inputPlaceholder": "Ask anything — \"explain study 142 vs 138\""
+      "launchedBody": "312 / 500 trials complete. Live progress on the Studies page.",
+      "inputPlaceholder": "Ask anything, like \"explain study 142 vs 138\""
     }
   },
   "devExperience": {
     "eyebrow": "Developer Experience",
     "title": "Built like a product.",
     "titleAccent": "Documented like an API.",
-    "description": "Every endpoint, every payload, every trial state — fully documented. JWT auth, JSON in, JSON out. No SDK install, no hidden contracts.",
+    "description": "Endpoints, payloads, and trial state are fully documented. JWT auth, JSON in, JSON out. No SDK install, no hidden contracts.",
     "codeFilename": "launch-study.http",
     "docLinks": {
       "quickstart": {
@@ -209,19 +216,19 @@
   "advantage": {
     "eyebrow": "The Advantage",
     "title": "Stop building infra.",
-    "titleAccent": "Start compounding alpha.",
-    "description": "A side-by-side look at what changes when your stack is unified, AI-native, and cloud-delivered.",
+    "titleAccent": "Start building strategies faster.",
+    "description": "A side by side look at what changes when your stack is unified, AI native, and cloud delivered.",
     "legacyHeader": "Legacy stack",
     "withFintelaHeader": "With Fintela",
     "rows": {
       "ideaToLive": {
         "without": "30 days from idea to live",
         "with": "3 days",
-        "badge": "10× faster"
+        "badge": ""
       },
       "firstProfitable": {
-        "without": "12–24 months to first profitable strategy",
-        "with": "1–3 months",
+        "without": "12 to 24 months to a validated strategy",
+        "with": "1 to 3 months",
         "badge": ""
       },
       "infraCost": {
@@ -230,40 +237,40 @@
         "badge": ""
       },
       "onboarding": {
-        "without": "6–12 month onboarding for new quants",
-        "with": "2–3 weeks",
+        "without": "6 to 12 month onboarding for new quants",
+        "with": "2 to 3 weeks",
         "badge": ""
       },
       "experiments": {
-        "without": "2–3 strategy experiments / week",
+        "without": "2 to 3 strategy experiments / week",
         "with": "100+ / week",
-        "badge": "33× more"
+        "badge": ""
       },
       "successRate": {
-        "without": "5% strategy success rate",
-        "with": "30–40%",
-        "badge": "4–8× improvement"
+        "without": "Most ideas stall before validation",
+        "with": "More strategies reach validation",
+        "badge": ""
       }
     },
     "impactEyebrow": "Quantified Impact",
-    "impactBefore": "A hedge fund on Fintela ships",
-    "impactHighlight": "10× more strategies per year",
-    "impactAfter": "than one on a traditional stack.",
+    "impactBefore": "Teams on Fintela can ship",
+    "impactHighlight": "far more strategies per year",
+    "impactAfter": "without adding headcount.",
     "stats": {
       "strategiesPerYear": {
-        "value": "60–120",
+        "value": "60 to 120",
         "label": "strategies / year",
-        "sub": "vs. 12 with traditional infra"
+        "sub": "across concurrent studies"
       },
       "infraCost": {
         "value": "$0",
         "label": "infrastructure cost",
-        "sub": "vs. $600K+/yr legacy stack"
+        "sub": "no separate infrastructure spend"
       },
       "edge": {
-        "value": "10×",
-        "label": "competitive edge",
-        "sub": "measured against benchmark funds"
+        "value": "0",
+        "label": "manual glue code",
+        "sub": "no exports, no local scripts"
       }
     }
   },
@@ -271,35 +278,35 @@
     "eyebrow": "Who it's for",
     "title": "Built for every layer",
     "titleAccent": "of the quant stack.",
-    "description": "Whether you're managing capital, working solo, or leading a research desk — the same primitives, the same engine, the same compounding advantage.",
+    "description": "Whether you're managing capital, working solo, or leading a research desk: the same primitives, the same engine, wherever you're working from.",
     "audiences": {
       "institutions": {
         "badge": "For institutions",
         "title": "Hedge funds & institutional traders",
         "description": "Eliminate fragmentation between research, backtesting, and execution. Scale strategy research to hundreds of concurrent experiments without growing the infra team.",
         "outcomes": [
-          "Cut $600K+/year in legacy tooling",
-          "Deploy 60–120 strategies/year vs. 12",
-          "Onboard quants in 2–3 weeks"
+          "Eliminate separate infrastructure spend",
+          "Deploy 60 to 120 strategies/year",
+          "Onboard quants in 2 to 3 weeks"
         ]
       },
       "independents": {
         "badge": "For independent quants",
         "title": "Independent quants & systematic traders",
-        "description": "Institutional-grade optimization, backtesting, and live deployment without building or maintaining a single line of infrastructure. From notebook to live capital, same day.",
+        "description": "Configurable optimization, backtesting, and live deployment without building or maintaining a single line of infrastructure. From notebook to live capital, same day.",
         "outcomes": [
           "No local environment, no devops",
-          "Same Bayesian search the funds use",
-          "Brokerage-connected live deployment"
+          "The same Bayesian search engine used across the platform",
+          "Brokerage connected live deployment"
         ]
       },
       "researchDesks": {
         "badge": "For research desks",
         "title": "Quant research teams",
-        "description": "Shared strategy library, shared asset groups, shared optimization results — all inside a single organizational workspace with cryptographic provenance built in.",
+        "description": "Shared strategy library, shared asset groups, shared optimization results, all inside a single organizational workspace with cryptographic provenance built in.",
         "outcomes": [
           "One source of truth across the team",
-          "Tamper-proof, hashed strategy history",
+          "Cryptographically hashed, timestamped strategy history",
           "PDF reports for investment committee"
         ]
       }
@@ -313,39 +320,39 @@
     "items": {
       "assetClasses": {
         "q": "What asset classes does Fintela support?",
-        "a": "Currencies, U.S. equities, S&P indices, ETFs, forex, and global markets — all through the same unified strategy engine. Build a strategy once, test it across any cluster you define."
+        "a": "Currencies, U.S. equities, S&P indices, ETFs, forex, and global markets, all through the same unified strategy engine. Build a strategy once, test it across any cluster you define."
       },
       "vsBacktesting": {
         "q": "How is Fintela different from a standard backtesting library?",
-        "a": "Fintela goes beyond backtesting — it unifies asset groups, strategy code, Bayesian parameter optimization, train/validation/OOS evaluation, portfolio analytics, and live deployment via your connected brokerage into a single pipeline. No exports, no scripts, no glue code between tools."
+        "a": "Fintela combines backtesting with asset groups, strategy code, Bayesian parameter optimization, train/validation/OOS evaluation, portfolio analytics, and live deployment via your connected brokerage into a single pipeline. No exports, no scripts, no glue code between tools."
       },
       "python": {
         "q": "Do I need to know Python?",
-        "a": "Yes, strategies are Python functions — but Fintelligent can generate them for you. Describe what you want in plain English and the agent writes the code, configures the parameters, and stages the form for your review."
+        "a": "Yes, strategies are Python functions, but Fintelligent can generate them for you. Describe what you want in plain English and the agent writes the code, configures the parameters, and stages the form for your review."
       },
       "optimization": {
         "q": "How does optimization work?",
-        "a": "Fintela uses Bayesian optimization, which learns from each trial to focus search on the most promising parameter regions. Every study is evaluated across three time windows — train (in-sample), validation (held-out), and out-of-sample — so robustness is built into the workflow."
+        "a": "Fintela uses Bayesian optimization, which learns from each trial to focus search on the most promising parameter regions. Every study is evaluated across three time windows: train (in sample), validation (held out), and out of sample, so robustness is built into the workflow."
       },
       "seedExport": {
         "q": "Can I export my strategy's signal?",
-        "a": "Yes. Every trial, basket, and sandbox run exposes its seed — the daily rebalancing signal (date → ticker → position/allocation) the engine used to build the backtest. You can inspect it date by date and download it as JSON (the exact engine input) or CSV, straight from the app."
+        "a": "Yes. Every trial, basket, and sandbox run exposes its seed: the daily rebalancing signal (date → ticker → position/allocation) the engine used to build the backtest. You can inspect it date by date and download it as JSON (the exact engine input) or CSV, straight from the app."
       },
       "liveTrading": {
         "q": "How does live trading work?",
-        "a": "Validated portfolios can be promoted to live operations that execute through your connected brokerage. You see real-time order logs, P&L, and a one-click pause. Multiple operations can run in parallel against different baskets."
+        "a": "Validated portfolios can be promoted to live operations that execute through your connected brokerage. You see real time order logs, P&L, and a one click pause. Multiple operations can run in parallel against different baskets."
       },
       "security": {
         "q": "Is my strategy code secure?",
-        "a": "Yes. Strategies and configurations are cryptographically hashed and time-stamped, ensuring authorship verification and tamper-proof auditability. The platform is fully cloud-hosted with enterprise-grade reliability."
+        "a": "Yes. Strategies and configurations are cryptographically hashed and time stamped, supporting authorship verification and auditability. The platform is fully cloud hosted."
       },
       "poweredBy": {
         "q": "Who is Fintelligent powered by, and is it safe?",
-        "a": "Fintelligent runs on DeepSeek V4 (auto-routing between Pro and Flash) with Fintela-managed access — no API key to bring. Every tool call is visible in the chat, and every irreversible action (creating/stopping a study, deploying an operation) requires your explicit confirmation before execution."
+        "a": "Fintelligent runs on DeepSeek V4 (automatically routing between Pro and Flash) with Fintela managed access, and no API key to bring. Every tool call is visible in the chat, and every irreversible action (creating/stopping a study, deploying an operation) requires your explicit confirmation before execution."
       },
       "speed": {
         "q": "How fast can I go from idea to live capital?",
-        "a": "Most teams reach a fully validated, deployable strategy in 3 days — about 10× faster than traditional infrastructure. The bottleneck is the quality of the idea, not the tooling."
+        "a": "Most teams reach a fully validated, deployable strategy in about 3 days. The bottleneck is the quality of the idea, not the tooling."
       }
     }
   }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
+import { palette } from '../theme/tokens';
 import type { TocItem } from './toc';
 
 interface DocsTOCProps {
@@ -63,12 +64,12 @@ export const DocsTOC = ({ items }: DocsTOCProps) => {
             href={`#${it.id}`}
             sx={{
               fontSize: '0.82rem',
-              color: active === it.id ? '#667eea' : 'text.secondary',
+              color: active === it.id ? palette.blue : 'text.secondary',
               fontWeight: active === it.id ? 600 : 400,
               py: 0.4,
               pl: it.level === 3 ? 2.25 : 1,
               borderLeft: '2px solid',
-              borderLeftColor: active === it.id ? '#667eea' : 'transparent',
+              borderLeftColor: active === it.id ? palette.blue : 'transparent',
               textDecoration: 'none',
               transition: 'color 0.18s, border-color 0.18s',
               lineHeight: 1.4,

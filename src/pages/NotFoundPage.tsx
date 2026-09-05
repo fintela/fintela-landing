@@ -37,7 +37,7 @@ export const NotFoundPage = () => {
           pt: { xs: 12, md: 16 },
           pb: { xs: 8, md: 14 },
           background:
-            'linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.03) 100%)',
+            'linear-gradient(180deg, rgba(47, 99, 149, 0.05) 0%, rgba(229, 53, 64, 0.03) 100%)',
         }}
       >
         <Container maxWidth="sm">
@@ -52,7 +52,7 @@ export const NotFoundPage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: 'rgba(102, 126, 234, 0.08)',
+                bgcolor: 'rgba(47, 99, 149, 0.08)',
                 color: 'primary.main',
                 '& svg': { fontSize: '2.25rem' },
               }}

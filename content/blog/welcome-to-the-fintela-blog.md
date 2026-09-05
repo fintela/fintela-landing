@@ -14,7 +14,7 @@ work behind the platform, in more depth than a product page allows.
 
 - **Research notes**  how we think about strategy construction, optimization and
   validation, including the approaches that did not work.
-- **Engineering write-ups** the systems behind simulation, optimization and live
+- **Engineering writeups** the systems behind simulation, optimization and live
   execution.
 - **Practical guides** walkthroughs for getting more out of Fintela, from your
   first backtest to a live portfolio.

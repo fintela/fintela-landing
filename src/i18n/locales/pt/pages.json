@@ -13,7 +13,7 @@
     "form": {
       "name": "Nome completo",
       "company": "Empresa",
-      "email": "Endereço de e-mail",
+      "email": "Endereço de email",
       "phone": "Número de telefone",
       "messageLabelDemo": "Conte-nos sobre suas necessidades",
       "messageLabelSupport": "Descreva seu problema ou dúvida",
@@ -36,107 +36,55 @@
   },
   "pricing": {
     "hero": {
-      "chip": "Preços",
-      "title": "Pague pelo processamento que",
-      "titleAccent": "você realmente usa",
-      "subtitle": "A Fintela funciona com dois saldos pré-pagos: os tokens Fintela medem o processamento que a plataforma executa para você, e os tokens de IA Fintela medem seu trabalho com o Fintelligent. Ambos são comprados em pacotes — quanto maior o pacote, menor a tarifa.",
-      "ctaPrimary": "Comprar tokens",
+      "title": "Escolha o plano que",
+      "titleAccent": "combina com sua estratégia",
+      "subtitle": "Toda conta individual começa grátis: crie uma estratégia, rode-a no otimizador e veja o que a Fintela pode fazer. Faça upgrade quando precisar de mais espaço para trabalhar. Contas de empresa e parceiros são atendidas diretamente pelo nosso time, e não por um plano publicado.",
+      "ctaPrimary": "Comece grátis",
       "ctaSecondary": "Fale conosco"
     },
-    "balances": {
-      "title": "Dois saldos,",
-      "titleAccent": "uma plataforma",
-      "description": "Toda organização tem os dois. Cada um mede um tipo de trabalho diferente, então uma semana intensa de otimização nunca consome o orçamento do agente — e vice-versa.",
-      "compute": {
-        "name": "Tokens Fintela",
-        "tagline": "Processamento",
-        "description": "Consumidos sempre que a plataforma executa trabalho para você: o otimizador amostrando parâmetros, o compilador validando seu código. Medidos por ação, a uma tarifa fixa que você consegue orçar antes de lançar qualquer coisa.",
-        "meters": {
-          "trial": "{{amount}} tokens por trial de otimização",
-          "bugTest": "{{amount}} token por bug test"
-        }
-      },
-      "ai": {
-        "name": "Tokens de IA Fintela",
-        "tagline": "Fintelligent",
-        "description": "Consumidos quando você trabalha com o agente. Cada mensagem que você envia e cada resposta que ele devolve são medidas, então você paga apenas pelo raciocínio que de fato pediu.",
-        "meters": {
-          "messages": "Cobrados nos tokens de entrada e de saída",
-          "factor": "O uso do modelo é convertido em tokens de IA por um fator de conversão"
-        }
-      }
-    },
-    "packs": {
-      "title": "Pacotes de",
-      "titleAccent": "tokens",
-      "description": "Os pacotes são comprados no app e creditados no saldo da sua organização. Os preços estão em dólares americanos.",
-      "bestRate": "Melhor tarifa",
-      "buy": "Comprar no app",
-      "rate": "{{price}} a cada {{amount}} tokens",
-      "save": "Economize {{percent}}%",
-      "compute": {
-        "heading": "Tokens Fintela",
-        "subheading": "Para trials de otimização, bug tests e qualquer outra ação da plataforma que consuma processamento.",
-        "unit": "Tokens Fintela",
-        "equivalent": "≈ {{trials}} trials, ou {{bugTests}} bug tests"
-      },
-      "ai": {
-        "heading": "Tokens de IA Fintela",
-        "subheading": "Para trabalhar com o Fintelligent: perguntas, análises e tudo o que você pedir ao agente.",
-        "unit": "Tokens de IA"
-      }
-    },
-    "meter": {
-      "title": "O que consome",
-      "titleAccent": "tokens",
-      "description": "Só o trabalho que custa processamento custa tokens. Estas são as tarifas publicadas; qualquer outra coisa que a plataforma executa para você sai dos mesmos saldos.",
-      "columns": {
-        "action": "Ação",
-        "cost": "Custo"
-      },
-      "rows": {
-        "trial": {
-          "action": "Trial de otimização",
-          "detail": "Uma amostra de parâmetros. O otimizador escolhe um vetor de valores, roda sua estratégia na janela de backtest e pontua o fitness. Um estudo de 200 trials consome 200 deles.",
-          "cost": "{{amount}} tokens Fintela"
+    "individual": {
+      "title": "Contas",
+      "titleAccent": "individuais",
+      "description": "Todo plano inclui a plataforma principal: criação de estratégias, backtesting e Fintelligent. Os níveis mais altos aumentam quanto você tem de cada um.",
+      "plans": {
+        "basic": {
+          "name": "Basic",
+          "badge": "Grátis",
+          "tagline": "Comece a criar",
+          "description": "Para quem está testando a Fintela pela primeira vez. Sem cartão.",
+          "features": [
+            "Acesso limitado ao Fintelligent",
+            "Suporte da comunidade"
+          ]
         },
-        "bugTest": {
-          "action": "Bug test",
-          "detail": "A execução de validação que compila e roda sua estratégia ou gestor de risco contra dados reais antes de salvar — assim os erros aparecem no início, e não no meio de um estudo.",
-          "cost": "{{amount}} token Fintela"
+        "pro": {
+          "name": "Pro",
+          "badge": "Recomendado",
+          "tagline": "Para desenvolvimento ativo",
+          "description": "Para quem desenvolve e itera estratégias ativamente semana a semana.",
+          "features": [
+            "Acesso ampliado ao Fintelligent",
+            "Suporte prioritário por email"
+          ]
         },
-        "chat": {
-          "action": "Mensagem ao Fintelligent",
-          "detail": "Cada troca com o agente. Seus tokens de entrada e de saída são multiplicados por um fator de conversão e debitados do seu saldo de tokens de IA.",
-          "cost": "Tokens de IA Fintela"
+        "proPlus": {
+          "name": "Pro+",
+          "badge": "Capacidade máxima",
+          "tagline": "Para usuários avançados",
+          "description": "Para quem roda buscas grandes e mantém uma biblioteca extensa de estratégias.",
+          "features": [
+            "O maior acesso ao Fintelligent",
+            "Suporte prioritário"
+          ],
+          "cta": "Fazer upgrade para Pro+"
         }
       }
     },
-    "notes": {
-      "items": {
-        "balance": {
-          "title": "Os saldos são da organização",
-          "description": "Os dois saldos pertencem à sua organização, e não a um assento individual, então todo o time consome do mesmo bolo e você enxerga exatamente para onde ele foi."
-        },
-        "volume": {
-          "title": "Pacotes maiores, tarifa menor",
-          "description": "A tarifa efetiva cai a cada faixa: o maior pacote de tokens Fintela custa {{computeSave}}% menos por token que o de entrada, e o maior de tokens de IA, {{aiSave}}% menos."
-        },
-        "reads": {
-          "title": "Ler seus resultados é grátis",
-          "description": "A API para desenvolvedores é somente leitura e devolve trabalho que você já pagou, então exportar portfólios, trials e baskets para os seus próprios notebooks não custa nada."
-        },
-        "help": {
-          "title": "Não sabe de quanto precisa?",
-          "description": "Conte para nós o tamanho do seu espaço de busca e como seu time pretende usar o agente, e dimensionamos com você um pacote sobre uma carga de trabalho realista."
-        }
-      }
-    },
-    "cta": {
-      "title": "Comece pelo pacote que faz sentido",
-      "description": "Recarregue no app quando precisar, ou fale antes com a gente se preferir dimensionar sobre uma carga de trabalho real.",
-      "primary": "Comprar tokens",
-      "secondary": "Falar conosco"
+    "business": {
+      "title": "Empresas",
+      "titleAccent": "e parceiros",
+      "description": "A Fintela está em estágio inicial, e trabalhamos com empresas e parceiros diretamente, em vez de por um plano de autoatendimento. Gerencia um fundo, quer integrar com a Fintela ou explorar uma parceria? Fale diretamente com nosso time e vamos encontrar juntos o encaixe certo.",
+      "cta": "Fale conosco"
     }
   },
   "blog": {
@@ -166,7 +114,7 @@
     "updated": "Atualizado em {{date}}",
     "backToIndex": "Ver toda a documentação",
     "editThisPage": "Editar esta página no GitHub",
-    "editHint": "Abre {{path}} no editor do GitHub — ao salvar, um pull request é proposto.",
+    "editHint": "Abre {{path}} no editor do GitHub. Ao salvar, um pull request é proposto.",
     "error": {
       "title": "Não foi possível carregar a documentação",
       "body": "Algo falhou ao buscar as páginas. Atualize a página ou tente novamente em alguns minutos."

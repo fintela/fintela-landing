@@ -25,6 +25,7 @@ import emailjs from '@emailjs/browser';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
+import { gradients, shadows } from '../theme/tokens';
 
 // EmailJS configuration - Replace these with your actual IDs from emailjs.com
 const EMAILJS_SERVICE_ID = 'fintela-website-support'; // e.g., 'service_abc123'
@@ -121,7 +122,7 @@ export const ContactPage = () => {
         sx={{
           pt: 12,
           pb: 8,
-          background: 'linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%)',
+          background: 'linear-gradient(180deg, rgba(47, 99, 149, 0.05) 0%, rgba(229, 53, 64, 0.05) 100%)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -134,7 +135,7 @@ export const ContactPage = () => {
             right: -100,
             width: 400,
             height: 400,
-            background: 'radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(47, 99, 149, 0.1) 0%, transparent 70%)',
             borderRadius: '50%',
             filter: 'blur(60px)',
           }}
@@ -146,7 +147,7 @@ export const ContactPage = () => {
               label={t('contact.hero.chip')}
               sx={{
                 mb: 3,
-                bgcolor: 'rgba(102, 126, 234, 0.1)',
+                bgcolor: 'rgba(47, 99, 149, 0.1)',
                 color: 'primary.main',
                 fontWeight: 600,
                 fontSize: '0.875rem',
@@ -207,7 +208,7 @@ export const ContactPage = () => {
             elevation={0}
             sx={{
               p: { xs: 3, md: 5 },
-              border: '2px solid rgba(102, 126, 234, 0.1)',
+              border: '2px solid rgba(47, 99, 149, 0.1)',
               borderRadius: 3,
             }}
           >
@@ -224,7 +225,7 @@ export const ContactPage = () => {
                 sx={{
                   '& .MuiToggleButton-root': {
                     py: 2,
-                    border: '2px solid rgba(102, 126, 234, 0.1)',
+                    border: '2px solid rgba(47, 99, 149, 0.1)',
                     '&.Mui-selected': {
                       bgcolor: 'primary.main',
                       color: 'white',
@@ -338,12 +339,15 @@ export const ContactPage = () => {
                   py: 1.5,
                   fontSize: '1.1rem',
                   fontWeight: 600,
-                  background: 'linear-gradient(135deg, #667eea 0%, #f093fb 100%)',
+                  background: gradients.brand,
+                  transition: 'transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                    boxShadow: shadows.brandStrong,
+                    transform: 'translateY(-1px)',
                   },
                   '&:disabled': {
-                    background: 'linear-gradient(135deg, #93c5fd 0%, #c4b5fd 100%)',
+                    background: gradients.brand,
+                    opacity: 0.5,
                   },
                 }}
                 endIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <Send />}

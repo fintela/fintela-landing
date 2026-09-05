@@ -4,15 +4,12 @@
  */
 
 export const palette = {
-  // Brand — sampled from the Fintela mark (gold apex → crimson body → blue tip)
+  // Brand, sampled from the Fintela mark (gold apex, crimson body, blue tip).
+  // Light/dark variants are derived at the point of use (see theme.ts) instead
+  // of being hand-authored here, so this stays the only brand hex anyone edits.
   gold: '#efc03c',
   crimson: '#e53540',
-  crimsonDark: '#bc2b34',
-  crimsonSoft: '#f19096',
   blue: '#2f6395',
-  blueDark: '#254d74',
-  blueSoft: '#789aba',
-  indigo: '#383959',
 
   // Neutrals — slightly warmer than pure gray for a softer fintech feel
   ink: '#0b1020',
@@ -22,7 +19,6 @@ export const palette = {
 
   surface: '#ffffff',
   surfaceMuted: '#fafbfc',
-  surfaceAlt: '#f5f6fa',
   border: '#e8eaf1',
   borderStrong: '#d1d5e0',
 
@@ -32,6 +28,17 @@ export const palette = {
   danger: '#ef4444',
   info: '#06b6d4',
 } as const;
+
+// Shared six-way accent cycle for category badges/icons (e.g. feature cards).
+// Reuses the palette above instead of introducing standalone decorative hues.
+export const accents = [
+  palette.gold,
+  palette.warning,
+  palette.success,
+  palette.info,
+  palette.blue,
+  palette.danger,
+] as const;
 
 export const gradients = {
   brand: 'linear-gradient(135deg, #efc03c 0%, #e53540 45%, #2f6395 100%)',

@@ -99,4 +99,4 @@ Cualquier duda relacionada con los presentes Términos podrá dirigirse a legal@
 
 ---
 
-Fintela — https://fintela.io · Momento Capital — https://www.momentocapital.com
+Fintela: https://fintela.io · Momento Capital: https://www.momentocapital.com
