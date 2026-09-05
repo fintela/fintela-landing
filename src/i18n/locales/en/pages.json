@@ -59,7 +59,7 @@
         },
         "pro": {
           "name": "Pro",
-          "badge": "Most popular",
+          "badge": "Recommended",
           "tagline": "For active development",
           "description": "For traders who are actively developing and iterating on strategies week to week.",
           "features": [
@@ -91,7 +91,7 @@
     "hero": {
       "chip": "Insights & Tutorials",
       "title": "Fintela Blog",
-      "subtitle": "Insights, tutorials, and best practices for quantitative finance and algorithmic trading."
+      "subtitle": "Insights, tutorials, and practical guides for quantitative finance and algorithmic trading."
     },
     "readMore": "Read More",
     "readTime": "{{minutes}} min read",

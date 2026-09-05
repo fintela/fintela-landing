@@ -59,7 +59,7 @@
         },
         "pro": {
           "name": "Pro",
-          "badge": "Más popular",
+          "badge": "Recomendado",
           "tagline": "Para desarrollo activo",
           "description": "Para quienes desarrollan e iteran estrategias activamente semana a semana.",
           "features": [

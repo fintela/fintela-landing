@@ -302,7 +302,7 @@ Other filters offer presets suited to what they measure: **Profitable**, **Posit
 
 ### Index membership: point in time universes
 
-The Index filter is the most powerful (and most easily misunderstood) control in the screener. Unlike every other filter, it has a time dimension: it selects the instruments that were members of an index **according to a timing rule you choose**, and whatever it resolves to is what gets frozen into your group.
+The Index filter is one of the more complex (and most easily misunderstood) controls in the screener. Unlike every other filter, it has a time dimension: it selects the instruments that were members of an index **according to a timing rule you choose**, and whatever it resolves to is what gets frozen into your group.
 
 | Setting | Options | What it means |
 |---|---|---|
