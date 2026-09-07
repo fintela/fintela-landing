@@ -59,12 +59,12 @@
     },
     "stats": {
       "conceptToLive": {
-        "num": "3 days",
-        "label": "Concept to live"
+        "num": "6",
+        "label": "Connected steps"
       },
       "experiments": {
-        "num": "100+",
-        "label": "Experiments / week"
+        "num": "0",
+        "label": "Local installs"
       },
       "faster": {
         "num": "1",
@@ -222,8 +222,8 @@
     "withFintelaHeader": "With Fintela",
     "rows": {
       "ideaToLive": {
-        "without": "30 days from idea to live",
-        "with": "3 days",
+        "without": "Weeks from idea to live",
+        "with": "Days",
         "badge": ""
       },
       "firstProfitable": {
@@ -232,18 +232,18 @@
         "badge": ""
       },
       "infraCost": {
-        "without": "$600K+/yr in infrastructure & tooling",
-        "with": "Eliminated",
+        "without": "Separate infrastructure and tooling to fund",
+        "with": "Included",
         "badge": ""
       },
       "onboarding": {
-        "without": "6 to 12 month onboarding for new quants",
-        "with": "2 to 3 weeks",
+        "without": "Months of onboarding for new quants",
+        "with": "Weeks",
         "badge": ""
       },
       "experiments": {
-        "without": "2 to 3 strategy experiments / week",
-        "with": "100+ / week",
+        "without": "A handful of strategy experiments per week",
+        "with": "Many more, run concurrently",
         "badge": ""
       },
       "successRate": {
@@ -258,14 +258,14 @@
     "impactAfter": "without adding headcount.",
     "stats": {
       "strategiesPerYear": {
-        "value": "60 to 120",
-        "label": "strategies / year",
-        "sub": "across concurrent studies"
+        "value": "0",
+        "label": "queue wait",
+        "sub": "studies run concurrently"
       },
       "infraCost": {
-        "value": "$0",
-        "label": "infrastructure cost",
-        "sub": "no separate infrastructure spend"
+        "value": "0",
+        "label": "servers to run",
+        "sub": "no infrastructure to maintain"
       },
       "edge": {
         "value": "0",
@@ -283,20 +283,20 @@
       "institutions": {
         "badge": "For institutions",
         "title": "Hedge funds & institutional traders",
-        "description": "Eliminate fragmentation between research, backtesting, and execution. Scale strategy research to hundreds of concurrent experiments without growing the infra team.",
+        "description": "Eliminate fragmentation between research, backtesting, and execution. Run strategy research across concurrent experiments without running your own infrastructure.",
         "outcomes": [
-          "Eliminate separate infrastructure spend",
-          "Deploy 60 to 120 strategies/year",
-          "Onboard quants in 2 to 3 weeks"
+          "No infrastructure to build or maintain",
+          "Concurrent studies, not a serial queue",
+          "Nothing for new quants to install"
         ]
       },
       "independents": {
         "badge": "For independent quants",
         "title": "Independent quants & systematic traders",
-        "description": "Configurable optimization, backtesting, and live deployment without building or maintaining a single line of infrastructure. From notebook to live capital, same day.",
+        "description": "Configurable optimization, backtesting, and live deployment without building or maintaining a single line of infrastructure. From notebook to live deployment, without a devops project.",
         "outcomes": [
           "No local environment, no devops",
-          "The same Bayesian search engine used across the platform",
+          "Bayesian optimization with train/validation/OOS built in",
           "Brokerage connected live deployment"
         ]
       },
@@ -352,7 +352,7 @@
       },
       "speed": {
         "q": "How fast can I go from idea to live capital?",
-        "a": "Most teams reach a fully validated, deployable strategy in about 3 days. The bottleneck is the quality of the idea, not the tooling."
+        "a": "How long it takes depends on your idea and how much you optimize, not on setting up infrastructure. There is no environment to build, no data pipeline to wire up, and no handoff between tools."
       }
     }
   }

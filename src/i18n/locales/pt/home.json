@@ -8,7 +8,7 @@
     "ctaSecondary": "Veja como funciona"
   },
   "trustBar": {
-    "title": "A confiança de alocadores de capital e fundos quantitativos"
+    "title": "Times construindo com a Fintela"
   },
   "productDemo": {
     "eyebrow": "Demonstração do produto",
@@ -59,16 +59,16 @@
     },
     "stats": {
       "conceptToLive": {
-        "num": "3 dias",
-        "label": "Do conceito à produção"
+        "num": "6",
+        "label": "Passos conectados"
       },
       "experiments": {
-        "num": "100+",
-        "label": "Experimentos / semana"
+        "num": "0",
+        "label": "Instalações locais"
       },
       "faster": {
-        "num": "10×",
-        "label": "Mais rápido que o stack tradicional"
+        "num": "1",
+        "label": "Pipeline unificado"
       }
     }
   },
@@ -76,7 +76,7 @@
     "eyebrow": "Capacidades",
     "title": "Feito para",
     "titleAccent": "trabalho quant sério.",
-    "description": "Pare de montar stacks. A Fintela entrega infraestrutura de nível institucional como produto, opinativa onde importa e flexível onde conta.",
+    "description": "Infraestrutura configurável: bons padrões desde o início, controle total quando você precisar.",
     "items": {
       "crossMarket": {
         "title": "Multimercado por design",
@@ -91,7 +91,7 @@
         "description": "Construa portfólios de portfólios. Um asset group pode se alimentar dos seus baskets graduados (a curva de equity de cada basket pontua igual a um ticker) para que você otimize como o capital é alocado entre seus próprios portfólios. As estratégias também podem ler a composição dos baskets ao longo do tempo como sinal. Os metaportfólios se graduam e operam ao vivo como qualquer outra estratégia."
       },
       "allocation": {
-        "title": "Alocação avançada de portfólio",
+        "title": "Alocação de portfólio",
         "description": "Pondere os membros do seu basket além do peso igual. Um catálogo premium (paridade de risco a partir da matriz de covariância completa, volatilidade alvo, e vieses de momentum ou reversão à média por qualquer métrica) se aplica de forma idêntica no backtest e ao vivo. Os métodos básicos continuam grátis; os avançados são desbloqueados por basket com tokens Fintela."
       },
       "ai": {
@@ -99,7 +99,7 @@
         "description": "O Fintelligent não responde perguntas: ele gera código de estratégias, lança estudos, cria relatórios e explica os resultados em linguagem natural."
       },
       "bayesian": {
-        "title": "Otimização bayesiana, nativa",
+        "title": "Otimização bayesiana",
         "description": "Milhares de trials buscados de forma inteligente: o motor aprende com cada execução e foca o processamento onde importa. Train / validação / OOS por padrão."
       },
       "strategyClustering": {
@@ -108,7 +108,7 @@
       },
       "paramImportances": {
         "title": "Saiba quais parâmetros importam",
-        "description": "A Fintela decompõe cada otimização com fANOVA e mean decrease impurity para revelar a fração da variância de desempenho que cada hiperparâmetro realmente move, e em que direção. Contrasta a importância em treino contra validação para sinalizar os parâmetros que sofrem sobreajuste, com intervalos de confiança bootstrap em cada estimativa. Atribuição de nível institucional, não uma heurística de correlação."
+        "description": "A Fintela decompõe cada otimização com fANOVA e mean decrease impurity para revelar a fração da variância de desempenho que cada hiperparâmetro realmente move, e em que direção. Contrasta a importância em treino contra validação para sinalizar os parâmetros que sofrem sobreajuste, com intervalos de confiança bootstrap em cada estimativa."
       },
       "python": {
         "title": "Python primeiro, sem configuração",
@@ -149,13 +149,13 @@
       "captionBefore": "Seu espaço de busca,",
       "captionHighlight": "explorado em um circuito quântico."
     },
-    "note": "Experimental. Um emulador é uma vantagem de pesquisa e uma ponte para hardware quântico real: reimagina como a busca explora, não a rapidez com que roda."
+    "note": "Experimental. Um emulador é uma ferramenta de pesquisa e uma ponte para hardware quântico real: reimagina como a busca explora, não a rapidez com que roda."
   },
   "fintelAgent": {
     "eyebrow": "Fintelligent",
     "title": "Uma IA que realmente",
     "titleAccent": "opera a plataforma.",
-    "description": "Não é um chatbot colado por cima. O Fintelligent está integrado a cada fonte de dados e cada ação, feito para fazer o trabalho, não apenas descrevê-lo.",
+    "description": "Não é um chatbot colado por cima. O Fintelligent está integrado às suas fontes de dados e às ações da plataforma, feito para fazer o trabalho, não apenas descrevê-lo.",
     "capabilities": {
       "readsData": {
         "title": "Lê seus dados",
@@ -167,11 +167,11 @@
       },
       "operatesUi": {
         "title": "Opera a interface",
-        "desc": "«Abra o estudo 8 e clone-o.» «Leve-me a Mercados.» Cada página e ação acessível por intenção."
+        "desc": "«Abra o estudo 8 e clone-o.» «Leve-me a Mercados.» Páginas e ações acessíveis por intenção."
       },
       "transparent": {
-        "title": "Sempre transparente",
-        "desc": "Cada chamada de ferramenta é visível. Cada ação irreversível aguarda sua confirmação explícita."
+        "title": "Transparente por design",
+        "desc": "As chamadas de ferramentas são visíveis, e as ações irreversíveis aguardam sua confirmação explícita."
       }
     },
     "chat": {
@@ -184,7 +184,7 @@
       "awaitingConfirmation": "Aguardando confirmação: ação irreversível",
       "userMessage2": "Confirmar.",
       "launchedTitle": "Estudo #142 lançado",
-      "launchedBody": "312 / 500 trials concluídos. Melhor Sharpe 2.41 (train) → 1.94 (OOS). Progresso ao vivo na página de Estudos.",
+      "launchedBody": "312 / 500 trials concluídos. Progresso ao vivo na página de Estudos.",
       "inputPlaceholder": "Pergunte o que quiser, como «explique o estudo 142 vs 138»"
     }
   },
@@ -192,7 +192,7 @@
     "eyebrow": "Experiência do desenvolvedor",
     "title": "Construído como um produto.",
     "titleAccent": "Documentado como uma API.",
-    "description": "Cada endpoint, cada payload, cada estado de um trial, totalmente documentado. Auth com JWT, JSON entra, JSON sai. Sem instalar SDK, sem contratos ocultos.",
+    "description": "Os endpoints, payloads e estados de trial estão totalmente documentados. Auth com JWT, JSON entra, JSON sai. Sem instalar SDK, sem contratos ocultos.",
     "codeFilename": "launch-study.http",
     "docLinks": {
       "quickstart": {
@@ -216,61 +216,61 @@
   "advantage": {
     "eyebrow": "A vantagem",
     "title": "Pare de construir infra.",
-    "titleAccent": "Comece a compor alpha.",
+    "titleAccent": "Comece a construir estratégias mais rápido.",
     "description": "Uma comparação lado a lado do que muda quando seu stack é unificado, nativo de IA e entregue na nuvem.",
     "legacyHeader": "Stack tradicional",
     "withFintelaHeader": "Com a Fintela",
     "rows": {
       "ideaToLive": {
-        "without": "30 dias da ideia à produção",
-        "with": "3 dias",
-        "badge": "10× mais rápido"
+        "without": "Semanas da ideia à produção",
+        "with": "Dias",
+        "badge": ""
       },
       "firstProfitable": {
-        "without": "12 a 24 meses até a primeira estratégia lucrativa",
+        "without": "12 a 24 meses até uma estratégia validada",
         "with": "1 a 3 meses",
         "badge": ""
       },
       "infraCost": {
-        "without": "$600K+/ano em infraestrutura e ferramentas",
-        "with": "Eliminado",
+        "without": "Infraestrutura e ferramentas para financiar à parte",
+        "with": "Incluído",
         "badge": ""
       },
       "onboarding": {
-        "without": "6 a 12 meses de onboarding para novos quants",
-        "with": "2 a 3 semanas",
+        "without": "Meses de onboarding para novos quants",
+        "with": "Semanas",
         "badge": ""
       },
       "experiments": {
-        "without": "2 a 3 experimentos de estratégia / semana",
-        "with": "100+ / semana",
-        "badge": "33× mais"
+        "without": "Um punhado de experimentos de estratégia por semana",
+        "with": "Muito mais, em paralelo",
+        "badge": ""
       },
       "successRate": {
-        "without": "5% de taxa de sucesso de estratégias",
-        "with": "30 a 40%",
-        "badge": "4 a 8× de melhoria"
+        "without": "A maioria das ideias não chega à validação",
+        "with": "Mais estratégias chegam à validação",
+        "badge": ""
       }
     },
     "impactEyebrow": "Impacto quantificado",
-    "impactBefore": "Um hedge fund na Fintela lança",
-    "impactHighlight": "10× mais estratégias por ano",
-    "impactAfter": "do que um com stack tradicional.",
+    "impactBefore": "Os times na Fintela podem lançar",
+    "impactHighlight": "muito mais estratégias por ano",
+    "impactAfter": "sem aumentar o time.",
     "stats": {
       "strategiesPerYear": {
-        "value": "60 a 120",
-        "label": "estratégias / ano",
-        "sub": "vs. 12 com infra tradicional"
+        "value": "0",
+        "label": "espera na fila",
+        "sub": "os estudos rodam em paralelo"
       },
       "infraCost": {
-        "value": "$0",
-        "label": "custo de infraestrutura",
-        "sub": "vs. $600K+/ano do stack tradicional"
+        "value": "0",
+        "label": "servidores para operar",
+        "sub": "sem infraestrutura para manter"
       },
       "edge": {
-        "value": "10×",
-        "label": "vantagem competitiva",
-        "sub": "medida frente a fundos de referência"
+        "value": "0",
+        "label": "código de cola manual",
+        "sub": "sem exportações, sem scripts locais"
       }
     }
   },
@@ -278,25 +278,25 @@
     "eyebrow": "Para quem é",
     "title": "Feito para cada camada",
     "titleAccent": "do stack quant.",
-    "description": "Seja você gestor de capital, trabalhando sozinho ou liderando uma mesa de research: os mesmos primitivos, o mesmo motor, a mesma vantagem composta.",
+    "description": "Seja você gestor de capital, trabalhando sozinho ou liderando uma mesa de research: os mesmos primitivos, o mesmo motor, onde quer que você esteja.",
     "audiences": {
       "institutions": {
         "badge": "Para instituições",
         "title": "Hedge funds e traders institucionais",
-        "description": "Elimine a fragmentação entre research, backtesting e execução. Escale o research de estratégias para centenas de experimentos simultâneos sem aumentar o time de infra.",
+        "description": "Elimine a fragmentação entre research, backtesting e execução. Rode research de estratégias em experimentos simultâneos sem operar sua própria infraestrutura.",
         "outcomes": [
-          "Corte $600K+/ano em ferramentas tradicionais",
-          "Implante 60 a 120 estratégias/ano vs. 12",
-          "Integre quants em 2 a 3 semanas"
+          "Sem infraestrutura para construir ou manter",
+          "Estudos simultâneos, não uma fila em série",
+          "Nada para os novos quants instalarem"
         ]
       },
       "independents": {
         "badge": "Para quants independentes",
         "title": "Quants independentes e traders sistemáticos",
-        "description": "Otimização, backtesting e implantação ao vivo de nível institucional sem construir ou manter uma única linha de infraestrutura. Do notebook ao capital ao vivo, no mesmo dia.",
+        "description": "Otimização, backtesting e implantação ao vivo configuráveis sem construir ou manter uma única linha de infraestrutura. Do notebook à implantação ao vivo, sem um projeto de devops.",
         "outcomes": [
           "Sem ambiente local, sem devops",
-          "A mesma busca bayesiana que os fundos usam",
+          "Otimização bayesiana com train/validação/OOS incluídos",
           "Implantação ao vivo conectada à sua corretora"
         ]
       },
@@ -306,7 +306,7 @@
         "description": "Biblioteca de estratégias compartilhada, Asset Groups compartilhados, resultados de otimização compartilhados, tudo dentro de um único espaço de trabalho organizacional com proveniência criptográfica integrada.",
         "outcomes": [
           "Uma única fonte de verdade para todo o time",
-          "Histórico de estratégias hasheado e à prova de adulteração",
+          "Histórico de estratégias hasheado criptograficamente e com marca de tempo",
           "Relatórios em PDF para o comitê de investimento"
         ]
       }
@@ -324,7 +324,7 @@
       },
       "vsBacktesting": {
         "q": "Como a Fintela se diferencia de uma biblioteca de backtesting padrão?",
-        "a": "A Fintela vai além do backtesting: ela unifica Asset Groups, código de estratégia, otimização bayesiana de parâmetros, avaliação train/validação/OOS, analytics de portfólios e implantação ao vivo via sua corretora conectada num único pipeline. Sem exportações, sem scripts, sem código de cola entre ferramentas."
+        "a": "A Fintela combina o backtesting com Asset Groups, código de estratégia, otimização bayesiana de parâmetros, avaliação train/validação/OOS, analytics de portfólios e implantação ao vivo via sua corretora conectada num único pipeline. Sem exportações, sem scripts, sem código de cola entre ferramentas."
       },
       "python": {
         "q": "Preciso saber Python?",
@@ -344,7 +344,7 @@
       },
       "security": {
         "q": "O código da minha estratégia é seguro?",
-        "a": "Sim. As estratégias e configurações são hasheadas e carimbadas com data de forma criptográfica, garantindo a verificação de autoria e uma auditabilidade à prova de adulteração. A plataforma é totalmente hospedada na nuvem com confiabilidade de nível empresarial."
+        "a": "Sim. As estratégias e configurações são hasheadas e carimbadas com data de forma criptográfica, o que apoia a verificação de autoria e a auditabilidade. A plataforma é totalmente hospedada na nuvem."
       },
       "poweredBy": {
         "q": "Em que o Fintelligent é baseado e é seguro?",
@@ -352,7 +352,7 @@
       },
       "speed": {
         "q": "Quão rápido posso ir da ideia ao capital ao vivo?",
-        "a": "A maioria dos times alcança uma estratégia totalmente validada e pronta para implantação em 3 dias, cerca de 10× mais rápido que a infraestrutura tradicional. O gargalo é a qualidade da ideia, não as ferramentas."
+        "a": "Quanto tempo leva depende da sua ideia e de quanto você otimiza, não de montar infraestrutura. Não há ambiente para construir, nem pipeline de dados para conectar, nem transferências entre ferramentas."
       }
     }
   }
