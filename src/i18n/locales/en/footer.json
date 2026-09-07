@@ -26,5 +26,21 @@
         "faq": "FAQ"
       }
     }
+  },
+  "disclosure": {
+    "heading": "Important risk disclosures",
+    "general": "Fintela is a software platform for strategy research, testing, and instruction execution. Momento Capital is not a registered investment advisor or broker-dealer, and does not provide investment advice, recommendations, or discretionary portfolio management. All investing involves risk, including the possible loss of principal.",
+    "hypothetical": "Backtested, optimized, and simulated results shown on this site are hypothetical. They do not reflect actual trading, may be affected by survivorship bias and overfitting, and do not guarantee future results.",
+    "assetClasses": {
+      "forex": {
+        "label": "Foreign exchange",
+        "body": "Currency trading is commonly leveraged. Leverage magnifies both gains and losses, and losses may exceed your initial deposit."
+      },
+      "crypto": {
+        "label": "Digital assets",
+        "body": "Crypto assets are highly volatile, trade continuously, and are subject to limited or evolving regulation. They may not be covered by investor protection schemes such as SIPC."
+      }
+    },
+    "moreInfo": "See our <1>Terms and Conditions</1> for the full disclosures."
   }
 }
