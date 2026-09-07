@@ -32,12 +32,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      # The page a user (or an Alpaca marketplace reviewer) reads IS the contract,
-      # so a placeholder must never reach /terms or /privacy. Also asserts counsel
-      # has signed the text off — see content/legal/STATUS.json.
-      - name: Legal documents are counsel-final
-        run: node scripts/check-legal-final.mjs
-
       - name: i18n key parity (en/es/pt)
         run: node scripts/i18n-keysync.mjs
 

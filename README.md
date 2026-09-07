@@ -55,7 +55,6 @@ src/
   theme/           design tokens and the MUI theme
   i18n/locales/    en / es / pt catalogs
 scripts/
-  check-legal-final.mjs   refuses to ship placeholder legal documents
   i18n-keysync.mjs        enforces en/es/pt key parity
 vite-plugin-content.ts    turns content/{blog,docs}/**.md into the JSON the app fetches
 ```

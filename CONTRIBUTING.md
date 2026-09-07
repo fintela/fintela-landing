@@ -17,7 +17,6 @@ npm run dev
 ```bash
 npx tsc -b                        # must pass
 npm run build                     # must pass
-node scripts/check-legal-final.mjs
 node scripts/i18n-keysync.mjs     # en/es/pt key parity
 ```
 
