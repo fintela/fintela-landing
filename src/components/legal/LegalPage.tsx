@@ -10,22 +10,28 @@ import termsEn from '@legal/terms-of-use.md?raw';
 import termsEs from '@legal/terms-of-use.es.md?raw';
 import privacyEn from '@legal/privacy-notice.md?raw';
 import privacyEs from '@legal/privacy-notice.es.md?raw';
+import riskDisclosuresEn from '@legal/risk-disclosures.md?raw';
 
-export type LegalPageKey = 'terms' | 'privacy';
+export type LegalPageKey = 'terms' | 'privacy' | 'riskDisclosures';
 
 /**
- * Counsel delivered both languages; the Spanish version legally prevails and the
- * English is a courtesy translation. Serve Spanish to `es-*` UIs, English to the
- * rest (en, pt — counsel did not deliver Portuguese).
+ * Counsel delivered both languages for terms/privacy; the Spanish version legally
+ * prevails and the English is a courtesy translation. Serve Spanish to `es-*` UIs,
+ * English to the rest (en, pt — counsel did not deliver Portuguese).
+ *
+ * Risk Disclosures has no Spanish version yet (see STATUS.json), so it serves
+ * English to every locale until one is delivered.
  */
 const CONTENT: Record<LegalPageKey, { es: string; en: string }> = {
   terms: { es: termsEs, en: termsEn },
   privacy: { es: privacyEs, en: privacyEn },
+  riskDisclosures: { es: riskDisclosuresEn, en: riskDisclosuresEn },
 };
 
 /**
- * fintela.io/terms and fintela.io/privacy — the canonical public home of the legal
- * documents, and the URLs submitted on Alpaca's app-registration form.
+ * fintela.io/terms, fintela.io/privacy, and fintela.io/risk-disclosures — the
+ * canonical public home of the legal documents. /terms and /privacy are also the
+ * URLs submitted on Alpaca's app-registration form.
  *
  * There is exactly one copy of each document per language, in `docs/legal/`,
  * imported through the `@legal` alias; app.fintela.io renders the same bytes. Each

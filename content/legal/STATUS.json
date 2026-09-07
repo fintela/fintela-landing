@@ -16,6 +16,14 @@
       "public_url": "https://fintela.io/privacy",
       "last_updated": "2026-07-15",
       "counsel_final": true
+    },
+    "riskDisclosures": {
+      "file": "risk-disclosures.md",
+      "title": "Risk Disclosures",
+      "public_url": "https://fintela.io/risk-disclosures",
+      "last_updated": "2026-09-07",
+      "counsel_final": false,
+      "blocked_on": "Delivered as a .docx directly by the user, not through the terms/privacy delivery channel. Unlike those two, it never names the contracting entity (Momento Capital, S.A.P.I. de C.V.) - it refers only to 'Fintela' throughout, which is inconsistent with how Terms and Privacy identify the Company. No Spanish version has been delivered either, so it is served in English to every locale for now. Flip this to true only once counsel/Mariana confirm this is the final, signed-off text and the entity-naming question is resolved."
     }
   },
   "spanish_originals": {

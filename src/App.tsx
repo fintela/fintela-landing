@@ -34,6 +34,9 @@ const TermsPage = lazy(() =>
 const PrivacyPage = lazy(() =>
   import('./pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })),
 );
+const RiskDisclosuresPage = lazy(() =>
+  import('./pages/RiskDisclosuresPage').then((m) => ({ default: m.RiskDisclosuresPage })),
+);
 
 // Pricing — a cold, self-contained page reached from the header, so it is split
 // off the home page's bundle like every other route below the fold.
@@ -186,6 +189,7 @@ function App() {
             {/* Legal */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/risk-disclosures" element={<RiskDisclosuresPage />} />
 
             {/* Documentation — `/docs` has no page of its own; it lands readers on
                 the overview doc, with the full sidebar/search chrome, instead of

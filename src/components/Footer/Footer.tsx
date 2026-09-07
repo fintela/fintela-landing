@@ -98,6 +98,7 @@ const columns: FooterColumn[] = [
 const legalLinks = [
   { key: 'terms', to: '/terms' },
   { key: 'privacy', to: '/privacy' },
+  { key: 'riskDisclosures', to: '/risk-disclosures' },
 ] as const;
 
 export const Footer = () => {
