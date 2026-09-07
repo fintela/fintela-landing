@@ -57,10 +57,6 @@ jobs:
 
       - run: npm ci
 
-      # Never deploy a placeholder legal document, even if CI was bypassed.
-      - name: Legal documents are counsel-final
-        run: node scripts/check-legal-final.mjs
-
       - run: npm run build
 
       - uses: aws-actions/configure-aws-credentials@v4

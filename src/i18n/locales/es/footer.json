@@ -26,21 +26,5 @@
         "faq": "FAQ"
       }
     }
-  },
-  "disclosure": {
-    "heading": "Divulgaciones importantes sobre riesgos",
-    "general": "Fintela es una plataforma de software para la investigación, prueba y ejecución por instrucción de estrategias. Momento Capital no es un asesor de inversiones registrado ni un broker-dealer, y no brinda asesoría de inversión, recomendaciones ni gestión discrecional de portafolios. Toda inversión conlleva riesgo, incluida la posible pérdida del capital invertido.",
-    "hypothetical": "Los resultados de backtesting, optimización y simulación que se muestran en este sitio son hipotéticos. No reflejan operaciones reales, pueden verse afectados por sesgo de supervivencia y sobreajuste, y no garantizan resultados futuros.",
-    "assetClasses": {
-      "forex": {
-        "label": "Divisas",
-        "body": "La operación con divisas suele ser apalancada. El apalancamiento amplifica tanto las ganancias como las pérdidas, y las pérdidas pueden superar el depósito inicial."
-      },
-      "crypto": {
-        "label": "Activos digitales",
-        "body": "Los criptoactivos son altamente volátiles, operan de forma continua y están sujetos a una regulación limitada o en evolución. Pueden no estar cubiertos por esquemas de protección al inversionista como SIPC."
-      }
-    },
-    "moreInfo": "Consulta nuestros <1>Términos y Condiciones</1> para las divulgaciones completas."
   }
 }

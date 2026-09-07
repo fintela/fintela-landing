@@ -26,21 +26,5 @@
         "faq": "FAQ"
       }
     }
-  },
-  "disclosure": {
-    "heading": "Divulgações importantes sobre riscos",
-    "general": "A Fintela é uma plataforma de software para pesquisa, teste e execução por instrução de estratégias. A Momento Capital não é um consultor de investimentos registrado nem um broker-dealer, e não presta consultoria de investimento, recomendações ou gestão discricionária de carteiras. Todo investimento envolve risco, incluindo a possível perda do capital investido.",
-    "hypothetical": "Os resultados de backtesting, otimização e simulação exibidos neste site são hipotéticos. Não refletem operações reais, podem ser afetados por viés de sobrevivência e sobreajuste, e não garantem resultados futuros.",
-    "assetClasses": {
-      "forex": {
-        "label": "Câmbio",
-        "body": "A negociação de moedas é comumente alavancada. A alavancagem amplifica tanto os ganhos quanto as perdas, e as perdas podem exceder o depósito inicial."
-      },
-      "crypto": {
-        "label": "Ativos digitais",
-        "body": "Os criptoativos são altamente voláteis, negociam continuamente e estão sujeitos a regulação limitada ou em evolução. Podem não estar cobertos por esquemas de proteção ao investidor como a SIPC."
-      }
-    },
-    "moreInfo": "Consulte nossos <1>Termos e Condições</1> para as divulgações completas."
   }
 }

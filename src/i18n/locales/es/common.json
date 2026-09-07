@@ -10,7 +10,8 @@
   "footer": {
     "legal": {
       "terms": "Términos y Condiciones",
-      "privacy": "Política de privacidad"
+      "privacy": "Política de privacidad",
+      "riskDisclosures": "Divulgaciones de riesgo"
     }
   }
 }
