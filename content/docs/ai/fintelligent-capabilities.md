@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-07
 summary: Everything Fintelligent can do for you inside Fintela, and exactly where it needs your confirmation before anything changes.
 keywords: capabilities, permissions, confirmations, creating strategies, launching studies, editing risk managers, reading portfolios, limits
 ---
@@ -670,7 +670,7 @@ before Fintelligent does anything, and you're told plainly why. See
 | Receive a file you upload in chat | Attaching a file shows it in the composer, but it isn't actually sent anywhere: only pasted code text goes through |
 | Hand you a file from its own side | Every PDF report is built and downloaded entirely inside your browser: there's no separate copy sitting on a server to fetch later |
 | Take you straight to one specific record | It can send you to a page (your studies list, say) but not yet straight into one particular study on that page |
-| Let you pick which underlying AI model it runs on, or use your own AI provider key | Both options have been removed: Fintelligent always runs on the platform's own configured model |
+| Use your own AI provider key | Not supported: Fintelligent runs on Fintela's managed access to the AI provider you choose, so there's no key to bring |
 
 ## Where to go next
 

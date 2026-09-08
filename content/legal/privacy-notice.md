@@ -2,7 +2,7 @@
 
 ## Fintela Platform
 
-**Last updated:** 15 July 2026
+**Last updated:** 7 September 2026
 
 In accordance with Mexico's Federal Law on Protection of Personal Data Held by Private Parties and other applicable provisions, Momento Capital, S.A.P.I. de C.V. (the "Company" or "Data Controller"), with registered address at Avenida José Vasconcelos 404, Interior 604, Colonia Centro, San Pedro Garza García, Nuevo León, C.P. 66300, México, makes available to the data subject (the "Data Subject") this Privacy Notice, applicable to the processing of data carried out through the Fintela platform.
 
@@ -26,7 +26,7 @@ Personal data will be used for the following primary purposes: verifying the Dat
 
 The Company may transfer the Data Subject's personal data to third party execution, custody, technology infrastructure, and payment processing providers, to the extent strictly necessary to provide the service, as well as to competent authorities upon valid legal request. Such transfers may involve sending personal data outside of Mexico, in which case appropriate measures will be adopted to ensure their protection in accordance with applicable law.
 
-In particular, to operate the Platform's artificial intelligence assistant ("Fintelligent"), the Company uses the services of DeepSeek, an artificial intelligence service provider domiciled in the People's Republic of China. To generate the responses requested by the Data Subject, the information submitted to the assistant, including the content of the Data Subject's queries and the strategies and data they process on the Platform, is transferred to and processed by that provider outside of Mexico, in the People's Republic of China. By using the Fintelligent assistant, the Data Subject expressly consents to this international transfer of their data.
+In particular, to operate the Platform's artificial intelligence assistant ("Fintelligent"), the Company relies on a variety of third party artificial intelligence service providers, such as DeepSeek and Anthropic, among others, without limiting the Data Subject to any single provider or underlying model. To generate the responses requested by the Data Subject, the information submitted to the assistant, including the content of the Data Subject's queries and the strategies and data they process on the Platform, may be transferred to and processed by any of these providers outside of Mexico, including in jurisdictions such as the People's Republic of China and the United States of America, depending on the provider used to process a given request. By using the Fintelligent assistant, the Data Subject expressly consents to this international transfer of their data to any of the providers used by the Company from time to time.
 
 ---
 

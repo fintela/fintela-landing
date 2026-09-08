@@ -348,7 +348,7 @@
       },
       "poweredBy": {
         "q": "¿En qué se basa Fintelligent y es seguro?",
-        "a": "Fintelligent funciona sobre DeepSeek V4 (con enrutamiento automático entre Pro y Flash) con acceso gestionado por Fintela, sin claves de API que aportar. Cada llamada a herramienta es visible en el chat, y cada acción irreversible (crear/detener un estudio, desplegar una operación) requiere tu confirmación explícita antes de ejecutarse."
+        "a": "Puedes elegir qué proveedor de IA impulsa a Fintelligent, entre varias opciones como DeepSeek y Anthropic, con acceso gestionado por Fintela y sin claves de API que aportar. Cada llamada a herramienta es visible en el chat, y cada acción irreversible (crear/detener un estudio, desplegar una operación) requiere tu confirmación explícita antes de ejecutarse."
       },
       "speed": {
         "q": "¿Qué tan rápido puedo pasar de la idea al capital en vivo?",

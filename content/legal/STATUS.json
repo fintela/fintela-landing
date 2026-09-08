@@ -14,8 +14,9 @@
       "spanish_file": "privacy-notice.es.md",
       "title": "Privacy Notice",
       "public_url": "https://fintela.io/privacy",
-      "last_updated": "2026-07-15",
-      "counsel_final": true
+      "last_updated": "2026-09-07",
+      "counsel_final": false,
+      "blocked_on": "Clause Third (Data Transfers) was edited on 2026-09-07 to replace the counsel-approved DeepSeek-only international-transfer disclosure with generic multi-provider language (e.g. DeepSeek, Anthropic), reflecting that Fintelligent now supports a choice of AI providers. This changes the substance of what counsel previously signed off on. Flip this back to true only once counsel/Mariana re-review and confirm the new transfer disclosure is sufficient."
     },
     "riskDisclosures": {
       "file": "risk-disclosures.md",

@@ -2,7 +2,7 @@
 
 ## Plataforma Fintela
 
-**Última actualización:** 15 de julio de 2026
+**Última actualización:** 7 de septiembre de 2026
 
 De conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares y demás disposiciones aplicables, Momento Capital, S.A.P.I. de C.V. (en lo sucesivo, "Momento Capital" o el "Responsable"), con domicilio en Avenida José Vasconcelos 404, Interior 604, Colonia Centro, San Pedro Garza García, Nuevo León, C.P. 66300, México, pone a disposición del titular de los datos personales (en lo sucesivo, el "Titular") el presente Aviso de Privacidad, aplicable al tratamiento de datos realizado a través de la plataforma Fintela.
 
@@ -26,7 +26,7 @@ Los datos personales serán utilizados para las siguientes finalidades primarias
 
 Momento Capital podrá transferir los datos personales del Titular a terceros proveedores de servicios de ejecución, custodia, infraestructura tecnológica y procesamiento de pagos, en la medida estrictamente necesaria para la prestación del servicio, así como a autoridades competentes cuando medie requerimiento legal válido. Dichas transferencias podrán implicar el envío de datos personales fuera del territorio nacional, en cuyo caso se adoptarán las medidas necesarias para garantizar su protección conforme a la legislación aplicable.
 
-En particular, para operar el asistente de inteligencia artificial de la Plataforma ("Fintelligent"), Momento Capital utiliza los servicios de DeepSeek, proveedor de servicios de inteligencia artificial domiciliado en la República Popular China. Para generar las respuestas solicitadas por el Titular, la información que este proporciona al asistente, incluyendo el contenido de sus consultas y las estrategias y datos que procesa en la Plataforma, se transfiere a dicho proveedor y es tratada por él fuera del territorio nacional, en la República Popular China. Al utilizar el asistente Fintelligent, el Titular consiente expresamente esta transferencia internacional de sus datos.
+En particular, para operar el asistente de inteligencia artificial de la Plataforma ("Fintelligent"), Momento Capital utiliza los servicios de diversos proveedores externos de inteligencia artificial, tales como DeepSeek y Anthropic, entre otros, sin limitar al Titular a un proveedor o modelo específico. Para generar las respuestas solicitadas por el Titular, la información que este proporciona al asistente, incluyendo el contenido de sus consultas y las estrategias y datos que procesa en la Plataforma, podrá transferirse a cualquiera de dichos proveedores y ser tratada por ellos fuera del territorio nacional, incluyendo en jurisdicciones como la República Popular China y los Estados Unidos de América, según el proveedor utilizado para atender cada solicitud. Al utilizar el asistente Fintelligent, el Titular consiente expresamente esta transferencia internacional de sus datos a cualquiera de los proveedores que Momento Capital utilice en cada momento.
 
 ---
 

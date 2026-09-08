@@ -348,7 +348,7 @@
       },
       "poweredBy": {
         "q": "Who is Fintelligent powered by, and is it safe?",
-        "a": "Fintelligent runs on DeepSeek V4 (automatically routing between Pro and Flash) with Fintela managed access, and no API key to bring. Every tool call is visible in the chat, and every irreversible action (creating/stopping a study, deploying an operation) requires your explicit confirmation before execution."
+        "a": "You can choose which AI provider powers Fintelligent, from a variety of options such as DeepSeek and Anthropic, with Fintela managed access and no API key to bring. Every tool call is visible in the chat, and every irreversible action (creating/stopping a study, deploying an operation) requires your explicit confirmation before execution."
       },
       "speed": {
         "q": "How fast can I go from idea to live capital?",
