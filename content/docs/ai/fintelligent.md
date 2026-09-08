@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-07
 summary: Fintelligent is Fintela's built in AI assistant, what it can do for you, where to find it, and how to chat with it.
 keywords: fintelligent, ai assistant, chat, conversations, trading strategies, portfolios, ai tokens, prompts
 ---
@@ -22,7 +22,7 @@ the runs it starts.
 | Aspect | Detail |
 |---|---|
 | **Interface** | A chat you can open two ways: as a dedicated full page conversation, or as a floating panel available from anywhere else in the app. |
-| **AI model** | Fintelligent runs on a general purpose AI model chosen by Fintela. There's no model picker: the same assistant is used throughout. |
+| **AI model** | You choose which AI provider powers Fintelligent, from a variety of options such as DeepSeek and Anthropic. Access is fully managed by Fintela, so there's no API key to bring. |
 | **Cost** | Chatting with Fintelligent is billed in Fintela **AI Tokens** (a balance separate from the compute tokens you spend running studies and optimizations). See [Tokens and billing](/docs/tokens-and-billing). |
 | **What it can see** | Fintelligent only sees what you can see. It works within your own account and organization, so it never surfaces another user's or another organization's data. |
 | **Status** | Beta. Expect the occasional rough edge: the floating panel carries a **"Beta"** chip and a note that you may see bugs or incomplete answers. |
@@ -203,7 +203,7 @@ From top to bottom, a conversation is laid out as:
 | Subtitle | How many messages are in the conversation, or a prompt to send one to get started |
 | Menu | The same Rename / Pin / Export / Delete actions as the list row. Disabled until the conversation actually exists |
 
-There's no model selector here: Fintelligent uses the same assistant throughout a conversation.
+The chat header itself doesn't include a model or provider selector.
 
 ### Transcript and history
 
@@ -442,8 +442,7 @@ Documented so you don't go looking for them:
 |---|---|
 | **Conversation export** | Coming soon, the option is visible in the menu but not active yet. |
 | **File upload** | The picker works, but attached files aren't actually sent to Fintelligent yet. |
-| **Choosing a specific model** | Not available, Fintelligent always uses the same assistant. |
-| **Using your own AI provider or key** | Not supported. The AI capability is fully managed by Fintela. |
+| **Using your own AI provider or key** | Not supported. You choose from Fintela's supported AI providers, but the AI capability is fully managed by Fintela. |
 | **Downloadable files from Fintelligent** | PDF reports are put together right in your browser rather than delivered as a file from Fintelligent itself. |
 | **Citations** | No source link feature exists in the transcript today. |
 | **Extra suggested prompt shortcuts** | The Tools menu is the only built in shortcut list. |
