@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: What the Fintela Developer API lets you do, how to connect to it, and the ground rules for pulling your results into your own tools.
 keywords: api, developer api, read-only, personal access key, integrations, dashboards, export results, rate limits, automation
 ---
@@ -35,8 +35,9 @@ this channel entirely. Those workflows now live only in the app.
 
 ## Getting connected
 
-You authenticate every request with a personal access key, which is available in your account
-settings inside Fintela as soon as you look for it: there's no separate setup step. See
+This channel has its own web address, separate from the app you sign into: you'll find it on the
+API Documentation page in your account. You authenticate every request with a personal access key,
+which is available in the same place as soon as you look for it: there's no separate setup step. See
 [Authentication & limits](/docs/api-authentication) for where to find it, how to manage it, and
 exactly what it can reach.
 
@@ -51,16 +52,36 @@ scheduled job that has stopped running.
 
 ## How your results come back to you
 
-Every successful response follows the same simple, predictable shape, whether you're asking for a
-single trial or a whole list of studies: a list comes back as a list, a single item comes back as
-one object, and the shape never changes based on what you asked for. There's nothing extra to strip
-out and nothing inconsistent to guard against between one part of the reference and another.
+Every successful response has the same standard wrapper around it, whether you're asking for a
+single trial or a whole batch of studies: what you actually asked for always sits one level inside
+it, under the same name every time. The one exception is the service check described above, which
+answers directly instead.
+
+Inside that wrapper, results come back in one of three shapes, and which one you get depends on the
+lookup rather than on how you called it:
+
+- **A single item** comes back as one object: one trial, one managed portfolio, one basket.
+- **A straightforward list** comes back as a list: your trials, your managed portfolios, your
+  baskets, your asset groups, a version history, an operation's order log.
+- **A batch lookup keyed by id** comes back as a lookup table rather than a list, with the id you
+  asked about as the key. This is how every "tell me about these specific studies" call answers
+  (configuration, progress, health, status, errors, parameter importance, and both optimization
+  curves), and it's also how the strategy and fitness listings answer. Read the result by looking
+  up each id you asked for, rather than by walking a list in order.
+
+> [!NOTE] A lookup table has no guaranteed order
+> Where a result is keyed by id, don't rely on the order the entries come back in: it can vary
+> between calls. Sort on your end if your tool needs a stable order.
 
 When something goes wrong, you get back a plain language explanation of what happened, plus a short
 label your own tools can check automatically without having to parse a sentence. The full set of
 labels, and what each one means, is on [Errors & status codes](/docs/api-errors). If Fintela's own
 systems are having a problem on their end, you'll get a generic apology rather than a raw technical
 error: there's nothing useful to extract from that case beyond "try again shortly."
+
+Every response, successful or not, also carries a reference identifying that particular call. It's
+worth logging: quoting it in a support ticket points Fintela at the exact request that went wrong,
+even when the message you saw was deliberately generic.
 
 > [!NOTE] You'll never be able to tell whether something exists in someone else's account
 > If you request a resource you don't have access to, you get the same "not found" response you'd
@@ -78,15 +99,20 @@ trial and error:
 - **Extra detail, on request.** By default you get a concise summary. Heavier detail: a full
   equity curve, complete holdings, or order history: is available whenever you ask for it, so the
   common case stays fast and light, and you only pay the size cost when you actually want the
-  detail.
+  detail. Asking **replaces** the default rather than adding to it, so if you want the default
+  piece as well, name it alongside whatever else you're asking for.
 - **Paging through large results.** A few lookups: mainly a Portfolio Group's full trade,
   allocation, and daily results history: can grow large over time, so they're delivered in
   batches rather than all at once. You page through them a batch at a time until you reach the end,
   so an active account never overwhelms whatever you're building.
-- **Newest first, with one exception.** Most lists come back with the most recent item first, so
-  checking the top of a list is usually the fastest way to see what's changed. A Portfolio Group's
-  activity history is the one place that reads oldest first, so a new entry there shows up at the
-  bottom instead.
+- **Newest first, with known exceptions.** Most lists come back with the most recent item first,
+  so checking the top of a list is usually the fastest way to see what's changed. Three places
+  read differently, and it's worth knowing which: the list of the broker connections a Portfolio
+  Group is trading through reads **oldest first**, so a new one appears at the bottom; a
+  portfolio's own day by day data (equity curve, holdings, order log) reads in **date order**,
+  oldest to newest, as you'd expect of anything measured over time; and the weight history for one
+  of those connections is **grouped by member** rather than sorted purely by time. Your list of
+  Portfolio Groups is also sorted by when each was last *changed*, not when it was created.
 - **Optional details simply don't appear.** When an optional piece of information doesn't apply:
   for example, a trial that hasn't been promoted to a live portfolio yet has no live portfolio
   reference: it's left out of the response rather than shown as an empty placeholder. Check
@@ -157,9 +183,11 @@ oldest first, so watch the bottom of that one instead.
 To keep the platform responsive for every customer, your organization's use of this channel is
 capped to a generous request rate, shared across every access key your organization has issued:
 comfortably more than a normal dashboard or scheduled job needs. If you do exceed it, a request is
-briefly refused rather than queued or slowed down; back off and retry shortly after, and build your
-integration to handle an occasional busy response gracefully rather than treating it as a failure.
-Exact numbers are on [Authentication & limits](/docs/api-authentication).
+briefly refused rather than queued or slowed down, and the response tells you how long to wait
+before trying again; back off and retry, and build your integration to handle an occasional busy
+response gracefully rather than treating it as a failure. Exact numbers, and the parts of the
+reference where the cap is actually enforced today, are on
+[Authentication & limits](/docs/api-authentication).
 
 ## Putting it together
 
@@ -180,7 +208,7 @@ a clear, plain language message telling you the key wasn't accepted, rather than
 | [Strategies](/docs/api-strategies) | Strategy listings, their configuration, and edit history |
 | [Studies](/docs/api-studies) | Study listings, progress, health, status, errors, and optimization history |
 | [Trials & portfolios](/docs/api-trials-portfolios) | Every trial produced by your studies, plus the live portfolios promoted from them |
-| [Baskets](/docs/api-baskets) | Portfolio Group details, freshness, and the full history of trades, allocations, and daily results |
+| [Baskets](/docs/api-baskets) | Portfolio Group details, freshness, its combined track record, and the full history of trades, allocations, and daily results |
 | [Fitness](/docs/api-fitness) | Fitness function listings, their configuration, and edit history |
 | [Asset groups](/docs/api-asset-groups) | Your saved Asset Group definitions |
 | [Errors & status codes](/docs/api-errors) | A full plain language reference for every message you might receive |

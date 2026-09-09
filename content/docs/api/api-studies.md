@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 4
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: Pull a study's configuration, progress, health, run status, error details, and optimization results into your own tools or dashboards.
 keywords: studies, optimization progress, study health, run status, error breakdown, optimization curve, parameter importance, developer API, personal access key
 ---
@@ -110,6 +110,7 @@ from there.
 | Out of sample window | An additional holdout period, when the study defines one. |
 | Asset group | Which asset group the strategy (and, if set separately, the fitness function) ran against. |
 | Search space | The range or set of choices each parameter could take. |
+| Grid precision | How many decimal places decimal parameters were rounded to when searching. Empty means they were searched continuously, with no grid. |
 | Daily updates | Whether the study's resulting portfolios are recomputed automatically as new data arrives. |
 | Created | When the study was created. |
 
@@ -152,7 +153,9 @@ the share is undefined.
 ### Status and failure details
 
 The study's current position in its lifecycle, plus (if it failed) a plain language explanation
-and what to do next.
+and what to do next. Alongside the current state you also get the state the platform is *trying*
+to reach, and the timestamps for when the run started, when it finished, and when a stop was
+requested: a run whose current and target states differ is one still in transition.
 
 | Status | What it means |
 |---|---|
@@ -163,6 +166,10 @@ and what to do next.
 | Failed | Stopped because of an error: see the failure details below. |
 | Stopped | Stopped before finishing: either by you, or automatically by the platform (for example, if too many trials were failing in a row, to avoid burning through your compute budget for no benefit). |
 
+Older runs can also report the legacy labels **Pending** and **Finished**, which mean the same as
+Queued and Completed: see [study lifecycle](/docs/study-lifecycle). Match on the status you get
+rather than assuming only the six above can appear.
+
 When a study fails, you'll get back a short explanation in plain language: for example, a study
 that ran out of memory might read: *"This study ran out of memory and stopped. Its scope is more
 than one run can hold: try fewer tickers, a shorter date window, or fewer trials."* Alongside the
@@ -171,9 +178,16 @@ relaunching it, editing your strategy code, or contacting support.
 
 The failure details also indicate roughly where things went wrong: for instance while loading
 data, while running your strategy code, while scoring a trial, or during the search itself: and,
-for the later analysis passes that run after a study's core results already exist (like the
-robustness check or the parameter importance pass), a failure there only affects that particular
+for the follow up analyses that run once a study's core results already exist (the robustness
+check and the parameter importance pass among them), a failure there only affects that particular
 extra analysis, not the study's main results.
+
+> [!NOTE] You get the explanation, not the raw technical error
+> Full technical error dumps never appear in a response, on either the study level status or the
+> per trial error details. What you do get is the plain language explanation, the suggested next
+> steps, and, where the failure came from your own code, the single line of your own error text
+> and the line number it happened on. If you need more than that, contact support and quote the
+> reference from the response.
 
 See [study lifecycle](/docs/study-lifecycle) for what each stage means for a study you're actively
 managing.
@@ -203,13 +217,19 @@ useful if you want to chart it your own way, beyond what's already available in 
 trials yet.
 
 > [!WARNING] Use exact spelling for stages and metrics
-> When you ask for a particular stage or metric, it has to match exactly. A couple of stages go by
-> two different names in different places: out of sample data appears as either `out_of_sample`
-> or `oos`, and real life performance as either `real_life_performance` or `rlp`: so pick one and
-> use it consistently. Training and validation only have one spelling each. An unrecognized stage
-> or metric name isn't treated as an error: it just comes back with nothing, so a silent typo can
-> look like "no data" instead of a mistake. See [metrics reference](/docs/metrics-reference) for the
-> full list of metric names.
+> When you ask for a particular stage or metric, it has to match exactly, character for character.
+> An unrecognized stage or metric name isn't treated as an error: it just comes back with nothing,
+> so a silent typo looks like "no data" instead of a mistake. Metric names are the identifiers
+> listed in the [metrics reference](/docs/metrics-reference) (`sharpe_ratio`, `max_drawdown`, and
+> so on), not their display names: asking for `sharpe` or `Sharpe Ratio` returns nothing at all.
+>
+> Two of the four stages go by two names each: out of sample results appear under either
+> `out_of_sample` or `oos`, and real life performance under either `real_life_performance` or
+> `rlp`. These are **not** two spellings of the same figure. Both can be present for the same
+> trial and metric at once, because they come from two separate measurements (one taken while the
+> trial ran, one taken again afterwards from the results it left behind), and the two can differ.
+> Pick one deliberately, prefer the longer name, and don't treat a figure under one as a stand in
+> for the other. Training and validation have one name each (`train`, `validation`).
 
 ### The optimization curve
 
@@ -285,17 +305,25 @@ something and don't want to look up ids first.
 ### All the studies you can see
 
 Every study your key can read, most recently created first. It returns each study's name, internal
-key, current status, trial budget and completed trial count, its date windows, and whether it
-updates daily: but not its numeric id, so if you plan to move on to the progress, error, or
-optimization lookups above, pull [study configuration](#study-configuration) as well to get the id.
+key, current status, trial budget and completed trial count, its training and validation windows,
+whether it updates daily, and when it was created: but not its numeric id, so if you plan to move on
+to the progress, error, or optimization lookups above, pull
+[study configuration](#study-configuration) as well to get the id. It also omits the out of sample
+window, which configuration does carry.
 
 ### One study, with its top trials
 
 Fetch a single study by its display name or its internal key, and get its configuration back
-together with a ranked list of its best trials. By default you get the top 10, ranked by Sharpe
-ratio on the validation stage: you can ask for more or fewer (up to 100), a different metric, a
-different stage, and, for a metric where lower is better (like drawdown), ascending order instead
-of descending.
+together with a ranked list of its best trials. You can ask for up to 100 (10 if you don't say),
+choose the metric and the stage to rank by, and, for a metric where lower is better (like
+drawdown), ask for ascending order instead of descending. Ranking is on the validation stage
+unless you name a different one.
+
+> [!CAUTION] Always name the metric explicitly
+> Leave the metric out and the ranking comes back **empty**: you'll get the study's configuration
+> with no trials listed, which reads exactly like a study that hasn't produced any scored trials
+> yet. Name the metric you want on every call, using the identifier from the
+> [metrics reference](/docs/metrics-reference) (`sharpe_ratio`, not `sharpe` or `Sharpe Ratio`).
 
 Each ranked trial comes with its portfolio handle: to pull full results via
 [trials and portfolios](/docs/api-trials-portfolios): and every stage's metrics, not just the one

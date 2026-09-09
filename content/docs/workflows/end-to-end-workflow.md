@@ -4,7 +4,7 @@ section: Workflows
 sectionOrder: 5
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: The full workflow in order: build a universe, write a strategy, optimize it, pick a winner, and put it live.
 keywords: workflow, lifecycle, end to end, asset group, strategy, study, optimize, promote, deploy, paper trading, live trading
 ---
@@ -293,7 +293,7 @@ Your first study almost never gives you the configuration you end up keeping. Th
 3. Narrow your ranges, or fix any parameter that turned out not to matter to a single value. A smaller, more focused search finishes faster and explores more of what's actually left to explore.
 4. **Save & Launch**, then compare the two studies side by side on the dashboard.
 
-A completed or stopped study can also be resumed with a larger trial budget through the [Developer API](/docs/api-studies), though there's currently no resume button in the app itself: and a failed study can never be resumed.
+A failed study can never be resumed. Resuming a completed or stopped study with a larger trial budget isn't something you can trigger yourself today: there's no resume button in the app, and the read only [Developer API](/docs/api-studies) can't launch or resume anything either. Duplicating the study, as above, is the route that's actually available.
 
 There's a second loop that starts from stage 6 instead of stage 2: **Derive / Optimize risk managers** on a candidate creates a new study (one per selected portfolio) that tunes guard rails around a signal you've already validated. These studies launch right away; they don't sit as drafts first.
 

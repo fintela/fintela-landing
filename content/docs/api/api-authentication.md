@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: How to find your personal API key, connect it to your own tools, and the request limits that apply to your organization.
 keywords: authentication, api key, personal access key, bearer token, read-only access, rate limit, integrations, dashboards
 ---
@@ -50,27 +50,43 @@ you can grab it without retyping it.
 ### What you can (and can't) do with your key today
 
 - **No self serve "create a new key."** A key is issued automatically the first time it's needed,
-  as described above.
-- **No self serve "revoke."** If you believe your key has been exposed, contact Fintela support to
-  have it revoked: there's no button in the app for this yet.
-- **No self serve "rotate" (retire the old key and issue a new one).** Same situation: this isn't
-  something you can trigger yourself today.
+  as described above. You can't hold two keys at once, or issue a second one for a separate
+  integration.
+- **No button to rotate or revoke.** Fintela does support rotation, and it works the way you'd
+  expect: your current key is revoked and a fresh one is issued in the same step, so anything
+  still using the old key stops working immediately. What's missing is the control in the app,
+  so today rotation is something you ask Fintela to run for you rather than something you click.
+- **No self serve revoke on its own.** There's no way to retire a key without a replacement being
+  issued. If you believe your key has been exposed, contact Fintela support.
+- **Rotation is a plan feature.** Unlike simply reading back the key you already have, rotating it
+  requires Developer API access to be enabled on your organization: see
+  [Turning on API access](#turning-on-api-access-for-your-account) below.
 
 > [!WARNING] Some in app guidance is ahead of what's actually available
 > You may currently see help text suggesting you can "regenerate" your key yourself from the
-> Account page, including advice to do so if you suspect it's been compromised. That control isn't
-> available yet. Until it is, plan your key handling around a credential you can't rotate
-> yourself: keep it in a password manager or your team's secrets tooling, never paste it into code
-> you share publicly or into a web address, and contact Fintela support if you ever need it
-> revoked.
+> Account page, including advice to do so if you suspect it's been compromised. That button doesn't
+> exist yet. Until it does, plan your key handling around a credential you can't rotate on your
+> own schedule: keep it in a password manager or your team's secrets tooling, never paste it into
+> code you share publicly or into a web address, and contact Fintela support if you need it rotated
+> or revoked.
 
 ## What your key looks like
 
 Your key is a long random string that always starts with `sk_live_`. There's no separate "test"
-key or sandbox version: every key you're issued works against your live Fintela data, so treat
-any key you receive as a real, production grade credential from the moment you get it.
+key or sandbox version: every key you're issued works against your live Fintela data, so treat any
+key you receive as a real, production grade credential from the moment you get it.
+
+> [!NOTE] `sk_live_` is Fintela's own prefix
+> It looks like a prefix you may have seen elsewhere, but a Fintela key is not a key for any
+> other service, and no other service's key will work here. Some automated secret scanners flag
+> the prefix generically: if yours does, the finding is still worth acting on, because a leaked
+> Fintela key reads everything your organization holds.
 
 ## Connecting your key to your tools
+
+This channel has its own web address, separate from the one you use to sign into the app, and your
+access key works only there. You'll find the address on the API Documentation page in your account,
+alongside the key itself.
 
 Whatever you're connecting (a script, a notebook, a BI tool, an internal dashboard) it needs to
 send your key using the standard "Bearer token" method in the request's Authorization header.
@@ -111,6 +127,12 @@ of a few practical reasons:
   account first before assuming it was revoked.
 - The key is no longer properly linked to your account or organization: if you keep seeing this
   after re checking the key itself, reach out to support.
+
+There's one further case that isn't an authentication failure at all: a key is refused outright,
+with a message saying the account behind it isn't enabled to use Fintela, when the Fintela account
+that owns the key is suspended, disabled, or still awaiting approval. That's about the person, not
+the credential, so re issuing the key won't help: the account itself has to be reinstated. See
+[API errors](/docs/api-errors) for how this differs from an ordinary "not found."
 
 See [API errors](/docs/api-errors) for the complete picture of what failures look like and how to
 handle them in your integration.
@@ -175,9 +197,11 @@ Not rate limited today: [Studies](/docs/api-studies), [Strategies](/docs/api-str
 
 ### If you hit the limit
 
-Going over the limit gets your request turned away with a "too many requests" style response.
-The limit recovers quickly: waiting about a second before trying again is generally enough;
-retrying immediately just gets rejected again.
+Going over the limit gets your request turned away with a "too many requests" style response, and
+that response tells you how long to wait before trying again: about a second today. Take the wait
+from the response rather than guessing. Your allowance builds back up steadily rather than resetting
+on a clock, so a short pause is genuinely enough, while retrying immediately just gets rejected
+again.
 
 A few practical habits that keep you well clear of the limit:
 
@@ -194,10 +218,10 @@ Fintela doesn't currently show you, in a response or anywhere in the app, how cl
 your limit: you only find out by being turned away. If you need a safety margin, keep your own
 count of requests on your side rather than relying on Fintela to warn you in advance.
 
-Under very heavy simultaneous use from your organization, you might occasionally see a few more
-requests go through than the stated limit. That isn't guaranteed behavior and shouldn't be relied
-on: design your integration around the 20-requests per second figure above, not around what you
-observe under load.
+At busy times you may see more requests go through than the stated limit. That headroom isn't
+promised, isn't stable, and can disappear without notice, so it's not something to build on:
+design your integration around the 20-requests per second figure above, not around whatever you
+happen to measure.
 
 ## Checking whether the service is available
 

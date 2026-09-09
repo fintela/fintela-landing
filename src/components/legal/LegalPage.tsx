@@ -31,7 +31,6 @@ const CONTENT: Record<LegalPageKey, { es: string; en: string }> = {
 /**
  * fintela.io/terms, fintela.io/privacy, and fintela.io/risk-disclosures — the
  * canonical public home of the legal documents. /terms and /privacy are also the
- * URLs submitted on Alpaca's app-registration form.
  *
  * There is exactly one copy of each document per language, in `docs/legal/`,
  * imported through the `@legal` alias; app.fintela.io renders the same bytes. Each

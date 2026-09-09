@@ -6,7 +6,7 @@ order: 3
 published: true
 updated: 2026-09-01
 summary: Connect a brokerage account, deploy a portfolio group to trade it, and monitor and manage the operation that results.
-keywords: live trading, paper trading, broker, alpaca, connect broker, deploy, operation, orders, reconciliation, monitoring, end of day
+keywords: live trading, paper trading, broker, Broker, connect broker, deploy, operation, orders, reconciliation, monitoring, end of day
 ---
 
 Live trading is the last stretch of the workflow: you link a brokerage account to Fintela, point a [portfolio group](/docs/portfolio-groups) at it with a capital figure, and let the platform turn that group's daily target weights into real orders. The unit you deploy is called an **operation**: one portfolio group running against one broker connection, with its own capital, its own status, and its own rebalance clock. Everything on this page moves money, or decides whether money moves, so read the prerequisites before you connect anything.
@@ -34,8 +34,6 @@ Different actions in this flow require different permission grants, which is why
 
 Broker connections live on the Account page, in a card titled **Broker connections**. Its own description explains the deal plainly: *"Connect your brokerage account so live operations can place orders on your behalf. Your credentials are encrypted and never stored in readable form."*
 
-**Alpaca** is the only supported broker today. Trying to connect anything else is rejected outright.
-
 ### The connect dialog
 
 Click **Connect broker** to open the **Connect your brokerage** dialog. It has one shared header and two mutually exclusive ways to link your account.
@@ -49,21 +47,21 @@ Then pick a path:
 
 | Path | Control | What happens |
 |---|---|---|
-| Connect with Alpaca (recommended) | *"Link your existing brokerage account securely: no API keys to copy or store."* | You're redirected to Alpaca's own login page, authorize Fintela to trade on your behalf there, and are brought straight back once you approve it. Your Alpaca username and password are never seen by Fintela |
-| Connect with API key (advanced) | Reveals **API Key ID** and **API Secret** fields, then **Connect with API key** | You paste in an API key pair generated from your own Alpaca account settings |
+| Connect with Broker (recommended) | *"Link your existing brokerage account securely: no API keys to copy or store."* | You're redirected to Broker's own login page, authorize Fintela to trade on your behalf there, and are brought straight back once you approve it. Your Broker username and password are never seen by Fintela |
+| Connect with API key (advanced) | Reveals **API Key ID** and **API Secret** fields, then **Connect with API key** | You paste in an API key pair generated from your own Broker account settings |
 
-Either way, your credentials are checked directly against Alpaca **before** anything is saved. If Alpaca rejects them, you'll see a message telling you the credentials weren't accepted: double check what you copied, or that the key is still active on Alpaca's side. A successful API key connection toasts **Brokerage connection added and verified**; a successful Alpaca login returns you to the Account page with **Brokerage account connected and verified.**
+Either way, your credentials are checked directly against Broker **before** anything is saved. If Broker rejects them, you'll see a message telling you the credentials weren't accepted: double check what you copied, or that the key is still active on Broker's side. A successful API key connection toasts **Brokerage connection added and verified**; a successful Broker login returns you to the Account page with **Brokerage account connected and verified.**
 
-The dialog also shows Alpaca's required authorization disclosure and links to Fintela's Terms of Use and Privacy Policy. Fintela only ever asks for trading access on the connection: never for your market data subscriptions, since the research and analysis you do in Fintela already runs on Fintela's own market data.
+The dialog also shows Broker's required authorization disclosure and links to Fintela's Terms of Use and Privacy Policy. Fintela only ever asks for trading access on the connection: never for your market data subscriptions, since the research and analysis you do in Fintela already runs on Fintela's own market data.
 
 > [!WARNING] One connection per environment
-> You can have only one active connection per broker per environment: one paper connection today, and (once it opens) one live connection. Trying to add a second while one is already active is stopped before you even reach Alpaca's side, with a message telling you to disconnect the existing one first. A connection you've previously disconnected is the one exception: reconnecting the same account restores it in place and keeps its full history, rather than starting over.
+> You can have only one active connection per broker per environment: one paper connection today, and (once it opens) one live connection. Trying to add a second while one is already active is stopped before you even reach Broker's side, with a message telling you to disconnect the existing one first. A connection you've previously disconnected is the one exception: reconnecting the same account restores it in place and keeps its full history, rather than starting over.
 
 ### How your credentials are protected
 
 However you connect, your broker credentials are encrypted before they're stored, and Fintela never shows them back to you (or to anyone else) once you've entered them. Not in the connections list, not to Fintela support. What you see for a connection is limited to things like its name, provider, environment, status, and when it was last verified; there's no screen anywhere that reveals the underlying key or token again.
 
-If a key needs to change (say, because you regenerated it on Alpaca's side) rotating your credentials swaps in the new ones right away, without pausing or interrupting anything the connection is actively trading.
+If a key needs to change (say, because you regenerated it on Broker's side) rotating your credentials swaps in the new ones right away, without pausing or interrupting anything the connection is actively trading.
 
 ### The connections table
 
@@ -72,9 +70,9 @@ Each connection you've added is one row.
 | Column | What it shows |
 |---|---|
 | **Name** | The name you gave the connection. If the last check failed, the reason appears underneath |
-| **Provider** | The broker: currently always Alpaca |
+| **Provider** | The broker: currently always Broker |
 | **Environment** | A chip reading **paper** or **live** (live is shown in orange) |
-| **Auth** | Whether you connected with an API key or through Alpaca's own login |
+| **Auth** | Whether you connected with an API key or through Broker's own login |
 | **Status** | A chip reading **active** (green), **revoked** (red), or **error** (amber) |
 | **Last verified** | When Fintela last successfully checked the credentials, or a dash if never |
 
@@ -88,12 +86,12 @@ Four actions on each row, in increasing order of consequence.
 
 | Action | What it does |
 |---|---|
-| **Re verify** | Re checks the credentials with Alpaca and updates status and last verified time. Success toasts **Connection re verified** |
-| **Rotate credentials** | Replaces the stored key or secret with a new one, in place. The new credentials are checked with Alpaca first, and success clears any prior revoked or error status |
+| **Re verify** | Re checks the credentials with Broker and updates status and last verified time. Success toasts **Connection re verified** |
+| **Rotate credentials** | Replaces the stored key or secret with a new one, in place. The new credentials are checked with Broker first, and success clears any prior revoked or error status |
 | **Disconnect** | Marks the connection revoked but keeps its full history, so you can connect a different account into the same slot later |
 | **Delete** | Permanently removes the connection, along with any of its already stopped operations |
 
-Rotation is the right move for a key that's leaked or about to expire: running operations keep trading right through it and simply pick up the new credentials automatically. It's deliberately allowed even while operations are live. Connections made through Alpaca's own login can't be rotated this way; the dialog says so directly: *"This connection uses "Connect with Alpaca" (OAuth). To refresh it, reconnect through your brokerage. API key rotation does not apply."*
+Rotation is the right move for a key that's leaked or about to expire: running operations keep trading right through it and simply pick up the new credentials automatically. It's deliberately allowed even while operations are live. Connections made through Broker's own login can't be rotated this way; the dialog says so directly: *"This connection uses "Connect with Broker" (OAuth). To refresh it, reconnect through your brokerage. API key rotation does not apply."*
 
 > [!CAUTION] Delete is destructive and irreversible
 > The confirmation states exactly what goes: *Delete connection "{{name}}"? This permanently removes its stopped operation records, EOD reconciliation history, risk limits and kill switch state. Your portfolio groups and their trade history are kept. Live portfolio groups (running or paused) must be stopped first. To just swap accounts, use Disconnect instead.*
@@ -104,10 +102,10 @@ Both **Disconnect** and **Delete** are blocked while any operation on the connec
 
 Paper versus live is a property of the **connection**, decided when you connect the account: there's no separate paper/live switch anywhere in the deploy flow, and none on the operation itself. Every operation on a paper connection is paper; to go live, you connect the live account as a separate connection and create a new operation against it. The workflow looks identical either way.
 
-Paper trading runs the entire pipeline (the same weights, the same order planning, the same reconciliation, the same reports) against Alpaca's paper account and its simulated capital, so it's a faithful rehearsal of live trading, not a simplified preview of it.
+Paper trading runs the entire pipeline (the same weights, the same order planning, the same reconciliation, the same reports) against Broker's paper account and its simulated capital, so it's a faithful rehearsal of live trading, not a simplified preview of it.
 
 > [!WARNING] Live connections aren't enabled yet
-> The Environment selector shows **Live (pending approval)** as a disabled option today, and any attempt to force it through is refused the same way. Real money live trading isn't enabled for any Fintela account yet: it's waiting on Alpaca's approval of Fintela's brokerage integration. Paper trading is fully available today and uses the exact workflow live trading will use once it opens.
+> The Environment selector shows **Live (pending approval)** as a disabled option today, and any attempt to force it through is refused the same way. Real money live trading isn't enabled for any Fintela account yet: it's waiting on Broker's approval of Fintela's brokerage integration. Paper trading is fully available today and uses the exact workflow live trading will use once it opens.
 
 A connection is unique per environment, and an operation is unique per group and connection pair: so once live trading opens, the same portfolio group will be able to run paper and live side by side, each on its own connection.
 

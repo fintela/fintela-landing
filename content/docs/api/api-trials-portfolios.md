@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 5
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: Pull your optimization trial results and the managed portfolios promoted from them into your own tools with Fintela's read only API.
 keywords: developer API, trials, managed portfolios, promoted portfolios, equity curve, holdings, personal access key, read-only, deprecated
 ---
@@ -48,14 +48,24 @@ integration can move between them without guessing:
 - A trial that's been promoted carries a reference to its managed portfolio. A trial that's never
   been promoted simply doesn't carry that reference at all: so check for its presence rather than
   assuming it will be empty or zero.
-- A managed portfolio always carries a reference back to the trial it was promoted from: even if the
-  study that produced that trial has since been deleted. The managed portfolio keeps running on its
-  own promotion time snapshot regardless; deleting the source study doesn't touch anything you've
-  already promoted.
+- A managed portfolio carries a reference back to the trial it was promoted from, but that
+  reference is **not permanent**. It's present for as long as the source trial is still there, and
+  it's cleared to empty once the trial is gone: deleting the study that produced it takes the
+  trial's lineage with it.
 
 So if you're looking at a trial and it shows a link to a managed portfolio, you can follow that link
-to see its live, day by day performance. And if you're looking at a managed portfolio, you can follow
-its link back to the exact trial (parameters, backtest, all of it) that it came from.
+to see its live, day by day performance. And if you're looking at a managed portfolio that still
+carries a source trial, you can follow that link back to the exact trial (parameters, backtest, all
+of it) that it came from.
+
+> [!WARNING] An empty source trial doesn't mean the portfolio is broken
+> A managed portfolio with no source trial is perfectly healthy and keeps trading exactly as
+> before: promotion gives it its own complete, self contained copy of everything it needs, so it
+> never depends on the trial still being there. There are two different reasons the reference can
+> be empty, and this channel doesn't tell them apart: the source study was deleted, or the
+> portfolio came from a one off run in the app rather than from a study trial. If
+> you're building lineage reporting, treat an empty reference as "lineage unavailable" rather than
+> as an error, and don't infer that the trial ever existed.
 
 > [!NOTE] Promotion itself happens in the app, not through this page
 > Promoting a trial copies its data into a new managed portfolio and turns on daily updates, which is
@@ -104,13 +114,19 @@ On a managed portfolio, you can choose from:
 There's no metrics or parameters option for a managed portfolio, because a managed portfolio isn't a
 separate optimization result: it doesn't have its own metrics to look up. If you want performance
 figures for a managed portfolio, read the metrics of the trial it was promoted from, or work them out
-yourself from its equity curve.
+yourself from its equity curve. If what you actually want is how a *group* of portfolios performed
+together, don't blend their curves by hand: a Portfolio Group has its own track record, which
+accounts for the cost of rebalancing between members, and you can pull it directly from
+[Baskets](/docs/api-baskets).
 
 > [!WARNING] Asking for extra data replaces the default: it doesn't add to it
 > On a trial, leaving this choice blank gives you performance metrics automatically. As soon as you
 > explicitly ask for something (say, the equity curve) you get exactly what you asked for and
 > nothing else, including no metrics. If you still want metrics alongside whatever else you're
-> pulling, ask for it explicitly too.
+> pulling, ask for it explicitly too. Passing the option with nothing after it isn't the same as
+> leaving it out: it's read as "no sections at all," and you get the identifying fields only.
+> Names you ask for that aren't recognised are ignored silently rather than rejected, so a typo
+> reads as a missing section rather than an error.
 
 ## Getting access, limits, and staying up to date
 
@@ -162,10 +178,20 @@ Pull everything about a single trial by its reference, choosing which extra piec
 [Choosing what to bring back](#choosing-what-to-bring-back-the-include-option) above).
 
 Performance metrics are broken out by evaluation stage: training, validation, out of sample, and
-real life performance, plus an overall figure that summarizes across all of them. Not every stage
-will have data for every trial, and that's expected: a stage with nothing to show simply comes back
-empty rather than missing. See [metrics reference](/docs/metrics-reference) for what each figure
-means.
+real life performance, plus an overall figure covering the whole period at once. Not every stage
+will have data for every trial, and that's expected: a stage with nothing recorded is **left out
+of the response entirely** rather than returned as an empty entry, so check whether a stage is
+present before reading it. The overall figure is the exception: it's always present, and it's the
+one stage that can legitimately come back empty. See
+[metrics reference](/docs/metrics-reference) for what each figure means.
+
+> [!CAUTION] Out of sample and real life performance can each appear under two names
+> Out of sample results appear under either `out_of_sample` or `oos`, and real life performance
+> under either `real_life_performance` or `rlp`. Both can be present on the same trial at once, and
+> they are **not duplicates**: they come from two separate measurements (one taken while the trial
+> ran, one taken again afterwards from the results it left behind), so the numbers can differ. Read
+> whichever one you mean deliberately rather than merging them, and prefer the longer name when
+> both are there. Training and validation have one name each.
 
 A trial's holdings show short positions as negative values and long positions as positive ones, so
 you can read the direction directly off the number without a separate flag.
@@ -198,7 +224,7 @@ one:
 |---|---|
 | Managed portfolio reference | The id you'll use to pull this portfolio's full detail, and the same id [portfolio groups](/docs/portfolio-groups) use when listing their members |
 | Name | The name it was given at promotion time |
-| Source trial | The trial it was promoted from: present even if that trial's study has since been deleted |
+| Source trial | The trial it was promoted from, when it's still around: empty if the source study was deleted, or if this portfolio came from a one off run in the app rather than from a study trial |
 | Daily updates | Whether it's currently advancing day by day |
 | Promoted | When it was promoted |
 
@@ -218,8 +244,13 @@ A few things worth knowing about what comes back:
   a "short" flag on a managed portfolio: convert deliberately if you're comparing the two.
 - The **order log** is oldest first, and reaches back before the promotion date too, for the same
   reason the equity curve does: it starts with the orders from the original backtest, then continues
-  with the orders placed automatically by daily updates since. Each order tells you which of those two
-  it came from, so you can tell backtested history apart from live trading activity.
+  with the orders placed automatically by daily updates since. Each order says which of the two it
+  came from, so you can tell backtested history apart from what has actually happened since you
+  promoted it.
+
+- These are the portfolio's **own simulated and daily updated orders**, not orders sent to a
+  broker. Orders that actually went to a broker belong to a Portfolio Group's live trading, and
+  are covered under [Baskets](/docs/api-baskets).
 
 Keep in mind that trial timestamps and managed portfolio timestamps aren't always recorded in exactly
 the same format: if you're stitching data from both together, compare dates rather than assuming the

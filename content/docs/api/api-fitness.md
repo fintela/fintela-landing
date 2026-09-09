@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 7
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: Pull your fitness functions, their configuration, and their full edit history into your own systems through Fintela's read only integration.
 keywords: fitness function, scoring, read-only access, version history, access key, built-in objectives
 ---
@@ -73,9 +73,9 @@ Use it to discover what exists, then request full details only for the functions
 need. It's the cheapest call in this integration, so it's the right first step when you don't
 already know the id you're after.
 
-> [!NOTE] Don't rely on the order
-> Functions come back in no particular order. Sort them yourself if you need a stable, predictable
-> list.
+> [!NOTE] It's a lookup table, so don't rely on the order
+> The result is keyed by id rather than being an ordered list, so functions come back in no
+> particular order. Sort them yourself if you need a stable, predictable list.
 
 ## Fitness function details
 
@@ -184,9 +184,11 @@ connection details.
 
 - This integration is entirely read only. Attempting to create, edit, or delete a fitness function
   through it fails outright: those actions only work in the app.
-- You'll never see a plain "forbidden" error here. A fitness function you can't read is either
-  left out of a list or causes the whole request to fail, never a message that confirms something
-  exists but you can't touch it.
+- Fintela never confirms that a fitness function exists but isn't yours to see. One you can't read
+  is either left out of a list or causes the whole request to fail, never a message that admits it
+  exists elsewhere. (The one "forbidden" response this API does give is about your own Fintela
+  account being disabled, not about any particular function: see
+  [Errors & status codes](/docs/api-errors).)
 - Full error handling details, including what to expect when a request fails, are covered in
   [Errors & status codes](/docs/api-errors).
 

@@ -4,17 +4,17 @@ section: API Reference
 sectionOrder: 10
 order: 6
 published: true
-updated: 2026-09-01
-summary: How to pull your Portfolio Groups (baskets), the broker connections they trade through, and their full trading history into your own tools through Fintela's read only API.
-keywords: baskets, portfolio groups, operations, allocations, orders, audit trail, end-of-day reports, data freshness, rebalancing, read-only API
+updated: 2026-09-08
+summary: How to pull your Portfolio Groups (baskets), their combined track record, the broker connections they trade through, and their full trading history into your own tools through Fintela's read only API.
+keywords: baskets, portfolio groups, track record, backtest, trading costs, operations, allocations, orders, audit trail, end-of-day reports, data freshness, rebalancing, read-only API
 ---
 
 Baskets (called **Portfolio Groups** in the app) are Fintela's way of trading several managed
 portfolios together under one shared configuration. This page covers what you can pull about your
 baskets through Fintela's read only Developer API: their configuration, whether every member is
-current enough to trade on, and the complete history of everything each broker connection they run
-on has done: weight changes, broker orders, status changes, and daily reconciliation against your
-broker.
+current enough to trade on, the group's own combined track record, and the complete history of
+everything each broker connection they run on has done: weight changes, broker orders, status
+changes, and daily reconciliation against your broker.
 
 You build and trade baskets in the Fintela app itself. The Developer API only lets you read what's
 already there, so you can bring your basket and trading data into your own dashboards, spreadsheets,
@@ -47,6 +47,7 @@ capital, status, and history are tracked separately per operation.
 | All your baskets | Every Portfolio Group your organization has set up, most recently changed first |
 | One basket | Full configuration for a single Portfolio Group |
 | Basket freshness | Whether every member's data is current enough to trade on right now |
+| Basket track record | The group's own combined performance curve, its config history, and what trading it cost |
 | A basket's operations | Every broker connection the basket is currently running on: paper, live, or split across tranches |
 | One operation | Full detail for a single operation: broker, capital, status, and drift |
 | Allocation history | Every weight snapshot recorded each time an operation rebalanced |
@@ -54,20 +55,28 @@ capital, status, and history are tracked separately per operation.
 | Audit trail | Every status change and system event recorded for an operation |
 | End of day reports | Daily reconciliation between Fintela's records and your broker's own activity |
 
-Each of these comes back as a full list in one response: there's no server side sorting, filtering,
-or search on this page, so do that in your own tool once you've pulled the data.
+There's no server side sorting, filtering, or search anywhere on this page, so do that in your own
+tool once you've pulled the data. The basket level views come back complete in one response; the
+four operation history views are paged, as described under
+[Operation history](#operation-history).
 
-> [!NOTE] One list comes back oldest first
-> A basket's operations are listed oldest first. Every other list on this page: orders, the audit
-> trail, end of day reports: comes back newest first. Don't assume the first row you see is the
-> most recent one; check which list you're looking at.
+> [!NOTE] The lists here aren't all ordered the same way
+> A basket's operations are listed **oldest first**, so a newly created one appears at the bottom.
+> Orders, the audit trail and end of day reports all come back **newest first**. Allocation history
+> is the odd one out: it's grouped by member, and only sorted by time within each member. Don't
+> assume the first row you see is the most recent one; check which list you're looking at.
 
 ## Getting access
 
 You read basket data with a personal access key, generated from your account settings: see
 [Authentication & limits](/docs/api-authentication) for how to create one. The Developer API is
-strictly read only: nothing you do with it can change a basket, launch a trade, or move money, so
-it's safe to hand a key to a reporting tool or script without worrying it could act on your behalf.
+strictly read only: nothing you do with it can change a basket, launch a trade, or move money, so a
+key can't act on your behalf even if it's misused.
+
+> [!CAUTION] Read only is not the same as low risk
+> A key still reads everything your organization holds, including your strategy code and your live
+> trading history. Treat it as a credential worth protecting rather than as a harmless one, and
+> keep it out of anything you don't control.
 
 Access is scoped to your whole organization, not to individual baskets: anyone on your team with an
 access key can read every basket your organization owns. If a basket doesn't exist, has been
@@ -79,13 +88,15 @@ the API can't be used to probe what other organizations have set up. If a reques
 
 | What you'll see | What it means |
 |---|---|
+| Id | The basket's own identifier, which every other lookup on this page takes. |
 | Name | The basket's name, as set in the app. |
-| Members | The managed portfolios in the basket, and each one's weight if you've set weights manually. |
+| Members | The managed portfolios in the basket, and each one's weight if you've set weights manually. Weights are only listed for members that actually have one set; if you've never set weights by hand, this comes back empty. |
 | Daily Update | Whether the basket's active members extend their performance history every day. |
 | Stage | The time window used when the basket runs its daily update (defaults to year to date). |
-| Allocation method | How member weights are worked out: see below. |
+| Allocation method | How member weights are worked out: see below. Some methods also carry their own settings, returned alongside. |
 | Rebalance cadence | Whether a periodic rebalance is turned on, and how often it runs, counted in trading days rather than calendar days. |
-| Last changed | When the basket's configuration was last updated. |
+| Rebalance anchor date | The date the rebalance calendar counts from. Comes back empty when it's never been pinned, in which case the basket's creation date is used. |
+| Created / last changed | When the basket was first created, and when its configuration was last updated. |
 
 > [!NOTE] This is a snapshot, not everything the app knows
 > A few things you can set on a basket in the app: its description, and some advanced execution
@@ -147,6 +158,64 @@ Externally supplied strategies can't currently extend automatically through Dail
 strategies that run inside Fintela can. See [external strategies](/docs/external-strategies) for
 what that distinction means and when you'd choose it.
 
+## The basket's track record
+
+A Portfolio Group has a performance curve of its own, separate from any of its members', and you
+can pull it. This is the same curve the Portfolio Manager plots in the app.
+
+> [!IMPORTANT] A group's curve is not the sum of its members' curves
+> You cannot reconstruct this number by blending the equity curves of the managed portfolios in the
+> group. A group is measured as one combined portfolio, and it pays for the trading that
+> rebalancing between its members actually requires. Pulling member curves and weighting them
+> yourself will give you a different, flattering number. If you want the group's real performance,
+> pull it from here.
+
+The curve is already worked out and kept up to date for you as the group changes and as new trading
+days arrive, so asking for it simply hands you the current answer. Nothing is recalculated on your
+behalf when you ask, which is why this is available read only and why checking it costs you
+nothing.
+
+### What you can bring back
+
+| Option | What you get |
+|---|---|
+| Equity curve (the default) | The group's value over time as a single continuous series, starting at 1.00 on its first day |
+| Stages | The group's configuration history: one entry per period during which its settings stayed put |
+| Holdings | Everything the group held, listed for every trading day |
+
+> [!WARNING] Holdings here are very large
+> Unlike the curve, holdings come back as one complete list of positions per trading day. For a
+> group of a dozen members over several years that runs to hundreds of thousands of entries, which
+> is why it's off by default. Only ask for it when you actually intend to process it.
+
+As with a trial, asking for something replaces the default rather than adding to it: if you want
+the stages alongside the curve, name both.
+
+### Stages: the group's configuration history
+
+Every time a group's settings change (its allocation method, its rebalance cadence, or which
+portfolios are in it) the current period is closed off and a new one opens. Past periods are frozen,
+so changing the configuration today never rewrites the history it didn't produce. Each entry tells
+you what opened it (the group's creation, a configuration change, a manual rebalance, or a
+membership change), the dates it covers, the settings that were in force, and which members it was
+computed over. Exactly one entry is open at any time: the current one, which has no end date.
+
+### Reading the cost figures
+
+Alongside the curve you get the trading cost rate the group was charged and what those costs added
+up to over the whole record, plus a marker saying whether the record is **frictionless**: that is,
+whether any trading costs were applied to it at all.
+
+> [!CAUTION] No cost figure is not the same as a zero cost
+> Not every stretch of a group's history carries trading costs. Where any of it doesn't, the whole
+> record is reported as frictionless and the cost rate is left out rather than shown as zero,
+> because "no costs were applied here" and "costs were applied and came to nothing" are very
+> different claims, and only one of them is good news. A frictionless curve is optimistic: don't
+> compare it against a costed one, and don't present it as a return you could have achieved.
+
+You also get the last market day the record actually valued. A data feed that's running a day
+behind reads as a clear "as of" date rather than as a curve that looks mysteriously stuck.
+
 ## Operations: how a basket actually trades
 
 Every time a basket is set up to trade through a broker connection, that's an operation. An
@@ -157,7 +226,7 @@ follows come from the shared basket.
 | Field | What it tells you |
 |---|---|
 | Broker connection | Which of your broker connections this operation trades through. |
-| Broker | The broker it trades at. Alpaca is the only broker Fintela connects to today. |
+| Broker | The broker it trades at. |
 | Label | An optional name you can give the operation, e.g. "paper $10k" or "live tranche A": useful when a basket has several operations at once. |
 | Capital | The capital allocated to this operation. |
 | Actual status / requested status | The state the platform has actually reached, and the state you (or a teammate) last asked for in the app. |
@@ -196,10 +265,15 @@ specific basket and one specific operation.
 > does tell you clearly when an id is wrong.
 
 These history views come back in pages rather than all at once, so a basket with years of trading
-history doesn't overwhelm a single pull: keep paging until a page comes back with fewer rows than
-you asked for. Most of them are ordered newest first (allocations are grouped by member instead); if
-new activity happens while you're still paging through, rows can shift underneath you, so anchor on
-a timestamp yourself if that matters for your use case.
+history doesn't overwhelm a single pull: you choose a page size and a starting offset, and keep
+paging until a page comes back with fewer rows than you asked for. If you don't choose a page size
+you get 500 rows for allocations, orders and the audit trail, and 90 for end of day reports (about
+a quarter's worth of trading days). The ceiling is 1,000 rows per page: ask for more and you simply
+get 1,000 back rather than an error, so there's no exact number you need to know in advance.
+
+Most of these are ordered newest first (allocations are grouped by member instead); if new activity
+happens while you're still paging through, rows can shift underneath you, so anchor on a timestamp
+yourself if that matters for your use case.
 
 ### Allocation history
 
@@ -314,6 +388,7 @@ A few signals worth checking on a loop:
 | New broker activity | Order history | Orders you haven't seen before |
 | Reconciliation problems | End of day reports | An outcome other than clean |
 | Members going stale | Basket freshness | A non empty stale list, or Daily Update turned off |
+| The group's curve advancing | Basket track record | Its "as of" date moves to a later trading day |
 
 A changed "last updated" timestamp on your list of baskets is the cheapest way to notice that
 someone edited a basket's configuration, since that list is already sorted by it.
@@ -323,7 +398,8 @@ someone edited a basket's configuration, since that list is already sorted by it
 This is worth stating plainly: **you can't control trading through an API key.** Creating an
 operation, launching it, pausing it, stopping it, acknowledging drift, and requesting a rebalance are
 all things you do in the app. So is creating, editing, or deleting a basket, and refreshing or
-simulating one.
+re running its simulation: both of those draw on your organization's tokens, which is why the track
+record above lets you read the group's current curve but not ask for a fresh run of it.
 
 > [!CAUTION] An API key can watch live trading, but it can't cause any of it
 > Nothing you can pull through this page can submit an order, change how much capital an operation

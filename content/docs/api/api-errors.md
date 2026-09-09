@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 9
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: What each kind of error from Fintela's Developer API means, why it happens, and how to handle it in your own integration.
 keywords: errors, troubleshooting, rate limits, authentication, not found, retry, developer api, read-only, personal access key
 ---
@@ -24,8 +24,9 @@ access yet, start with [API overview](/docs/api-overview) and
 
 Every error Fintela sends back has two parts: a short, stable category your integration can check
 automatically, and a plain language description meant for a person reading a log: someone on your
-team troubleshooting why a nightly pull didn't run, say. The categories you'll see are things like
-"unauthorized," "not found," and "rate limited." There's no extra structure beyond that: no error
+team troubleshooting why a nightly pull didn't run, say. Across this read only channel the
+categories you'll actually see are `bad_request`, `unauthorized`, `forbidden`, `not_found`,
+`not_acceptable`, `rate_limited` and `internal`. There's no extra structure beyond that: no error
 codes to look up in a separate table, no nested list of sub problems.
 
 > [!TIP] Branch on the category, not the wording
@@ -61,8 +62,10 @@ A few practical rules trip this up more than anything else:
   blank isn't treated as "give me everything," because those summaries are meant to be checked
   against a specific set of runs you care about.
 - **Blended metrics need weights that add up to one.** If you're pulling a metric that blends
-  training and validation performance, the weights you supply have to sum to exactly 1: not
-  approximately, and not left for Fintela to normalize for you.
+  training and validation performance, the two weights you supply have to add up to 1. Ordinary
+  decimal rounding is fine; a total that genuinely isn't 1 is rejected rather than scaled for you,
+  so 60/30 fails instead of being read as 2/1. Leaving both out is fine, and gives you an even
+  50/50 split.
 - **Trial numbers can't be negative.** A trial's position within a study is always zero or higher.
 - **Paging never needs an exact number.** Page sizes and offsets are automatically kept within
   sane bounds: an overly large page size is simply capped rather than rejected, so you don't need
@@ -144,10 +147,11 @@ were valid.
 ### Too many requests, too fast
 
 Each organization shares one request budget, and going over it gets a request turned away rather
-than queued or slowed down. If you see this, wait roughly a second before trying again: retrying
-immediately just lands on the same limit and gets rejected again. The exact pace allowed, which
-parts of the API enforce it today, and the habits that keep you well clear of it are all covered
-in [Authentication & limits](/docs/api-authentication).
+than queued or slowed down. The response tells you how long to wait before trying again: about a
+second today. Take the wait from the response rather than hard coding a guess, and don't retry
+immediately, which just lands on the same limit. The exact pace allowed, which parts of the API
+enforce it today, and the habits that keep you well clear of it are all covered in
+[Authentication & limits](/docs/api-authentication).
 
 ### A temporary problem on Fintela's side
 
@@ -162,40 +166,49 @@ same call. Narrowing what you're asking for, or splitting it into a couple of sm
 usually the fix. If it persists even after narrowing the request, that's worth a support ticket:
 see below for what to include.
 
-### Why you'll never see a "forbidden" error
+### "Forbidden" means your account, never someone else's data
 
-Fintela never confirms that something exists but you're simply not allowed to see it: from the
-outside, "doesn't exist" and "exists, but belongs to someone else" always look identical. This is
-deliberate: it protects every customer's privacy equally, including yours. In practice, every
-situation that might otherwise be a "forbidden" response comes back as one of the categories above
-instead: a resource in another organization or one you can't reach reports as not found, an id
-you can't read in a filter reports as not visible, and a revoked key reports as an authentication
-problem.
+Fintela never confirms that a specific record exists but you're simply not allowed to see it: from
+the outside, "doesn't exist" and "exists, but belongs to someone else" always look identical. This
+is deliberate, and it protects every customer's privacy equally, including yours. So no request for
+a study, trial, portfolio, basket or asset group will ever come back as "forbidden" on the grounds
+of who owns it: a resource in another organization reports as not found, an id you can't read in a
+filter reports as not acceptable, and a revoked key reports as an authentication problem.
 
-If you ever do see a classic "forbidden" response calling Fintela's API, it isn't coming from
-Fintela: check whether something in your own network (a proxy, VPN, or corporate firewall) is
-intercepting the call before it reaches Fintela at all.
+There is exactly one case where Fintela does answer "forbidden," and it's about **your own
+account, not any particular record**: the Fintela account that owns the key is suspended, disabled,
+or hasn't been approved to use Fintela yet. The message says so directly. Every request from that
+key fails the same way until the account is reinstated, so treat it as a standing condition to
+escalate rather than something to retry: a new key won't fix it. See
+[Authentication & limits](/docs/api-authentication).
+
+If you see a bare "forbidden" with no Fintela message attached, that one isn't coming from Fintela:
+check whether something in your own network (a proxy, VPN, or corporate firewall) is intercepting
+the call before it reaches Fintela at all.
 
 ## Quick reference: error categories at a glance
 
 | Category | Typical cause | What to do |
 |---|---|---|
-| Invalid request | Something about the request itself is malformed or incomplete: a bad id, a required filter left off, weights that don't add to 1 | Fix the request; it will keep failing the same way until you do |
-| Authentication | Missing, invalid, or revoked personal API key | Check your key in account settings |
-| Not found | The item doesn't exist, or belongs to a different organization | Confirm the id; there's nothing to retry |
-| Not visible | An id in your filter list isn't something your organization can read | Remove or correct that id |
+| `bad_request` | Something about the request itself is malformed or incomplete: a bad id, a required filter left off, weights that don't add to 1 | Fix the request; it will keep failing the same way until you do |
+| `unauthorized` | Missing, invalid, or revoked personal API key | Check your key in account settings |
+| `forbidden` | The Fintela account that owns the key isn't enabled to use Fintela | Escalate: the account has to be reinstated, and a new key won't help |
+| `not_found` | The item doesn't exist, or belongs to a different organization | Confirm the id; there's nothing to retry |
+| `not_acceptable` | An id in your filter list isn't something your organization can read | Remove or correct that id |
 | Read only | You (or a tool) tried to create, change, or delete something | Make the change in the Fintela app instead |
-| Rate limited | Your organization's request budget is used up for the moment | Wait about a second, then retry |
-| Temporary error | A short lived problem on Fintela's side | Retry once; narrow the request if it keeps happening |
+| `rate_limited` | Your organization's request budget is used up for the moment | Wait the time the response asks for, then retry |
+| `internal` | A short lived problem on Fintela's side | Retry once; narrow the request if it keeps happening |
 
 ## Retrying and getting extra help
 
 ### When it's safe to retry automatically
 
-Rate limited and temporary errors are worth a retry after a short pause: the situation genuinely
-changes on its own. Invalid request, authentication, not found, and not visible errors won't: they
-describe something about the request itself, and retrying without changing anything just repeats
-the same failure (and eats into your rate limit in the process).
+Rate limited (`rate_limited`) and temporary (`internal`) errors are worth a retry after a short
+pause: the situation genuinely changes on its own. `bad_request`, `unauthorized`, `not_found` and
+`not_acceptable` won't: they describe something about the request itself, and retrying without
+changing anything just repeats the same failure (and eats into your rate limit in the process).
+`forbidden` won't change on retry either, and unlike the others you can't fix it from your side:
+it needs the Fintela account behind the key reinstated.
 
 ### If you're still calling a retired endpoint
 
@@ -208,11 +221,11 @@ rather than you discovering it only when the old call is eventually turned off.
 
 ### Getting support for a problem that won't go away
 
-Every response Fintela sends carries a unique identifier behind the scenes, even a generic
-temporary error message. If you open a support ticket about a persistent problem, the most useful
-things to include are roughly when the failed call happened and exactly what you were asking for:
-that's usually enough for Fintela's team to pull up what actually happened on their end, even when
-the error message you saw was deliberately generic.
+Every response Fintela sends carries a reference identifying that particular call, on successes and
+failures alike, including a generic temporary error. Log it: quoting it in a support ticket points
+Fintela's team straight at the one call that failed, which is far more precise than a timestamp, and
+it works even when the error message you saw was deliberately generic. If your tool doesn't surface
+it, roughly when the failed call happened and exactly what you were asking for is usually enough.
 
 ## Handling errors in your integration
 
@@ -223,8 +236,8 @@ A few habits that make error handling in your integration boring, in the best wa
 - **Parse defensively.** A small number of very basic mistakes come back as a plain error rather
   than the usual category plus description pair, so don't assume every non success response has
   the same shape.
-- **Treat "not found" and "not visible" as the same practical problem.** Either way, something you
-  asked for isn't there for you to see, and the fix is the same: check your id.
+- **Treat `not_found` and `not_acceptable` as the same practical problem.** Either way, something
+  you asked for isn't there for you to see, and the fix is the same: check your id.
 - **Batch instead of looping.** Where a lookup supports a list of ids, one request for the whole
   list is faster and easier on your rate limit than one request per item: just remember that for
   a couple of specific lookups, one bad id in the list fails the whole batch (see above).

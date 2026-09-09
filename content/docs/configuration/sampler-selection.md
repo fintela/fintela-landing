@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: Which optimization algorithm (sampler) to pick for a study, and when each one is the right call.
 keywords: sampler, tpe, cma-es, nsga-ii, qmc, random search, grid search, bayesian optimization, multi-objective, parallel workers, seed, reproducibility
 ---
@@ -21,8 +21,10 @@ that run on a simulated quantum computer. The default, and the right choice for 
 |---|---|---|
 | Study builder: **Optimization** block → **Advanced options** → **Optimization engine** | Pick a sampler from the **Sampler** dropdown | TPE |
 | **Derive portfolios: optimize risk managers** wizard | Pick a sampler from the **Sampler** dropdown | TPE |
-| Creating studies through the [Developer API](/docs/api-studies) | Set the sampler as part of the study you submit | TPE, if you don't set one |
 | Asking Fintelligent to build or edit a study | Tell it which sampler you want, in plain language | Whatever the builder would default to |
+
+The read only [Developer API](/docs/api-studies) is not one of these places: it can report which
+sampler a study was configured with, but it can't create a study or change one.
 
 The study builder is a single screen, not a multi step wizard: go to **Registry → Studies → New
 Study** and you'll see four blocks: Asset Group, Strategy, Fitness, and Optimization. The
@@ -347,15 +349,11 @@ trials before it can help.*
 ## Choosing an invalid sampler
 
 You can't select an invalid sampler through the dropdown: it only ever shows the seven valid
-options. This only comes up if you're setting the sampler through the
-[Developer API](/docs/api-studies) or asking Fintelligent to configure one for you:
-
-- Through the API, an unrecognized sampler value is rejected outright, with a clear message
-  listing the valid options.
-- Through Fintelligent, an invalid value is caught and rejected the same way before it ever reaches
-  your study: though Fintelligent is forgiving about capitalization and stray spaces, so asking
-  for "tpe" works just as well as "TPE".
+options. This only comes up if you're asking Fintelligent to configure one for you: an invalid
+value is caught and rejected before it ever reaches your study, though Fintelligent is forgiving
+about capitalization and stray spaces, so asking for "tpe" works just as well as "TPE".
 
 Related reading: [optimizer architecture](/docs/optimizer-architecture),
-[execution modes](/docs/execution-modes), [study lifecycle](/docs/study-lifecycle), and the
-[Developer API](/docs/api-studies).
+[execution modes](/docs/execution-modes), [study lifecycle](/docs/study-lifecycle), and the read
+only [Developer API](/docs/api-studies), where a study's configured sampler is one of the fields
+you can pull back.

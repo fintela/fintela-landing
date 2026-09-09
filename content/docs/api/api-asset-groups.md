@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 8
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: Pull the asset group definitions you've built in Fintela (their names, descriptions, and universe size) into your own tools and dashboards.
 keywords: asset groups, universe, tickers, portfolio groups, api integration, read-only, personal access key, dashboards
 ---
@@ -48,6 +48,7 @@ you only need one asset group, ask for all of them and pick out the one you want
 
 | Field | What it tells you |
 |---|---|
+| Id | The group's identifier: the same one a study reports for its strategy and fitness universes |
 | Name | The name you (or a teammate) gave it when it was created |
 | Description | The free form description written for it, if any |
 | Ticker count | How many individual tickers are in the group |
@@ -74,10 +75,10 @@ you only need one asset group, ask for all of them and pick out the one you want
 
 Say your organization has two saved asset groups. The list you'd get back might read like this:
 
-| Name | Description | Ticker count | Created |
-|---|---|---|---|
-| S&P 500 Top 100 | Top 100 companies by market cap in the S&P 500 index | 100 | Oct 15, 2023 |
-| Tech Sector | *(none)* | 45 | Dec 1, 2023 |
+| Id | Name | Description | Ticker count | Created |
+|---|---|---|---|---|
+| 12 | S&P 500 Top 100 | Top 100 companies by market cap in the S&P 500 index | 100 | Oct 15, 2023 |
+| 18 | Tech Sector | *(none)* | 45 | Dec 1, 2023 |
 
 ## Ordering and what's included
 

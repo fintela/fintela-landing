@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-08
 summary: Pull the strategies you've built in Fintela (their details, parameters, and edit history) into your own tools and dashboards.
 keywords: strategies, api integration, parameters, version history, read-only, personal access key, dashboards
 ---
@@ -37,12 +37,14 @@ this API.
 
 ## Your list of strategies
 
-The quickest way to get oriented: this returns every strategy you can see, matched to its name.
-Use it to look up which id you mean before asking for more detail on a specific strategy.
+The quickest way to get oriented: this returns every strategy you can see as a lookup table of id
+to name, with no other fields. Use it to look up which id you mean before asking for more detail on
+a specific strategy.
 
-> [!NOTE] Order isn't guaranteed
-> Don't assume the list comes back in the same order every time. Sort it on your end if your tool
-> needs a stable, predictable order.
+> [!NOTE] It's a lookup table, so order isn't guaranteed
+> Because the result is keyed by id rather than being an ordered list, don't assume the entries
+> come back in the same order every time. Sort on your end if your tool needs a stable, predictable
+> order.
 
 ## Strategy details
 
@@ -55,9 +57,10 @@ you're able to see.
 
 > [!CAUTION] A single unreachable id fails the whole request
 > If you ask for a specific list of strategies and even one of them isn't one you have access to:
-> wrong id, deleted, or belonging to another organization: the entire request comes back
-> empty handed instead of returning the ones that did work. If you just want "everything I can
-> see," leave the id filter off rather than listing ids by hand.
+> wrong id, deleted, or belonging to another organization: the whole request is **rejected with an
+> error** naming the offending id. You don't get a partial result, and you don't get an empty one
+> either: nothing is returned at all. If you just want "everything I can see," leave the id filter
+> off rather than listing ids by hand.
 
 ### Internal vs. external strategies
 
@@ -119,7 +122,8 @@ A new entry is added whenever you:
 - delete or restore it
 
 Renaming a strategy, or editing only its description, does **not** create a new version: those
-are treated as cosmetic touch ups rather than a real change to how the strategy behaves.
+are treated as cosmetic touch ups rather than a real change to how the strategy behaves. And if you
+change several of the things above in a single save, that's recorded as one version, not several.
 
 > [!NOTE] An empty history isn't always what it looks like
 > Asking for the history of a strategy that doesn't exist, was deleted, or belongs to another

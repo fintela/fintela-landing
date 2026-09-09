@@ -10,13 +10,6 @@
   "trustBar": {
     "title": "Equipos que construyen con Fintela"
   },
-  "productDemo": {
-    "eyebrow": "Demo del producto",
-    "title": "Mira Fintela",
-    "titleAccent": "en acción.",
-    "description": "Un recorrido completo por la plataforma está en camino, desde la creación de estrategias hasta el despliegue en vivo.",
-    "comingSoon": "Demo próximamente"
-  },
   "workflow": {
     "eyebrow": "La plataforma",
     "title": "Un único pipeline.",
@@ -192,8 +185,8 @@
     "eyebrow": "Experiencia de desarrollador",
     "title": "Construido como un producto.",
     "titleAccent": "Documentado como una API.",
-    "description": "Los endpoints, payloads y estados de trial están totalmente documentados. Auth con JWT, JSON entra, JSON sale. Sin instalar SDK, sin contratos ocultos.",
-    "codeFilename": "launch-study.http",
+    "description": "Cada endpoint, payload y estado de trial está documentado. Solo lectura, auth con API key, JSON de salida. Sin instalar SDK, sin contratos ocultos.",
+    "codeFilename": "read-trial.http",
     "docLinks": {
       "quickstart": {
         "title": "Inicio rápido",
@@ -201,7 +194,7 @@
       },
       "api": {
         "title": "Referencia de la API",
-        "description": "Cada endpoint, cada payload"
+        "description": "Cada endpoint de lectura, cada payload"
       },
       "guides": {
         "title": "Guías de integración",
