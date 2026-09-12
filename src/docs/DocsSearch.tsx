@@ -6,7 +6,9 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { KbdKey } from './components/KbdKey';
 import { searchDocs } from './search';
 import { truncate } from '../content/format';
-import { palette } from '../theme/tokens';
+import { radii, shadows, soft } from '../theme/tokens';
+import { eyebrowSx, floatPaperSx, neuFieldSx } from '../theme/neu';
+import { Groove } from '../components/primitives/Groove';
 import type { DocsIndex } from './types';
 
 interface DocsSearchProps {
@@ -74,7 +76,7 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
       onClose={onClose}
       slots={{ backdrop: Backdrop }}
       slotProps={{
-        backdrop: { sx: { bgcolor: 'rgba(11,16,32,0.55)', backdropFilter: 'blur(6px)' } },
+        backdrop: { sx: { bgcolor: soft.scrim } },
       }}
       sx={{
         display: 'flex',
@@ -87,15 +89,13 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
         <Box
           tabIndex={-1}
           sx={{
+            ...floatPaperSx,
+            bgcolor: soft.ground,
+            borderRadius: `${radii.neuCard}px`,
             position: 'relative',
             zIndex: 1,
             width: { xs: 'calc(100vw - 32px)', md: 640 },
             maxWidth: '100%',
-            bgcolor: '#fff',
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-            boxShadow: '0 30px 80px rgba(11,16,32,0.32)',
             overflow: 'hidden',
             outline: 'none',
           }}
@@ -103,16 +103,17 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
         >
           <Box
             sx={{
+              ...neuFieldSx,
               display: 'flex',
               alignItems: 'center',
               gap: 1.25,
+              mx: 2,
+              mt: 2,
               px: 2,
-              py: 1.5,
-              borderBottom: '1px solid',
-              borderColor: 'divider',
+              py: 1.25,
             }}
           >
-            <SearchIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+            <SearchIcon sx={{ color: soft.textSecondary, fontSize: 20 }} />
             <Box
               component="input"
               ref={inputRef}
@@ -129,40 +130,25 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
                 outline: 'none',
                 font: 'inherit',
                 fontSize: '0.95rem',
-                color: 'text.primary',
+                color: soft.text,
+                caretColor: soft.accent,
                 bgcolor: 'transparent',
-                '::placeholder': { color: 'text.disabled' },
               }}
               aria-label="Search docs"
             />
-            <Box
-              onClick={onClose}
-              sx={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                color: 'text.disabled',
-                px: 0.75,
-                py: 0.25,
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'divider',
-                cursor: 'pointer',
-                fontFamily: '"JetBrains Mono", monospace',
-                '&:hover': { color: 'text.secondary' },
-              }}
-            >
-              ESC
+            <Box onClick={onClose} sx={{ cursor: 'pointer', display: 'inline-flex' }}>
+              <KbdKey>esc</KbdKey>
             </Box>
           </Box>
 
-          <Box sx={{ maxHeight: 420, overflowY: 'auto', py: 0.5 }}>
+          <Box sx={{ maxHeight: 420, overflowY: 'auto', py: 1, px: 1.5 }}>
             {hits.length === 0 ? (
               <Box
                 sx={{
                   px: 2,
                   py: 4,
                   textAlign: 'center',
-                  color: 'text.disabled',
+                  color: soft.textSecondary,
                   fontSize: '0.9rem',
                 }}
               >
@@ -175,38 +161,34 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
                   onMouseEnter={() => setSelected(idx)}
                   onClick={() => go(page.slug)}
                   sx={{
-                    px: 2,
+                    px: 1.5,
                     py: 1.25,
+                    my: 0.25,
+                    borderRadius: `${radii.neuWell}px`,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    bgcolor: selected === idx ? 'rgba(47,99,149,0.08)' : 'transparent',
-                    borderLeft: '3px solid',
-                    borderLeftColor: selected === idx ? palette.blue : 'transparent',
+                    ...(selected === idx && {
+                      bgcolor: soft.groundSunken,
+                      boxShadow: shadows.neuInsetSm,
+                    }),
+                    '@media (forced-colors: active)':
+                      selected === idx ? { boxShadow: 'none', border: '2px solid Highlight' } : {},
                   }}
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography
-                      sx={{
-                        fontSize: '0.62rem',
-                        fontWeight: 700,
-                        color: 'text.disabled',
-                        letterSpacing: '0.08em',
-                        textTransform: 'uppercase',
-                        mb: 0.25,
-                      }}
+                      sx={{ ...eyebrowSx, fontSize: '0.62rem', letterSpacing: '0.08em', mb: 0.25 }}
                     >
                       {page.section}
                     </Typography>
-                    <Typography
-                      sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.92rem' }}
-                    >
+                    <Typography sx={{ fontWeight: 600, color: soft.text, fontSize: '0.92rem' }}>
                       {page.title}
                     </Typography>
                     <Typography
                       sx={{
-                        color: 'text.secondary',
+                        color: soft.textSecondary,
                         fontSize: '0.82rem',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -220,7 +202,7 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
                   <ArrowForwardIcon
                     sx={{
                       fontSize: 16,
-                      color: selected === idx ? palette.blue : 'text.disabled',
+                      color: selected === idx ? soft.accent : soft.textSecondary,
                       opacity: selected === idx ? 1 : 0.5,
                     }}
                   />
@@ -229,6 +211,7 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
             )}
           </Box>
 
+          <Groove sx={{ mx: 2 }} />
           <Box
             sx={{
               display: 'flex',
@@ -236,11 +219,8 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
               gap: 2,
               px: 2,
               py: 1,
-              borderTop: '1px solid',
-              borderColor: 'divider',
-              bgcolor: '#fafbfc',
               fontSize: '0.72rem',
-              color: 'text.disabled',
+              color: soft.textSecondary,
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

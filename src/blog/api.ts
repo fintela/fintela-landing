@@ -15,6 +15,18 @@ import type { BlogIndex, BlogPost, BlogPostSummary } from './types';
  */
 const BASE = collectionBase('blog', import.meta.env.VITE_BLOG_BASE_URL);
 
+/**
+ * A cover (or any file the generator published beside the JSON) as a URL.
+ *
+ * Most covers are a bare filename under `content/blog/covers/`, published
+ * beside the post JSON, so they need the collection prefix. A cover
+ * auto-derived from a post's own body (see `parsePost.ts`) is already a full
+ * URL — `http(s)`, an absolute `/public` path, or a `data:` URI — and passing
+ * it through the prefix unchanged avoids doubling it up.
+ */
+export const blogAssetUrl = (path: string): string =>
+  /^(https?:|data:)/i.test(path) || path.startsWith('/') ? path : `${BASE}${path}`;
+
 /** A post that isn't in the published set — unpublished, renamed, or a bad URL. */
 export class BlogPostNotFoundError extends Error {
   // Fields are declared and assigned explicitly: `erasableSyntaxOnly` (see

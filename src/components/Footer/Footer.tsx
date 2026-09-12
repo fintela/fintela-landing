@@ -1,10 +1,13 @@
 import type { MouseEvent } from 'react';
-import { Box, Container, Typography, Link, Divider } from '@mui/material';
+import { Box, Container, Typography, Link } from '@mui/material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import fintelaLargeLogo from '../../assets/logos/fintela_large_logo.png';
-import { gradients } from '../../theme/tokens';
+import { gradients, shadows, soft } from '../../theme/tokens';
+import { quietLinkSx } from '../../theme/neu';
+import { Groove } from '../primitives/Groove';
 import { scrollToSection } from '../../lib/scrollToSection';
+import { SOLUTION_PATHS } from '../../solutions/registry';
 import { useTranslation } from 'react-i18next';
 
 type FooterLink = {
@@ -37,14 +40,32 @@ const columns: FooterColumn[] = [
       {
         id: 'fintelagent',
         labelKey: 'footer:columns.product.links.fintelagent',
-        href: '/#fintelagent',
+        href: '/#fintelligent',
         type: 'scroll',
       },
       {
-        id: 'useCases',
-        labelKey: 'footer:columns.product.links.useCases',
-        href: '/#use-cases',
+        id: 'capabilities',
+        labelKey: 'footer:columns.product.links.capabilities',
+        href: '/#capabilities',
         type: 'scroll',
+      },
+      {
+        id: 'funds',
+        labelKey: 'footer:columns.product.links.funds',
+        href: SOLUTION_PATHS.funds,
+        type: 'route',
+      },
+      {
+        id: 'teams',
+        labelKey: 'footer:columns.product.links.teams',
+        href: SOLUTION_PATHS.teams,
+        type: 'route',
+      },
+      {
+        id: 'independents',
+        labelKey: 'footer:columns.product.links.independents',
+        href: SOLUTION_PATHS.independents,
+        type: 'route',
       },
       {
         id: 'pricing',
@@ -125,11 +146,12 @@ export const Footer = () => {
     <Box
       component="footer"
       sx={{
-        bgcolor: '#fafbfc',
-        borderTop: '1px solid',
-        borderColor: 'divider',
+        bgcolor: soft.groundSunken,
+        boxShadow: shadows.neuFloor,
         pt: { xs: 7, md: 10 },
         pb: { xs: 4, md: 5 },
+        '@media (forced-colors: active)': { boxShadow: 'none', borderTop: '1px solid CanvasText' },
+        '@media print': { boxShadow: 'none', bgcolor: soft.white, borderTop: `1px solid ${soft.deep}` },
       }}
     >
       <Container maxWidth="lg">
@@ -150,7 +172,7 @@ export const Footer = () => {
             </Box>
             <Typography
               sx={{
-                color: 'text.secondary',
+                color: soft.textSecondary,
                 fontSize: '0.92rem',
                 lineHeight: 1.6,
                 mb: 3,
@@ -162,14 +184,10 @@ export const Footer = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               <Link
                 href="mailto:manuel.padron@fintela.io"
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  color: 'text.secondary',
-                  fontSize: '0.88rem',
-                  '&:hover': { color: '#2f6395' },
-                }}
+                sx={[
+                  quietLinkSx,
+                  { display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: '0.88rem' },
+                ]}
               >
                 <EmailOutlinedIcon sx={{ fontSize: 16 }} />
                 manuel.padron@fintela.io
@@ -183,7 +201,7 @@ export const Footer = () => {
                 sx={{
                   fontSize: '0.7rem',
                   fontWeight: 700,
-                  color: 'text.disabled',
+                  color: soft.textSecondary,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   mb: 2,
@@ -204,12 +222,7 @@ export const Footer = () => {
                             handleScrollLinkClick(e, l.href.replace(/^\/#/, '')),
                         }
                       : {})}
-                    sx={{
-                      color: 'text.primary',
-                      fontSize: '0.92rem',
-                      fontWeight: 500,
-                      '&:hover': { color: '#2f6395' },
-                    }}
+                    sx={[quietLinkSx, { color: soft.text, fontSize: '0.92rem', fontWeight: 500 }]}
                   >
                     {t(l.labelKey)}
                   </Link>
@@ -219,7 +232,7 @@ export const Footer = () => {
           ))}
         </Box>
 
-        <Divider sx={{ my: { xs: 4, md: 5 } }} />
+        <Groove sx={{ my: { xs: 4, md: 5 } }} />
 
         <Box
           sx={{
@@ -236,10 +249,10 @@ export const Footer = () => {
                 width: 6,
                 height: 6,
                 borderRadius: '50%',
-                background: gradients.brand,
+                background: gradients.gold,
               }}
             />
-            <Typography sx={{ fontSize: '0.82rem', color: 'text.disabled' }}>
+            <Typography sx={{ fontSize: '0.82rem', color: soft.textSecondary }}>
               © {new Date().getFullYear()} Fintela. All rights reserved.
             </Typography>
           </Box>
@@ -250,11 +263,7 @@ export const Footer = () => {
                 key={l.key}
                 component={RouterLink}
                 to={l.to}
-                sx={{
-                  fontSize: '0.82rem',
-                  color: 'text.disabled',
-                  '&:hover': { color: '#2f6395' },
-                }}
+                sx={[quietLinkSx, { fontSize: '0.82rem' }]}
               >
                 {t(`footer.legal.${l.key}`)}
               </Link>

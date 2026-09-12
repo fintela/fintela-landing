@@ -48,12 +48,15 @@ content/
   legal/           the published Terms and Privacy Notice (see NOTICE)
 src/
   pages/           top-level routes
-  components/      sections, header, footer, shared UI
+  components/      sections, header, footer, shared UI (primitives/ is the soft-UI kit)
+  solutions/       the /solutions/* pages as data — one template, three audiences
+  media/           every image and video slot, typed; posters under assets/media/
   content/         the Markdown pipeline both collections share
   blog/            blog rendering + the sanitized Markdown renderer
   docs/            docs rendering — index, sidebar, search, table of contents
-  theme/           design tokens and the MUI theme
+  theme/           design tokens, the soft-UI recipes (neu.ts) and the MUI theme
   i18n/locales/    en / es / pt catalogs
+public/media/      demo videos (mp4/webm) and captions (vtt) — see src/media/registry.ts
 scripts/
   i18n-keysync.mjs        enforces en/es/pt key parity
 vite-plugin-content.ts    turns content/{blog,docs}/**.md into the JSON the app fetches

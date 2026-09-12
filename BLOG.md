@@ -53,6 +53,17 @@ Body starts here.
 | `excerpt` | no | Card summary. Defaults to the first real paragraph. Cards truncate at ~150 characters. |
 | `tags` | no | `tags: A, B` or `tags: [A, B]` or a `- item` list on following lines. The first tag becomes the card's accent chip. |
 | `slug` | no | Overrides the URL. Defaults to the filename without `.md`, slugified. |
+| `cover` | no | Card image, as a path under `content/blog/` — e.g. `cover: covers/my-post.jpg`. JPEG, PNG, WebP, AVIF or SVG. Published beside the post's JSON in the same `blog/` sync, so no site deploy. Shown on the `/blog` card and, for the newest (or `featured`) post, in the home page's Insights band. |
+| `coverAlt` | no | Alt text for the cover. Set it whenever you set `cover`; the build warns when it is missing. |
+| `featured` | no | `true` pins the post to the home page's featured slot regardless of date. One post at a time. |
+
+A missing cover is not an error. If the post has no `cover:` field, the build
+falls back to the first image in the body — as long as its `src` is an
+`http(s)` URL, an absolute `/public` path, or a small inline data URI (the
+same sources the renderer allows; see [Images](#images)). Only when the post
+also has no such image do the cards fall back to their text form. A `cover`
+that points at a file which is not in `content/blog/` is dropped with a build
+warning rather than published as a broken image.
 
 ## What the renderer supports
 

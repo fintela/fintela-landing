@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { Box, Container, Paper } from '@mui/material';
+import { Box } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../Header/Header';
 import { Footer } from '../Footer/Footer';
+import { Section } from '../primitives/Section';
+import { NeuPanel } from '../primitives/NeuPanel';
+import { cellGrooveSx, eyebrowSx, grooveSx, proseLinkSx, wellSx } from '../../theme/neu';
+import { radii, soft } from '../../theme/tokens';
+import { inlineCode } from '../../docs/components/Prose';
 
 import termsEn from '@legal/terms-of-use.md?raw';
 import termsEs from '@legal/terms-of-use.es.md?raw';
@@ -49,44 +54,51 @@ export function LegalPage({ page }: { page: LegalPageKey }) {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ minHeight: '100vh' }}>
       <Header activeSection={activeSection} onNavigate={handleNavigate} />
 
-      <Box sx={{ pt: 12, pb: { xs: 5, md: 8 } }}>
-        <Container maxWidth="md">
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 2.5, md: 5 },
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 2,
-              // Mirrors the SPA's legal typography so both hosts read identically.
-              overflowWrap: 'anywhere',
-              '& h1': { fontSize: '1.9rem', mt: 0, mb: 2 },
-              '& h2': { fontSize: '1.3rem', mt: 4, mb: 1.5 },
-              '& h3': { fontSize: '1.1rem', mt: 3, mb: 1 },
-              '& p, & li': { lineHeight: 1.7 },
-              '& blockquote': {
-                borderLeft: 4,
-                borderColor: 'divider',
-                bgcolor: 'action.hover',
-                m: 0,
-                my: 2,
-                px: 2,
-                py: 1,
-                borderRadius: 1,
-              },
-              '& a': { color: 'primary.main' },
-              '& table': { borderCollapse: 'collapse', width: '100%', my: 2 },
-              '& th, & td': { border: 1, borderColor: 'divider', p: 1, textAlign: 'left' },
-              '& code': { bgcolor: 'action.hover', px: 0.5, borderRadius: 0.5, fontSize: '0.9em' },
-            }}
-          >
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{CONTENT[page][lang]}</ReactMarkdown>
-          </Paper>
-        </Container>
-      </Box>
+      <Section size="md" maxWidth="md" sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 8, md: 12 } }}>
+        <NeuPanel
+          component="article"
+          sx={{
+            p: { xs: 3, md: 6 },
+            overflowWrap: 'anywhere',
+            // Mirrors the SPA's legal typography so both hosts read identically.
+            '& h1': { fontSize: '1.9rem', mt: 0, mb: 2, letterSpacing: '-0.02em' },
+            '& h2': { fontSize: '1.3rem', mt: 4, mb: 1.5 },
+            '& h3': { fontSize: '1.1rem', mt: 3, mb: 1 },
+            '& h1, & h2, & h3': { color: soft.text },
+            '& p, & li': { lineHeight: 1.7 },
+            '& ul, & ol': { pl: 3 },
+            '& hr': { border: 0, my: { xs: 3, md: 4 }, ...grooveSx },
+            '& blockquote': {
+              ...wellSx('sm'),
+              borderRadius: `${radii.neuWell}px`,
+              m: 0,
+              my: 2.5,
+              px: 2.5,
+              py: 1.5,
+            },
+            // Inline code inside the blockquote well is flat (never well-in-well, §1.2).
+            '& blockquote code': { boxShadow: 'none' },
+            '& a': proseLinkSx,
+            '& table': {
+              borderCollapse: 'separate',
+              borderSpacing: 0,
+              width: '100%',
+              my: 2,
+              display: 'block',
+              overflowX: 'auto',
+            },
+            '& th, & td': { border: 0, p: 1.25, textAlign: 'left' },
+            '& th': eyebrowSx,
+            '& tbody tr > *': cellGrooveSx,
+            '& code': inlineCode,
+          }}
+        >
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{CONTENT[page][lang]}</ReactMarkdown>
+        </NeuPanel>
+      </Section>
 
       <Footer />
     </Box>

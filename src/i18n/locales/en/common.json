@@ -13,5 +13,14 @@
       "privacy": "Privacy Policy",
       "riskDisclosures": "Risk Disclosures"
     }
+  },
+  "player": {
+    "play": "Play",
+    "pause": "Pause",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "seek": "Seek"
   }
 }

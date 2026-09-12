@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, IconButton } from '@mui/material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import { gradients } from '../../theme/tokens';
+import { neuFabSx } from '../../theme/neu';
 
 export const ScrollTop = () => {
   const [visible, setVisible] = useState(false);
@@ -24,25 +24,16 @@ export const ScrollTop = () => {
         transform: visible ? 'translateY(0)' : 'translateY(8px)',
         pointerEvents: visible ? 'auto' : 'none',
         transition: 'opacity 0.22s ease, transform 0.22s ease',
+        '@media (prefers-reduced-motion: reduce)': { transform: 'none', transition: 'opacity 0.01ms' },
+        '@media print': { display: 'none' },
       }}
     >
       <IconButton
         aria-label="Scroll to top"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        sx={{
-          width: 44,
-          height: 44,
-          background: gradients.brand,
-          color: '#fff',
-          boxShadow: '0 14px 30px rgba(47,99,149,0.32)',
-          '&:hover': {
-            background: gradients.brand,
-            transform: 'translateY(-2px)',
-            boxShadow: '0 18px 40px rgba(47,99,149,0.42)',
-          },
-        }}
+        sx={neuFabSx}
       >
-        <ArrowUpwardIcon sx={{ fontSize: 20 }} />
+        <ArrowUpwardIcon />
       </IconButton>
     </Box>
   );

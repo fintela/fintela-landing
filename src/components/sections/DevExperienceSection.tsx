@@ -1,5 +1,4 @@
 import { Box, Typography } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import TerminalOutlinedIcon from '@mui/icons-material/TerminalOutlined';
@@ -8,8 +7,11 @@ import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/Integration
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
+import { NeuPanel } from '../primitives/NeuPanel';
+import { IconWell } from '../primitives/IconWell';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { gradients } from '../../theme/tokens';
+import { inkGrooveSx, inkSurfaceSx } from '../../theme/neu';
+import { motion, soft } from '../../theme/tokens';
 
 const codeLines: { tokens: { text: string; color: string }[] }[] = [
   { tokens: [
@@ -78,7 +80,7 @@ const docLinks = [
 export const DevExperienceSection = () => {
   const { t } = useTranslation('home');
   return (
-    <Section id="developers" tone="default" size="lg">
+    <Section id="developers" size="lg">
       <SectionHeader
         eyebrow={t('devExperience.eyebrow')}
         title={t('devExperience.title')}
@@ -96,16 +98,7 @@ export const DevExperienceSection = () => {
       >
         {/* Code mock */}
         <AnimateOnScroll>
-          <Box
-            sx={{
-              borderRadius: 4,
-              overflow: 'hidden',
-              border: '1px solid rgba(47,99,149,0.2)',
-              background: 'linear-gradient(180deg, #14182b 0%, #0f1325 100%)',
-              boxShadow: '0 4px 16px rgba(11,16,32,0.10)',
-              height: '100%',
-            }}
-          >
+          <Box sx={{ ...inkSurfaceSx, height: '100%', overflow: 'hidden' }}>
             <Box
               sx={{
                 display: 'flex',
@@ -113,22 +106,22 @@ export const DevExperienceSection = () => {
                 gap: 1,
                 px: 2,
                 py: 1.25,
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
-                background: 'rgba(255,255,255,0.02)',
+                ...inkGrooveSx,
               }}
             >
               <Box sx={{ display: 'flex', gap: 0.75 }}>
-                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#ff6058' }} />
-                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#ffbf2f' }} />
-                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#28cb40' }} />
+                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: soft.white, opacity: 0.22 }} />
+                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: soft.white, opacity: 0.22 }} />
+                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: soft.white, opacity: 0.22 }} />
               </Box>
               <Typography
                 sx={{
                   ml: 1.5,
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '0.72rem',
-                  color: 'rgba(255,255,255,0.55)',
+                  color: soft.onInk,
                   letterSpacing: '0.04em',
+                  '@media print': { color: soft.text },
                 }}
               >
                 {t('devExperience.codeFilename')}
@@ -143,7 +136,7 @@ export const DevExperienceSection = () => {
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: { xs: '0.78rem', md: '0.84rem' },
                 lineHeight: 1.75,
-                color: '#e6e8f0',
+                color: soft.white,
                 overflowX: 'auto',
               }}
             >
@@ -165,53 +158,31 @@ export const DevExperienceSection = () => {
         </AnimateOnScroll>
 
         {/* Docs link cards */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {docLinks.map((link, idx) => (
             <AnimateOnScroll key={link.key} delay={idx * 70}>
-              <Box
-                component={RouterLink}
+              <NeuPanel
+                variant="tile"
                 to={link.href}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 2,
                   p: 2.25,
-                  borderRadius: 3,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: '#fff',
-                  textDecoration: 'none',
-                  transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    borderColor: 'rgba(47,99,149,0.4)',
-                    transform: 'translateX(2px)',
-                    boxShadow: '0 4px 12px rgba(47,99,149,0.08)',
-                    '& .dev-arrow': { color: '#2f6395', transform: 'translateX(3px)' },
+                  '@media (hover: hover)': {
+                    '&:hover .dev-arrow': { color: soft.accent, transform: 'translateX(3px)' },
+                  },
+                  '@media (prefers-reduced-motion: reduce)': {
+                    '&:hover .dev-arrow': { transform: 'none' },
                   },
                 }}
               >
-                <Box
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 2,
-                    background: gradients.brand,
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 2px 6px rgba(47,99,149,0.16)',
-                    '& svg': { fontSize: 20 },
-                  }}
-                >
-                  {link.icon}
-                </Box>
+                <IconWell size={40}>{link.icon}</IconWell>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.98rem' }}>
+                  <Typography sx={{ fontWeight: 700, color: soft.text, fontSize: '0.98rem' }}>
                     {t(`devExperience.docLinks.${link.key}.title`)}
                   </Typography>
-                  <Typography sx={{ color: 'text.secondary', fontSize: '0.86rem', lineHeight: 1.5 }}>
+                  <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.5 }}>
                     {t(`devExperience.docLinks.${link.key}.description`)}
                   </Typography>
                 </Box>
@@ -219,11 +190,12 @@ export const DevExperienceSection = () => {
                   className="dev-arrow"
                   sx={{
                     fontSize: 18,
-                    color: 'text.disabled',
-                    transition: 'color 0.18s, transform 0.18s',
+                    color: soft.textSecondary,
+                    transition: `color ${motion.fast}, transform ${motion.fast}`,
+                    '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                   }}
                 />
-              </Box>
+              </NeuPanel>
             </AnimateOnScroll>
           ))}
         </Box>

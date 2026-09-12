@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { ArrowForward, TravelExplore } from '@mui/icons-material';
-import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
+import { Section } from '../components/primitives/Section';
+import { NeuPanel } from '../components/primitives/NeuPanel';
+import { NeuButton } from '../components/primitives/NeuButton';
+import { IconWell } from '../components/primitives/IconWell';
+import { TierBadge } from '../components/primitives/TierBadge';
+import { ctaRowSx } from '../theme/neu';
+import { soft } from '../theme/tokens';
 
 /**
  * Catch-all for unmatched paths.
@@ -29,105 +35,61 @@ export const NotFoundPage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ minHeight: '100vh' }}>
       <Header activeSection={activeSection} onNavigate={handleNavigate} />
 
-      <Box
-        sx={{
-          pt: { xs: 12, md: 16 },
-          pb: { xs: 8, md: 14 },
-          background:
-            'linear-gradient(180deg, rgba(47, 99, 149, 0.05) 0%, rgba(229, 53, 64, 0.03) 100%)',
-        }}
-      >
-        <Container maxWidth="sm">
-          <Box sx={{ textAlign: 'center' }}>
-            <Box
-              sx={{
-                width: 84,
-                height: 84,
-                mx: 'auto',
-                mb: 3.5,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'rgba(47, 99, 149, 0.08)',
-                color: 'primary.main',
-                '& svg': { fontSize: '2.25rem' },
-              }}
-            >
-              <TravelExplore />
-            </Box>
+      <Section size="lg" maxWidth="sm" sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 8, md: 14 } }}>
+        <NeuPanel
+          sx={{
+            maxWidth: 560,
+            mx: 'auto',
+            px: { xs: 3, md: 6 },
+            py: { xs: 5, md: 7 },
+            textAlign: 'center',
+          }}
+        >
+          <IconWell size={84} round sx={{ mx: 'auto', mb: 3.5 }}>
+            <TravelExplore />
+          </IconWell>
 
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 1,
-                fontWeight: 700,
-                letterSpacing: '0.14em',
-                color: 'text.secondary',
-                textTransform: 'uppercase',
-                fontSize: '0.8rem',
-              }}
-            >
-              {t('notFound.code')}
-            </Typography>
-
-            <Typography
-              variant="h2"
-              sx={{
-                fontWeight: 800,
-                mb: 2.5,
-                color: 'text.primary',
-                fontSize: { xs: '1.9rem', sm: '2.4rem', md: '2.8rem' },
-              }}
-            >
-              {t('notFound.title')}
-            </Typography>
-
-            <Typography
-              sx={{
-                color: 'text.secondary',
-                mb: 5,
-                lineHeight: 1.75,
-                fontSize: { xs: '1rem', md: '1.075rem' },
-              }}
-            >
-              {t('notFound.body')}
-            </Typography>
-
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
-              <Button
-                component={RouterLink}
-                to="/"
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForward />}
-                sx={{ px: 3.5, py: 1.4, fontWeight: 600 }}
-              >
-                {t('notFound.home')}
-              </Button>
-              <Button
-                component={RouterLink}
-                to="/docs"
-                variant="outlined"
-                size="large"
-                sx={{ px: 3.5, py: 1.4, fontWeight: 600 }}
-              >
-                {t('notFound.docs')}
-              </Button>
-            </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
+            <TierBadge>{t('notFound.code')}</TierBadge>
           </Box>
-        </Container>
-      </Box>
+
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 800,
+              mb: 2.5,
+              color: soft.text,
+              textWrap: 'balance',
+              fontSize: { xs: '1.9rem', sm: '2.4rem', md: '2.8rem' },
+            }}
+          >
+            {t('notFound.title')}
+          </Typography>
+
+          <Typography
+            sx={{
+              color: soft.textSecondary,
+              mb: 5,
+              lineHeight: 1.75,
+              fontSize: { xs: '1rem', md: '1.075rem' },
+            }}
+          >
+            {t('notFound.body')}
+          </Typography>
+
+          <Box sx={ctaRowSx}>
+            <NeuButton tone="accent" to="/" endIcon={<ArrowForward />}>
+              {t('notFound.home')}
+            </NeuButton>
+            <NeuButton tone="raised" to="/docs">
+              {t('notFound.docs')}
+            </NeuButton>
+          </Box>
+        </NeuPanel>
+      </Section>
 
       <Footer />
     </Box>

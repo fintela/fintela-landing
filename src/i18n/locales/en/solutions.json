@@ -1,0 +1,405 @@
+{
+  "common": {
+    "watch": "See the platform",
+    "chaptersLabel": "Capabilities on this page",
+    "readDocs": "Read the docs",
+    "why": {
+      "eyebrow": "Why they switch",
+      "title": "Stop building infrastructure.",
+      "titleAccent": "Start building strategies.",
+      "description": "A side by side look at what changes when research, optimization and execution share one cloud workspace instead of a stack you run yourself.",
+      "legacyHeader": "Legacy stack",
+      "withFintelaHeader": "With Fintela"
+    },
+    "chapters": {
+      "eyebrow": "Capabilities"
+    },
+    "onboarding": {
+      "eyebrow": "How you onboard",
+      "title": "Four steps to a",
+      "titleAccent": "live portfolio.",
+      "description": "No environment to build and no data pipeline to wire. The sequence below is the whole project.",
+      "steps": {
+        "connect": {
+          "title": "Connect data and broker",
+          "desc": "Define asset groups over equities, ETFs, forex and global markets, and link the brokerage you execute through."
+        },
+        "bring": {
+          "title": "Bring your strategies",
+          "desc": "Write Python in the Laboratory, let Fintelligent draft it, or call an external strategy and fitness through the API."
+        },
+        "run": {
+          "title": "Run studies",
+          "desc": "Bayesian search over thousands of trials, evaluated on train, validation and out-of-sample windows by default."
+        },
+        "promote": {
+          "title": "Promote to live",
+          "desc": "Validated portfolios become live operations with order logs, P&L and a one-click pause."
+        }
+      }
+    },
+    "closing": {
+      "eyebrow": "Ready when your desk is",
+      "ctaSecondary": "Compare plans"
+    }
+  },
+  "funds": {
+    "badge": "For hedge funds & institutional traders",
+    "title": "Research at fund scale,",
+    "titleAccent": "without the infrastructure.",
+    "lead": "Concurrent studies, cryptographic provenance and broker-connected execution, in one cloud workspace your desk does not have to run.",
+    "ctaPrimary": "Book a walkthrough",
+    "heroCaption": "A fund's desk · research, governance and execution in one workspace",
+    "heroAlt": "A hedge fund team in a glass-walled meeting room, working over laptops",
+    "stat": {
+      "eyebrow": "Queue wait",
+      "value": "0",
+      "unit": "minutes",
+      "sub": "studies run concurrently, not in a serial queue"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "Research, backtesting and execution in separate tools",
+          "with": "One workflow, from study to live"
+        },
+        {
+          "without": "Infrastructure to build, fund and maintain",
+          "with": "Nothing to build or maintain"
+        },
+        {
+          "without": "Studies queued behind a shared optimizer box",
+          "with": "Concurrent studies across the desk"
+        },
+        {
+          "without": "A local environment for every new quant",
+          "with": "Nothing to install"
+        },
+        {
+          "without": "Provenance reconstructed from notebooks and chat logs",
+          "with": "Hashed, time-stamped strategy history"
+        },
+        {
+          "without": "Backtest and live on different code paths",
+          "with": "Risk managers identical in backtest and live"
+        }
+      ],
+      "panel": {
+        "eyebrow": "For a fund's desk",
+        "before": "Strategy research across concurrent experiments,",
+        "highlight": "without running",
+        "after": "your own infrastructure.",
+        "points": [
+          "No infrastructure to build or maintain",
+          "Concurrent studies, not a serial queue",
+          "Nothing for new quants to install"
+        ]
+      }
+    },
+    "chaptersTitle": "What changes",
+    "chaptersTitleAccent": "for a fund.",
+    "chapters": {
+      "research": {
+        "title": "Research at scale",
+        "mediaAlt": "The portfolio analysis performance tab: a radar of metrics and the train, validation and test comparison",
+        "description": "Every quant on the desk launches studies in parallel; nobody waits for the optimizer box. Bayesian search focuses thousands of trials on the promising regions, and every study is scored on train, validation and out-of-sample windows.",
+        "outcomes": [
+          "Concurrent studies across the whole desk",
+          "Train / validation / OOS by default",
+          "Parameter importance with an overfitting contrast"
+        ]
+      },
+      "governance": {
+        "title": "Governance & provenance",
+        "description": "Strategies and configurations are cryptographically hashed and time-stamped, so authorship, versions and results are verifiable long after the study ran. Keep everything private, then share selectively.",
+        "outcomes": [
+          "Hashed, time-stamped strategy history",
+          "Version history on every strategy",
+          "Private by default; share on your terms"
+        ],
+        "mediaAlt": "An investment report header: who prepared it, as of when, the data window and the source strategy"
+      },
+      "execution": {
+        "title": "Execution & risk managers",
+        "description": "Promote validated portfolios to live operations that execute through your connected brokerage. Risk managers attach to any strategy, identical in backtest and live, with real-time order logs and a one-click pause.",
+        "outcomes": [
+          "Broker-connected live long/short operations",
+          "Risk managers identical in backtest and live",
+          "Real-time order logs, P&L and one-click pause"
+        ],
+        "mediaAlt": "Risk charts for the ranked portfolios: drawdown and volatility over the study window"
+      },
+      "workspace": {
+        "title": "Team workspace & permissions",
+        "description": "Shared registries for asset groups, strategies, fitness functions and risk managers, in one organisational workspace. Publish results-only dashboards that hide code and parameters.",
+        "outcomes": [
+          "One source of truth across the desk",
+          "Results-only dashboards for the committee",
+          "PDF reports on demand"
+        ],
+        "mediaAlt": "A results-only performance dashboard: the equity curve and a metrics comparison, no code or parameters"
+      },
+      "security": {
+        "title": "Security & AI providers",
+        "description": "Choose which provider powers Fintelligent, with Fintela-managed access and no API key to bring. Every tool call is visible in the conversation, and every irreversible action waits for explicit confirmation.",
+        "outcomes": [
+          "Provider choice, Fintela-managed access",
+          "Every tool call visible in the conversation",
+          "Irreversible actions wait for confirmation"
+        ]
+      }
+    },
+    "faqIntro": "The questions institutional desks ask first: security, providers, execution and data.",
+    "faq": {
+      "onboarding": {
+        "q": "How long does it take a fund to onboard?",
+        "a": "There is no environment to build. A desk connects its data and brokerage, brings strategies through the Laboratory or the API, and runs its first studies in the first week. Most of the calendar is the strategies themselves, not the setup."
+      },
+      "data": {
+        "q": "Whose data does Fintela use, and can we bring our own?",
+        "a": "Asset groups are built from Fintela's market data across equities, ETFs, forex and global markets. External strategies and fitness functions can read your own data sources through the API, so proprietary signals stay on your side."
+      }
+    },
+    "closing": {
+      "title": "See it on your own",
+      "titleAccent": "strategies.",
+      "body": "Thirty minutes with the team that built the platform, on the strategies your desk actually runs."
+    }
+  },
+  "teams": {
+    "badge": "For quant research teams",
+    "title": "One library, one workspace,",
+    "titleAccent": "one source of truth.",
+    "lead": "Shared registries, hashed history and committee-ready reports, so a research desk stops reconciling notebooks and starts comparing results.",
+    "ctaPrimary": "Book a walkthrough",
+    "heroCaption": "A research desk · one shared library of strategies, asset groups and results",
+    "heroAlt": "A quant in front of a wall of trading screens, studying candlestick charts",
+    "stat": {
+      "eyebrow": "Sources of truth",
+      "value": "1",
+      "unit": "workspace",
+      "sub": "strategies, asset groups, fitness and results in one place"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "Strategies scattered across personal notebooks",
+          "with": "One shared strategy library"
+        },
+        {
+          "without": "Asset groups and results rebuilt by each researcher",
+          "with": "Shared asset groups and optimization results"
+        },
+        {
+          "without": "Authorship and versions reconstructed by hand",
+          "with": "Cryptographically hashed, time-stamped history"
+        },
+        {
+          "without": "Results reconciled across machines before every meeting",
+          "with": "One results dashboard for the team"
+        },
+        {
+          "without": "Committee decks assembled by hand",
+          "with": "PDF reports on demand"
+        },
+        {
+          "without": "A local environment for every new hire",
+          "with": "Nothing to install"
+        }
+      ],
+      "panel": {
+        "eyebrow": "For a research desk",
+        "before": "Shared strategies, asset groups and results,",
+        "highlight": "in one organisational workspace",
+        "after": "with cryptographic provenance built in.",
+        "points": [
+          "One source of truth across the team",
+          "Cryptographically hashed, time-stamped strategy history",
+          "PDF reports for the investment committee"
+        ]
+      }
+    },
+    "chaptersTitle": "What changes",
+    "chaptersTitleAccent": "for a research desk.",
+    "chapters": {
+      "workspace": {
+        "title": "Shared registries",
+        "description": "Asset groups, strategies, fitness functions and risk managers live in registries the whole desk reads from. A colleague's validated strategy is one click from your next study, not an export away.",
+        "outcomes": [
+          "One catalogue for the whole desk",
+          "Cross-organisation publishing with permissions",
+          "Nothing to install for a new hire"
+        ],
+        "mediaAlt": "The platform home: asset exposure, and the studies, portfolios, strategies and asset groups in use"
+      },
+      "research": {
+        "title": "Concurrent research",
+        "mediaAlt": "Rate-of-change and Sharpe charts for the top trials, with the desk's top ten spanning three distinct strategies",
+        "description": "Everyone launches studies at once. Bayesian search over thousands of trials, scored on train, validation and out-of-sample windows, with results the desk compares in one dashboard.",
+        "outcomes": [
+          "Studies in parallel, not in a queue",
+          "Train / validation / OOS by default",
+          "One results dashboard for the team"
+        ]
+      },
+      "provenance": {
+        "title": "Provenance and versions",
+        "description": "Every strategy and configuration is hashed and time-stamped, with version history, so the desk can say who wrote what, when, and which version produced which result.",
+        "outcomes": [
+          "Cryptographically hashed history",
+          "Version history on every strategy",
+          "Authorship that survives staff changes"
+        ],
+        "mediaAlt": "A ranked trial's menu: promote it, derive or optimize a new version, or open its dashboard"
+      },
+      "reports": {
+        "title": "Committee-ready reports",
+        "description": "Results-only dashboards and PDF reports that show equity curves, drawdowns and parameter importance while hiding code and hyperparameters.",
+        "outcomes": [
+          "PDF reports on demand",
+          "Results-only dashboards hide the code",
+          "The same figures in backtest and live"
+        ],
+        "mediaAlt": "An investment report's performance section: growth of $100,000 against the benchmark, out-of-sample window marked"
+      },
+      "agents": {
+        "title": "Fintelligent on the desk",
+        "description": "An assistant wired into the platform's data and actions: it explains a study, drafts the next strategy, and stages runs for a human to confirm. Every tool call is visible.",
+        "outcomes": [
+          "Answers about any study with sources",
+          "Drafts strategies for review",
+          "Irreversible actions wait for confirmation"
+        ]
+      }
+    },
+    "faqIntro": "The questions research desks ask first: sharing, provenance, exports and providers.",
+    "faq": {
+      "sharing": {
+        "q": "Can we keep some strategies private inside the team?",
+        "a": "Yes. Everything is private by default. You share a strategy, an asset group or a study with named colleagues or with the whole organisation, and you can publish results-only dashboards that hide code and parameters."
+      },
+      "committee": {
+        "q": "What can we hand to an investment committee?",
+        "a": "PDF reports built from any trial or basket: equity curves across train, validation and out-of-sample windows, drawdowns, parameter importance and the trade log, with code and hyperparameters withheld."
+      }
+    },
+    "closing": {
+      "title": "See it with your",
+      "titleAccent": "team's strategies.",
+      "body": "Thirty minutes with the team that built the platform, on the research your desk is running now."
+    }
+  },
+  "independents": {
+    "badge": "For independent quants & systematic traders",
+    "title": "From notebook to live,",
+    "titleAccent": "without a devops project.",
+    "lead": "Python strategies, Bayesian optimization and broker-connected execution in the browser, with nothing to install and nothing to keep running.",
+    "ctaPrimary": "Start free",
+    "heroCaption": "A trader's desk · from notebook to live deployment, without a devops project",
+    "heroAlt": "An independent trader at a multi-monitor desk, on the phone, with charts on every screen",
+    "stat": {
+      "eyebrow": "Local installs",
+      "value": "0",
+      "unit": "to maintain",
+      "sub": "Python, data and execution all in the browser"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "A local environment to build and keep alive",
+          "with": "Python in the browser, nothing to install"
+        },
+        {
+          "without": "Backtesting, optimization and execution stitched together by hand",
+          "with": "Optimization, backtesting and live deployment in one place"
+        },
+        {
+          "without": "Optimization loops written from scratch",
+          "with": "Bayesian optimization built in"
+        },
+        {
+          "without": "Validation windows set up by hand for every study",
+          "with": "Train / validation / OOS by default"
+        },
+        {
+          "without": "A devops project to go live",
+          "with": "Brokerage-connected live deployment"
+        },
+        {
+          "without": "Servers to keep running",
+          "with": "Nothing to keep running"
+        }
+      ],
+      "panel": {
+        "eyebrow": "For one quant",
+        "before": "Optimization, backtesting and live deployment,",
+        "highlight": "without building or maintaining",
+        "after": "a single line of infrastructure.",
+        "points": [
+          "No local environment, no devops",
+          "Bayesian optimization with train / validation / OOS built in",
+          "Brokerage-connected live deployment"
+        ]
+      }
+    },
+    "chaptersTitle": "What changes",
+    "chaptersTitleAccent": "for one quant.",
+    "chapters": {
+      "noDevops": {
+        "title": "No environment to build",
+        "mediaAlt": "The platform home in the browser, greeting the user with the Fintelligent prompt; nothing installed",
+        "description": "Write plain Python in the Laboratory with NumPy, pandas, SciPy and scikit-learn already there. Named parameters, typed ranges and version history, and no local install to keep alive.",
+        "outcomes": [
+          "Python in the browser, batteries included",
+          "Typed parameter ranges and version history",
+          "Nothing to install or update"
+        ]
+      },
+      "optimization": {
+        "title": "Optimization built in",
+        "mediaAlt": "The metrics table of a study: Calmar, Sharpe, Sortino and trade statistics across train, validation and test",
+        "description": "Bayesian search over thousands of trials with train, validation and out-of-sample windows by default, plus parameter importance so you know which knobs matter.",
+        "outcomes": [
+          "Thousands of trials in parallel",
+          "Train / validation / OOS by default",
+          "Parameter importance and clustering"
+        ]
+      },
+      "live": {
+        "title": "Live through your broker",
+        "description": "Promote a validated portfolio to a live operation that trades through your connected brokerage, with real-time order logs, P&L and a one-click pause.",
+        "outcomes": [
+          "Broker-connected execution",
+          "Real-time order log and P&L",
+          "One click to pause or stop"
+        ],
+        "mediaAlt": "Live operations on the platform home: deployed portfolios per strategy, active group performance and most traded assets"
+      },
+      "agent": {
+        "title": "An assistant that does the work",
+        "description": "Describe the idea in plain English and Fintelligent writes the Python, configures the parameters and stages the study, then waits for you to confirm.",
+        "outcomes": [
+          "Strategies drafted from a description",
+          "Studies staged for your confirmation",
+          "Explanations of any result, with sources"
+        ]
+      }
+    },
+    "faqIntro": "The questions systematic traders ask first: Python, optimization, speed and going live.",
+    "faq": {
+      "cost": {
+        "q": "What does it cost to start?",
+        "a": "The free tier includes the Laboratory, asset groups and studies with the basic samplers and allocation methods. Advanced features unlock per basket with tokens, so you pay for what a study actually uses."
+      },
+      "ownership": {
+        "q": "Who owns my strategies?",
+        "a": "You do. Strategies are private by default, hashed and time-stamped as yours, and you can export any trial's daily signal as JSON or CSV at any time."
+      }
+    },
+    "closing": {
+      "title": "Bring a strategy,",
+      "titleAccent": "leave with a study.",
+      "body": "Start on the free tier, run your first optimization today, and book a walkthrough when you want a second pair of eyes."
+    }
+  }
+}

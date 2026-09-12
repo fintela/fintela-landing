@@ -64,23 +64,45 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      # The app: content-hashed assets + index.html. The content prefixes are
-      # excluded because their objects need different cache headers, applied next.
+      # The app: content-hashed assets + index.html. The content and media
+      # prefixes are excluded because their objects need different cache
+      # headers, applied next.
       - name: Sync the site
         run: |
           aws s3 sync dist/ "s3://${{ vars.S3_BUCKET }}" --delete \
-            --exclude 'blog/*' --exclude 'docs/*'
+            --exclude 'blog/*' --exclude 'docs/*' --exclude 'media/*'
 
       # Blog and docs JSON URLs are not content-hashed, hence the short TTLs.
       # Publishing a post or a documentation page is a sync of its prefix alone —
-      # no bundle changes, so no cache bust of the app itself.
+      # no bundle changes, so no cache bust of the app itself. Blog covers share
+      # the prefix but are images, so they are synced apart with their own type.
       - name: Sync the content prefixes
         run: |
           for prefix in blog docs; do
             aws s3 sync "dist/$prefix/" "s3://${{ vars.S3_BUCKET }}/$prefix/" --delete \
+              --exclude 'covers/*' \
               --content-type application/json \
               --cache-control "public, max-age=60, s-maxage=900"
           done
+          if [ -d dist/blog/covers ]; then
+            aws s3 sync dist/blog/covers/ "s3://${{ vars.S3_BUCKET }}/blog/covers/" --delete \
+              --cache-control "public, max-age=3600, s-maxage=86400"
+          fi
+
+      # Demo videos and captions (see src/media/README.md): not content-hashed,
+      # but large and rarely re-cut, so they cache for a day at the edge; the
+      # invalidation below covers a re-cut. Captions need their MIME type set.
+      - name: Sync the media prefix
+        run: |
+          if [ -d dist/media ]; then
+            aws s3 sync dist/media/ "s3://${{ vars.S3_BUCKET }}/media/" --delete \
+              --exclude '*.vtt' \
+              --cache-control "public, max-age=86400, s-maxage=604800"
+            aws s3 sync dist/media/ "s3://${{ vars.S3_BUCKET }}/media/" \
+              --exclude '*' --include '*.vtt' \
+              --content-type 'text/vtt; charset=utf-8' \
+              --cache-control "public, max-age=3600, s-maxage=86400"
+          fi
 
       # The bundle is hashed but index.html is not, so skipping this leaves
       # CloudFront serving HTML that points at deleted asset hashes.

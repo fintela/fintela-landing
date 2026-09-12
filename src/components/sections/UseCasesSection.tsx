@@ -2,8 +2,14 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
+import { NeuPanel } from '../primitives/NeuPanel';
+import { IconWell } from '../primitives/IconWell';
+import { CheckWell } from '../primitives/CheckWell';
+import { TierBadge } from '../primitives/TierBadge';
+import { Groove } from '../primitives/Groove';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { gradients } from '../../theme/tokens';
+import { neuGrid } from '../../theme/neu';
+import { soft } from '../../theme/tokens';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -27,7 +33,7 @@ const audienceMeta = [
 export const UseCasesSection = () => {
   const { t } = useTranslation('home');
   return (
-    <Section id="use-cases" tone="default" size="lg">
+    <Section id="use-cases" size="lg">
       <SectionHeader
         eyebrow={t('useCases.eyebrow')}
         title={t('useCases.title')}
@@ -38,12 +44,13 @@ export const UseCasesSection = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: { xs: 2.5, md: 3 },
+          gridTemplateColumns: { xs: '1fr', md: neuGrid.columns(3) },
+          gap: neuGrid.gap,
+          alignItems: 'stretch',
         }}
       >
         {audienceMeta.map((a, idx) => (
-          <AnimateOnScroll key={a.key} delay={idx * 90}>
+          <AnimateOnScroll key={a.key} delay={idx * 90} stretch>
             <AudienceCard
               icon={a.icon}
               badge={t(`useCases.audiences.${a.key}.badge`)}
@@ -67,96 +74,62 @@ const AudienceCard = ({
   outcomes,
   highlighted,
 }: Audience & { highlighted?: boolean }) => (
-  <Box
+  <NeuPanel
+    featured={highlighted}
     sx={{
-      position: 'relative',
-      p: { xs: 3, md: 3.5 },
-      borderRadius: 4,
-      border: '1px solid',
-      borderColor: highlighted ? 'rgba(47,99,149,0.3)' : 'divider',
-      background: highlighted
-        ? 'linear-gradient(180deg, #ffffff 0%, rgba(47,99,149,0.04) 100%)'
-        : '#fff',
-      boxShadow: highlighted
-        ? '0 4px 14px rgba(47,99,149,0.08)'
-        : '0 1px 3px rgba(11,16,32,0.04)',
-      transition: 'transform 0.22s, box-shadow 0.22s, border-color 0.22s',
       display: 'flex',
       flexDirection: 'column',
+      p: { xs: 3, md: 4 },
+      maxWidth: { xs: 560, md: 'none' },
+      mx: { xs: 'auto', md: 0 },
+      width: '100%',
       height: '100%',
-      '&:hover': {
-        transform: 'translateY(-2px)',
-        borderColor: 'rgba(47,99,149,0.4)',
-        boxShadow: '0 8px 20px rgba(47,99,149,0.10)',
-      },
     }}
   >
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-      <Box
-        sx={{
-          width: 44,
-          height: 44,
-          borderRadius: 2,
-          background: gradients.brand,
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(47,99,149,0.14)',
-          '& svg': { fontSize: 22 },
-        }}
-      >
-        {icon}
-      </Box>
+    <Box sx={{ height: 24, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
+      <TierBadge featured={highlighted}>{badge}</TierBadge>
+    </Box>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, minHeight: 48, mb: 2.5 }}>
+      <IconWell>{icon}</IconWell>
       <Typography
         sx={{
-          fontSize: '0.68rem',
-          fontWeight: 700,
-          color: 'text.disabled',
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
+          fontSize: { xs: '1.25rem', md: '1.375rem' },
+          fontWeight: 800,
+          lineHeight: 1.2,
+          letterSpacing: '-0.02em',
+          color: soft.text,
         }}
       >
-        {badge}
+        {title}
       </Typography>
     </Box>
-    <Typography
-      sx={{
-        fontSize: { xs: '1.05rem', md: '1.15rem' },
-        fontWeight: 700,
-        color: 'text.primary',
-        letterSpacing: '-0.015em',
-        mb: 1,
-      }}
-    >
-      {title}
-    </Typography>
-    <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', lineHeight: 1.6, mb: 2.5 }}>
+    <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.65, color: soft.textSecondary, mb: 2.5 }}>
       {description}
     </Typography>
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 'auto' }}>
+    <Groove sx={{ mb: 2.5 }} />
+    <Box
+      component="ul"
+      role="list"
+      sx={{
+        m: 0,
+        p: 0,
+        listStyle: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.25,
+        mt: 'auto',
+      }}
+    >
       {outcomes.map((o) => (
-        <Box key={o} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-          <Box
-            sx={{
-              width: 16,
-              height: 16,
-              borderRadius: '50%',
-              background: gradients.brand,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              mt: '2px',
-            }}
-          >
-            <ArrowForwardIcon sx={{ fontSize: 10, color: '#fff' }} />
+        <Box component="li" key={o} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
+          <Box sx={{ mt: '2px', display: 'inline-flex' }}>
+            <CheckWell size={20} icon={<ArrowForwardIcon />} />
           </Box>
-          <Typography sx={{ fontSize: '0.85rem', color: 'text.primary', fontWeight: 500 }}>
+          <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.6, color: soft.text, overflowWrap: 'anywhere' }}>
             {o}
           </Typography>
         </Box>
       ))}
     </Box>
-  </Box>
+  </NeuPanel>
 );

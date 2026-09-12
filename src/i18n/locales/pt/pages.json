@@ -32,59 +32,189 @@
     },
     "assistance": {
       "heading": "Precisa de ajuda imediata?"
+    },
+    "intent": {
+      "walkthrough": {
+        "chip": "Demonstração institucional",
+        "title": "Agende uma demonstração",
+        "subtitle": "Trinta minutos sobre as suas próprias estratégias, com a equipe que construiu a plataforma. Confirmamos um horário em um dia útil.",
+        "toggle": "Agendar uma demonstração",
+        "messageLabel": "Conte-nos sobre a sua mesa",
+        "messagePlaceholder": "As estratégias que você opera, os mercados em que atua e o que gostaria de ver na conversa.",
+        "submit": "Agendar a demonstração"
+      }
     }
   },
   "pricing": {
     "hero": {
       "title": "Escolha o plano que",
       "titleAccent": "combina com sua estratégia",
-      "subtitle": "Toda conta individual começa grátis: crie uma estratégia, rode-a no otimizador e veja o que a Fintela pode fazer. Faça upgrade quando precisar de mais espaço para trabalhar. Contas de empresa e parceiros são atendidas diretamente pelo nosso time, e não por um plano publicado.",
-      "ctaPrimary": "Comece grátis",
-      "ctaSecondary": "Fale conosco"
+      "subtitle": "Todo plano inclui a plataforma completa: conecte qualquer broker, registre estratégias e grupos de ativos sem limite, e use nossas funções de fitness e gestores de risco integrados. Suba de plano quando precisar de mais tokens, armazenamento ou poder de IA, e fale diretamente com nosso time para um plano Institutional sob medida."
     },
     "individual": {
-      "title": "Contas",
-      "titleAccent": "individuais",
-      "description": "Todo plano inclui a plataforma principal: criação de estratégias, backtesting e Fintelligent. Os níveis mais altos aumentam quanto você tem de cada um.",
+      "title": "Planos",
+      "overageRateLabel": "Taxa de excedente",
       "plans": {
-        "basic": {
-          "name": "Basic",
-          "badge": "Grátis",
-          "tagline": "Comece a criar",
-          "description": "Para quem está testando a Fintela pela primeira vez. Sem cartão.",
+        "trader": {
+          "name": "Trader",
+          "price": "$79",
+          "period": "/mês",
+          "badge": "",
+          "description": "Tudo o que você precisa para operar com mais inteligência.",
           "features": [
-            "Acesso limitado ao Fintelligent",
-            "Suporte da comunidade"
-          ]
-        },
-        "pro": {
-          "name": "Pro",
-          "badge": "Recomendado",
-          "tagline": "Para desenvolvimento ativo",
-          "description": "Para quem desenvolve e itera estratégias ativamente semana a semana.",
-          "features": [
-            "Acesso ampliado ao Fintelligent",
-            "Suporte prioritário por email"
-          ]
-        },
-        "proPlus": {
-          "name": "Pro+",
-          "badge": "Capacidade máxima",
-          "tagline": "Para usuários avançados",
-          "description": "Para quem roda buscas grandes e mantém uma biblioteca extensa de estratégias.",
-          "features": [
-            "O maior acesso ao Fintelligent",
-            "Suporte prioritário"
+            "8,600 tokens/mês",
+            "20 GB de armazenamento",
+            "Acesso padrão à IA",
+            "Conecte qualquer broker",
+            "Registre estratégias e grupos de ativos sem limite",
+            "Grupos de ativos, estratégias, funções de fitness e gestores de risco integrados"
           ],
-          "cta": "Fazer upgrade para Pro+"
+          "overageRate": "$0.018/token",
+          "support": "Suporte por email",
+          "cta": "Comece agora"
+        },
+        "quant": {
+          "name": "Quant",
+          "price": "$159",
+          "period": "/mês",
+          "badge": "Mais popular",
+          "description": "Aprofunde-se. Otimize ao máximo.",
+          "features": [
+            "21,000 tokens/mês",
+            "80 GB de armazenamento",
+            "Mais recursos de IA, maior uso",
+            "Tudo do Trader, mais:",
+            "Alocação avançada de portfólio ao vivo",
+            "Funções de fitness personalizadas",
+            "Gestores de risco personalizados",
+            "Mais opções de otimizador",
+            "Análise estatística avançada",
+            "Otimizações ilimitadas"
+          ],
+          "overageRate": "$0.015/token",
+          "support": "Suporte por email + chat",
+          "cta": "Fazer upgrade para Quant"
+        },
+        "institutional": {
+          "name": "Institutional",
+          "price": "Personalizado",
+          "period": "",
+          "badge": "",
+          "description": "Feito para equipes. Com a sua marca.",
+          "features": [
+            "A partir de 60,000 tokens/mês",
+            "Armazenamento personalizado",
+            "Acesso completo à IA com os modelos mais avançados",
+            "Tudo do Quant, mais:",
+            "Espaço de trabalho organizacional",
+            "Marca personalizada",
+            "Possibilidade de white-label",
+            "Acompanhamento prático de fluxo de trabalho e estratégia",
+            "SSO e gestão de usuários"
+          ],
+          "overageRate": "$0.0125/token",
+          "support": "CSM dedicado + SLA",
+          "cta": "Fale conosco"
         }
       }
     },
-    "business": {
-      "title": "Empresas",
-      "titleAccent": "e parceiros",
-      "description": "A Fintela está em estágio inicial, e trabalhamos com empresas e parceiros diretamente, em vez de por um plano de autoatendimento. Gerencia um fundo, quer integrar com a Fintela ou explorar uma parceria? Fale diretamente com nosso time e vamos encontrar juntos o encaixe certo.",
-      "cta": "Fale conosco"
+    "compare": {
+      "title": "Compare",
+      "titleAccent": "os planos lado a lado",
+      "description": "Todo plano conecta qualquer broker e inclui estratégias e grupos de ativos sem limite, além das funções de fitness e gestores de risco integrados. Os níveis mais altos aumentam sua reserva de tokens e armazenamento, liberam ferramentas de otimização e análise mais profundas, e o Institutional adiciona espaço de trabalho organizacional, marca própria e suporte dedicado.",
+      "caption": "O que cada plano inclui",
+      "featureColumn": "O que está incluído",
+      "included": "Incluído",
+      "notIncluded": "Não incluído",
+      "rows": {
+        "price": {
+          "label": "Preço",
+          "trader": "$79/mês ($787/ano)",
+          "quant": "$159/mês ($1,589/ano)",
+          "institutional": "Personalizado — a negociar"
+        },
+        "tokenPool": {
+          "label": "Reserva de tokens",
+          "trader": "8,600/mês",
+          "quant": "21,000/mês",
+          "institutional": "A partir de 60,000/mês"
+        },
+        "storage": {
+          "label": "Armazenamento",
+          "trader": "20 GB",
+          "quant": "80 GB",
+          "institutional": "Personalizado"
+        },
+        "overageRate": {
+          "label": "Taxa de excedente",
+          "trader": "$0.018/token",
+          "quant": "$0.015/token",
+          "institutional": "$0.0125/token"
+        },
+        "aiAccess": {
+          "label": "Acesso a IA",
+          "trader": "Padrão",
+          "quant": "Mais recursos, maior uso",
+          "institutional": "Acesso completo aos recursos"
+        },
+        "support": {
+          "label": "Suporte",
+          "trader": "Email",
+          "quant": "Email + chat",
+          "institutional": "CSM dedicado + SLA"
+        },
+        "connectBroker": {
+          "label": "Conecte qualquer broker"
+        },
+        "unlimitedStrategies": {
+          "label": "Estratégias e grupos de ativos sem limite"
+        },
+        "builtIn": {
+          "label": "Grupos de ativos, estratégias, funções de fitness e gestores de risco integrados"
+        },
+        "advancedAllocation": {
+          "label": "Alocação avançada de portfólio ao vivo"
+        },
+        "customFitness": {
+          "label": "Funções de fitness personalizadas"
+        },
+        "customRisk": {
+          "label": "Gestores de risco personalizados"
+        },
+        "moreOptimizer": {
+          "label": "Mais opções de otimizador"
+        },
+        "advancedStats": {
+          "label": "Análise estatística avançada"
+        },
+        "unlimitedOptimizations": {
+          "label": "Otimizações ilimitadas"
+        },
+        "orgWorkspace": {
+          "label": "Espaço de trabalho organizacional"
+        },
+        "customBranding": {
+          "label": "Marca personalizada"
+        },
+        "whiteLabel": {
+          "label": "Possibilidade de white-label"
+        },
+        "advancedLlms": {
+          "label": "IA com os modelos mais avançados"
+        },
+        "handsOnEnablement": {
+          "label": "Acompanhamento prático de fluxo de trabalho e estratégia"
+        },
+        "ssoSeatManagement": {
+          "label": "SSO e gestão de usuários"
+        }
+      }
+    },
+    "cta": {
+      "title": "Não sabe qual plano combina?",
+      "description": "Conte o que você está construindo e indicamos o plano certo. Respondemos em até 24 horas.",
+      "primary": "Fale com nosso time",
+      "secondary": "Ler a documentação"
     }
   },
   "blog": {
@@ -113,8 +243,6 @@
     "readTime": "{{minutes}} min de leitura",
     "updated": "Atualizado em {{date}}",
     "backToIndex": "Ver toda a documentação",
-    "editThisPage": "Editar esta página no GitHub",
-    "editHint": "Abre {{path}} no editor do GitHub. Ao salvar, um pull request é proposto.",
     "error": {
       "title": "Não foi possível carregar a documentação",
       "body": "Algo falhou ao buscar as páginas. Atualize a página ou tente novamente em alguns minutos."

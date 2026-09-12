@@ -1,5 +1,6 @@
 import {
   deriveSlug,
+  extractFirstImage,
   firstParagraph,
   parseBool,
   parseDate,
@@ -21,6 +22,17 @@ import type { BlogPost } from './types';
  * post must never take the blog page down. `describeSkip` is exported so the
  * generator can report the same reasons.
  */
+
+/**
+ * A cover is a file under `content/blog/` named relative to it, e.g.
+ * `covers/tpe.jpg`. Anything that could climb out of that folder, or that is
+ * not an image, is treated as absent (with a build warning) rather than
+ * published as a broken URL.
+ */
+const COVER_PATTERN = /^[a-z0-9][a-z0-9/_-]*\.(jpe?g|png|webp|avif|svg)$/i;
+
+export const isValidCover = (cover: string): boolean =>
+  COVER_PATTERN.test(cover) && !cover.split('/').includes('..');
 
 /** Why a file was skipped, or `null` if it is publishable. */
 export function describeSkip(filename: string, source: string): string | null {
@@ -52,6 +64,15 @@ export function buildPost(filename: string, source: string): BlogPost | null {
   const { data, body } = parseFrontmatter(source)!;
   const markdown = body.trim();
 
+  const cover = String(data.cover ?? '').trim();
+  const coverAlt = String(data.coverAlt ?? '').trim();
+  const featured = parseBool(data.featured) === true;
+
+  // No `cover:` in frontmatter? Fall back to the post's own first image, so a
+  // card never sits text-only next to posts that clearly have art to show.
+  const explicitCover = cover && isValidCover(cover);
+  const fallbackImage = explicitCover ? null : extractFirstImage(markdown);
+
   return {
     slug: deriveSlug(filename, data),
     title: String(data.title).trim(),
@@ -60,6 +81,12 @@ export function buildPost(filename: string, source: string): BlogPost | null {
     excerpt: String(data.excerpt ?? '').trim() || firstParagraph(markdown),
     tags: parseList(data.tags),
     readingMinutes: readingMinutes(markdown),
+    ...(explicitCover
+      ? { cover, ...(coverAlt ? { coverAlt } : {}) }
+      : fallbackImage
+        ? { cover: fallbackImage.src, ...(fallbackImage.alt ? { coverAlt: fallbackImage.alt } : {}) }
+        : {}),
+    ...(featured ? { featured } : {}),
     markdown,
   };
 }

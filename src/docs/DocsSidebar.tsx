@@ -1,7 +1,8 @@
 import { Box, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { bySection } from './format';
-import { palette } from '../theme/tokens';
+import { soft } from '../theme/tokens';
+import { focusRingTight, navPillSx } from '../theme/neu';
 import type { DocSummary, DocsIndex } from './types';
 
 interface DocsSidebarProps {
@@ -27,7 +28,7 @@ export const DocsSidebar = ({ index, currentSlug, onNavigate }: DocsSidebarProps
     <Box
       component="nav"
       aria-label="Documentation"
-      sx={{ py: { xs: 2, md: 4 }, pr: { xs: 1, md: 3 }, pl: { xs: 1, md: 0 } }}
+      sx={{ py: { xs: 2, md: 4 }, pr: { xs: 1, md: 3 }, pl: { xs: 1, md: 0.5 } }}
     >
       {groups.map((group, gi) => (
         <Box key={group.section} sx={{ mb: gi < groups.length - 1 ? 3 : 0 }}>
@@ -35,7 +36,7 @@ export const DocsSidebar = ({ index, currentSlug, onNavigate }: DocsSidebarProps
             sx={{
               fontSize: '0.66rem',
               fontWeight: 700,
-              color: 'text.disabled',
+              color: soft.textSecondary,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               px: 1.5,
@@ -74,25 +75,11 @@ const SidebarLink = ({
     to={`/docs/${page.slug}`}
     onClick={onNavigate}
     aria-current={active ? 'page' : undefined}
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 1,
-      px: 1.5,
-      py: 0.7,
-      borderRadius: 1.25,
-      fontSize: '0.875rem',
-      fontWeight: active ? 600 : 500,
-      color: active ? '#fff' : 'text.secondary',
-      background: active ? palette.blue : 'transparent',
-      boxShadow: active ? '0 6px 14px rgba(47,99,149,0.25)' : 'none',
-      textDecoration: 'none',
-      position: 'relative',
-      transition: 'color 0.18s, background 0.18s',
-      '&:hover': active
-        ? undefined
-        : { color: 'text.primary', bgcolor: 'rgba(47,99,149,0.06)' },
-    }}
+    sx={[
+      navPillSx,
+      focusRingTight,
+      { display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.7, fontSize: '0.875rem' },
+    ]}
   >
     <Box
       component="span"

@@ -1,7 +1,8 @@
-import { readdir, readFile } from 'node:fs/promises'
+import { access, readdir, readFile } from 'node:fs/promises'
+import { createReadStream } from 'node:fs'
 import path from 'node:path'
 import type { Plugin } from 'vite'
-import { buildPost, describeSkip } from './src/blog/parsePost'
+import { buildPost, describeSkip, isValidCover } from './src/blog/parsePost'
 import type { BlogPost, BlogPostSummary } from './src/blog/types'
 import { buildDoc, describeDocSkip, docSectionOrder, DEFAULT_SECTION_ORDER } from './src/docs/parseDoc'
 import { duplicateHeadingIds } from './src/docs/toc'
@@ -119,7 +120,31 @@ const toPostSummary = (post: BlogPost): BlogPostSummary => ({
   excerpt: post.excerpt,
   tags: post.tags,
   readingMinutes: post.readingMinutes,
+  ...(post.cover ? { cover: post.cover } : {}),
+  ...(post.coverAlt ? { coverAlt: post.coverAlt } : {}),
+  ...(post.featured ? { featured: true } : {}),
 })
+
+/**
+ * Cover images referenced from frontmatter (`cover: covers/<file>`), keyed by
+ * the path they are published at under the blog prefix. Read from
+ * `content/blog/` and emitted beside the JSON, so a post and its cover ship in
+ * the same `blog/` sync.
+ */
+const COVER_TYPES: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.svg': 'image/svg+xml',
+}
+
+const exists = (file: string) =>
+  access(file).then(
+    () => true,
+    () => false,
+  )
 
 const toDocSummary = (doc: DocDetail): DocSummary => ({
   slug: doc.slug,
@@ -141,7 +166,23 @@ async function render(root: string, now: string) {
   const warnings: Skipped[] = []
 
   // ---- blog ----------------------------------------------------------------
-  const blog = await collect(root, BLOG_DIR, describeSkip, buildPost)
+  const covers = new Map<string, string>() // published path -> absolute source file
+  const blog = await collect(root, BLOG_DIR, describeSkip, buildPost, (post, _source, warn) => {
+    // A cover auto-derived from the post's own body (see parsePost.ts) is
+    // already a resolvable URL — an http(s) link, an absolute /public path, or
+    // a data: URI — not a filename under content/blog/, so there is nothing to
+    // copy and no frontmatter field to point the coverAlt warning at.
+    if (!post.cover || !isValidCover(post.cover)) return
+    const file = path.resolve(root, BLOG_DIR, post.cover)
+    covers.set(`blog/${post.cover}`, file)
+    if (!post.coverAlt) warn(`cover "${post.cover}" has no coverAlt — add one for the card image`)
+  })
+  for (const [published, file] of covers) {
+    if (!(await exists(file))) {
+      warnings.push({ file: `blog: ${published}`, reason: 'cover file not found under content/blog/' })
+      covers.delete(published)
+    }
+  }
   // Newest first; the card grid renders this order as-is.
   const posts = blog.items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
 
@@ -153,6 +194,7 @@ async function render(root: string, now: string) {
     files.set(`blog/${post.slug}.json`, JSON.stringify(post, null, 2) + '\n')
   }
   skipped.push(...blog.skipped.map((s) => ({ ...s, file: `blog: ${s.file}` })))
+  warnings.push(...blog.warnings.map((w) => ({ ...w, file: `blog: ${w.file}` })))
 
   // ---- docs ----------------------------------------------------------------
   // Section order is read off the files and resolved here so the app receives one
@@ -205,7 +247,7 @@ async function render(root: string, now: string) {
   skipped.push(...docs.skipped.map((s) => ({ ...s, file: `docs: ${s.file}` })))
   warnings.push(...docs.warnings.map((w) => ({ ...w, file: `docs: ${w.file}` })))
 
-  return { files, posts, pages, sections, skipped, warnings }
+  return { files, covers, posts, pages, sections, skipped, warnings }
 }
 
 export function contentJson(): Plugin {
@@ -224,13 +266,16 @@ export function contentJson(): Plugin {
      * which keeps the two publish paths byte-identical.
      */
     async generateBundle() {
-      const { files, posts, pages, sections, skipped, warnings } = await render(
+      const { files, covers, posts, pages, sections, skipped, warnings } = await render(
         root,
         new Date().toISOString(),
       )
 
       for (const [fileName, source] of files) {
         this.emitFile({ type: 'asset', fileName, source })
+      }
+      for (const [fileName, file] of covers) {
+        this.emitFile({ type: 'asset', fileName, source: await readFile(file) })
       }
 
       for (const { file, reason } of skipped) {
@@ -257,7 +302,25 @@ export function contentJson(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0]
         const isContent = url?.startsWith('/blog/') || url?.startsWith('/docs/')
-        if (!isContent || !url?.endsWith('.json')) return next()
+        if (!isContent) return next()
+
+        // Covers: streamed from content/blog/ exactly as the build emits them.
+        const type = url ? COVER_TYPES[path.extname(url).toLowerCase()] : undefined
+        if (url && type && url.startsWith('/blog/')) {
+          const { covers } = await render(root, new Date().toISOString())
+          const file = covers.get(url.slice(1))
+          if (!file) {
+            res.statusCode = 404
+            res.end()
+            return
+          }
+          res.setHeader('content-type', type)
+          res.setHeader('cache-control', 'no-store')
+          createReadStream(file).pipe(res)
+          return
+        }
+
+        if (!url?.endsWith('.json')) return next()
 
         const { files } = await render(root, new Date().toISOString())
         const body = files.get(url.slice(1))

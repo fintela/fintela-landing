@@ -5,6 +5,8 @@ date: 2026-08-11
 excerpt: This shortlisting is a meaningful milestone, but it's also a signal of where Fintela is headed. The team remains focused on continuing to innovate, refine, and expand the platform's capabilities to meet the evolving needs of the asset management industry.
 tags: Awards
 published: true
+cover: covers/fintela-hedgeweek-announcement.png
+coverAlt: Fintela's crowd card announcing its shortlisting for New Solution Product of the Year at the Hedgeweek US Awards 2026.
 ---
 
 ## Why This Matters

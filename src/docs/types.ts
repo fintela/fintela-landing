@@ -20,11 +20,7 @@ export interface DocSummary {
   updated: string;
   excerpt: string;
   readingMinutes: number;
-  /**
-   * Repo-relative path of the source file, e.g. `content/docs/api/errors.md`.
-   * Drives the "Edit this page" link, so it survives a file moving between
-   * folders without the URL changing.
-   */
+  /** Repo-relative path of the source file, e.g. `content/docs/api/errors.md`. */
   sourcePath: string;
   /** Author-supplied search terms, on top of the title and body text. */
   keywords: string[];

@@ -11,7 +11,8 @@ import { CodeBlock } from '../docs/components/CodeBlock';
 import { Callout } from '../docs/components/Callout';
 import type { Language } from '../docs/syntax/highlight';
 import { inlineCode } from '../docs/components/Prose';
-import { palette } from '../theme/tokens';
+import { cellGrooveSx, eyebrowSx, grooveSx, proseLinkSx, quietLinkSx, wellSx } from '../theme/neu';
+import { radii, soft } from '../theme/tokens';
 
 /**
  * Renders a Markdown body from `content/` — a blog post, or a documentation page.
@@ -208,7 +209,7 @@ function buildComponents({
           sx={{
             mt: spec.mt,
             mb: 1.5,
-            color: 'text.primary',
+            color: soft.text,
             fontSize: spec.fontSize,
             scrollMarginTop: 96,
             ...(id
@@ -226,15 +227,21 @@ function buildComponents({
               href={`#${id}`}
               className="heading-anchor"
               aria-label="Link to this section"
-              sx={{
-                ml: 1,
-                color: 'text.disabled',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                verticalAlign: 'middle',
-                '&:hover': { color: palette.blue },
-              }}
+              sx={[
+                quietLinkSx,
+                {
+                  ml: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  verticalAlign: 'middle',
+                  // Re-declares quietLinkSx's ring and adds the reveal.
+                  '&:focus-visible': {
+                    opacity: 1,
+                    outline: `2px solid ${soft.accent}`,
+                    outlineOffset: 2,
+                  },
+                },
+              ]}
             >
               <LinkIcon sx={{ fontSize: '0.7em' }} />
             </Box>
@@ -254,7 +261,7 @@ function buildComponents({
       <Typography
         sx={{
           my: 2.5,
-          color: 'text.secondary',
+          color: soft.textSecondary,
           fontSize: { xs: '1rem', md: '1.075rem' },
           lineHeight: 1.8,
         }}
@@ -289,13 +296,7 @@ function buildComponents({
                   ? { target: '_blank', rel: 'noopener noreferrer' }
                   : {}),
               })}
-          sx={{
-            color: palette.blue,
-            textDecoration: 'none',
-            borderBottom: '1px solid rgba(47,99,149,0.35)',
-            transition: 'border-color 0.18s, color 0.18s',
-            '&:hover': { color: palette.blue, borderBottomColor: palette.blue },
-          }}
+          sx={proseLinkSx}
         >
           {children}
         </Box>
@@ -303,7 +304,7 @@ function buildComponents({
     },
 
     strong: ({ children }) => (
-      <Box component="strong" sx={{ color: 'text.primary', fontWeight: 700 }}>
+      <Box component="strong" sx={{ color: soft.text, fontWeight: 700 }}>
         {children}
       </Box>
     ),
@@ -319,11 +320,11 @@ function buildComponents({
         sx={{
           my: 2.5,
           pl: 3.5,
-          color: 'text.secondary',
+          color: soft.textSecondary,
           fontSize: { xs: '1rem', md: '1.075rem' },
           lineHeight: 1.8,
           '& li': { my: 1 },
-          '& li::marker': { color: palette.blue },
+          '& li::marker': { color: soft.accent },
           // GFM task lists: the checkbox replaces the bullet rather than joining it.
           '& li:has(> input[type="checkbox"])': { listStyle: 'none', ml: -2.5 },
           '& input[type="checkbox"]': {
@@ -331,7 +332,7 @@ function buildComponents({
             width: 15,
             height: 15,
             verticalAlign: '-2px',
-            accentColor: palette.blue,
+            accentColor: soft.accent,
           },
         }}
       >
@@ -344,11 +345,11 @@ function buildComponents({
         sx={{
           my: 2.5,
           pl: 3.5,
-          color: 'text.secondary',
+          color: soft.textSecondary,
           fontSize: { xs: '1rem', md: '1.075rem' },
           lineHeight: 1.8,
           '& li': { my: 1 },
-          '& li::marker': { color: palette.blue, fontWeight: 700 },
+          '& li::marker': { color: soft.accent, fontWeight: 700 },
         }}
       >
         {children}
@@ -373,16 +374,15 @@ function buildComponents({
         <Box
           component="blockquote"
           sx={{
+            ...wellSx('sm'),
+            borderRadius: `${radii.neuInner}px`,
             my: 3.5,
             mx: 0,
             px: 3,
-            py: 0.5,
-            borderLeft: '3px solid',
-            borderColor: palette.blue,
-            background:
-              'linear-gradient(90deg, rgba(47,99,149,0.06) 0%, rgba(47,99,149,0) 100%)',
-            borderRadius: '0 10px 10px 0',
-            '& p': { color: 'text.primary', fontStyle: 'italic' },
+            py: 1.5,
+            '& p': { color: soft.text, fontStyle: 'italic', my: 1 },
+            // Inline code inside a well is a flat tinted chip: never well-in-well.
+            '& code': { boxShadow: 'none' },
           }}
         >
           {children}
@@ -430,9 +430,9 @@ function buildComponents({
             height: 'auto',
             my: 4,
             mx: 'auto',
-            borderRadius: 2.5,
-            border: '1px solid',
-            borderColor: 'divider',
+            p: 1,
+            borderRadius: `${radii.neuInner}px`,
+            ...wellSx('sm'),
           }}
         />
       );
@@ -440,30 +440,32 @@ function buildComponents({
 
     // Wide tables scroll inside their own container so the page never does.
     table: ({ children }) => (
-      <Box sx={{ my: 3.5, overflowX: 'auto', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+      <Box sx={{ my: 3.5, overflowX: 'auto', borderRadius: `${radii.neuInner}px` }}>
         <Box
           component="table"
           sx={{
-            borderCollapse: 'collapse',
+            // `separate` is required for the per-cell inset grooves to render.
+            borderCollapse: 'separate',
+            borderSpacing: 0,
             width: '100%',
             fontSize: '0.94rem',
             '& th, & td': {
               textAlign: 'left',
               px: 2,
               py: 1.25,
-              borderBottom: 1,
-              borderColor: 'divider',
               verticalAlign: 'top',
+              border: 0,
             },
             '& th': {
-              bgcolor: 'rgba(47,99,149,0.05)',
-              color: 'text.primary',
-              fontWeight: 700,
+              ...eyebrowSx,
+              bgcolor: soft.ground,
               whiteSpace: 'nowrap',
+              '&:first-of-type': { borderTopLeftRadius: `${radii.neuWell}px` },
+              '&:last-of-type': { borderTopRightRadius: `${radii.neuWell}px` },
             },
-            '& td': { color: 'text.secondary' },
+            '& td': { color: soft.textSecondary },
             '& td code': inlineCode,
-            '& tr:last-of-type td': { borderBottom: 0 },
+            '& tbody tr > *': cellGrooveSx,
           }}
         >
           {children}
@@ -471,17 +473,7 @@ function buildComponents({
       </Box>
     ),
 
-    hr: () => (
-      <Box
-        sx={{
-          my: 5,
-          height: '1px',
-          border: 0,
-          background:
-            'linear-gradient(90deg, transparent, rgba(47,99,149,0.35) 50%, transparent)',
-        }}
-      />
-    ),
+    hr: () => <Box aria-hidden sx={{ ...grooveSx, my: 5 }} />,
   };
 }
 
