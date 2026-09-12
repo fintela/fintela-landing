@@ -16,6 +16,17 @@ import { DocsSearch } from './DocsSearch';
 import { KbdKey } from './components/KbdKey';
 import { bySection } from './format';
 import type { DocSummary, DocsIndex } from './types';
+import { radii, soft } from '../theme/tokens';
+import {
+  eyebrowSx,
+  focusRingSx,
+  grooveSx,
+  neuFieldSx,
+  neuIconButtonSx,
+  quietLinkSx,
+} from '../theme/neu';
+import { NeuPanel } from '../components/primitives/NeuPanel';
+import { Groove } from '../components/primitives/Groove';
 
 interface DocsLayoutProps {
   /** The published set — sidebar, palette and prev/next all read from it. */
@@ -64,7 +75,7 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
     : [];
 
   return (
-    <Box sx={{ bgcolor: '#fff', minHeight: '100vh' }}>
+    <Box sx={{ minHeight: '100vh' }}>
       <Header activeSection="documentation" onNavigate={() => undefined} />
 
       {/* Docs sub-header — search trigger + breadcrumbs */}
@@ -73,10 +84,16 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
           position: 'sticky',
           top: { xs: 60, md: 72 },
           zIndex: 30,
-          bgcolor: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'saturate(180%) blur(14px)',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
+          bgcolor: soft.ground,
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            ...grooveSx,
+          },
+          '@media (forced-colors: active)': { borderBottom: '1px solid CanvasText' },
         }}
       >
         <Container
@@ -97,7 +114,7 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
             <IconButton
               aria-label="Open documentation menu"
               onClick={() => setMobileNavOpen(true)}
-              sx={{ display: { xs: 'inline-flex', md: 'none' }, color: 'text.secondary' }}
+              sx={[neuIconButtonSx, { display: { xs: 'inline-flex', md: 'none' } }]}
             >
               <MenuIcon />
             </IconButton>
@@ -113,37 +130,31 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
               if (e.key === 'Enter' || e.key === ' ') setSearchOpen(true);
             }}
             sx={{
+              ...neuFieldSx,
               display: 'flex',
               alignItems: 'center',
               gap: 1,
               px: 1.5,
               py: 0.85,
-              borderRadius: 999,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: '#fff',
+              borderRadius: `${radii.pill}px`,
               cursor: 'pointer',
               minWidth: { xs: 44, sm: 220 },
-              transition: 'border-color 0.18s, box-shadow 0.18s',
-              '&:hover': {
-                borderColor: 'rgba(47,99,149,0.4)',
-                boxShadow: '0 0 0 3px rgba(47,99,149,0.08)',
-              },
+              ...focusRingSx,
             }}
           >
-            <SearchIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
+            <SearchIcon sx={{ fontSize: 16, color: soft.textSecondary }} />
             <Box
               component="span"
               sx={{
                 flex: 1,
-                color: 'text.disabled',
+                color: soft.textSecondary,
                 fontSize: '0.82rem',
                 display: { xs: 'none', sm: 'block' },
               }}
             >
               Search docs
             </Box>
-            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.25 }}>
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
               <KbdKey>⌘</KbdKey>
               <KbdKey>K</KbdKey>
             </Box>
@@ -176,53 +187,51 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
             alignSelf: 'start',
             height: 'calc(100vh - 124px)',
             overflowY: 'auto',
-            borderRight: '1px solid',
-            borderColor: 'divider',
             // hide scroll till hover
             scrollbarWidth: 'thin',
             scrollbarColor: 'transparent transparent',
             transition: 'scrollbar-color 0.2s',
-            '&:hover': { scrollbarColor: 'rgba(11,16,32,0.18) transparent' },
+            '&:hover': { scrollbarColor: `${soft.scrollbar} transparent` },
           }}
         >
           <DocsSidebar index={index} currentSlug={current?.slug} />
         </Box>
 
         {/* Main */}
-        <Box component="main" sx={{ minWidth: 0, px: { xs: 2.5, md: 0 }, py: { xs: 3, md: 5 } }}>
+        <Box component="main" sx={{ minWidth: 0, px: { xs: 3, md: 0 }, py: { xs: 3, md: 5 } }}>
           <Box sx={{ maxWidth: 780, mx: { xs: 'auto', md: 0 } }}>
-            {children}
+            <NeuPanel sx={{ p: { xs: 3, md: 5 } }}>{children}</NeuPanel>
 
             {/* Prev / Next nav */}
             {(prev || next) && (
-              <Box
-                sx={{
-                  mt: 8,
-                  pt: 4,
-                  borderTop: '1px solid',
-                  borderColor: 'divider',
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                  gap: 2,
-                }}
-              >
-                {prev ? (
-                  <PrevNextCard
-                    direction="prev"
-                    title={prev.title}
-                    href={`/docs/${prev.slug}`}
-                  />
-                ) : (
-                  <Box />
-                )}
-                {next && (
-                  <PrevNextCard
-                    direction="next"
-                    title={next.title}
-                    href={`/docs/${next.slug}`}
-                  />
-                )}
-              </Box>
+              <>
+                <Groove sx={{ mt: 8, mb: 4 }} />
+                <Box
+                  sx={{
+                    mt: 0,
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 3,
+                  }}
+                >
+                  {prev ? (
+                    <PrevNextCard
+                      direction="prev"
+                      title={prev.title}
+                      href={`/docs/${prev.slug}`}
+                    />
+                  ) : (
+                    <Box />
+                  )}
+                  {next && (
+                    <PrevNextCard
+                      direction="next"
+                      title={next.title}
+                      href={`/docs/${next.slug}`}
+                    />
+                  )}
+                </Box>
+              </>
             )}
           </Box>
         </Box>
@@ -238,10 +247,8 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
         anchor="left"
         open={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { width: 300, bgcolor: '#fff', backgroundImage: 'none' },
-        }}
+        sx={{ display: { xs: 'block', md: 'none' } }}
+        slotProps={{ paper: { elevation: 0, sx: { width: 300 } } }}
       >
         <Box
           sx={{
@@ -250,15 +257,18 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
             justifyContent: 'space-between',
             px: 2,
             py: 1.5,
-            borderBottom: '1px solid',
-            borderColor: 'divider',
           }}
         >
           <Typography sx={{ fontWeight: 700 }}>Documentation</Typography>
-          <IconButton aria-label="Close menu" onClick={() => setMobileNavOpen(false)}>
+          <IconButton
+            aria-label="Close menu"
+            onClick={() => setMobileNavOpen(false)}
+            sx={neuIconButtonSx}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
+        <Groove sx={{ mx: 2 }} />
         <DocsSidebar
           index={index}
           currentSlug={current?.slug}
@@ -297,32 +307,33 @@ const Breadcrumbs = ({ items }: { items: { label: string; href?: string }[] }) =
       alignItems: 'center',
       gap: 0.25,
       fontSize: '0.85rem',
-      color: 'text.secondary',
-      overflow: 'hidden',
+      color: soft.textSecondary,
+      minWidth: 0,
     }}
   >
-    <RouterLink to="/docs" style={{ textDecoration: 'none', color: 'inherit' }}>
-      <Box component="span" sx={{ color: 'text.disabled', '&:hover': { color: 'text.primary' } }}>
-        Docs
-      </Box>
-    </RouterLink>
+    <Box
+      component={RouterLink}
+      to="/docs"
+      sx={[quietLinkSx, { '@media (hover: hover)': { '&:hover': { color: soft.text } } }]}
+    >
+      Docs
+    </Box>
     {items.map((item, idx) => (
       <Box key={idx} sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-        <ChevronRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+        <ChevronRightIcon sx={{ fontSize: 14, color: soft.textSecondary }} />
         {item.href ? (
-          <RouterLink to={item.href} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <Box
-              component="span"
-              sx={{ color: 'text.disabled', '&:hover': { color: 'text.primary' } }}
-            >
-              {item.label}
-            </Box>
-          </RouterLink>
+          <Box
+            component={RouterLink}
+            to={item.href}
+            sx={[quietLinkSx, { '@media (hover: hover)': { '&:hover': { color: soft.text } } }]}
+          >
+            {item.label}
+          </Box>
         ) : (
           <Box
             component="span"
             sx={{
-              color: 'text.primary',
+              color: soft.text,
               fontWeight: 500,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -346,46 +357,30 @@ const PrevNextCard = ({
   title: string;
   href: string;
 }) => (
-  <Box
-    component={RouterLink}
+  <NeuPanel
+    variant="tile"
     to={href}
     sx={{
       display: 'flex',
       alignItems: 'center',
       gap: 1.25,
       p: 2,
-      borderRadius: 2.5,
-      border: '1px solid',
-      borderColor: 'divider',
-      textDecoration: 'none',
-      bgcolor: '#fff',
-      transition: 'border-color 0.18s, transform 0.18s',
       gridColumn: direction === 'next' ? { xs: 'auto', sm: 2 } : undefined,
       flexDirection: direction === 'next' ? 'row-reverse' : 'row',
       textAlign: direction === 'next' ? 'right' : 'left',
-      '&:hover': { borderColor: 'rgba(47,99,149,0.4)', transform: 'translateY(-1px)' },
+      '@media (hover: hover)': { '&:hover svg': { color: soft.accent } },
     }}
   >
     {direction === 'next' ? (
-      <ArrowForwardIcon sx={{ color: 'text.disabled' }} />
+      <ArrowForwardIcon sx={{ color: soft.textSecondary }} />
     ) : (
-      <ArrowBackIcon sx={{ color: 'text.disabled' }} />
+      <ArrowBackIcon sx={{ color: soft.textSecondary }} />
     )}
     <Box sx={{ flex: 1, minWidth: 0 }}>
-      <Typography
-        sx={{
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          color: 'text.disabled',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-        }}
-      >
-        {direction === 'next' ? 'Next' : 'Previous'}
-      </Typography>
-      <Typography sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}>
+      <Typography sx={eyebrowSx}>{direction === 'next' ? 'Next' : 'Previous'}</Typography>
+      <Typography sx={{ fontWeight: 600, color: soft.text, fontSize: '0.95rem' }}>
         {title}
       </Typography>
     </Box>
-  </Box>
+  </NeuPanel>
 );

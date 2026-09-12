@@ -3,6 +3,8 @@ import { Box, IconButton, Tooltip } from '@mui/material';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import { tokenize, TOKEN_COLORS, type Language } from '../syntax/highlight';
+import { gradients, palette, radii, shadows, soft } from '../../theme/tokens';
+import { inkGrooveSx, inkSurfaceSx } from '../../theme/neu';
 
 export interface CodeSnippet {
   label: string;
@@ -73,23 +75,13 @@ export const CodeBlock = ({
   }, [tokens]);
 
   return (
-    <Box
-      sx={{
-        my: 3,
-        borderRadius: 2.5,
-        overflow: 'hidden',
-        background: 'linear-gradient(180deg, #14182b 0%, #0f1325 100%)',
-        border: '1px solid rgba(47,99,149,0.18)',
-        boxShadow: '0 14px 36px rgba(11,16,32,0.18)',
-      }}
-    >
+    <Box sx={{ ...inkSurfaceSx, my: 3, overflow: 'hidden' }}>
       {/* Tab / filename strip */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          background: 'rgba(255,255,255,0.02)',
+          ...inkGrooveSx,
           pl: 0.5,
           pr: 1,
         }}
@@ -109,15 +101,15 @@ export const CodeBlock = ({
                 py: 1.1,
                 fontSize: '0.78rem',
                 fontWeight: 600,
-                color: active === idx ? '#fff' : 'rgba(255,255,255,0.45)',
+                color: active === idx ? soft.white : soft.onInk,
                 cursor: activeTabs.length > 1 ? 'pointer' : 'default',
                 fontFamily: '"JetBrains Mono", monospace',
                 letterSpacing: '0.01em',
                 position: 'relative',
                 whiteSpace: 'nowrap',
-                outline: 'none',
+                '&:focus-visible': { outline: `2px solid ${soft.highlight}`, outlineOffset: -2 },
                 transition: 'color 0.16s',
-                '&:hover': activeTabs.length > 1 ? { color: '#fff' } : undefined,
+                '&:hover': activeTabs.length > 1 ? { color: soft.white } : undefined,
                 '&::after': {
                   content: '""',
                   position: 'absolute',
@@ -125,8 +117,14 @@ export const CodeBlock = ({
                   right: 6,
                   bottom: 0,
                   height: 2,
-                  background: active === idx ? 'linear-gradient(90deg, #efc03c, #e53540)' : 'transparent',
-                  borderRadius: 2,
+                  background: active === idx ? gradients.gold : 'transparent',
+                  borderRadius: '2px',
+                },
+                '@media (forced-colors: active)': {
+                  '&::after': {
+                    background: active === idx ? 'Highlight' : 'transparent',
+                    forcedColorAdjust: 'none',
+                  },
                 },
               }}
             >
@@ -141,8 +139,17 @@ export const CodeBlock = ({
             size="small"
             onClick={handleCopy}
             sx={{
-              color: copied ? '#a7e3a3' : 'rgba(255,255,255,0.55)',
-              '&:hover': { color: '#fff', bgcolor: 'rgba(255,255,255,0.06)' },
+              color: copied ? palette.success : soft.onInkMuted,
+              borderRadius: `${radii.pill}px`,
+              '@media (hover: hover)': {
+                '&:hover': { color: soft.white, bgcolor: soft.onInkWash },
+              },
+              '&:active': { boxShadow: shadows.neuPressedInk },
+              '&:focus-visible, &.Mui-focusVisible': {
+                outline: `2px solid ${soft.highlight}`,
+                outlineOffset: 2,
+              },
+              '@media print': { display: 'none' },
             }}
           >
             {copied ? (
@@ -167,7 +174,7 @@ export const CodeBlock = ({
           fontFamily: '"JetBrains Mono", "SFMono-Regular", Menlo, monospace',
           fontSize: { xs: '0.78rem', md: '0.83rem' },
           lineHeight: 1.65,
-          color: '#e6e8f0',
+          color: TOKEN_COLORS.plain,
         }}
       >
         {rendered.map((line, idx) => (
@@ -178,7 +185,7 @@ export const CodeBlock = ({
                 sx={{
                   display: 'inline-block',
                   width: 28,
-                  color: 'rgba(255,255,255,0.25)',
+                  color: soft.onInkMuted,
                   userSelect: 'none',
                   pr: 1.5,
                   textAlign: 'right',

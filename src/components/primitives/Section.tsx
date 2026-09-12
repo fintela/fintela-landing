@@ -1,17 +1,27 @@
 import { Box, Container } from '@mui/material';
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
-import { palette, gradients } from '../../theme/tokens';
+import { gradients, soft } from '../../theme/tokens';
 
 interface SectionProps {
   id?: string;
   children: ReactNode;
-  /** Visual treatment for the section background. */
-  tone?: 'default' | 'muted' | 'gradient' | 'ink';
+  /**
+   * 'soft' (default) is the one continuous ground. 'hero' is gradients.groundFade
+   * for the FIRST band of a page only, and never behind a shadowed surface — a
+   * paired shadow on a graded ground desynchronizes from its background.
+   */
+  tone?: 'soft' | 'hero';
   /** Top/bottom padding density. */
   size?: 'sm' | 'md' | 'lg';
   /** Constrain content width — passed to <Container maxWidth>. */
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | false;
+  /**
+   * Full-bleed decoration painted behind the content: an absolutely
+   * positioned, inert element such as <HeroWaveField />. It spans the whole
+   * band, not just the Container.
+   */
+  background?: ReactNode;
   sx?: SxProps<Theme>;
 }
 
@@ -22,31 +32,38 @@ const paddingY = {
 } as const;
 
 const backgrounds = {
-  default: palette.surface,
-  muted: palette.surfaceMuted,
-  gradient: gradients.brandFaint,
-  ink: gradients.ink,
+  soft: soft.ground,
+  hero: gradients.groundFade,
 } as const;
 
 export const Section = ({
   id,
   children,
-  tone = 'default',
+  tone = 'soft',
   size = 'md',
   maxWidth = 'lg',
+  background,
   sx,
 }: SectionProps) => {
   return (
     <Box
       component="section"
       id={id}
-      sx={{
-        py: paddingY[size],
-        background: backgrounds[tone],
-        position: 'relative',
-        ...sx,
-      }}
+      // Merged as an array (never `...sx`): the prop is SxProps<Theme>, which
+      // may be an array or a function. Callers' keys still win, in order.
+      sx={
+        [
+          {
+            py: paddingY[size],
+            background: backgrounds[tone],
+            position: 'relative',
+            '@media print': { background: soft.white },
+          },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ] as SxProps<Theme>
+      }
     >
+      {background}
       <Container maxWidth={maxWidth} sx={{ position: 'relative', zIndex: 1 }}>
         {children}
       </Container>

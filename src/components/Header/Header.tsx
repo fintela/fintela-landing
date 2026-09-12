@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { MouseEvent } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -10,19 +11,28 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  Divider,
+  ListSubheader,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import { useNavigate, useLocation } from 'react-router-dom';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import fintelaLargeLogo from '../../assets/logos/fintela_large_logo.png';
-import { gradients } from '../../theme/tokens';
+import { motion, radii, shadows, soft } from '../../theme/tokens';
+import { eyebrowSx, focusRingSx, navPillSx, neuIconButtonSx } from '../../theme/neu';
+import { NeuButton } from '../primitives/NeuButton';
+import { Groove } from '../primitives/Groove';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import { AUDIENCES } from '../../lib/audience';
+import { SOLUTION_PATHS } from '../../solutions/registry';
 
 interface HeaderProps {
-  activeSection: string;
-  onNavigate: (section: string) => void;
+  /** The home page's scroll-spy; pages without in-page bands leave both unset. */
+  activeSection?: string;
+  onNavigate?: (section: string) => void;
 }
 
 type NavItem = {
@@ -34,14 +44,29 @@ type NavItem = {
   type: 'scroll' | 'route';
 };
 
+/**
+ * The Solutions menu sits between Platform and Fintelligent: three seats, each
+ * a route under /solutions. It is a menu rather than three items so the bar
+ * stays six items wide in every locale.
+ */
+const SOLUTIONS_POSITION = 1;
+
 const navItems: NavItem[] = [
   { id: 'platform', labelKey: 'nav.platform', href: 'platform', type: 'scroll' },
-  { id: 'fintelagent', labelKey: 'nav.fintelagent', href: 'fintelagent', type: 'scroll' },
-  { id: 'use-cases', labelKey: 'nav.useCases', href: 'use-cases', type: 'scroll' },
+  { id: 'fintelligent', labelKey: 'nav.fintelagent', href: 'fintelligent', type: 'scroll' },
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
   { id: 'documentation', labelKey: 'nav.documentation', href: '/docs', type: 'route' },
   { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
 ];
+
+const navPillButtonSx = {
+  px: 1.75,
+  py: 0.75,
+  minHeight: 36,
+  fontSize: '0.92rem',
+  borderRadius: `${radii.pill}px`,
+  textTransform: 'none',
+} as const;
 
 export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const { t } = useTranslation('header');
@@ -49,6 +74,9 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [solutionsAnchor, setSolutionsAnchor] = useState<HTMLElement | null>(null);
+  const solutionsOpen = Boolean(solutionsAnchor);
+  const onSolutions = location.pathname.startsWith('/solutions');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -60,13 +88,16 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const handleNavigation = (item: NavItem) => {
     if (item.type === 'route') {
       navigate(item.href);
-    } else if (location.pathname !== '/') {
+    } else if (location.pathname !== '/' || !onNavigate) {
       navigate('/', { state: { scrollTo: item.id } });
     } else {
       onNavigate(item.id);
     }
     setMobileOpen(false);
   };
+
+  const openSolutions = (e: MouseEvent<HTMLElement>) => setSolutionsAnchor(e.currentTarget);
+  const closeSolutions = () => setSolutionsAnchor(null);
 
   const isActive = (item: NavItem) => {
     if (item.type === 'route') {
@@ -84,15 +115,15 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: scrolled
-            ? 'rgba(255, 255, 255, 0.85)'
-            : 'rgba(255, 255, 255, 0.6)',
-          backdropFilter: 'saturate(180%) blur(14px)',
-          WebkitBackdropFilter: 'saturate(180%) blur(14px)',
-          borderBottom: '1px solid',
-          borderColor: scrolled ? 'rgba(11,16,32,0.08)' : 'transparent',
-          transition: 'background 0.25s ease, border-color 0.25s ease',
-          color: 'text.primary',
+          bgcolor: soft.ground,
+          color: soft.text,
+          // The theme's MuiPaper radius (10px) reaches the AppBar even though it is
+          // `square`; without this the bar's corners curve up once it casts neuBar.
+          borderRadius: 0,
+          boxShadow: scrolled ? shadows.neuBar : 'none',
+          transition: `box-shadow ${motion.base}`,
+          '@media (forced-colors: active)': { boxShadow: 'none', borderBottom: scrolled ? '1px solid CanvasText' : 0 },
+          '@media print': { boxShadow: 'none' },
         }}
       >
         <Toolbar
@@ -115,8 +146,8 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
               alignItems: 'center',
               cursor: 'pointer',
               height: { xs: 30, md: 40 },
-              outline: 'none',
-              borderRadius: 1,
+              borderRadius: `${radii.neuWell}px`,
+              ...focusRingSx,
             }}
             onClick={() => {
               navigate('/');
@@ -145,65 +176,67 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
               alignItems: 'center',
             }}
           >
-            {navItems.map((item) => (
-              <Button
-                key={item.id}
-                onClick={() => handleNavigation(item)}
-                disableRipple
-                sx={{
-                  px: 1.75,
-                  py: 0.75,
-                  fontSize: '0.92rem',
-                  fontWeight: 500,
-                  color: isActive(item) ? 'text.primary' : 'text.secondary',
-                  position: 'relative',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    left: '50%',
-                    bottom: 4,
-                    transform: 'translateX(-50%)',
-                    width: isActive(item) ? 18 : 0,
-                    height: 2,
-                    borderRadius: 2,
-                    background: gradients.brand,
-                    transition: 'width 0.22s ease',
-                  },
-                  '&:hover': {
-                    bgcolor: 'transparent',
-                    color: 'text.primary',
-                    '&::after': { width: 18 },
-                  },
-                }}
-              >
-                {t(item.labelKey)}
-              </Button>
+            {navItems.map((item, idx) => (
+              <Box key={item.id} sx={{ display: 'contents' }}>
+                {idx === SOLUTIONS_POSITION && (
+                  <Button
+                    id="solutions-menu-button"
+                    onClick={openSolutions}
+                    disableRipple
+                    aria-haspopup="menu"
+                    aria-controls={solutionsOpen ? 'solutions-menu' : undefined}
+                    aria-expanded={solutionsOpen || undefined}
+                    aria-current={onSolutions ? 'page' : undefined}
+                    className={solutionsOpen ? 'is-active' : undefined}
+                    endIcon={<ExpandMoreIcon sx={{ fontSize: '18px !important', ml: -0.5 }} />}
+                    sx={[navPillSx, navPillButtonSx, { pr: 1.25 }]}
+                  >
+                    {t('nav.solutions')}
+                  </Button>
+                )}
+                <Button
+                  onClick={() => handleNavigation(item)}
+                  disableRipple
+                  aria-current={isActive(item) ? 'page' : undefined}
+                  sx={[navPillSx, navPillButtonSx]}
+                >
+                  {t(item.labelKey)}
+                </Button>
+              </Box>
             ))}
+            <Menu
+              id="solutions-menu"
+              anchorEl={solutionsAnchor}
+              open={solutionsOpen}
+              onClose={closeSolutions}
+              slotProps={{ list: { 'aria-labelledby': 'solutions-menu-button', sx: { display: 'flex', flexDirection: 'column', gap: 0.25 } } }}
+            >
+              {AUDIENCES.map((a) => (
+                <MenuItem
+                  key={a}
+                  component={RouterLink}
+                  to={SOLUTION_PATHS[a]}
+                  onClick={closeSolutions}
+                  selected={location.pathname === SOLUTION_PATHS[a]}
+                  aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
+                  sx={[navPillSx, { px: 1.75, py: 1, fontSize: '0.92rem', minWidth: 200 }]}
+                >
+                  {t(`solutions.${a}`)}
+                </MenuItem>
+              ))}
+            </Menu>
           </Box>
 
           {/* Actions */}
           <Box sx={{ display: 'flex', gap: { xs: 1, md: 1.5 }, alignItems: 'center' }}>
             <LanguageSwitcher />
-            <Button
-              variant="contained"
-              href="https://app.fintela.io"
-              size="medium"
-              sx={{
-                background: gradients.brand,
-                color: '#fff',
-                px: { xs: 2, md: 2.5 },
-                fontSize: { xs: '0.85rem', md: '0.92rem' },
-              }}
-            >
+            <NeuButton tone="accent" size="sm" sx={{ px: { xs: 2, md: 2.5 } }}>
               {t('actions.getStarted')}
-            </Button>
+            </NeuButton>
 
             <IconButton
               aria-label={t('aria.openMenu')}
-              sx={{
-                display: { xs: 'inline-flex', md: 'none' },
-                color: 'text.primary',
-              }}
+              sx={[neuIconButtonSx, { display: { xs: 'inline-flex', md: 'none' } }]}
               onClick={() => setMobileOpen(true)}
             >
               <MenuIcon />
@@ -216,15 +249,8 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         anchor="right"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': {
-            width: 300,
-            bgcolor: 'rgba(255,255,255,0.98)',
-            backdropFilter: 'blur(16px)',
-            border: 'none',
-          },
-        }}
+        sx={{ display: { xs: 'block', md: 'none' } }}
+        slotProps={{ paper: { elevation: 0, sx: { width: 300 } } }}
       >
         <Box
           sx={{
@@ -233,8 +259,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             justifyContent: 'space-between',
             px: 3,
             py: 2,
-            borderBottom: '1px solid',
-            borderColor: 'divider',
           }}
         >
           <Box sx={{ height: 28 }}>
@@ -244,48 +268,67 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
               style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
             />
           </Box>
-          <IconButton aria-label={t('aria.closeMenu')} onClick={() => setMobileOpen(false)}>
+          <IconButton
+            aria-label={t('aria.closeMenu')}
+            onClick={() => setMobileOpen(false)}
+            sx={neuIconButtonSx}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
+        <Groove sx={{ mx: 3 }} />
 
         <List disablePadding sx={{ pt: 1 }}>
-          {navItems.map((item) => (
-            <ListItem key={item.id} disablePadding>
-              <ListItemButton
-                onClick={() => handleNavigation(item)}
-                sx={{
-                  py: 1.5,
-                  px: 3,
-                  color: isActive(item) ? '#2f6395' : 'text.primary',
-                  borderLeft: '3px solid',
-                  borderLeftColor: isActive(item) ? '#2f6395' : 'transparent',
-                  bgcolor: isActive(item) ? 'rgba(47,99,149,0.04)' : 'transparent',
-                }}
-              >
-                <ListItemText
-                  primary={t(item.labelKey)}
-                  primaryTypographyProps={{
-                    fontWeight: isActive(item) ? 700 : 500,
-                    fontSize: '1rem',
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+          {navItems.map((item, idx) => (
+            <Box key={item.id} sx={{ display: 'contents' }}>
+              {idx === SOLUTIONS_POSITION && (
+                <>
+                  <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 2, pb: 1 }}>
+                    {t('nav.solutions')}
+                  </ListSubheader>
+                  {AUDIENCES.map((a) => (
+                    <ListItem key={a} disablePadding>
+                      <ListItemButton
+                        component={RouterLink}
+                        to={SOLUTION_PATHS[a]}
+                        onClick={() => setMobileOpen(false)}
+                        selected={location.pathname === SOLUTION_PATHS[a]}
+                        aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
+                        sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
+                      >
+                        <ListItemText
+                          primary={t(`solutions.${a}`)}
+                          slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                  <Groove sx={{ my: 1, mx: 3 }} />
+                </>
+              )}
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => handleNavigation(item)}
+                  selected={isActive(item)}
+                  aria-current={isActive(item) ? 'page' : undefined}
+                  sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1.25 }]}
+                >
+                  <ListItemText
+                    primary={t(item.labelKey)}
+                    slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '1rem' } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </Box>
           ))}
         </List>
 
-        <Divider sx={{ my: 2 }} />
+        <Groove sx={{ my: 2, mx: 3 }} />
 
         <Box sx={{ px: 3, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-          <Button
-            href="https://app.fintela.io"
-            fullWidth
-            variant="contained"
-            sx={{ py: 1.25, background: gradients.brand, color: '#fff' }}
-          >
+          <NeuButton tone="accent" fullWidth>
             {t('actions.getStarted')}
-          </Button>
+          </NeuButton>
         </Box>
       </Drawer>
     </>

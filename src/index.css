@@ -13,6 +13,9 @@ body {
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Pins light for the whole tree, portals included: an auto-darkened ground
+     inverts every soft-UI white highlight into a smear. Mirrors theme.ts. */
+  color-scheme: light;
 }
 
 body {
@@ -20,8 +23,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  background-color: #ffffff;
-  color: #0b1020;
+  /* soft.ground — the first paint before Emotion injects; theme.ts
+     (MuiCssBaseline) is the owner from then on. Keep the two in sync. */
+  background-color: #edf0f5;
+  color: #0b1a33;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
@@ -37,8 +42,8 @@ svg {
 }
 
 ::selection {
-  background: rgba(47, 99, 149, 0.18);
-  color: #0b1020;
+  background: rgba(201, 162, 39, 0.35);
+  color: #0b1a33;
 }
 
 a {
@@ -46,12 +51,28 @@ a {
   text-decoration: none;
 }
 
+/* soft.accent. No border-radius here: it rewrote the focused element's own
+   radius and squared every pill on focus. Offset 3 matches neuButtonSx. */
 :focus-visible {
-  outline: 2px solid #2f6395;
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 2px solid #16325c;
+  outline-offset: 3px;
 }
 
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+  }
+}
+
+@media print {
+  body {
+    background-color: #ffffff;
+  }
+}
+
+/* Cannot cancel a transform — a 0.01ms transition still translates. Every
+   translating hover therefore also carries noMotionPress (src/theme/neu.ts). */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

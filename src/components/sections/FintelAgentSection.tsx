@@ -1,9 +1,14 @@
 import { Box, Typography } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
+import { NeuPanel } from '../primitives/NeuPanel';
+import { IconWell } from '../primitives/IconWell';
+import { Groove } from '../primitives/Groove';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { gradients } from '../../theme/tokens';
+import { forcedColorsSurface, neuFieldSx, wellSx } from '../../theme/neu';
+import { palette, radii, shadows, soft } from '../../theme/tokens';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CodeIcon from '@mui/icons-material/Code';
@@ -22,9 +27,8 @@ const capabilities = [
 export const FintelAgentSection = () => {
   const { t } = useTranslation('home');
   return (
-    <Section id="fintelagent" tone="gradient" size="lg">
+    <Section id="fintelagent" size="lg">
       <SectionHeader
-        eyebrowTone="gradient"
         eyebrow={t('fintelAgent.eyebrow')}
         title={t('fintelAgent.title')}
         titleAccent={t('fintelAgent.titleAccent')}
@@ -39,7 +43,7 @@ export const FintelAgentSection = () => {
           alignItems: 'stretch',
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {capabilities.map((c, idx) => (
             <AnimateOnScroll key={c.key} delay={idx * 70}>
               <CapabilityRow
@@ -51,7 +55,7 @@ export const FintelAgentSection = () => {
           ))}
         </Box>
 
-        <AnimateOnScroll delay={200}>
+        <AnimateOnScroll delay={200} stretch>
           <ChatPreview />
         </AnimateOnScroll>
       </Box>
@@ -68,120 +72,83 @@ const CapabilityRow = ({
   title: string;
   desc: string;
 }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      gap: 2,
-      alignItems: 'flex-start',
-      p: { xs: 2.25, md: 2.5 },
-      borderRadius: 3,
-      border: '1px solid',
-      borderColor: 'divider',
-      bgcolor: '#fff',
-      transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-      '&:hover': {
-        borderColor: 'rgba(47,99,149,0.4)',
-        transform: 'translateX(2px)',
-        boxShadow: '0 4px 12px rgba(47,99,149,0.08)',
-      },
-    }}
+  <NeuPanel
+    variant="tile"
+    sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', p: { xs: 2.25, md: 2.5 } }}
   >
-    <Box
-      sx={{
-        width: 40,
-        height: 40,
-        borderRadius: 2,
-        background: gradients.brand,
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        boxShadow: '0 2px 6px rgba(47,99,149,0.18)',
-        '& svg': { fontSize: 20 },
-      }}
-    >
-      {icon}
-    </Box>
+    <IconWell size={40}>{icon}</IconWell>
     <Box>
-      <Typography sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5, fontSize: '0.98rem' }}>
+      <Typography sx={{ fontWeight: 700, color: soft.text, mb: 0.5, fontSize: '0.98rem' }}>
         {title}
       </Typography>
-      <Typography sx={{ color: 'text.secondary', fontSize: '0.88rem', lineHeight: 1.6 }}>
+      <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6 }}>
         {desc}
       </Typography>
     </Box>
+  </NeuPanel>
+);
+
+/** Flat 28px coin for the assistant avatars. */
+const AgentCoin = ({ sx }: { sx?: SxProps<Theme> }) => (
+  <Box
+    aria-hidden
+    sx={
+      [
+        {
+          width: 28,
+          height: 28,
+          flexShrink: 0,
+          borderRadius: `${radii.pill}px`,
+          bgcolor: soft.groundSunken,
+          color: soft.accent,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          '& svg': { fontSize: 14 },
+          ...forcedColorsSurface,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ] as SxProps<Theme>
+    }
+  >
+    <AutoAwesomeIcon />
   </Box>
 );
 
 const ChatPreview = () => {
   const { t } = useTranslation('home');
   return (
-    <Box
-      sx={{
-        bgcolor: '#fff',
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 4,
-        overflow: 'hidden',
-        boxShadow: '0 4px 16px rgba(11,16,32,0.06)',
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 460,
-      }}
-    >
+    <NeuPanel sx={{ p: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: 'column', minHeight: 460 }}>
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.25,
-          px: 2,
-          py: 1.5,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          bgcolor: '#fafbfc',
-        }}
-      >
-        <Box
-          sx={{
-            width: 28,
-            height: 28,
-            borderRadius: 2,
-            background: gradients.brand,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-          }}
-        >
-          <AutoAwesomeIcon sx={{ fontSize: 14 }} />
-        </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, px: 1, py: 1 }}>
+        <AgentCoin />
         <Box>
-          <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: 'text.primary' }}>
+          <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: soft.text }}>
             {t('fintelAgent.chat.assistantName')}
           </Typography>
-          <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', letterSpacing: '0.04em' }}>
+          <Typography sx={{ fontSize: '0.65rem', color: soft.textSecondary, letterSpacing: '0.04em' }}>
             {t('fintelAgent.chat.statusLine')}
           </Typography>
         </Box>
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#10b981' }} />
-          <Typography sx={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>
+          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: palette.success }} />
+          <Typography sx={{ fontSize: '0.7rem', color: soft.textSecondary, fontWeight: 600 }}>
             {t('fintelAgent.chat.online')}
           </Typography>
         </Box>
       </Box>
+      <Groove sx={{ my: 1 }} />
 
       {/* Messages */}
       <Box
         sx={{
+          ...wellSx('md'),
+          borderRadius: `${radii.neuInner}px`,
           flex: 1,
           p: 2.5,
           display: 'flex',
           flexDirection: 'column',
           gap: 1.75,
-          bgcolor: '#fdfdff',
         }}
       >
         <UserBubble text={t('fintelAgent.chat.userMessage1')} />
@@ -203,18 +170,17 @@ const ChatPreview = () => {
             sx={{
               flex: 1,
               p: 1,
-              borderRadius: 2,
-              border: '1px dashed',
-              borderColor: 'rgba(47,99,149,0.4)',
-              bgcolor: 'rgba(47,99,149,0.04)',
+              borderRadius: `${radii.neuWell}px`,
+              bgcolor: soft.surfaceRaised,
               fontSize: '0.75rem',
-              color: 'text.secondary',
+              color: soft.textSecondary,
               display: 'flex',
               alignItems: 'center',
               gap: 0.75,
+              ...forcedColorsSurface,
             }}
           >
-            <CheckRoundedIcon sx={{ fontSize: 14, color: '#10b981' }} />
+            <CheckRoundedIcon sx={{ fontSize: 14, color: palette.success }} />
             {t('fintelAgent.chat.awaitingConfirmation')}
           </Box>
         </Box>
@@ -230,26 +196,16 @@ const ChatPreview = () => {
       </Box>
 
       {/* Input */}
-      <Box
-        sx={{
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          p: 1.25,
-          bgcolor: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-        }}
-      >
+      <Groove sx={{ my: 1 }} />
+      <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
         <Box
           sx={{
+            ...neuFieldSx,
             flex: 1,
             px: 1.5,
             py: 0.9,
-            borderRadius: 999,
-            border: '1px solid',
-            borderColor: 'divider',
-            color: 'text.disabled',
+            borderRadius: `${radii.pill}px`,
+            color: soft.textSecondary,
             fontSize: '0.82rem',
           }}
         >
@@ -259,20 +215,22 @@ const ChatPreview = () => {
           sx={{
             width: 32,
             height: 32,
-            borderRadius: '50%',
-            background: gradients.brand,
+            borderRadius: `${radii.pill}px`,
+            bgcolor: soft.surfaceRaised,
+            boxShadow: shadows.neuRaisedXs,
+            color: soft.accent,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#fff',
             fontSize: 14,
             fontWeight: 700,
+            ...forcedColorsSurface,
           }}
         >
           ↑
         </Box>
       </Box>
-    </Box>
+    </NeuPanel>
   );
 };
 
@@ -281,12 +239,13 @@ const UserBubble = ({ text }: { text: string }) => (
     <Box
       sx={{
         p: 1.5,
-        background: gradients.brand,
-        color: '#fff',
-        borderRadius: '10px 10px 3px 10px',
+        bgcolor: soft.accent,
+        color: soft.white,
+        boxShadow: shadows.neuAccent,
+        borderRadius: '14px 14px 4px 14px',
         fontSize: '0.85rem',
         lineHeight: 1.5,
-        boxShadow: '0 2px 6px rgba(47,99,149,0.14)',
+        '@media (forced-colors: active)': { boxShadow: 'none', border: '2px solid Highlight' },
       }}
     >
       {text}
@@ -306,22 +265,7 @@ const AgentMessage = ({
   tone?: 'success';
 }) => (
   <Box sx={{ display: 'flex', gap: 1.25, maxWidth: '94%' }}>
-    <Box
-      sx={{
-        width: 28,
-        height: 28,
-        borderRadius: 2,
-        background: gradients.brand,
-        flexShrink: 0,
-        mt: 0.25,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
-      }}
-    >
-      <AutoAwesomeIcon sx={{ fontSize: 14 }} />
-    </Box>
+    <AgentCoin sx={{ mt: 0.25 }} />
     <Box sx={{ flex: 1 }}>
       <Box
         sx={{
@@ -330,37 +274,35 @@ const AgentMessage = ({
           gap: 0.5,
           px: 1,
           py: 0.25,
-          borderRadius: 999,
           mb: 0.75,
-          border: '1px solid',
-          borderColor: tone === 'success' ? 'rgba(16,185,129,0.3)' : 'divider',
-          bgcolor: tone === 'success' ? 'rgba(16,185,129,0.08)' : '#fafbfc',
+          borderRadius: `${radii.pill}px`,
+          bgcolor: soft.surfaceRaised,
+          color: soft.textSecondary,
           fontSize: '0.65rem',
           fontWeight: 600,
-          color: tone === 'success' ? '#10b981' : 'text.secondary',
           letterSpacing: '0.04em',
           textTransform: 'uppercase',
           fontFamily: '"JetBrains Mono", monospace',
+          '& svg': { color: tone === 'success' ? palette.success : soft.accent },
+          ...forcedColorsSurface,
         }}
       >
         {tone === 'success' && <CheckRoundedIcon sx={{ fontSize: 11 }} />}
         {tool}
       </Box>
-      <Box
+      <NeuPanel
+        variant="tile"
         sx={{
           p: 1.5,
-          bgcolor: '#fff',
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: '3px 10px 10px 10px',
+          borderRadius: '4px 14px 14px 14px',
           fontSize: '0.85rem',
-          color: 'text.primary',
+          color: soft.text,
           lineHeight: 1.55,
         }}
       >
         <Box sx={{ fontWeight: 700, mb: 0.5, fontSize: '0.82rem' }}>{title}</Box>
-        <Box sx={{ color: 'text.secondary' }}>{body}</Box>
-      </Box>
+        <Box sx={{ color: soft.textSecondary }}>{body}</Box>
+      </NeuPanel>
     </Box>
   </Box>
 );

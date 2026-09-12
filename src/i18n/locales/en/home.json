@@ -1,11 +1,25 @@
 {
   "hero": {
     "titleLine1": "The Future of",
-    "titleAccent": "Intelligent Investment",
+    "titleAccent": "Intelligent Investing",
     "marketWords": ["US Stocks", "Forex", "Global Markets"],
     "subtitlePrefix": "Create investment strategies across",
-    "subtitleSuffix": "in a single, AI native, cloud, quant finance ecosystem",
-    "ctaSecondary": "See how it works"
+    "subtitleSuffix": "in a single AI native quantitative ecosystem.",
+    "ctaSecondary": "See how it works",
+    "eyebrow": "For hedge funds & quant teams",
+    "headline": "The Future of",
+    "headlineAccent": "Intelligent Investing.",
+    "ctaPrimary": "See why it works for your fund",
+    "ctaWatch": "Watch the platform",
+    "plateCaption": "Platform home · asset exposure, deployed portfolios and the strategies in use",
+    "liveBadge": "Live",
+    "posterAlt": "The Fintela platform home: asset exposure, the strategies and asset groups in use, and the active portfolio group's performance",
+    "stat": {
+      "eyebrow": "Study #142 · Bayesian TPE",
+      "value": "312",
+      "unit": "/ 500 trials",
+      "sub": "train / val / OOS · 70 / 15 / 15"
+    }
   },
   "trustBar": {
     "title": "Teams building with Fintela"
@@ -44,10 +58,10 @@
         "sub": "Analyze results",
         "desc": "Browse ranked portfolios, full equity curves, parameter importance, and trade level drill down. Export PDF reports on demand."
       },
-      "liveAgents": {
-        "label": "Live Trading",
-        "sub": "Deploy to your brokerage",
-        "desc": "Promote validated portfolios to live operations that trade through your connected brokerage. Monitor positions and P&L. One click to pause or stop."
+      "riskManagers": {
+        "label": "Risk Managers",
+        "sub": "Your guardrails",
+        "desc": "Attach guardrails that trim, close, or block a rebalance before it happens, built in stops and position caps, or your own custom logic, checked on every simulated trading day."
       }
     },
     "stats": {
@@ -145,7 +159,7 @@
     "note": "Experimental. An emulator is a research tool and a bridge to real quantum hardware: it reimagines how the search explores, not how fast it runs."
   },
   "fintelAgent": {
-    "eyebrow": "Fintelligent",
+    "eyebrow": "Agentic AI",
     "title": "An AI that actually",
     "titleAccent": "runs the platform.",
     "description": "Not a chatbot pasted on top. Fintelligent is wired into your data sources and the platform's actions, built to do the work, not just describe it.",
@@ -347,6 +361,170 @@
         "q": "How fast can I go from idea to live capital?",
         "a": "How long it takes depends on your idea and how much you optimize, not on setting up infrastructure. There is no environment to build, no data pipeline to wire up, and no handoff between tools."
       }
+    },
+    "aside": {
+      "title": "Still have questions?",
+      "body": "A 30-minute walkthrough on your own strategies, with the team that built the platform.",
+      "cta": "Talk to us",
+      "docs": "Read the docs"
     }
+  },
+  "audiences": {
+    "eyebrow": "Who it's for",
+    "title": "Built for the desk that",
+    "titleAccent": "manages capital.",
+    "description": "Managing capital, working solo, or leading a research desk: the same primitives and the same engine. Pick your seat and the page re-arranges around it.",
+    "switchLabel": "Choose your seat",
+    "switch": {
+      "funds": "Hedge funds",
+      "independents": "Prop & independent",
+      "teams": "Research teams"
+    },
+    "explore": "Explore",
+    "items": {
+      "funds": {
+        "cta": "See why it works for your fund",
+        "imageAlt": "A fund's investment committee around the table, reviewing a strategy",
+        "doorBlurb": "Eliminate fragmentation between research, backtesting and execution, without running your own infrastructure."
+      },
+      "independents": {
+        "cta": "See why it works for you",
+        "imageAlt": "An independent advisor walking a client through a performance chart",
+        "doorBlurb": "From notebook to live deployment, without a devops project."
+      },
+      "teams": {
+        "cta": "See why it works for your desk",
+        "imageAlt": "A research desk pointing through a study's charts together",
+        "doorBlurb": "One shared library, one workspace, one source of truth."
+      }
+    },
+    "advantages": {
+      "infra": {
+        "title": "No infrastructure to run",
+        "desc": "Fully cloud hosted. Zero servers, zero local installs, nothing for a new quant to set up."
+      },
+      "concurrent": {
+        "title": "Concurrent studies",
+        "desc": "Thousands of trials in parallel and no queue for the one optimizer box."
+      },
+      "provenance": {
+        "title": "Cryptographic provenance",
+        "desc": "Every strategy and configuration hashed and time-stamped for audit."
+      },
+      "reports": {
+        "title": "IC-ready reports",
+        "desc": "PDF results dashboards that show performance and hide code and parameters."
+      }
+    }
+  },
+  "tour": {
+    "exit": "Explore the platform",
+    "playerLabel": "Platform tour",
+    "chaptersLabel": "Tour chapters",
+    "posterAlt": "The Fintela portfolios dashboard: trials ranked by fitness with their equity curves overlaid",
+    "chapters": {
+      "ranking": {
+        "label": "Ranking",
+        "sub": "Trials ranked by fitness"
+      },
+      "risk": {
+        "label": "Risk",
+        "sub": "Drawdown, volatility, Sharpe"
+      },
+      "promote": {
+        "label": "Promote",
+        "sub": "Derive, optimize or go live"
+      },
+      "report": {
+        "label": "Report",
+        "sub": "The investment report"
+      },
+      "holdings": {
+        "label": "Holdings",
+        "sub": "Figures, composition, year by year"
+      },
+      "performance": {
+        "label": "Performance",
+        "sub": "Train, validation and test"
+      }
+    }
+  },
+  "fintelligent": {
+    "exit": "Meet Fintelligent",
+    "playerLabel": "Multi-agent conversation",
+    "transcriptLabel": "Conversation transcript",
+    "posterAlt": "Three Fintelligent agents coordinating a study in the platform",
+    "agentsCount": "{{count}} agents",
+    "turns": "{{current}} of {{total}} turns",
+    "agents": {
+      "orchestrator": {
+        "name": "Orchestrator",
+        "role": "plans"
+      },
+      "strategist": {
+        "name": "Strategist",
+        "role": "writes"
+      },
+      "risk": {
+        "name": "Risk",
+        "role": "guards"
+      }
+    },
+    "cues": {
+      "brief": "Momentum on the S&P 500 asset group, weekly rebalance. Strategist, draft it; Risk, set the drawdown guard.",
+      "draft": "Drafted MomentumV3: lookback 20 to 120 days, 12-week rebalance, typed parameter ranges. Ready in the Laboratory.",
+      "guard": "Attached a 12% max-drawdown stop and volatility targeting at 10% annualised.",
+      "stage": "Study staged: Sharpe fitness, 500 trials, 70/15/15 train/validation/OOS. This one needs your confirmation.",
+      "confirm": "Confirmed. Launch it.",
+      "launch": "Study #142 is running: 312 of 500 trials complete, best validation Sharpe 1.84 so far.",
+      "review": "Out-of-sample drawdown stays under the guard on the top ten trials. No single parameter is doing more than 40% of the work.",
+      "report": "Building the committee report from trial 37: equity curves, parameter importance and the trade log."
+    }
+  },
+  "capabilities": {
+    "exit": "Watch the walkthrough",
+    "playerLabel": "Feature walkthrough",
+    "chaptersLabel": "Walkthrough chapters",
+    "posterAlt": "The Fintela market pulse: index moves, treasury yields and a sector heatmap",
+    "docs": "Docs",
+    "chapters": {
+      "pulse": "Pulse",
+      "ticker": "Ticker",
+      "groups": "Groups",
+      "screener": "Screener"
+    },
+    "spark": {
+      "label": "Best Sharpe · 500 trials",
+      "value": "1.84",
+      "from": "trial 1",
+      "to": "500"
+    },
+    "quantum": {
+      "badge": "New",
+      "title": "Quantum samplers",
+      "description": "QAOA and quantum-kernel search over your parameter space, run on an emulated quantum circuit."
+    },
+    "liveThumbAlt": "Two traders at a desk of monitors, watching live charts"
+  },
+  "insights": {
+    "eyebrow": "Insights",
+    "title": "Research notes &",
+    "titleAccent": "platform updates.",
+    "exit": "All posts",
+    "read": "Read",
+    "browseAll": "Browse all posts",
+    "count_one": "{{count}} post",
+    "count_other": "{{count}} posts",
+    "newest": "newest {{date}}",
+    "coverAlt": "Cover image for {{title}}"
+  },
+  "closing": {
+    "eyebrow": "Ready when your desk is",
+    "title": "See why it works",
+    "titleAccent": "for your fund.",
+    "body": "A 30-minute walkthrough on your own strategies, or start on the free tier and bring a study to the call.",
+    "ctaPrimary": "Book a walkthrough",
+    "ctaSecondary": "Get started free",
+    "strip": "No infrastructure · No local install · Broker-connected · Cryptographic provenance"
   }
 }

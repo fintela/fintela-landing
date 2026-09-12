@@ -5,7 +5,21 @@
     "marketWords": ["Ações dos EUA", "Forex", "Mercados globais"],
     "subtitlePrefix": "estratégias de investimento em",
     "subtitleSuffix": "num único ecossistema de quant finance, nativo de IA e na nuvem",
-    "ctaSecondary": "Veja como funciona"
+    "ctaSecondary": "Veja como funciona",
+    "eyebrow": "Para hedge funds e equipes quant",
+    "headline": "Pesquisa de estratégias em",
+    "headlineAccent": "escala de fundo.",
+    "ctaPrimary": "Veja por que funciona para o seu fundo",
+    "ctaWatch": "Ver a plataforma",
+    "plateCaption": "Início da plataforma · exposição por ativo, carteiras implantadas e estratégias em uso",
+    "liveBadge": "Ao vivo",
+    "posterAlt": "O início da plataforma Fintela: exposição por ativo, as estratégias e grupos de ativos em uso, e o desempenho do grupo de carteiras ativo",
+    "stat": {
+      "eyebrow": "Estudo #142 · TPE bayesiano",
+      "value": "312",
+      "unit": "/ 500 trials",
+      "sub": "train / val / OOS · 70 / 15 / 15"
+    }
   },
   "trustBar": {
     "title": "Times construindo com a Fintela"
@@ -44,10 +58,10 @@
         "sub": "Analise resultados",
         "desc": "Explore portfólios ranqueados, curvas de equity completas, importância de parâmetros e detalhamento por operação. Exporte relatórios em PDF quando quiser."
       },
-      "liveAgents": {
-        "label": "Trading ao vivo",
-        "sub": "Implante na sua corretora",
-        "desc": "Promova portfólios validados a operações ao vivo que negociam via sua corretora conectada. Monitore posições e P&L. Um clique para pausar ou parar."
+      "riskManagers": {
+        "label": "Gestores de risco",
+        "sub": "Suas barreiras de proteção",
+        "desc": "Adicione barreiras que reduzem, encerram ou bloqueiam um rebalanceamento antes que ocorra: stops integrados e limites de posição, ou sua própria lógica personalizada, verificados em cada dia de negociação simulado."
       }
     },
     "stats": {
@@ -145,7 +159,7 @@
     "note": "Experimental. Um emulador é uma ferramenta de pesquisa e uma ponte para hardware quântico real: reimagina como a busca explora, não a rapidez com que roda."
   },
   "fintelAgent": {
-    "eyebrow": "Fintelligent",
+    "eyebrow": "IA Agêntica",
     "title": "Uma IA que realmente",
     "titleAccent": "opera a plataforma.",
     "description": "Não é um chatbot colado por cima. O Fintelligent está integrado às suas fontes de dados e às ações da plataforma, feito para fazer o trabalho, não apenas descrevê-lo.",
@@ -347,6 +361,170 @@
         "q": "Quão rápido posso ir da ideia ao capital ao vivo?",
         "a": "Quanto tempo leva depende da sua ideia e de quanto você otimiza, não de montar infraestrutura. Não há ambiente para construir, nem pipeline de dados para conectar, nem transferências entre ferramentas."
       }
+    },
+    "aside": {
+      "title": "Ainda tem perguntas?",
+      "body": "Uma demonstração de 30 minutos sobre as suas próprias estratégias, com a equipe que construiu a plataforma.",
+      "cta": "Fale conosco",
+      "docs": "Ler a documentação"
     }
+  },
+  "audiences": {
+    "eyebrow": "Para quem é",
+    "title": "Feito para a mesa que",
+    "titleAccent": "gere capital.",
+    "description": "Gerindo capital, trabalhando sozinho ou liderando uma mesa de pesquisa: as mesmas primitivas e o mesmo motor. Escolha o seu assento e a página se reorganiza ao seu redor.",
+    "switchLabel": "Escolha o seu assento",
+    "switch": {
+      "funds": "Hedge funds",
+      "independents": "Prop e independentes",
+      "teams": "Equipes de pesquisa"
+    },
+    "explore": "Explorar",
+    "items": {
+      "funds": {
+        "cta": "Veja por que funciona para o seu fundo",
+        "imageAlt": "O comitê de investimento de um fundo ao redor da mesa, revisando uma estratégia",
+        "doorBlurb": "Elimine a fragmentação entre pesquisa, backtesting e execução sem operar a sua própria infraestrutura."
+      },
+      "independents": {
+        "cta": "Veja por que funciona para você",
+        "imageAlt": "Um assessor independente explicando um gráfico de desempenho a um cliente",
+        "doorBlurb": "Do notebook ao deploy ao vivo, sem um projeto de devops."
+      },
+      "teams": {
+        "cta": "Veja por que funciona para a sua mesa",
+        "imageAlt": "Uma mesa de pesquisa revisando juntos os gráficos de um estudo",
+        "doorBlurb": "Uma biblioteca compartilhada, um espaço de trabalho, uma única fonte de verdade."
+      }
+    },
+    "advantages": {
+      "infra": {
+        "title": "Sem infraestrutura para operar",
+        "desc": "Totalmente na nuvem. Zero servidores, zero instalações locais, nada para um novo quant configurar."
+      },
+      "concurrent": {
+        "title": "Estudos concorrentes",
+        "desc": "Milhares de trials em paralelo e nenhuma fila para a única máquina de otimização."
+      },
+      "provenance": {
+        "title": "Proveniência criptográfica",
+        "desc": "Cada estratégia e configuração com hash e carimbo de tempo para auditoria."
+      },
+      "reports": {
+        "title": "Relatórios prontos para o comitê",
+        "desc": "Painéis de resultados em PDF que mostram o desempenho e ocultam código e parâmetros."
+      }
+    }
+  },
+  "tour": {
+    "exit": "Explorar a plataforma",
+    "playerLabel": "Tour pela plataforma",
+    "chaptersLabel": "Capítulos do tour",
+    "posterAlt": "O painel de carteiras da Fintela: trials ordenados por fitness com suas curvas de capital sobrepostas",
+    "chapters": {
+      "ranking": {
+        "label": "Ranking",
+        "sub": "Trials ordenados por fitness"
+      },
+      "risk": {
+        "label": "Risco",
+        "sub": "Drawdown, volatilidade, Sharpe"
+      },
+      "promote": {
+        "label": "Promover",
+        "sub": "Derivar, otimizar ou ir ao vivo"
+      },
+      "report": {
+        "label": "Relatório",
+        "sub": "O relatório de investimento"
+      },
+      "holdings": {
+        "label": "Posições",
+        "sub": "Números, composição, ano a ano"
+      },
+      "performance": {
+        "label": "Desempenho",
+        "sub": "Treino, validação e teste"
+      }
+    }
+  },
+  "fintelligent": {
+    "exit": "Conheça o Fintelligent",
+    "playerLabel": "Conversa entre agentes",
+    "transcriptLabel": "Transcrição da conversa",
+    "posterAlt": "Três agentes do Fintelligent coordenando um estudo na plataforma",
+    "agentsCount": "{{count}} agentes",
+    "turns": "{{current}} de {{total}} turnos",
+    "agents": {
+      "orchestrator": {
+        "name": "Orquestrador",
+        "role": "planeja"
+      },
+      "strategist": {
+        "name": "Estrategista",
+        "role": "escreve"
+      },
+      "risk": {
+        "name": "Risco",
+        "role": "protege"
+      }
+    },
+    "cues": {
+      "brief": "Momentum sobre o grupo de ativos S&P 500, rebalanceamento semanal. Estrategista, redija; Risco, defina a proteção de drawdown.",
+      "draft": "Redigida MomentumV3: lookback de 20 a 120 dias, rebalanceamento de 12 semanas, faixas de parâmetros tipadas. Pronta no Laboratório.",
+      "guard": "Anexado um stop de drawdown máximo de 12% e volatility targeting de 10% anualizado.",
+      "stage": "Estudo preparado: fitness Sharpe, 500 trials, 70/15/15 train/validação/OOS. Este precisa da sua confirmação.",
+      "confirm": "Confirmado. Pode lançar.",
+      "launch": "O estudo #142 está rodando: 312 de 500 trials concluídos, melhor Sharpe de validação 1,84 até agora.",
+      "review": "O drawdown fora da amostra fica abaixo da proteção nos dez melhores trials. Nenhum parâmetro sozinho responde por mais de 40% do resultado.",
+      "report": "Gerando o relatório para o comitê a partir do trial 37: curvas de capital, importância de parâmetros e registro de operações."
+    }
+  },
+  "capabilities": {
+    "exit": "Ver o passo a passo",
+    "playerLabel": "Passo a passo das funcionalidades",
+    "chaptersLabel": "Capítulos do passo a passo",
+    "posterAlt": "O pulso de mercado da Fintela: movimentos de índices, rendimentos do Tesouro e um mapa de calor por setor",
+    "docs": "Docs",
+    "chapters": {
+      "pulse": "Pulso",
+      "ticker": "Ticker",
+      "groups": "Grupos",
+      "screener": "Screener"
+    },
+    "spark": {
+      "label": "Melhor Sharpe · 500 trials",
+      "value": "1,84",
+      "from": "trial 1",
+      "to": "500"
+    },
+    "quantum": {
+      "badge": "Novo",
+      "title": "Samplers quânticos",
+      "description": "Busca QAOA e de kernel quântico sobre o seu espaço de parâmetros, executada em um circuito quântico emulado."
+    },
+    "liveThumbAlt": "Dois traders em uma mesa com monitores, acompanhando gráficos ao vivo"
+  },
+  "insights": {
+    "eyebrow": "Insights",
+    "title": "Notas de pesquisa e",
+    "titleAccent": "novidades da plataforma.",
+    "exit": "Todos os posts",
+    "read": "Ler",
+    "browseAll": "Ver todos os posts",
+    "count_one": "{{count}} post",
+    "count_other": "{{count}} posts",
+    "newest": "mais recente {{date}}",
+    "coverAlt": "Imagem de capa de {{title}}"
+  },
+  "closing": {
+    "eyebrow": "Prontos quando a sua mesa estiver",
+    "title": "Veja por que funciona",
+    "titleAccent": "para o seu fundo.",
+    "body": "Uma demonstração de 30 minutos sobre as suas próprias estratégias, ou comece no plano gratuito e traga um estudo para a conversa.",
+    "ctaPrimary": "Agendar uma demonstração",
+    "ctaSecondary": "Começar grátis",
+    "strip": "Sem infraestrutura · Sem instalação local · Conectado à corretora · Proveniência criptográfica"
   }
 }

@@ -1,0 +1,405 @@
+{
+  "common": {
+    "watch": "Ver la plataforma",
+    "chaptersLabel": "Capacidades en esta página",
+    "readDocs": "Leer la documentación",
+    "why": {
+      "eyebrow": "Por qué cambian",
+      "title": "Deje de construir infraestructura.",
+      "titleAccent": "Empiece a construir estrategias.",
+      "description": "Una comparación lado a lado de lo que cambia cuando investigación, optimización y ejecución comparten un solo espacio de trabajo en la nube, en lugar de un stack que usted mismo opera.",
+      "legacyHeader": "Stack tradicional",
+      "withFintelaHeader": "Con Fintela"
+    },
+    "chapters": {
+      "eyebrow": "Capacidades"
+    },
+    "onboarding": {
+      "eyebrow": "Cómo se incorpora",
+      "title": "Cuatro pasos hasta una",
+      "titleAccent": "cartera en vivo.",
+      "description": "Sin entorno que construir ni pipeline de datos que cablear. La secuencia de abajo es el proyecto completo.",
+      "steps": {
+        "connect": {
+          "title": "Conecte datos y bróker",
+          "desc": "Defina grupos de activos sobre acciones, ETFs, forex y mercados globales, y vincule el bróker a través del cual ejecuta."
+        },
+        "bring": {
+          "title": "Traiga sus estrategias",
+          "desc": "Escriba Python en el Laboratorio, deje que Fintelligent la redacte, o invoque una estrategia y un fitness externos a través de la API."
+        },
+        "run": {
+          "title": "Ejecute estudios",
+          "desc": "Búsqueda bayesiana sobre miles de trials, evaluada por defecto en ventanas de train, validación y fuera de muestra."
+        },
+        "promote": {
+          "title": "Promueva a en vivo",
+          "desc": "Las carteras validadas se convierten en operaciones en vivo con registro de órdenes, P&L y pausa con un clic."
+        }
+      }
+    },
+    "closing": {
+      "eyebrow": "Listos cuando su mesa lo esté",
+      "ctaSecondary": "Comparar planes"
+    }
+  },
+  "funds": {
+    "badge": "Para hedge funds y traders institucionales",
+    "title": "Investigación a escala de fondo,",
+    "titleAccent": "sin la infraestructura.",
+    "lead": "Estudios concurrentes, procedencia criptográfica y ejecución conectada al bróker, en un espacio de trabajo en la nube que su mesa no tiene que operar.",
+    "ctaPrimary": "Reservar una demostración",
+    "heroCaption": "La mesa de un fondo · investigación, gobernanza y ejecución en un mismo espacio de trabajo",
+    "heroAlt": "El equipo de un hedge fund en una sala de reuniones acristalada, trabajando sobre portátiles",
+    "stat": {
+      "eyebrow": "Espera en cola",
+      "value": "0",
+      "unit": "minutos",
+      "sub": "los estudios corren en paralelo, no en una cola en serie"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "Investigación, backtesting y ejecución en herramientas separadas",
+          "with": "Un solo flujo de trabajo, del estudio a la ejecución en vivo"
+        },
+        {
+          "without": "Infraestructura que construir, financiar y mantener",
+          "with": "Nada que construir ni mantener"
+        },
+        {
+          "without": "Estudios en cola detrás de un optimizador compartido",
+          "with": "Estudios concurrentes en toda la mesa"
+        },
+        {
+          "without": "Un entorno local para cada nuevo quant",
+          "with": "Nada que instalar"
+        },
+        {
+          "without": "Procedencia reconstruida a partir de notebooks y chats",
+          "with": "Historial de estrategias con hash y marca de tiempo"
+        },
+        {
+          "without": "Backtest y en vivo por caminos de código distintos",
+          "with": "Gestores de riesgo idénticos en backtest y en vivo"
+        }
+      ],
+      "panel": {
+        "eyebrow": "Para la mesa de un fondo",
+        "before": "Investigación de estrategias en experimentos concurrentes,",
+        "highlight": "sin operar",
+        "after": "su propia infraestructura.",
+        "points": [
+          "Sin infraestructura que construir ni mantener",
+          "Estudios concurrentes, no una cola en serie",
+          "Nada que instalar para los nuevos quants"
+        ]
+      }
+    },
+    "chaptersTitle": "Qué cambia",
+    "chaptersTitleAccent": "para un fondo.",
+    "chapters": {
+      "research": {
+        "title": "Investigación a escala",
+        "mediaAlt": "La pestaña de rendimiento del análisis de cartera: un radar de métricas y la comparación de train, validación y test",
+        "description": "Cada quant de la mesa lanza estudios en paralelo; nadie espera por la máquina de optimización. La búsqueda bayesiana concentra miles de trials en las regiones prometedoras, y cada estudio se puntúa en ventanas de train, validación y fuera de muestra.",
+        "outcomes": [
+          "Estudios concurrentes en toda la mesa",
+          "Train / validación / OOS por defecto",
+          "Importancia de parámetros con contraste de sobreajuste"
+        ]
+      },
+      "governance": {
+        "title": "Gobernanza y procedencia",
+        "description": "Las estrategias y configuraciones llevan hash criptográfico y marca de tiempo, de modo que autoría, versiones y resultados son verificables mucho después de que corrió el estudio. Mantenga todo privado y comparta de forma selectiva.",
+        "outcomes": [
+          "Historial de estrategias con hash y marca de tiempo",
+          "Historial de versiones en cada estrategia",
+          "Privado por defecto; comparta en sus términos"
+        ],
+        "mediaAlt": "La cabecera de un informe de inversión: quién lo preparó, a qué fecha, la ventana de datos y la estrategia de origen"
+      },
+      "execution": {
+        "title": "Ejecución y gestores de riesgo",
+        "description": "Promueva carteras validadas a operaciones en vivo que ejecutan a través de su bróker conectado. Los gestores de riesgo se acoplan a cualquier estrategia, idénticos en backtest y en vivo, con registro de órdenes en tiempo real y pausa con un clic.",
+        "outcomes": [
+          "Operaciones long/short en vivo conectadas al bróker",
+          "Gestores de riesgo idénticos en backtest y en vivo",
+          "Registro de órdenes en tiempo real, P&L y pausa con un clic"
+        ],
+        "mediaAlt": "Gráficos de riesgo de las carteras clasificadas: drawdown y volatilidad a lo largo de la ventana del estudio"
+      },
+      "workspace": {
+        "title": "Espacio de trabajo y permisos",
+        "description": "Registros compartidos de grupos de activos, estrategias, funciones de fitness y gestores de riesgo, en un espacio de trabajo organizacional. Publique tableros de solo resultados que ocultan código y parámetros.",
+        "outcomes": [
+          "Una única fuente de verdad en toda la mesa",
+          "Tableros de solo resultados para el comité",
+          "Reportes PDF bajo demanda"
+        ],
+        "mediaAlt": "Un panel de rendimiento solo con resultados: la curva de capital y una comparación de métricas, sin código ni parámetros"
+      },
+      "security": {
+        "title": "Seguridad y proveedores de IA",
+        "description": "Elija qué proveedor impulsa Fintelligent, con acceso gestionado por Fintela y sin llave de API que aportar. Cada llamada a herramienta es visible en la conversación y cada acción irreversible espera confirmación explícita.",
+        "outcomes": [
+          "Elección de proveedor, acceso gestionado por Fintela",
+          "Cada llamada a herramienta visible en la conversación",
+          "Las acciones irreversibles esperan confirmación"
+        ]
+      }
+    },
+    "faqIntro": "Las preguntas que las mesas institucionales hacen primero: seguridad, proveedores, ejecución y datos.",
+    "faq": {
+      "onboarding": {
+        "q": "¿Cuánto tarda un fondo en incorporarse?",
+        "a": "No hay entorno que construir. Una mesa conecta sus datos y su bróker, trae estrategias a través del Laboratorio o de la API, y corre sus primeros estudios en la primera semana. La mayor parte del calendario son las estrategias, no la configuración."
+      },
+      "data": {
+        "q": "¿De quién son los datos que usa Fintela, y podemos traer los nuestros?",
+        "a": "Los grupos de activos se construyen con los datos de mercado de Fintela sobre acciones, ETFs, forex y mercados globales. Las estrategias y funciones de fitness externas pueden leer sus propias fuentes de datos a través de la API, de modo que las señales propietarias permanecen de su lado."
+      }
+    },
+    "closing": {
+      "title": "Véalo con sus propias",
+      "titleAccent": "estrategias.",
+      "body": "Treinta minutos con el equipo que construyó la plataforma, sobre las estrategias que su mesa realmente opera."
+    }
+  },
+  "teams": {
+    "badge": "Para equipos de investigación quant",
+    "title": "Una biblioteca, un espacio de trabajo,",
+    "titleAccent": "una única fuente de verdad.",
+    "lead": "Registros compartidos, historial con hash y reportes listos para el comité, para que una mesa de investigación deje de reconciliar notebooks y empiece a comparar resultados.",
+    "ctaPrimary": "Reservar una demostración",
+    "heroCaption": "Una mesa de investigación · una biblioteca compartida de estrategias, grupos de activos y resultados",
+    "heroAlt": "Un quant frente a una pared de pantallas de trading, estudiando gráficos de velas",
+    "stat": {
+      "eyebrow": "Fuentes de verdad",
+      "value": "1",
+      "unit": "espacio de trabajo",
+      "sub": "estrategias, grupos de activos, fitness y resultados en un solo lugar"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "Estrategias dispersas en notebooks personales",
+          "with": "Una biblioteca de estrategias compartida"
+        },
+        {
+          "without": "Grupos de activos y resultados reconstruidos por cada investigador",
+          "with": "Grupos de activos y resultados de optimización compartidos"
+        },
+        {
+          "without": "Autoría y versiones reconstruidas a mano",
+          "with": "Historial con hash criptográfico y marca de tiempo"
+        },
+        {
+          "without": "Resultados reconciliados entre máquinas antes de cada reunión",
+          "with": "Un tablero de resultados para el equipo"
+        },
+        {
+          "without": "Presentaciones para el comité armadas a mano",
+          "with": "Reportes PDF bajo demanda"
+        },
+        {
+          "without": "Un entorno local para cada nueva incorporación",
+          "with": "Nada que instalar"
+        }
+      ],
+      "panel": {
+        "eyebrow": "Para una mesa de investigación",
+        "before": "Estrategias, grupos de activos y resultados compartidos,",
+        "highlight": "en un único espacio de trabajo organizacional",
+        "after": "con procedencia criptográfica integrada.",
+        "points": [
+          "Una única fuente de verdad para todo el equipo",
+          "Historial de estrategias con hash criptográfico y marca de tiempo",
+          "Reportes PDF para el comité de inversión"
+        ]
+      }
+    },
+    "chaptersTitle": "Qué cambia",
+    "chaptersTitleAccent": "para una mesa de investigación.",
+    "chapters": {
+      "workspace": {
+        "title": "Registros compartidos",
+        "description": "Grupos de activos, estrategias, funciones de fitness y gestores de riesgo viven en registros que toda la mesa consulta. La estrategia validada de un colega está a un clic de su próximo estudio, no a una exportación de distancia.",
+        "outcomes": [
+          "Un catálogo para toda la mesa",
+          "Publicación entre organizaciones con permisos",
+          "Nada que instalar para una nueva incorporación"
+        ],
+        "mediaAlt": "El inicio de la plataforma: exposición por activo y los estudios, carteras, estrategias y grupos de activos en uso"
+      },
+      "research": {
+        "title": "Investigación concurrente",
+        "mediaAlt": "Gráficos de tasa de cambio y Sharpe de los mejores trials, con el top diez de la mesa abarcando tres estrategias distintas",
+        "description": "Todos lanzan estudios a la vez. Búsqueda bayesiana sobre miles de trials, puntuada en ventanas de train, validación y fuera de muestra, con resultados que la mesa compara en un solo tablero.",
+        "outcomes": [
+          "Estudios en paralelo, no en cola",
+          "Train / validación / OOS por defecto",
+          "Un tablero de resultados para el equipo"
+        ]
+      },
+      "provenance": {
+        "title": "Procedencia y versiones",
+        "description": "Cada estrategia y configuración lleva hash y marca de tiempo, con historial de versiones, de modo que la mesa puede decir quién escribió qué, cuándo, y qué versión produjo qué resultado.",
+        "outcomes": [
+          "Historial con hash criptográfico",
+          "Historial de versiones en cada estrategia",
+          "Autoría que sobrevive a los cambios de personal"
+        ],
+        "mediaAlt": "El menú de un trial clasificado: promoverlo, derivar u optimizar una nueva versión, o abrir su panel"
+      },
+      "reports": {
+        "title": "Reportes listos para el comité",
+        "description": "Tableros de solo resultados y reportes PDF que muestran curvas de capital, drawdowns e importancia de parámetros mientras ocultan código e hiperparámetros.",
+        "outcomes": [
+          "Reportes PDF bajo demanda",
+          "Los tableros de solo resultados ocultan el código",
+          "Las mismas cifras en backtest y en vivo"
+        ],
+        "mediaAlt": "La sección de rendimiento de un informe de inversión: crecimiento de 100.000 $ frente al benchmark, con la ventana out-of-sample marcada"
+      },
+      "agents": {
+        "title": "Fintelligent en la mesa",
+        "description": "Un asistente conectado a los datos y acciones de la plataforma: explica un estudio, redacta la siguiente estrategia y prepara ejecuciones para que una persona las confirme. Cada llamada a herramienta es visible.",
+        "outcomes": [
+          "Respuestas sobre cualquier estudio, con fuentes",
+          "Redacta estrategias para revisión",
+          "Las acciones irreversibles esperan confirmación"
+        ]
+      }
+    },
+    "faqIntro": "Las preguntas que las mesas de investigación hacen primero: compartir, procedencia, exportaciones y proveedores.",
+    "faq": {
+      "sharing": {
+        "q": "¿Podemos mantener algunas estrategias privadas dentro del equipo?",
+        "a": "Sí. Todo es privado por defecto. Usted comparte una estrategia, un grupo de activos o un estudio con colegas concretos o con toda la organización, y puede publicar tableros de solo resultados que ocultan código y parámetros."
+      },
+      "committee": {
+        "q": "¿Qué podemos entregar a un comité de inversión?",
+        "a": "Reportes PDF generados a partir de cualquier trial o basket: curvas de capital en las ventanas de train, validación y fuera de muestra, drawdowns, importancia de parámetros y el registro de operaciones, sin revelar código ni hiperparámetros."
+      }
+    },
+    "closing": {
+      "title": "Véalo con las estrategias",
+      "titleAccent": "de su equipo.",
+      "body": "Treinta minutos con el equipo que construyó la plataforma, sobre la investigación que su mesa está corriendo ahora."
+    }
+  },
+  "independents": {
+    "badge": "Para quants independientes y traders sistemáticos",
+    "title": "Del notebook al en vivo,",
+    "titleAccent": "sin un proyecto de devops.",
+    "lead": "Estrategias en Python, optimización bayesiana y ejecución conectada al bróker en el navegador, sin nada que instalar ni nada que mantener corriendo.",
+    "ctaPrimary": "Empezar gratis",
+    "heroCaption": "La mesa de un trader · del notebook al despliegue en vivo, sin un proyecto de devops",
+    "heroAlt": "Un trader independiente en una mesa con varios monitores, al teléfono, con gráficos en cada pantalla",
+    "stat": {
+      "eyebrow": "Instalaciones locales",
+      "value": "0",
+      "unit": "que mantener",
+      "sub": "Python, datos y ejecución, todo en el navegador"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "Un entorno local que construir y mantener vivo",
+          "with": "Python en el navegador, nada que instalar"
+        },
+        {
+          "without": "Backtesting, optimización y ejecución unidos a mano",
+          "with": "Optimización, backtesting y despliegue en vivo en un solo lugar"
+        },
+        {
+          "without": "Bucles de optimización escritos desde cero",
+          "with": "Optimización bayesiana incorporada"
+        },
+        {
+          "without": "Ventanas de validación configuradas a mano en cada estudio",
+          "with": "Train / validación / OOS por defecto"
+        },
+        {
+          "without": "Un proyecto de devops para salir en vivo",
+          "with": "Despliegue en vivo conectado al bróker"
+        },
+        {
+          "without": "Servidores que mantener corriendo",
+          "with": "Nada que mantener corriendo"
+        }
+      ],
+      "panel": {
+        "eyebrow": "Para un quant",
+        "before": "Optimización, backtesting y despliegue en vivo,",
+        "highlight": "sin construir ni mantener",
+        "after": "una sola línea de infraestructura.",
+        "points": [
+          "Sin entorno local, sin devops",
+          "Optimización bayesiana con train / validación / OOS incorporados",
+          "Despliegue en vivo conectado al bróker"
+        ]
+      }
+    },
+    "chaptersTitle": "Qué cambia",
+    "chaptersTitleAccent": "para un quant.",
+    "chapters": {
+      "noDevops": {
+        "title": "Sin entorno que construir",
+        "mediaAlt": "El inicio de la plataforma en el navegador, saludando al usuario con el prompt de Fintelligent; nada instalado",
+        "description": "Escriba Python en el Laboratorio con NumPy, pandas, SciPy y scikit-learn ya disponibles. Parámetros con nombre, rangos tipados e historial de versiones, y ninguna instalación local que mantener viva.",
+        "outcomes": [
+          "Python en el navegador, con todo incluido",
+          "Rangos de parámetros tipados e historial de versiones",
+          "Nada que instalar ni actualizar"
+        ]
+      },
+      "optimization": {
+        "title": "Optimización incorporada",
+        "mediaAlt": "La tabla de métricas de un estudio: Calmar, Sharpe, Sortino y estadísticas de operaciones en train, validación y test",
+        "description": "Búsqueda bayesiana sobre miles de trials con ventanas de train, validación y fuera de muestra por defecto, más importancia de parámetros para saber qué controles importan.",
+        "outcomes": [
+          "Miles de trials en paralelo",
+          "Train / validación / OOS por defecto",
+          "Importancia de parámetros y clustering"
+        ]
+      },
+      "live": {
+        "title": "En vivo a través de su bróker",
+        "description": "Promueva una cartera validada a una operación en vivo que opera a través de su bróker conectado, con registro de órdenes en tiempo real, P&L y pausa con un clic.",
+        "outcomes": [
+          "Ejecución conectada al bróker",
+          "Registro de órdenes y P&L en tiempo real",
+          "Un clic para pausar o detener"
+        ],
+        "mediaAlt": "Operaciones en vivo en el inicio de la plataforma: carteras desplegadas por estrategia, rendimiento del grupo activo y activos más operados"
+      },
+      "agent": {
+        "title": "Un asistente que hace el trabajo",
+        "description": "Describa la idea en lenguaje natural y Fintelligent escribe el Python, configura los parámetros y prepara el estudio; luego espera a que usted confirme.",
+        "outcomes": [
+          "Estrategias redactadas a partir de una descripción",
+          "Estudios preparados para su confirmación",
+          "Explicaciones de cualquier resultado, con fuentes"
+        ]
+      }
+    },
+    "faqIntro": "Las preguntas que los traders sistemáticos hacen primero: Python, optimización, velocidad y salir en vivo.",
+    "faq": {
+      "cost": {
+        "q": "¿Cuánto cuesta empezar?",
+        "a": "El plan gratuito incluye el Laboratorio, los grupos de activos y los estudios con los samplers y métodos de asignación básicos. Las funciones avanzadas se desbloquean por basket con tokens, así que paga por lo que un estudio realmente usa."
+      },
+      "ownership": {
+        "q": "¿De quién son mis estrategias?",
+        "a": "Suyas. Las estrategias son privadas por defecto, con hash y marca de tiempo a su nombre, y puede exportar la señal diaria de cualquier trial como JSON o CSV en cualquier momento."
+      }
+    },
+    "closing": {
+      "title": "Traiga una estrategia,",
+      "titleAccent": "llévese un estudio.",
+      "body": "Empiece en el plan gratuito, corra su primera optimización hoy y reserve una demostración cuando quiera una segunda opinión."
+    }
+  }
+}

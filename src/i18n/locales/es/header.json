@@ -1,11 +1,12 @@
 {
   "nav": {
     "platform": "Plataforma",
-    "fintelagent": "Fintelligent",
+    "fintelagent": "IA Agéntica",
     "useCases": "Casos de uso",
     "pricing": "Precios",
     "documentation": "Documentación",
-    "blog": "Blog"
+    "blog": "Blog",
+    "solutions": "Soluciones"
   },
   "actions": {
     "getStarted": "Comenzar"
@@ -14,5 +15,10 @@
     "home": "Fintela, inicio",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú"
+  },
+  "solutions": {
+    "funds": "Hedge funds",
+    "teams": "Equipos quant",
+    "independents": "Quants independientes"
   }
 }

@@ -172,6 +172,35 @@ export function firstParagraph(markdown: string): string {
   return toPlainText(markdown).slice(0, 300);
 }
 
+const SAFE_IMAGE_DATA_URI = /^data:image\/(?:png|jpe?g|gif|webp|avif);base64,[a-z0-9+/=\s]+$/i;
+
+/**
+ * Whether an image `src` pulled out of a post body is safe to reuse as a card
+ * thumbnail on a *different* route (the `/blog` grid, the home page) than the
+ * post it came from: an `http(s)` URL, an absolute path (served from
+ * `public/`, so it resolves the same everywhere), or a small inline raster
+ * data URI. Mirrors the `<img src>` allow-list `MarkdownContent` enforces,
+ * minus post-relative paths — those only resolve next to the post itself.
+ */
+export function isSafeCardImageSrc(src: string): boolean {
+  if (src.startsWith('/')) return true;
+  if (/^https?:\/\//i.test(src)) return true;
+  return SAFE_IMAGE_DATA_URI.test(src);
+}
+
+/**
+ * The first Markdown image (`![alt](src)`) in a post body, for posts that
+ * don't set an explicit `cover` — a plain regex scan rather than a full parse,
+ * since all that's needed is the earliest match. Returns `null` when there is
+ * no image, or its `src` isn't safe to show outside the post's own page.
+ */
+export function extractFirstImage(markdown: string): { src: string; alt: string } | null {
+  const match = /!\[([^\]]*)\]\(\s*([^\s)]+)[^)]*\)/.exec(markdown);
+  if (!match) return null;
+  const src = match[2].trim();
+  return isSafeCardImageSrc(src) ? { src, alt: match[1].trim() } : null;
+}
+
 export const readingMinutes = (markdown: string): number =>
   Math.max(
     1,

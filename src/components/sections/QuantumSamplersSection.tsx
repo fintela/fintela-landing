@@ -2,8 +2,12 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
+import { NeuPanel } from '../primitives/NeuPanel';
+import { IconWell } from '../primitives/IconWell';
+import { TierBadge } from '../primitives/TierBadge';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { gradients } from '../../theme/tokens';
+import { inkSurfaceSx } from '../../theme/neu';
+import { palette, radii, soft } from '../../theme/tokens';
 import BlurOnIcon from '@mui/icons-material/BlurOn';
 import GrainIcon from '@mui/icons-material/Grain';
 import MemoryIcon from '@mui/icons-material/Memory';
@@ -19,9 +23,8 @@ const capabilities = [
 export const QuantumSamplersSection = () => {
   const { t } = useTranslation('home');
   return (
-    <Section id="quantum" tone="muted" size="lg">
+    <Section id="quantum" size="lg">
       <SectionHeader
-        eyebrowTone="gradient"
         eyebrow={t('quantum.eyebrow')}
         title={t('quantum.title')}
         titleAccent={t('quantum.titleAccent')}
@@ -36,7 +39,7 @@ export const QuantumSamplersSection = () => {
           alignItems: 'stretch',
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {capabilities.map((c, idx) => (
             <AnimateOnScroll key={c.key} delay={idx * 70}>
               <CapabilityRow
@@ -54,12 +57,12 @@ export const QuantumSamplersSection = () => {
                 gap: 1,
                 mt: 0.5,
                 px: 0.5,
-                color: 'text.disabled',
+                color: soft.textSecondary,
                 fontSize: '0.8rem',
                 lineHeight: 1.5,
               }}
             >
-              <ScienceOutlinedIcon sx={{ fontSize: 15, color: '#789aba' }} />
+              <ScienceOutlinedIcon sx={{ fontSize: 15, color: palette.goldDeep }} />
               {t('quantum.note')}
             </Box>
           </AnimateOnScroll>
@@ -82,50 +85,20 @@ const CapabilityRow = ({
   title: string;
   desc: string;
 }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      gap: 2,
-      alignItems: 'flex-start',
-      p: { xs: 2.25, md: 2.5 },
-      borderRadius: 3,
-      border: '1px solid',
-      borderColor: 'divider',
-      bgcolor: '#fff',
-      transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-      '&:hover': {
-        borderColor: 'rgba(47,99,149,0.4)',
-        transform: 'translateX(2px)',
-        boxShadow: '0 4px 12px rgba(47,99,149,0.08)',
-      },
-    }}
+  <NeuPanel
+    variant="tile"
+    sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', p: { xs: 2.25, md: 2.5 } }}
   >
-    <Box
-      sx={{
-        width: 40,
-        height: 40,
-        borderRadius: 2,
-        background: gradients.brand,
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        boxShadow: '0 2px 6px rgba(47,99,149,0.18)',
-        '& svg': { fontSize: 20 },
-      }}
-    >
-      {icon}
-    </Box>
+    <IconWell size={40}>{icon}</IconWell>
     <Box>
-      <Typography sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5, fontSize: '0.98rem' }}>
+      <Typography sx={{ fontWeight: 700, color: soft.text, mb: 0.5, fontSize: '0.98rem' }}>
         {title}
       </Typography>
-      <Typography sx={{ color: 'text.secondary', fontSize: '0.88rem', lineHeight: 1.6 }}>
+      <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6 }}>
         {desc}
       </Typography>
     </Box>
-  </Box>
+  </NeuPanel>
 );
 
 const QuantumVisual = () => {
@@ -133,9 +106,9 @@ const QuantumVisual = () => {
   return (
     <Box
       sx={{
+        ...inkSurfaceSx,
+        borderRadius: `${radii.neuCard}px`,
         position: 'relative',
-        overflow: 'hidden',
-        borderRadius: 4,
         p: { xs: 3, md: 4 },
         height: '100%',
         minHeight: 380,
@@ -143,63 +116,12 @@ const QuantumVisual = () => {
         flexDirection: 'column',
         justifyContent: 'space-between',
         gap: 3,
-        background:
-          'linear-gradient(160deg, #0b1020 0%, #131835 60%, #1c1f4a 100%)',
-        color: '#fff',
-        boxShadow: '0 8px 24px rgba(11,16,32,0.16)',
       }}
     >
-      {/* Brand glow */}
-      <Box
-        aria-hidden
-        sx={{
-          position: 'absolute',
-          top: -120,
-          right: -80,
-          width: 340,
-          height: 340,
-          background:
-            'radial-gradient(circle, rgba(47,99,149,0.4) 0%, rgba(229,53,64,0.14) 45%, transparent 72%)',
-          filter: 'blur(46px)',
-          pointerEvents: 'none',
-          animation: 'quantumGlow 6s ease-in-out infinite',
-          '@keyframes quantumGlow': {
-            '0%, 100%': { opacity: 0.65, transform: 'scale(1)' },
-            '50%': { opacity: 1, transform: 'scale(1.08)' },
-          },
-          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-        }}
-      />
-
       <Box sx={{ position: 'relative' }}>
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.75,
-            px: 1.25,
-            py: 0.4,
-            mb: 2,
-            borderRadius: 999,
-            border: '1px solid rgba(120,154,186,0.35)',
-            bgcolor: 'rgba(47,99,149,0.12)',
-            fontSize: '0.66rem',
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            color: '#b9c4f5',
-          }}
-        >
-          <Box
-            sx={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: gradients.brand,
-            }}
-          />
+        <TierBadge featured sx={{ mb: 2 }}>
           {t('quantum.panel.badge')}
-        </Box>
+        </TierBadge>
 
         {/* Quantum circuit motif */}
         <QuantumCircuit />
@@ -210,9 +132,10 @@ const QuantumVisual = () => {
           sx={{
             fontFamily: '"JetBrains Mono", monospace',
             fontSize: '0.72rem',
-            color: 'rgba(255,255,255,0.5)',
+            color: soft.onInk,
             letterSpacing: '0.04em',
             mb: 0.75,
+            '@media print': { color: soft.text },
           }}
         >
           {t('quantum.panel.codeHint')}
@@ -225,15 +148,7 @@ const QuantumVisual = () => {
           }}
         >
           {t('quantum.panel.captionBefore')}{' '}
-          <Box
-            component="span"
-            sx={{
-              background: gradients.brand,
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
+          <Box component="span" sx={{ color: palette.gold }}>
             {t('quantum.panel.captionHighlight')}
           </Box>
         </Typography>
@@ -252,9 +167,9 @@ const QuantumCircuit = () => (
   >
     <defs>
       <linearGradient id="qGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#2f6395" />
-        <stop offset="50%" stopColor="#e53540" />
-        <stop offset="100%" stopColor="#efc03c" />
+        <stop offset="0%" stopColor={palette.navy} />
+        <stop offset="50%" stopColor={palette.navy} />
+        <stop offset="100%" stopColor={palette.gold} />
       </linearGradient>
       <filter id="qGlow" x="-40%" y="-40%" width="180%" height="180%">
         <feGaussianBlur stdDeviation="3.5" result="b" />
@@ -273,7 +188,8 @@ const QuantumCircuit = () => (
         y1={y}
         x2="396"
         y2={y}
-        stroke="rgba(255,255,255,0.16)"
+        stroke={soft.white}
+        strokeOpacity="0.16"
         strokeWidth="1.5"
       />
     ))}
@@ -284,7 +200,8 @@ const QuantumCircuit = () => (
         key={y}
         x="8"
         y={y + 4}
-        fill="rgba(255,255,255,0.45)"
+        fill={soft.white}
+        fillOpacity="0.45"
         fontSize="11"
         fontFamily="'JetBrains Mono', monospace"
       >
@@ -301,11 +218,12 @@ const QuantumCircuit = () => (
           width="30"
           height="30"
           rx="7"
-          fill="rgba(47,99,149,0.18)"
+          fill={palette.navy}
+          fillOpacity="0.18"
           stroke="url(#qGrad)"
           strokeWidth="1.5"
         />
-        <text x="67" y={y + 5} textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">
+        <text x="67" y={y + 5} textAnchor="middle" fill={soft.white} fontSize="13" fontWeight="700">
           H
         </text>
       </g>
@@ -334,7 +252,8 @@ const QuantumCircuit = () => (
           width="42"
           height="30"
           rx="7"
-          fill="rgba(229,53,64,0.14)"
+          fill={palette.gold}
+          fillOpacity="0.14"
           stroke="url(#qGrad)"
           strokeWidth="1.5"
         />
@@ -342,7 +261,7 @@ const QuantumCircuit = () => (
           x="271"
           y={y + 5}
           textAnchor="middle"
-          fill="#fff"
+          fill={soft.white}
           fontSize="11"
           fontFamily="'JetBrains Mono', monospace"
         >
@@ -360,17 +279,18 @@ const QuantumCircuit = () => (
           width="30"
           height="30"
           rx="7"
-          fill="rgba(239,192,60,0.16)"
+          fill={palette.gold}
+          fillOpacity="0.16"
           stroke="url(#qGrad)"
           strokeWidth="1.5"
         />
         <path
           d={`M 337 ${y + 4} A 8 8 0 0 1 353 ${y + 4}`}
           fill="none"
-          stroke="#fff"
+          stroke={soft.white}
           strokeWidth="1.5"
         />
-        <line x1="345" y1={y + 4} x2="351" y2={y - 5} stroke="#fff" strokeWidth="1.5" />
+        <line x1="345" y1={y + 4} x2="351" y2={y - 5} stroke={soft.white} strokeWidth="1.5" />
       </g>
     ))}
   </Box>

@@ -4,7 +4,7 @@ author: Fintela Team
 date: 2026-09-03
 excerpt: TPE is the default optimizer behind most of Fintela's studies. Here's the math it actually runs, and why splitting parameters into "good" and "bad" densities turns out to be a shortcut for something much more familiar.
 tags: Engineering
-published: true
+published: false
 ---
 
 ![Alt text](https://tse1.mm.bing.net/th/id/OIP.Oq0IXk59gNDahqAYp7lciAHaDr?r=0&rs=1&pid=ImgDetMain&o=7&rm=3)

@@ -10,8 +10,11 @@ import {
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, CircularProgress, CssBaseline } from '@mui/material';
 import { theme } from './theme/theme';
+import { radii, shadows, soft } from './theme/tokens';
+import { forcedColorsSurface } from './theme/neu';
 import { HomePage } from './pages/HomePage';
 import { ContactPage } from './pages/ContactPage';
+import { SOLUTION_PATHS } from './solutions/registry';
 
 // Both blog routes are code-split. Post bodies are fetched from the CDN at runtime
 // (see BLOG.md), and the post page also pulls in the markdown renderer + syntax
@@ -42,6 +45,13 @@ const RiskDisclosuresPage = lazy(() =>
 // off the home page's bundle like every other route below the fold.
 const PricingPage = lazy(() =>
   import('./pages/PricingPage').then((m) => ({ default: m.PricingPage })),
+);
+
+// Solutions — one template for the three seats (`src/solutions/registry.ts`),
+// so all three share a chunk. `/solutions/hedge-funds` is where the home page's
+// institutional CTA lands.
+const SolutionPage = lazy(() =>
+  import('./pages/SolutionPage').then((m) => ({ default: m.SolutionPage })),
 );
 
 // Documentation. Twenty-five hand-written page components used to be listed here,
@@ -160,22 +170,29 @@ function ScrollToTop() {
 }
 
 const DocsLoader = () => (
-  <Box
-    sx={{
-      minHeight: '60vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <CircularProgress size={28} sx={{ color: '#2f6395' }} />
+  <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <Box
+      sx={{
+        width: 56,
+        height: 56,
+        borderRadius: `${radii.pill}px`,
+        bgcolor: soft.surfaceRaised,
+        boxShadow: shadows.neuRaisedMd,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...forcedColorsSurface,
+      }}
+    >
+      <CircularProgress size={24} sx={{ color: soft.accent }} />
+    </Box>
   </Box>
 );
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
+      <CssBaseline enableColorScheme />
       <Router>
         <ScrollToTop />
         <Suspense fallback={<DocsLoader />}>
@@ -185,6 +202,11 @@ function App() {
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/pricing" element={<PricingPage />} />
+
+            {/* Solutions — `/solutions` has no index of its own; it lands on the
+                fund page, the way `/docs` lands on the overview. */}
+            <Route path="/solutions" element={<Navigate to={SOLUTION_PATHS.funds} replace />} />
+            <Route path="/solutions/:slug" element={<SolutionPage />} />
 
             {/* Legal */}
             <Route path="/terms" element={<TermsPage />} />

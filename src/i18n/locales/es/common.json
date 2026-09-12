@@ -13,5 +13,14 @@
       "privacy": "Política de privacidad",
       "riskDisclosures": "Divulgaciones de riesgo"
     }
+  },
+  "player": {
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa",
+    "seek": "Posición"
   }
 }

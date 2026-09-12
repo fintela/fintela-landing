@@ -1,5 +1,9 @@
-import { Box, Typography, Container } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { radii } from '../../theme/tokens';
+import { eyebrowSx } from '../../theme/neu';
+import { Section } from '../primitives/Section';
+import { NeuPanel } from '../primitives/NeuPanel';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import momentoCapitalLogo from '../../assets/clients/momento_capital_logo.png';
 import edgebridgeCapitalLogo from '../../assets/clients/edgebridge_capital_logo.jpeg';
@@ -12,72 +16,55 @@ const partners = [
 export const TrustBar = () => {
   const { t } = useTranslation('home');
   return (
-    <Box
-      sx={{
-        py: { xs: 5, md: 6 },
-        borderTop: '1px solid',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        bgcolor: '#fafbfc',
-      }}
-    >
-      <Container maxWidth="lg">
-        <AnimateOnScroll>
-          <Typography
-            sx={{
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              color: 'text.disabled',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              textAlign: 'center',
-              mb: 3,
-            }}
-          >
-            {t('trustBar.title')}
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: { xs: 3, md: 6 },
-              flexWrap: 'wrap',
-              opacity: 0.7,
-            }}
-          >
-            {partners.map((p) => (
-              <Box
-                key={p.name}
-                component="a"
-                href={p.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: { xs: 48, md: 64 },
-                  px: 2,
+    <Section size="sm" sx={{ py: { xs: 5, md: 6 } }}>
+      <AnimateOnScroll>
+        <Typography
+          sx={{ ...eyebrowSx, fontSize: '0.72rem', letterSpacing: '0.14em', textAlign: 'center', mb: 3 }}
+        >
+          {t('trustBar.title')}
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: { xs: 3, md: 4 },
+            flexWrap: 'wrap',
+          }}
+        >
+          {partners.map((p) => (
+            <NeuPanel
+              key={p.name}
+              variant="tile"
+              href={p.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={p.name}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: { xs: 64, md: 80 },
+                px: 2.5,
+                py: 1.5,
+                borderRadius: `${radii.neuWell}px`,
+              }}
+            >
+              <img
+                src={p.logo}
+                alt={p.name}
+                style={{
+                  maxHeight: '100%',
+                  maxWidth: 180,
+                  objectFit: 'contain',
+                  opacity: 0.8,
                   filter: 'grayscale(0.4)',
-                  transition: 'filter 0.22s ease, transform 0.22s ease',
-                  '&:hover': {
-                    filter: 'grayscale(0)',
-                    transform: 'translateY(-2px)',
-                  },
                 }}
-                aria-label={p.name}
-              >
-                <img
-                  src={p.logo}
-                  alt={p.name}
-                  style={{ maxHeight: '100%', maxWidth: 180, objectFit: 'contain' }}
-                />
-              </Box>
-            ))}
-          </Box>
-        </AnimateOnScroll>
-      </Container>
-    </Box>
+              />
+            </NeuPanel>
+          ))}
+        </Box>
+      </AnimateOnScroll>
+    </Section>
   );
 };

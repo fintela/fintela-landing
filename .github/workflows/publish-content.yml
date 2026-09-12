@@ -90,9 +90,15 @@ jobs:
         run: |
           for prefix in blog docs; do
             aws s3 sync "dist/$prefix/" "s3://${{ vars.S3_BUCKET }}/$prefix/" --delete \
+              --exclude 'covers/*' \
               --content-type application/json \
               --cache-control "public, max-age=60, s-maxage=900"
           done
+          # Covers are images under the blog prefix: their own sync keeps their type.
+          if [ -d dist/blog/covers ]; then
+            aws s3 sync dist/blog/covers/ "s3://${{ vars.S3_BUCKET }}/blog/covers/" --delete \
+              --cache-control "public, max-age=3600, s-maxage=86400"
+          fi
 
       # Two paths, not `/*`: the app is untouched, so invalidating it would only
       # cost a needless cache refill. s-maxage=900 means this is an accelerator —

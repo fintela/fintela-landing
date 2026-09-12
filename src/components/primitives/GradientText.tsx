@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
+import { clippedGradientSx } from '../../theme/neu';
 import { gradients } from '../../theme/tokens';
 
 interface GradientTextProps {
@@ -18,14 +19,7 @@ export const GradientText = ({
 }: GradientTextProps) => (
   <Box
     component={component}
-    sx={{
-      background: gradient,
-      backgroundClip: 'text',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      display: 'inline',
-      ...sx,
-    }}
+    sx={[clippedGradientSx(gradient), { display: 'inline' }, ...(Array.isArray(sx) ? sx : [sx])] as SxProps<Theme>}
   >
     {children}
   </Box>

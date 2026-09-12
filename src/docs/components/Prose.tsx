@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
-import { palette } from '../../theme/tokens';
+import { radii, shadows, soft } from '../../theme/tokens';
 
 /** Inline code style — reusable. Plain object so it can be nested into `sx`. */
 export const inlineCode = {
@@ -8,11 +8,13 @@ export const inlineCode = {
   fontSize: '0.84em',
   px: 0.6,
   py: 0.2,
-  borderRadius: 0.75,
-  bgcolor: 'rgba(11,16,32,0.05)',
-  border: '1px solid rgba(11,16,32,0.06)',
-  color: palette.blue,
+  borderRadius: `${radii.xs}px`,
+  bgcolor: soft.groundSunken,
+  boxShadow: shadows.neuInsetXs,
+  color: soft.accent,
   whiteSpace: 'nowrap',
+  '@media (forced-colors: active)': { boxShadow: 'none', border: '1px solid CanvasText' },
+  '@media print': { boxShadow: 'none', border: `1px solid ${soft.deep}` },
 } as const;
 
 /** Plain paragraph for docs body text. */
@@ -20,17 +22,17 @@ export const P = ({ children }: { children: ReactNode }) => (
   <Typography
     sx={{
       my: 2,
-      color: 'text.secondary',
+      color: soft.textSecondary,
       fontSize: { xs: '0.95rem', md: '1rem' },
       lineHeight: 1.75,
       '& code': inlineCode,
-      '& strong': { color: 'text.primary', fontWeight: 600 },
+      '& strong': { color: soft.text, fontWeight: 600 },
       '& a': {
-        color: palette.blue,
-        textDecoration: 'none',
-        borderBottom: '1px solid transparent',
-        transition: 'border-color 0.18s',
-        '&:hover': { borderBottomColor: palette.blue },
+        color: soft.accent,
+        textDecoration: 'underline',
+        textDecorationColor: soft.ring,
+        textUnderlineOffset: '3px',
+        '@media (hover: hover)': { '&:hover': { textDecorationColor: soft.accent } },
       },
     }}
   >
@@ -51,13 +53,13 @@ export const Ul = ({ children }: { children: ReactNode }) => (
     sx={{
       my: 2,
       pl: 3,
-      color: 'text.secondary',
+      color: soft.textSecondary,
       fontSize: { xs: '0.95rem', md: '1rem' },
       lineHeight: 1.75,
       '& li': { my: 0.75 },
-      '& li::marker': { color: palette.blue },
+      '& li::marker': { color: soft.accent },
       '& code': inlineCode,
-      '& strong': { color: 'text.primary', fontWeight: 600 },
+      '& strong': { color: soft.text, fontWeight: 600 },
     }}
   >
     {children}
@@ -70,7 +72,7 @@ export const Lead = ({ children }: { children: ReactNode }) => (
       mt: 1,
       mb: 4,
       fontSize: { xs: '1.05rem', md: '1.2rem' },
-      color: 'text.secondary',
+      color: soft.textSecondary,
       lineHeight: 1.6,
       maxWidth: 720,
     }}

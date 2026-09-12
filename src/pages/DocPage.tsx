@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { Box, Chip, CircularProgress, Divider, Typography } from '@mui/material';
-import { GitHub, SearchOff, UpdateOutlined } from '@mui/icons-material';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import { SearchOff, UpdateOutlined } from '@mui/icons-material';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MarkdownContent } from '../blog/MarkdownContent';
 import { formatContentDate } from '../content/format';
 import { DocsLayout } from '../docs/DocsLayout';
-import { editUrlFor, sectionAccent } from '../docs/format';
 import { extractToc } from '../docs/toc';
 import { useDoc, useDocsIndex } from '../docs/useDocs';
 import type { DocsIndex } from '../docs/types';
+import { gradients, soft } from '../theme/tokens';
+import { NeuButton } from '../components/primitives/NeuButton';
+import { IconWell } from '../components/primitives/IconWell';
+import { TierBadge } from '../components/primitives/TierBadge';
 
 /**
  * `/docs/:slug` — one documentation page, rendered from the Markdown body in its
@@ -48,7 +51,6 @@ export const DocPage = () => {
 
   const toc = useMemo(() => (doc ? extractToc(doc.markdown) : []), [doc]);
   const resolveHref = useDocLinkResolver(index, indexStatus === 'ready');
-  const accent = sectionAccent(doc?.section ?? summary?.section ?? '');
 
   // `doc` stands in for its own index entry on the first paint, before the index
   // lands — `DocDetail` is a superset of `DocSummary`, so the layout gets its
@@ -57,49 +59,25 @@ export const DocPage = () => {
     <DocsLayout index={index} current={summary ?? doc} toc={toc}>
       {status === 'loading' && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-          <CircularProgress size={28} sx={{ color: '#2f6395' }} />
+          <CircularProgress size={28} sx={{ color: soft.accent }} />
         </Box>
       )}
 
       {(status === 'notFound' || status === 'error') && (
         <Box sx={{ textAlign: 'center', py: { xs: 8, md: 12 } }}>
-          <Box
-            sx={{
-              width: 72,
-              height: 72,
-              mx: 'auto',
-              mb: 3,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: 'rgba(47, 99, 149, 0.08)',
-              color: 'primary.main',
-              '& svg': { fontSize: '2rem' },
-            }}
-          >
+          <IconWell size={72} round sx={{ mx: 'auto', mb: 3 }}>
             <SearchOff />
-          </Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5, color: 'text.primary' }}>
+          </IconWell>
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5, color: soft.text }}>
             {status === 'notFound' ? t('docs.notFound.title') : t('docs.error.title')}
           </Typography>
-          <Typography sx={{ color: 'text.secondary', maxWidth: 480, mx: 'auto', lineHeight: 1.7 }}>
+          <Typography sx={{ color: soft.textSecondary, maxWidth: 480, mx: 'auto', lineHeight: 1.7 }}>
             {status === 'notFound' ? t('docs.notFound.body') : t('docs.error.body')}
           </Typography>
-          <Box
-            component={RouterLink}
-            to="/docs"
-            sx={{
-              display: 'inline-block',
-              mt: 4,
-              color: '#2f6395',
-              fontWeight: 600,
-              fontSize: '0.92rem',
-              textDecoration: 'none',
-              '&:hover': { textDecoration: 'underline' },
-            }}
-          >
-            {t('docs.backToIndex')}
+          <Box sx={{ mt: 4 }}>
+            <NeuButton tone="raised" to="/docs">
+              {t('docs.backToIndex')}
+            </NeuButton>
           </Box>
         </Box>
       )}
@@ -107,26 +85,17 @@ export const DocPage = () => {
       {status === 'ready' && doc && (
         <Box component="article">
           <Box sx={{ mb: 3.5 }}>
-            <Chip
-              label={doc.section}
-              size="small"
-              sx={{
-                mb: 2,
-                height: 24,
-                bgcolor: `${accent}14`,
-                color: accent,
-                fontWeight: 700,
-                fontSize: '0.7rem',
-                border: `1px solid ${accent}2e`,
-              }}
-            />
+            <Box sx={{ mb: 2 }}>
+              <TierBadge>{doc.section}</TierBadge>
+            </Box>
 
             <Typography
               variant="h1"
               sx={{
                 fontWeight: 800,
                 mb: 2,
-                color: 'text.primary',
+                color: soft.text,
+                textWrap: 'balance',
                 fontSize: { xs: '1.9rem', sm: '2.3rem', md: '2.6rem' },
                 letterSpacing: '-0.025em',
               }}
@@ -137,7 +106,7 @@ export const DocPage = () => {
             <Typography
               sx={{
                 fontSize: { xs: '1.05rem', md: '1.15rem' },
-                color: 'text.secondary',
+                color: soft.textSecondary,
                 lineHeight: 1.6,
                 maxWidth: 720,
                 mb: 2.5,
@@ -152,7 +121,7 @@ export const DocPage = () => {
                 alignItems: 'center',
                 flexWrap: 'wrap',
                 gap: { xs: 1.5, sm: 2.5 },
-                color: 'text.secondary',
+                color: soft.textSecondary,
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
@@ -169,48 +138,13 @@ export const DocPage = () => {
             </Box>
           </Box>
 
-          <Divider
-            sx={{
-              mb: 1,
-              borderColor: 'transparent',
-              height: 3,
-              borderRadius: 2,
-              background: `linear-gradient(90deg, ${accent}, ${accent}00)`,
-            }}
+          <Box
+            aria-hidden
+            sx={{ width: 36, height: 3, borderRadius: '2px', background: gradients.gold, mb: 3 }}
           />
 
           <MarkdownContent markdown={doc.markdown} headingAnchors resolveHref={resolveHref} />
         </Box>
-      )}
-
-      {/* Outside <article>: contributing to the page is not part of the page. */}
-      {status === 'ready' && doc && (
-        <>
-          <Divider sx={{ mt: 6, mb: 3 }} />
-          <Box
-            component="a"
-            href={editUrlFor(doc)}
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.85,
-              color: 'text.secondary',
-              textDecoration: 'none',
-              fontSize: '0.88rem',
-              fontWeight: 600,
-              transition: 'color 0.18s',
-              '&:hover': { color: '#2f6395' },
-            }}
-          >
-            <GitHub sx={{ fontSize: '1.05rem' }} />
-            {t('docs.editThisPage')}
-          </Box>
-          <Typography sx={{ mt: 1, color: 'text.disabled', fontSize: '0.8rem' }}>
-            {t('docs.editHint', { path: doc.sourcePath })}
-          </Typography>
-        </>
       )}
     </DocsLayout>
   );

@@ -7,7 +7,11 @@
         "platform": "Platform",
         "fintelagent": "Fintelligent",
         "useCases": "Use cases",
-        "pricing": "Pricing"
+        "pricing": "Pricing",
+        "capabilities": "Capabilities",
+        "funds": "For hedge funds",
+        "teams": "For quant teams",
+        "independents": "For independent quants"
       }
     },
     "resources": {

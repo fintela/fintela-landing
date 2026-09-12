@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { SxProps, Theme } from '@mui/material';
+import { clippedGradientSx } from '../../theme/neu';
 import { gradients } from '../../theme/tokens';
 
 interface RotatingWordProps {
@@ -75,14 +76,7 @@ export const RotatingWord = ({
     };
   }, [n, interval, startDelay]);
 
-  const gradientSx: SxProps<Theme> = gradient
-    ? {
-        background: gradients.brand,
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-      }
-    : {};
+  const gradientSx = gradient ? clippedGradientSx(gradients.brand) : {};
 
   const layerSx: SxProps<Theme> = {
     position: 'absolute',
@@ -108,12 +102,24 @@ export const RotatingWord = ({
         ...sx,
       }}
     >
-      {/* Hidden measurer: all words at the real font, off the layout flow. */}
+      {/* Hidden measurer: all words at the real font, off the layout flow.
+          Zero-sized and clipped so the row of words never widens the page;
+          nowrap keeps each child at its full width for measurement. */}
       <Box
         component="span"
         ref={measureRef}
         aria-hidden
-        sx={{ position: 'absolute', visibility: 'hidden', pointerEvents: 'none', whiteSpace: 'nowrap' }}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 0,
+          height: 0,
+          overflow: 'hidden',
+          visibility: 'hidden',
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+        }}
       >
         {words.map((w) => (
           <span key={w} style={{ display: 'inline-block' }}>
