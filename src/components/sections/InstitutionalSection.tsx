@@ -159,9 +159,16 @@ export const InstitutionalSection = () => {
               alt={t(`audiences.items.${audience}.imageAlt`)}
               sizes="(min-width: 1200px) 300px, (min-width: 900px) 30vw, 45vw"
               sx={{
-                width: '100%',
+                // Stretched by the grid, not sized to it: a `width: 100%` is the
+                // grid area's width, so the negative right margin never widened
+                // the well and the panel's padding showed as a gap beside it.
+                // `stretch` on an auto width fills the area *including* the
+                // negative margins, which is what carries it to the panel's edge.
+                justifySelf: 'stretch',
                 aspectRatio: { xs: '4 / 5', sm: 'auto' },
-                alignSelf: 'stretch',
+                // On its own row the ratio sets the height (stretching both axes
+                // would discard it); beside the text it takes the row's height.
+                alignSelf: { xs: 'start', sm: 'stretch' },
                 minHeight: { sm: 340 },
                 ml: { xs: -3, sm: 0 },
                 mr: { xs: -3, sm: -3, md: -4, lg: -4.5 },

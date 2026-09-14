@@ -5,11 +5,12 @@ date: 2026-08-07
 excerpt: How fragmented infrastructure is costing funds thousands and thousands of hours (and money), and why a unified platform is becoming the competitive advantage.
 tags: Finance, Infrastructure, Trading
 published: true
+cover: covers/quants-moving-away-from-legacy-tools.jpg
+coverAlt: A laptop screen with a legacy charting terminal, a price line and volume bars on a dark grid.
 ---
 
 
-![Alt text](https://images.unsplash.com/photo-1621264448270-9ef00e88a935?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8dHJhZGluZ3xlbnwwfHwwfHx8Mg%3D%3D
-)
+![A laptop screen with a legacy charting terminal, a price line and volume bars on a dark grid.](covers/quants-moving-away-from-legacy-tools.jpg)
 
 A quant engineer at a midsized hedge fund is staring at her screen at 8 PM on a Friday. His job title is "Quantitative Engineer." His actual task right now? Debugging a data sync issue between the firm's ETL pipeline, backtesting engine, and risk management system.
 

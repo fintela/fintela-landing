@@ -20,7 +20,7 @@
 import { LNG_LABELS, SUPPORTED_LNGS } from '../i18n/config';
 import heroPlatformHome from '../assets/media/hero/platform-home-poster.jpg';
 import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg';
-import agentsPoster from '../assets/media/fintelligent/agents-poster.svg';
+import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg';
 import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg';
 import liveOps from '../assets/media/capabilities/live-ops.jpg';
 import audienceFunds from '../assets/media/audiences/funds.jpg';

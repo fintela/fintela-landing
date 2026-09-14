@@ -49,8 +49,8 @@
     "titleAccent": "sem a infraestrutura.",
     "lead": "Estudos concorrentes, proveniência criptográfica e execução conectada à corretora, em um espaço de trabalho na nuvem que a sua mesa não precisa operar.",
     "ctaPrimary": "Agendar uma demonstração",
-    "heroCaption": "A mesa de um fundo · pesquisa, governança e execução em um único espaço de trabalho",
-    "heroAlt": "A equipe de um hedge fund em uma sala de reuniões envidraçada, trabalhando em laptops",
+    "heroCaption": "Feito para instituições · pesquisa, governança e execução em um único espaço de trabalho",
+    "heroAlt": "Duas torres de vidro vistas da rua, curvando-se para um céu nublado",
     "stat": {
       "eyebrow": "Espera na fila",
       "value": "0",
@@ -172,8 +172,8 @@
     "titleAccent": "uma única fonte de verdade.",
     "lead": "Registros compartilhados, histórico com hash e relatórios prontos para o comitê, para que uma mesa de pesquisa pare de reconciliar notebooks e comece a comparar resultados.",
     "ctaPrimary": "Agendar uma demonstração",
-    "heroCaption": "Uma mesa de pesquisa · uma biblioteca compartilhada de estratégias, grupos de ativos e resultados",
-    "heroAlt": "Um quant diante de uma parede de telas de trading, estudando gráficos de candles",
+    "heroCaption": "Todas as peças em jogo · uma biblioteca compartilhada de estratégias, grupos de ativos e resultados",
+    "heroAlt": "Uma fileira de peões de xadrez no tabuleiro, um em foco à frente do rei",
     "stat": {
       "eyebrow": "Fontes de verdade",
       "value": "1",
@@ -295,8 +295,8 @@
     "titleAccent": "sem um projeto de devops.",
     "lead": "Estratégias em Python, otimização bayesiana e execução conectada à corretora no navegador, sem nada para instalar e nada para manter rodando.",
     "ctaPrimary": "Começar grátis",
-    "heroCaption": "A mesa de um trader · do notebook à implantação ao vivo, sem um projeto de devops",
-    "heroAlt": "Um trader independente em uma mesa com vários monitores, ao telefone, com gráficos em cada tela",
+    "heroCaption": "Uma só peça, o tabuleiro inteiro · do notebook à implantação ao vivo, sem um projeto de devops",
+    "heroAlt": "Um cavalo preto sozinho no tabuleiro de xadrez, com um peão e o rei desfocados atrás",
     "stat": {
       "eyebrow": "Instalações locais",
       "value": "0",

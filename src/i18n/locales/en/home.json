@@ -384,17 +384,17 @@
     "items": {
       "funds": {
         "cta": "See why it works for your fund",
-        "imageAlt": "A fund's investment committee around the table, reviewing a strategy",
+        "imageAlt": "The corner of a marble-columned office tower against a white sky",
         "doorBlurb": "Eliminate fragmentation between research, backtesting and execution, without running your own infrastructure."
       },
       "independents": {
         "cta": "See why it works for you",
-        "imageAlt": "An independent advisor walking a client through a performance chart",
+        "imageAlt": "Over the shoulder of a quant at a desk with a laptop and two monitors, code on the nearest screen",
         "doorBlurb": "From notebook to live deployment, without a devops project."
       },
       "teams": {
         "cta": "See why it works for your desk",
-        "imageAlt": "A research desk pointing through a study's charts together",
+        "imageAlt": "Seen from behind, an analyst working at a monitor in a dim room",
         "doorBlurb": "One shared library, one workspace, one source of truth."
       }
     },
@@ -453,7 +453,7 @@
     "exit": "Meet Fintelligent",
     "playerLabel": "Multi-agent conversation",
     "transcriptLabel": "Conversation transcript",
-    "posterAlt": "Three Fintelligent agents coordinating a study in the platform",
+    "posterAlt": "A dense lattice of threads and nodes, lit from behind",
     "agentsCount": "{{count}} agents",
     "turns": "{{current}} of {{total}} turns",
     "agents": {
@@ -504,7 +504,7 @@
       "title": "Quantum samplers",
       "description": "QAOA and quantum-kernel search over your parameter space, run on an emulated quantum circuit."
     },
-    "liveThumbAlt": "Two traders at a desk of monitors, watching live charts"
+    "liveThumbAlt": "A trader at a desk with two monitors of price charts and a laptop"
   },
   "insights": {
     "eyebrow": "Insights",

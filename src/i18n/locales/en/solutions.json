@@ -49,8 +49,8 @@
     "titleAccent": "without the infrastructure.",
     "lead": "Concurrent studies, cryptographic provenance and broker-connected execution, in one cloud workspace your desk does not have to run.",
     "ctaPrimary": "Book a walkthrough",
-    "heroCaption": "A fund's desk · research, governance and execution in one workspace",
-    "heroAlt": "A hedge fund team in a glass-walled meeting room, working over laptops",
+    "heroCaption": "Institutional by design · research, governance and execution in one workspace",
+    "heroAlt": "Two glass towers seen from the street, curving up into a clouded sky",
     "stat": {
       "eyebrow": "Queue wait",
       "value": "0",
@@ -172,8 +172,8 @@
     "titleAccent": "one source of truth.",
     "lead": "Shared registries, hashed history and committee-ready reports, so a research desk stops reconciling notebooks and starts comparing results.",
     "ctaPrimary": "Book a walkthrough",
-    "heroCaption": "A research desk · one shared library of strategies, asset groups and results",
-    "heroAlt": "A quant in front of a wall of trading screens, studying candlestick charts",
+    "heroCaption": "Every seat in play · one shared library of strategies, asset groups and results",
+    "heroAlt": "A row of chess pawns on a board, one in sharp focus in front of the king",
     "stat": {
       "eyebrow": "Sources of truth",
       "value": "1",
@@ -295,8 +295,8 @@
     "titleAccent": "without a devops project.",
     "lead": "Python strategies, Bayesian optimization and broker-connected execution in the browser, with nothing to install and nothing to keep running.",
     "ctaPrimary": "Start free",
-    "heroCaption": "A trader's desk · from notebook to live deployment, without a devops project",
-    "heroAlt": "An independent trader at a multi-monitor desk, on the phone, with charts on every screen",
+    "heroCaption": "One seat, the whole board · from notebook to live deployment, without a devops project",
+    "heroAlt": "A black knight standing alone on a chessboard, a pawn and the king out of focus behind it",
     "stat": {
       "eyebrow": "Local installs",
       "value": "0",
