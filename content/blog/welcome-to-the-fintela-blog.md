@@ -5,6 +5,8 @@ date: 2026-07-28
 excerpt: What we plan to write about here: research notes, engineering write-ups, and practical guides for building quantitative strategies on Fintela.
 tags: Announcements
 published: true
+cover: covers/welcome-to-the-fintela-blog.jpg
+coverAlt: A laptop on a desk showing an analytics dashboard of charts, a heat map and a world map.
 ---
 
 This is the first post on the Fintela blog. We built this space to write about the

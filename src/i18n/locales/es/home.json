@@ -384,17 +384,17 @@
     "items": {
       "funds": {
         "cta": "Vea por qué funciona para su fondo",
-        "imageAlt": "El comité de inversión de un fondo alrededor de la mesa, revisando una estrategia",
+        "imageAlt": "La esquina de una torre de oficinas con columnas de mármol contra un cielo blanco",
         "doorBlurb": "Elimine la fragmentación entre investigación, backtesting y ejecución sin operar su propia infraestructura."
       },
       "independents": {
         "cta": "Vea por qué funciona para usted",
-        "imageAlt": "Un asesor independiente explicando un gráfico de rendimiento a un cliente",
+        "imageAlt": "Por encima del hombro de un quant en una mesa con un portátil y dos monitores, con código en la pantalla más cercana",
         "doorBlurb": "Del notebook al despliegue en vivo, sin un proyecto de devops."
       },
       "teams": {
         "cta": "Vea por qué funciona para su mesa",
-        "imageAlt": "Una mesa de investigación repasando juntos los gráficos de un estudio",
+        "imageAlt": "Visto de espaldas, un analista trabajando frente a un monitor en una sala en penumbra",
         "doorBlurb": "Una biblioteca compartida, un espacio de trabajo, una única fuente de verdad."
       }
     },
@@ -453,7 +453,7 @@
     "exit": "Conozca Fintelligent",
     "playerLabel": "Conversación entre agentes",
     "transcriptLabel": "Transcripción de la conversación",
-    "posterAlt": "Tres agentes de Fintelligent coordinando un estudio en la plataforma",
+    "posterAlt": "Una densa red de hilos y nodos, iluminada desde atrás",
     "agentsCount": "{{count}} agentes",
     "turns": "{{current}} de {{total}} turnos",
     "agents": {
@@ -504,7 +504,7 @@
       "title": "Samplers cuánticos",
       "description": "Búsqueda QAOA y de kernel cuántico sobre su espacio de parámetros, ejecutada en un circuito cuántico emulado."
     },
-    "liveThumbAlt": "Dos traders en una mesa con monitores, siguiendo gráficos en vivo"
+    "liveThumbAlt": "Un trader en una mesa con dos monitores de gráficos de precios y un portátil"
   },
   "insights": {
     "eyebrow": "Insights",

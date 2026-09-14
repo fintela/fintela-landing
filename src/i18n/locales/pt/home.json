@@ -384,17 +384,17 @@
     "items": {
       "funds": {
         "cta": "Veja por que funciona para o seu fundo",
-        "imageAlt": "O comitê de investimento de um fundo ao redor da mesa, revisando uma estratégia",
+        "imageAlt": "O canto de uma torre de escritórios com colunas de mármore contra um céu branco",
         "doorBlurb": "Elimine a fragmentação entre pesquisa, backtesting e execução sem operar a sua própria infraestrutura."
       },
       "independents": {
         "cta": "Veja por que funciona para você",
-        "imageAlt": "Um assessor independente explicando um gráfico de desempenho a um cliente",
+        "imageAlt": "Por cima do ombro de um quant em uma mesa com um laptop e dois monitores, com código na tela mais próxima",
         "doorBlurb": "Do notebook ao deploy ao vivo, sem um projeto de devops."
       },
       "teams": {
         "cta": "Veja por que funciona para a sua mesa",
-        "imageAlt": "Uma mesa de pesquisa revisando juntos os gráficos de um estudo",
+        "imageAlt": "Visto de costas, um analista trabalhando diante de um monitor em uma sala à meia-luz",
         "doorBlurb": "Uma biblioteca compartilhada, um espaço de trabalho, uma única fonte de verdade."
       }
     },
@@ -453,7 +453,7 @@
     "exit": "Conheça o Fintelligent",
     "playerLabel": "Conversa entre agentes",
     "transcriptLabel": "Transcrição da conversa",
-    "posterAlt": "Três agentes do Fintelligent coordenando um estudo na plataforma",
+    "posterAlt": "Uma densa rede de fios e nós, iluminada por trás",
     "agentsCount": "{{count}} agentes",
     "turns": "{{current}} de {{total}} turnos",
     "agents": {
@@ -504,7 +504,7 @@
       "title": "Samplers quânticos",
       "description": "Busca QAOA e de kernel quântico sobre o seu espaço de parâmetros, executada em um circuito quântico emulado."
     },
-    "liveThumbAlt": "Dois traders em uma mesa com monitores, acompanhando gráficos ao vivo"
+    "liveThumbAlt": "Um trader em uma mesa com dois monitores de gráficos de preços e um laptop"
   },
   "insights": {
     "eyebrow": "Insights",
