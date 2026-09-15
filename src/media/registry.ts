@@ -19,6 +19,7 @@
  */
 import { LNG_LABELS, SUPPORTED_LNGS } from '../i18n/config';
 import heroPlatformHome from '../assets/media/hero/platform-home-poster.jpg';
+import heroBackdropPoster from '../assets/media/hero/backdrop-poster.jpg';
 import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg';
 import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg';
 import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg';
@@ -127,8 +128,18 @@ export const captionTracks = (video: VideoAsset) => {
   return SUPPORTED_LNGS.map((lang) => ({ lang, label: LNG_LABELS[lang], src: captions[lang] }));
 };
 
-/** The hero plate's poster is a frame of the ambient loop, already 16/10. */
+/** The platform plate's poster is a frame of the ambient loop, already 16/10. */
 export const HERO_POSTER = heroPlatformHome;
+
+/**
+ * The full-bleed loop behind the hero copy (36 s, silent). The source promo
+ * carries burnt-in captions in its bottom 200 px, so the file is cropped to
+ * 1920×880 at encode time; the hero's own fade covers what remains.
+ */
+export const HERO_BACKDROP = {
+  src: mediaUrl('hero-backdrop.mp4'),
+  poster: heroBackdropPoster,
+} as const;
 
 export const STILLS = {
   liveOps,
