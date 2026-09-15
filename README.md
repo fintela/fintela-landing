@@ -29,8 +29,22 @@ npm ci
 npm run dev          # http://localhost:5173
 ```
 
-No environment variables, credentials, or API keys are needed to run or build the
-site. `.env.local` is supported but optional.
+No credentials or API keys are needed to run or build the site. The one
+environment variable the app reads is `VITE_FINTELA_API`, where the contact form
+posts; see [.env.example](.env.example).
+
+**Working on more than one branch at once?** Each git worktree gets its own port
+block and its own config, nothing is set by hand:
+
+```bash
+cd ~/fintela/landing/main && ./setup_worktree.sh <name>   # creates ../<name>
+cd ../<name>
+make dev             # the site on this worktree's port
+make check           # what CI runs
+make nuke            # before `git worktree remove`
+```
+
+Design notes in [docs/LOCAL_WORKTREES.md](docs/LOCAL_WORKTREES.md).
 
 ```bash
 npm run build        # → dist/

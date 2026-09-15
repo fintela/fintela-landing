@@ -9,6 +9,9 @@ dist-ssr
 !.env.example
 *.local
 
+# Generated per worktree by ./setup_worktree.sh — never commit.
+.local/
+
 # Logs
 logs
 *.log

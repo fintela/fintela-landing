@@ -1,0 +1,43 @@
+# fintela-landing — port map for a worktree's local dev server.
+#
+# SINGLE SOURCE OF TRUTH. Every generated file (.env.local, .local/ports.env)
+# and everything `make ports` prints is derived from this table.
+#
+# Format (whitespace-separated, `#` starts a comment):
+#
+#   <key>  <offset>  <VAR_NAME>  <label>
+#
+#   key     stable identifier, lowercase, used by scripts
+#   offset  position INSIDE the worktree's 10-port block; 0..9, unique
+#   VAR     the environment variable the port is published as
+#   label   human text for `make ports`
+#
+# A worktree gets a SLOT (0, 1, 2, …) and therefore a block base of
+# LANDING_PORT_BASE + SLOT*10 (base 11000). Its port for a process is
+# `base + offset`, so the tens digit names the worktree and the unit names the
+# process:
+#
+#   slot 0 → web 11000, web-preview 11001
+#   slot 3 → web 11030, web-preview 11031
+#
+# WHY 11000. Four allocators now share this machine and their ranges must stay
+# disjoint:
+#
+#   fintela-landing (this repo)   11000-11499   base 11000 x block 10  x 50 slots
+#   fintela-internal              11500-11999   base 11500 x block 10  x 50 slots
+#   proasis                       12000-19999   base 12000 x block 100 x 80 slots
+#   fintela (product)             20000-39999   base 20000 x block 100 x 200 slots
+#
+# Plus each project pins a shared Postgres OUTSIDE its own block: proasis on
+# 10432, fintela on 55433. The ephemeral range on Linux starts at 32768
+# (/proc/sys/net/ipv4/ip_local_port_range), which is why every allocator stays
+# below it. lwt_validate_range() asserts all of this at library load time.
+#
+# The offsets are FROZEN. Changing one repoints every already-configured
+# worktree the next time it is reconfigured, which is a silent way to collide
+# with a dev server that is currently running. Append at the next free offset.
+
+# key            offset  variable              label
+web                 0    WEB_PORT              Landing site (Vite dev server)
+web-preview         1    WEB_PREVIEW_PORT      vite preview (the production build, served locally)
+# offsets 2-9 reserved.
