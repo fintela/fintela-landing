@@ -8,6 +8,7 @@ import { gradients, palette, shadows, soft } from '../../theme/tokens';
 import { clippedGradientSx } from '../../theme/neu';
 import { NeuPanel } from '../primitives/NeuPanel';
 import { Groove } from '../primitives/Groove';
+import { PlatformShowcase } from './PlatformShowcase';
 
 const nodes = [
   { cx: 330, cy: 100, num: 1, key: 'dataClusters', lx: 330, ly: 48, la: 'middle' as const },
@@ -26,7 +27,8 @@ const AUTOPLAY_MS = 4200;
 const RESUME_DELAY_MS = 8000;
 
 /**
- * Band 3. The hexagon (left) is the map of the six objects the platform is
+ * Band 3. Opens with the product plate and client logos (PlatformShowcase).
+ * The hexagon (left) is the map of the six objects the platform is
  * built from; the panel (right) is a carousel that cycles through each one's
  * summary, in step with the highlighted node. Hovering a node or picking a
  * dot jumps the carousel there and pauses autoplay for a while.
@@ -67,6 +69,8 @@ export const WorkflowSection = () => {
         titleAccent={t('workflow.titleAccent')}
         description={t('workflow.description')}
       />
+
+      <PlatformShowcase />
 
       <AnimateOnScroll delay={150}>
         <Box
