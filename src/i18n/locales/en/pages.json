@@ -28,7 +28,9 @@
     "alert": {
       "successDemo": "Thank you for your demo request! We'll contact you within 24 hours.",
       "successSupport": "Thank you for your support request! We'll contact you within 24 hours.",
-      "error": "Failed to send message. Please try again or contact us directly."
+      "error": "Failed to send message. Please try again or contact us directly.",
+      "tooMany": "Too many requests from your network. Please wait a few minutes and try again.",
+      "rejected": "We couldn't accept the form as filled in. Please check the email address and try again."
     },
     "assistance": {
       "heading": "Need immediate assistance?"

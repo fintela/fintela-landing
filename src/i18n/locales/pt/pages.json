@@ -28,7 +28,9 @@
     "alert": {
       "successDemo": "Obrigado pela sua solicitação de demonstração! Entraremos em contato em até 24 horas.",
       "successSupport": "Obrigado pela sua solicitação de suporte! Entraremos em contato em até 24 horas.",
-      "error": "Falha ao enviar a mensagem. Tente novamente ou entre em contato conosco diretamente."
+      "error": "Falha ao enviar a mensagem. Tente novamente ou entre em contato conosco diretamente.",
+      "tooMany": "Muitas solicitações da sua rede. Aguarde alguns minutos e tente novamente.",
+      "rejected": "Não foi possível aceitar o formulário como preenchido. Verifique o endereço de e-mail e tente novamente."
     },
     "assistance": {
       "heading": "Precisa de ajuda imediata?"

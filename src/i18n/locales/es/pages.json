@@ -28,7 +28,9 @@
     "alert": {
       "successDemo": "¡Gracias por tu solicitud de demo! Te contactaremos en un plazo de 24 horas.",
       "successSupport": "¡Gracias por tu solicitud de soporte! Te contactaremos en un plazo de 24 horas.",
-      "error": "No se pudo enviar el mensaje. Inténtalo de nuevo o contáctanos directamente."
+      "error": "No se pudo enviar el mensaje. Inténtalo de nuevo o contáctanos directamente.",
+      "tooMany": "Demasiadas solicitudes desde tu red. Espera unos minutos e inténtalo de nuevo.",
+      "rejected": "No pudimos aceptar el formulario tal como está. Revisa la dirección de correo e inténtalo de nuevo."
     },
     "assistance": {
       "heading": "¿Necesitas ayuda inmediata?"

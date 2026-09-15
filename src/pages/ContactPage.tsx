@@ -17,7 +17,6 @@ import {
   ContactSupport,
   PlayCircleOutline,
 } from '@mui/icons-material';
-import emailjs from '@emailjs/browser';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Header } from '../components/Header/Header';
@@ -30,14 +29,19 @@ import { TierBadge } from '../components/primitives/TierBadge';
 import { IconWell } from '../components/primitives/IconWell';
 import { wellSx } from '../theme/neu';
 import { motion, radii, shadows, soft } from '../theme/tokens';
+import { ContactApiError, submitContactRequest, type ContactKind } from '../contact/api';
 
-// EmailJS configuration - Replace these with your actual IDs from emailjs.com
-const EMAILJS_SERVICE_ID = 'fintela-website-support'; // e.g., 'service_abc123'
-const EMAILJS_TEMPLATE_ID = 'template-fintela-support'; // e.g., 'template_xyz789'
-const EMAILJS_PUBLIC_KEY = 'x8GjweL1wBoybCOtc'; // e.g., 'abc123xyz'
+/** Which i18n message a failed submission shows. `error` is the catch-all. */
+const failureKey = (err: unknown): string => {
+  if (err instanceof ContactApiError) {
+    if (err.reason === 'rate_limited') return 'contact.alert.tooMany';
+    if (err.reason === 'rejected') return 'contact.alert.rejected';
+  }
+  return 'contact.alert.error';
+};
 
 export const ContactPage = () => {
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
   const [params] = useSearchParams();
   // `?intent=walkthrough` is the institutional CTA: a demo request framed as a
   // walkthrough on the desk's own strategies, and labelled as such in the mail.
@@ -50,6 +54,9 @@ export const ContactPage = () => {
     email: '',
     phone: '',
     message: '',
+    // The honeypot (see src/contact/api.ts). Rendered off-screen below; a
+    // person never sees it, so it stays empty.
+    website: '',
   });
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,23 +90,22 @@ export const ContactPage = () => {
     setIsLoading(true);
     setError(null);
 
-    const templateParams = {
-      from_name: formData.name,
-      from_email: formData.email,
-      company: formData.company,
-      phone: formData.phone,
-      request_type:
-        requestType === 'demo' ? (walkthrough ? 'Walkthrough Request' : 'Demo Request') : 'Support Request',
-      message: formData.message,
-    };
+    // The code, never a label: the backend's closed set and the staff console
+    // both key on it, and a label would change with the locale.
+    const kind: ContactKind = requestType === 'demo' ? (walkthrough ? 'walkthrough' : 'demo') : 'support';
 
     try {
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams,
-        EMAILJS_PUBLIC_KEY
-      );
+      await submitContactRequest({
+        kind,
+        name: formData.name,
+        company: formData.company,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        locale: i18n.resolvedLanguage ?? i18n.language,
+        page_url: window.location.href,
+        website: formData.website,
+      });
 
       setSubmitted(true);
       setFormData({
@@ -108,6 +114,7 @@ export const ContactPage = () => {
         email: '',
         phone: '',
         message: '',
+        website: '',
       });
 
       // Hide success message after 5 seconds
@@ -115,8 +122,8 @@ export const ContactPage = () => {
         setSubmitted(false);
       }, 5000);
     } catch (err) {
-      console.error('EmailJS error:', err);
-      setError(t('contact.alert.error'));
+      console.error('contact request failed:', err);
+      setError(t(failureKey(err)));
     } finally {
       setIsLoading(false);
     }
@@ -280,6 +287,25 @@ export const ContactPage = () => {
                     : t('contact.form.messagePlaceholderSupport')
                 }
               />
+            </Box>
+
+            {/* The honeypot: off-screen, out of the tab order, ignored by
+                assistive tech. Named like something worth filling. */}
+            <Box
+              aria-hidden
+              sx={{ position: 'absolute', left: '-10000px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }}
+            >
+              <label>
+                Website
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={formData.website}
+                  onChange={handleInputChange}
+                />
+              </label>
             </Box>
 
             {/* Submit Button */}
