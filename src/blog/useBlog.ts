@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react';
-import { BlogPostNotFoundError, fetchBlogIndex, fetchBlogPost } from './api';
+import {
+  BlogPostNotFoundError,
+  fetchBlogIndex,
+  fetchBlogPost,
+  peekBlogIndex,
+  peekBlogPost,
+} from './api';
 import type { BlogPost, BlogPostSummary } from './types';
 
 /**
  * The landing app has no TanStack Query (that's the SPA's stack) — these are
  * plain fetch-on-mount hooks over the memoized `api` layer, which is all a
  * static CDN payload needs.
+ *
+ * Each hook starts from whatever is already in hand (`peek*`): the prerender
+ * seeds a route's JSON before rendering it, and the browser seeds the copy
+ * embedded in that route's HTML before hydrating, so on both sides the FIRST
+ * render is `ready` and the markup matches. The effect still runs — it resolves
+ * from the memo without a request — and bails out of the state update when it
+ * lands on the very object the hook started with.
  */
 
 export type BlogStatus = 'loading' | 'ready' | 'error';
@@ -16,13 +29,20 @@ interface IndexState {
 }
 
 export function useBlogIndex(): IndexState {
-  const [state, setState] = useState<IndexState>({ status: 'loading', posts: [] });
+  const [state, setState] = useState<IndexState>(() => {
+    const posts = peekBlogIndex();
+    return posts ? { status: 'ready', posts } : { status: 'loading', posts: [] };
+  });
 
   useEffect(() => {
     let active = true;
     fetchBlogIndex()
       .then((posts) => {
-        if (active) setState({ status: 'ready', posts });
+        if (active) {
+          setState((prev) =>
+            prev.status === 'ready' && prev.posts === posts ? prev : { status: 'ready', posts },
+          );
+        }
       })
       .catch((err) => {
         console.warn('[blog] could not load the post index', err);
@@ -50,7 +70,11 @@ interface PostResult {
 }
 
 export function useBlogPost(slug: string | undefined): PostState {
-  const [result, setResult] = useState<PostResult | null>(null);
+  const [result, setResult] = useState<PostResult | null>(() => {
+    if (!slug) return null;
+    const post = peekBlogPost(slug);
+    return post ? { slug, status: 'ready', post } : null;
+  });
 
   useEffect(() => {
     if (!slug) return;
@@ -58,7 +82,13 @@ export function useBlogPost(slug: string | undefined): PostState {
     let active = true;
     fetchBlogPost(slug)
       .then((post) => {
-        if (active) setResult({ slug, status: 'ready', post });
+        if (active) {
+          setResult((prev) =>
+            prev?.slug === slug && prev.status === 'ready' && prev.post === post
+              ? prev
+              : { slug, status: 'ready', post },
+          );
+        }
       })
       .catch((err) => {
         if (!active) return;

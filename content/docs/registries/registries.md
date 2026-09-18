@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: The seven catalogues that hold every building block of a Fintela study (asset groups, strategies, fitness functions, risk managers, portfolio groups and promoted portfolios) and the conventions shared across all of them.
 keywords: registry, registries, building blocks, asset groups, strategies, studies, fitness functions, risk managers, portfolio groups, promoted portfolios, version history, execution modes
 ---

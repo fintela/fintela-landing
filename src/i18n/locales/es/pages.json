@@ -1,13 +1,7 @@
 {
   "contact": {
-    "hero": {
-      "chip": "Estamos aquí para ayudarte",
-      "title": "Ponte en contacto",
-      "subtitle": "Solicita una demo u obtén soporte de nuestro equipo. Te responderemos en un plazo de 24 horas."
-    },
     "toggle": {
       "heading": "¿Cómo podemos ayudarte?",
-      "demo": "Solicitar una demo",
       "support": "Contactar a soporte"
     },
     "form": {
@@ -15,14 +9,11 @@
       "company": "Empresa",
       "email": "Correo electrónico",
       "phone": "Número de teléfono",
-      "messageLabelDemo": "Cuéntanos sobre tus necesidades",
       "messageLabelSupport": "Describe tu problema o pregunta",
-      "messagePlaceholderDemo": "¿Qué funciones te interesan más? ¿Cuáles son tus casos de uso?",
       "messagePlaceholderSupport": "Por favor, proporciona todos los detalles posibles sobre tu problema..."
     },
     "submit": {
       "sending": "Enviando...",
-      "demo": "Solicitar demo",
       "support": "Enviar solicitud de soporte"
     },
     "alert": {
@@ -31,9 +22,6 @@
       "error": "No se pudo enviar el mensaje. Inténtalo de nuevo o contáctanos directamente.",
       "tooMany": "Demasiadas solicitudes desde tu red. Espera unos minutos e inténtalo de nuevo.",
       "rejected": "No pudimos aceptar el formulario tal como está. Revisa la dirección de correo e inténtalo de nuevo."
-    },
-    "assistance": {
-      "heading": "¿Necesitas ayuda inmediata?"
     },
     "intent": {
       "walkthrough": {
@@ -56,6 +44,7 @@
     "individual": {
       "title": "Planes",
       "overageRateLabel": "Tarifa por excedente",
+      "tokenHelp": "¿Qué es un token?",
       "plans": {
         "trader": {
           "name": "Trader",
@@ -228,6 +217,16 @@
     "readMore": "Leer más",
     "readTime": "{{minutes}} min de lectura",
     "backToBlog": "Volver al blog",
+    "loading": "Cargando artículos…",
+    "loadingPost": "Cargando artículo…",
+    "related": {
+      "title": "Artículos relacionados"
+    },
+    "postNav": {
+      "label": "Más artículos",
+      "newer": "Artículo más reciente",
+      "older": "Artículo anterior"
+    },
     "empty": {
       "title": "Aún no hay artículos",
       "body": "Estamos preparando los primeros artículos. Vuelve pronto para leer análisis sobre finanzas cuantitativas y trading algorítmico."
@@ -245,6 +244,38 @@
     "readTime": "{{minutes}} min de lectura",
     "updated": "Actualizado el {{date}}",
     "backToIndex": "Ver toda la documentación",
+    "loadingPage": "Cargando documentación…",
+    "crumb": "Docs",
+    "breadcrumb": "Ruta de navegación",
+    "navLabel": "Documentación",
+    "menuTitle": "Documentación",
+    "openMenu": "Abrir el menú de documentación",
+    "closeMenu": "Cerrar el menú",
+    "searchDocs": "Buscar en la documentación",
+    "searchPlaceholder": "Buscar en la documentación: estrategias, fitness, errores, endpoints…",
+    "searchLoading": "Cargando el índice de búsqueda…",
+    "searchNoResults": "Sin resultados para \"{{query}}\". Prueba con \"study\", \"fitness\" o \"endpoint\".",
+    "searchHints": {
+      "navigate": "navegar",
+      "open": "abrir",
+      "close": "cerrar"
+    },
+    "onThisPage": "En esta página",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "sectionLink": "Enlace a esta sección",
+    "code": {
+      "tabs": "Ejemplos de código",
+      "copy": "Copiar código",
+      "copied": "Copiado"
+    },
+    "callout": {
+      "info": "Nota",
+      "warning": "Advertencia",
+      "tip": "Consejo",
+      "danger": "Precaución",
+      "success": "Éxito"
+    },
     "error": {
       "title": "No se pudo cargar la documentación",
       "body": "Algo falló al obtener las páginas. Actualiza la página o inténtalo de nuevo en unos minutos."
@@ -254,11 +285,69 @@
       "body": "Puede que esta página de la documentación se haya renombrado o dejado de publicar. Vuelve al índice para ver todo lo que está disponible."
     }
   },
+  "search": {
+    "placeholder": "Buscar en Fintela — docs, blog, precios…",
+    "ariaLabel": "Buscar en el sitio",
+    "noResults": "Sin resultados para \"{{query}}\". Prueba con otra búsqueda.",
+    "sectionPages": "Páginas",
+    "sectionBlog": "Blog",
+    "pages": {
+      "home": "Inicio",
+      "pricing": "Precios",
+      "solutionsFunds": "Fondos de cobertura",
+      "solutionsTeams": "Equipos cuantitativos",
+      "solutionsIndependents": "Quants independientes",
+      "contact": "Contacto",
+      "blog": "Blog",
+      "docs": "Documentación"
+    }
+  },
   "notFound": {
     "code": "Error 404",
     "title": "Esta página no existe",
     "body": "Puede que el enlace esté desactualizado o que la dirección tenga una errata. No hay ningún fallo de nuestro lado: la página simplemente no está aquí.",
     "home": "Volver al inicio",
-    "docs": "Ver la documentación"
+    "docs": "Ver la documentación",
+    "blog": "Leer el blog",
+    "pricing": "Ver precios",
+    "contact": "Contáctanos"
+  },
+  "seo": {
+    "home": {
+      "title": "Fintela | Plataforma cuantitativa con IA para estrategias",
+      "description": "Crea, prueba, optimiza y despliega estrategias de trading cuantitativo en una sola plataforma en la nube. Optimización bayesiana y ejecución con tu bróker."
+    },
+    "pricing": {
+      "title": "Precios y planes | Fintela",
+      "description": "Todos los planes incluyen la plataforma completa: cualquier bróker, estrategias ilimitadas, funciones de fitness y gestores de riesgo. Compara los planes."
+    },
+    "contactWalkthrough": {
+      "title": "Agenda un recorrido | Fintela",
+      "description": "Treinta minutos sobre tus propias estrategias con el equipo que construyó la plataforma. Cuéntanos sobre tu mesa y confirmamos un horario en un día hábil."
+    },
+    "blog": {
+      "title": "Blog de Fintela | Investigación cuant y novedades",
+      "description": "Ideas, tutoriales y guías prácticas de finanzas cuantitativas y trading algorítmico, escritas por el equipo que construye la plataforma Fintela."
+    },
+    "docs": {
+      "title": "Documentación | Fintela Docs",
+      "description": "Guías, conceptos y referencia de la API de la plataforma Fintela: desde tu primer estudio de optimización hasta el trading en vivo a través de tu bróker."
+    },
+    "terms": {
+      "title": "Términos y condiciones | Fintela",
+      "description": "Términos y condiciones que rigen el acceso y uso de la plataforma Fintela, operada por Momento Capital, S.A.P.I. de C.V. La versión en español prevalece."
+    },
+    "privacy": {
+      "title": "Aviso de privacidad | Fintela",
+      "description": "Cómo Fintela recopila, usa, almacena y protege los datos personales en la plataforma y en este sitio web, y los derechos que tienes sobre tu información."
+    },
+    "riskDisclosures": {
+      "title": "Divulgación de riesgos | Fintela",
+      "description": "Aviso general de riesgos al usar Fintela: resultados de backtesting, optimización, trading en vivo y riesgo de mercado. Léelo antes de invertir capital."
+    },
+    "notFound": {
+      "title": "Página no encontrada | Fintela",
+      "description": "El enlace puede estar desactualizado o la dirección tener una errata. Vuelve al inicio o explora la documentación para encontrar lo que buscabas."
+    }
   }
 }

@@ -60,10 +60,21 @@ export const HeroDiorama = ({ onWatch }: HeroDioramaProps) => {
               color: soft.white,
               textWrap: 'balance',
               mb: 3,
+              // Keeps the white line legible when the backdrop video pans over light frames.
+              textShadow: '0 2px 6px rgba(10, 18, 36, 0.225), 0 10px 32px rgba(10, 18, 36, 0.175)',
             }}
           >
             {t('hero.headline')}{' '}
-            <GradientText gradient={gradients.goldText}>{t('hero.headlineAccent')}</GradientText>
+            <GradientText
+              gradient={gradients.goldText}
+              sx={{
+                // text-shadow paints over a clipped-gradient fill, so shadow the rendered glyphs instead.
+                textShadow: 'none',
+                filter: 'drop-shadow(0 2px 6px rgba(10, 18, 36, 0.225)) drop-shadow(0 10px 32px rgba(10, 18, 36, 0.175))',
+              }}
+            >
+              {t('hero.headlineAccent')}
+            </GradientText>
           </Typography>
         </AnimateOnScroll>
 

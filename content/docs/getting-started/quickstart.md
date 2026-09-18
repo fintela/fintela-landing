@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 5
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: From a blank account to your first optimization results, step by step.
 keywords: quickstart, tutorial, first study, getting started, first strategy, first results, first run
 ---
@@ -436,3 +436,7 @@ reading, and it is exactly why the next study should have a bigger budget.
 | [Analyzing results](/docs/analyzing-results) | Reading a study's output properly, including overfitting |
 | [Execution modes](/docs/execution-modes) | Running your own strategy or fitness code on your own systems instead |
 | [API overview](/docs/api-overview) | Pulling your studies, portfolios and results into your own tools over the read only Developer API |
+
+> [!TIP] Need a walkthrough?
+> Thirty minutes on your own strategies with the team that built the platform:
+> [book a walkthrough](/contact).

@@ -16,16 +16,24 @@ npm run dev
 
 ```bash
 npx tsc -b                        # must pass
-npm run build                     # must pass
+npm run build                     # must pass — bundle, prerendered HTML, sitemaps
 node scripts/i18n-keysync.mjs     # en/es/pt key parity
+node scripts/check-docs-links.mjs # docs cross-references resolve
+node scripts/check-content.mjs    # no hot-linked images, real alt text, no links to redirects
+node scripts/check-media.mjs      # every registered video file exists under public/media
+node scripts/check-seo-output.mjs # every prerendered page: one <h1>, <title>, canonical…
+npm run lint
 ```
 
-CI runs all four. `npm run lint` is **not** gated yet — it is red with three
-pre-existing errors (`AnimateOnScroll.tsx`, `DocsSearch.tsx`, `Prose.tsx`).
-Fixing those and turning the gate on is a genuinely useful first contribution.
+`make check` runs the same list. CI runs all of it plus the CloudFront router
+test, and lint is gated.
 
 A pull request that only touches `content/` needs none of this — the build is the
 only thing that reads those files, and it reports any page it had to skip.
+
+If you change a page component, keep one `<h1>` per page and mount its `<Seo>`
+block; `check-seo-output.mjs` fails the build otherwise, on purpose — that is what
+search engines index.
 
 ## Adding user-facing copy
 
@@ -35,7 +43,9 @@ parity and `{{interpolation}}` parity, so a string added to `en` only will fail 
 
 ## Blog posts and documentation
 
-Both are Markdown in this repository and neither needs a site deploy to publish.
+Both are Markdown in this repository. Merging to `main` publishes: the deploy that
+follows every push prerenders the page, regenerates the sitemaps and the feed, and
+has it live in about three minutes.
 
 - **Blog** — see [BLOG.md](BLOG.md). Copy `content/blog/_template.md`, set
   `published: true`, and merge.
@@ -62,7 +72,9 @@ ordinary review:
   contractual instruments drafted by counsel, not documentation, and they are
   excluded from the code license. Do not edit them; open an issue instead.
 - **Brand and customer logos** under `src/assets/` — see [NOTICE](NOTICE).
-- **`.github/workflows/`** — deploy credentials.
+- **`.github/workflows/`** and **`infra/cloudfront/`** — deploy credentials and the
+  edge configuration. Redirect maps live in `src/App.tsx`; the router in
+  `infra/cloudfront/router.js` carries a copy, and CI fails when they drift.
 
 ## Reporting a security issue
 

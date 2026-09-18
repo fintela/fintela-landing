@@ -1,7 +1,7 @@
 import { Box, ButtonBase, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import { navPillSx, wellSx } from '../../theme/neu';
-import { radii, shadows, soft } from '../../theme/tokens';
+import { fonts, radii, shadows, soft } from '../../theme/tokens';
 import { formatTime } from '../../media/chapters';
 import type { VideoChapter } from '../../media/chapters';
 
@@ -153,7 +153,7 @@ export const ChapterRail = ({
               <Typography
                 component="span"
                 sx={{
-                  fontFamily: '"JetBrains Mono", monospace',
+                  fontFamily: fonts.mono,
                   fontVariantNumeric: 'tabular-nums',
                   fontSize: '0.72rem',
                   color: soft.textSecondary,

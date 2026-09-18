@@ -2,7 +2,9 @@
 
 Blog posts are Markdown files in [`content/blog/`](content/blog/). There is
 no CMS, no database, no API and no credential of any kind. A post is a file in the
-repo, and merging it to `main` publishes it — **without deploying the site**.
+repo, and merging it to `main` publishes it: the deploy builds the site, renders
+the post to its own HTML page, regenerates the sitemaps and the RSS feed, and
+syncs the bucket — about three minutes, no step of it manual.
 
 The documentation under `content/docs/` works exactly the same way and shares this
 machinery — see [DOCS.md](DOCS.md).
@@ -15,12 +17,13 @@ cp content/blog/_template.md content/blog/my-post.md
 cd landing && npm run dev          # preview at localhost:5173/blog
 ```
 
-Commit and merge to `main`. That's it — **no site deploy is needed.** Pushing a
-change under `content/blog/` triggers
-[`publish-content.yml`](.github/workflows/publish-content.yml), which regenerates
-the blog JSON and syncs only the `blog/` prefix of the bucket. The post is live in
-about a minute. A content-only push never reaches `deploy.yml`, so the bundle is
-neither rebuilt nor invalidated.
+Commit and merge to `main`. That's it. Every push to `main` runs
+[`deploy.yml`](.github/workflows/deploy.yml): build, prerender, sync, one
+CloudFront invalidation. The post is live in about three minutes, at
+`/blog/<slug>` as a real HTML page with its own `<title>`, description, Open
+Graph image and `BlogPosting` structured data — what a crawler or a link preview
+sees without running any JavaScript. The blog index, the home page's Insights
+band, `sitemap-blog.xml` and `feed.xml` are regenerated in the same build.
 
 The filename becomes the URL: `my-post.md` → `/blog/my-post`.
 
@@ -36,6 +39,7 @@ Every post must start with a `---` fenced block:
 title: Building Robust Backtesting Frameworks
 author: Ivan Buda
 date: 2026-07-28
+updated: 2026-08-15
 excerpt: The pitfalls that quietly invalidate strategy results.
 tags: Research, Engineering
 published: true
@@ -48,12 +52,13 @@ Body starts here.
 |---|---|---|
 | `title` | **yes** | Shown on the card and as the page's `h1`. |
 | `author` | **yes** | Free text. |
-| `date` | **yes** | `YYYY-MM-DD`. Drives newest-first ordering. Calendar-invalid dates are rejected. |
+| `date` | **yes** | `YYYY-MM-DD`. Drives newest-first ordering, and is the post's `datePublished`. Calendar-invalid dates are rejected. |
+| `updated` | no | `YYYY-MM-DD`, the last substantive edit. Feeds the sitemap's `<lastmod>` and the `dateModified` in the post's structured data. **Bump it whenever you change a published post** — Google compares it with what it crawls and learns to ignore a site whose dates lie. Omitted, `date` is used. |
 | `published` | **yes** | `true` publishes. Anything else — including a missing or misspelled value — is treated as a draft and stays off the site. |
-| `excerpt` | no | Card summary. Defaults to the first real paragraph. Cards truncate at ~150 characters. |
+| `excerpt` | no | Card summary, and the page's meta description (what appears under the title in a search result). Defaults to the first real paragraph. Cards truncate at ~150 characters; a search snippet at about 155. |
 | `tags` | no | `tags: A, B` or `tags: [A, B]` or a `- item` list on following lines. The first tag becomes the card's accent chip. |
 | `slug` | no | Overrides the URL. Defaults to the filename without `.md`, slugified. |
-| `cover` | no | Card image, as a path under `content/blog/` — e.g. `cover: covers/my-post.jpg`. JPEG, PNG, WebP, AVIF or SVG. Published beside the post's JSON in the same `blog/` sync, so no site deploy. Shown on the `/blog` card and, for the newest (or `featured`) post, in the home page's Insights band. |
+| `cover` | no | Card image, as a path under `content/blog/` — e.g. `cover: covers/my-post.jpg`. JPEG, PNG, WebP, AVIF or SVG. Published beside the post's JSON. Shown on the `/blog` card, in the home page's Insights band for the newest (or `featured`) post, and as the post's Open Graph image (the picture a shared link shows), so give it one. |
 | `coverAlt` | no | Alt text for the cover. Set it whenever you set `cover`; the build warns when it is missing. |
 | `featured` | no | `true` pins the post to the home page's featured slot regardless of date. One post at a time. |
 
@@ -98,8 +103,8 @@ See [Security](#security). HTML in a post renders as inert text, not markup.
 ## Why a post doesn't appear
 
 Bad files are skipped rather than breaking the build. The reason is logged by the
-build, and surfaced in the `Publish content` run under "Files that did NOT
-publish". A post is skipped when:
+build, and surfaced in the `Deploy` run under "Files that did NOT publish". A
+post is skipped when:
 
 - there's no leading `---` frontmatter fence;
 - `title`, `author` or `date` is missing;
@@ -124,27 +129,35 @@ vite-plugin-content.ts             parse frontmatter, drop drafts, sort newest-f
    │   dev:   serves /blog/*.json from disk, per request
    │   build: emits dist/blog/index.json + dist/blog/<slug>.json
    ▼
-publish-content.yml  (push to main touching content/blog/**)
-   │   aws s3 sync dist/blog/ s3://$S3_BUCKET/blog/ --delete
-   │   cloudfront create-invalidation --paths /blog/* /docs/*
+scripts/prerender.mjs              renders every route with react-dom/server
+   │   dist/blog/index.html, dist/blog/<slug>/index.html — each with its
+   │   <title>, meta description, canonical, og:image, JSON-LD and the
+   │   post's JSON embedded for hydration
+   │   dist/sitemap-blog.xml, dist/sitemap.xml, dist/feed.xml
    ▼
-src/blog/api.ts fetches /blog/index.json → BlogPage / BlogPostPage
+deploy.yml  (every push to main)
+   │   scripts/sync-site.sh: one `aws s3 sync` pass per object class,
+   │   Content-Type and Cache-Control per class, stale objects deleted,
+   │   then `cloudfront create-invalidation --paths '/*'`
+   ▼
+CloudFront serves /blog/<slug> from blog/<slug>/index.html (infra/cloudfront/);
+the client hydrates, and in-app navigation fetches /blog/*.json as before
 ```
 
-### Why the posts are fetched rather than bundled
+### Why the posts are both prerendered and fetched
 
-So that publishing does not require a site deploy. The blog JSON is the *only*
-thing that changes when a post is added — verified: adding one `.md` changes
-`blog/index.json` and `blog/<slug>.json` and **nothing else** in `dist/`, not
-index.html and not a single hashed asset. That is what makes syncing one prefix a
-complete publish.
+Each post is rendered to static HTML at build time, so a crawler, a link
+unfurler or a reader with JavaScript still loading gets the whole page — title,
+description, cover, structured data, body — from the first response. The same
+JSON the page was rendered from is embedded in that HTML, so hydration needs no
+request; a reader who then navigates within the site fetches `/blog/<slug>.json`
+as before, which keeps the post content out of the bundle and the markdown
+renderer off the home page's critical path (both blog routes stay lazily
+imported in `App.tsx`).
 
-The alternative (inlining posts into the bundle with `import.meta.glob`) would put
-post content behind a content-hashed chunk, so every post would need a full deploy
-and a cache bust of the whole app.
-
-Both blog routes are still lazily imported in `App.tsx`, keeping the markdown
-renderer and syntax highlighter off the home page's critical path.
+Publishing therefore is a deploy: a post changes its own page, the index, the
+home page, the sitemaps and the feed, which is why the old content-only
+workflow was retired (see the header of `deploy.yml`).
 
 ### Drafts never leave the repo
 
@@ -153,16 +166,15 @@ is absent from `dist/` entirely — it cannot be read out of a public artifact. 
 is enforced in one place (`describeSkip` in `src/blog/parsePost.ts`) and used by
 both the generator and the dev middleware.
 
-### Who owns the `blog/` prefix
+### Who uploads what
 
-`publish-content.yml`, `deploy.yml` and `deploy.sh` all emit it from the same
-generator, so their output is byte-identical and none can clobber the others.
-`deploy.sh` syncs the blog prefix as a second step purely to apply the short cache
-TTLs those non-hashed URLs need.
-
-Routine publishing is `publish-content.yml` alone. `deploy.yml` still writes the
-prefix so that a deploy into an empty bucket is self-sufficient, and `deploy.sh`
-remains the local escape hatch for when CI is unavailable.
+`scripts/sync-site.sh`, and nothing else. `deploy.yml` calls it on every push to
+`main`; `deploy.sh` is the local escape hatch and calls the same script. The
+script uploads `dist/` in one pass per object class — a post's HTML gets
+`text/html` and a must-revalidate TTL, its JSON `application/json` and a short
+TTL, its cover an image type and a long one — and deletes what the build stopped
+producing, so removing a `.md` removes its page, its JSON and its sitemap entry
+on the next deploy.
 
 ### Security
 
@@ -191,8 +203,10 @@ neither, so posts render exactly as they always have.
 | `content/blog/*.md` | the posts — the only place content lives |
 | `content/blog/_template.md` | copy-to-start template (a draft, never published) |
 | `vite-plugin-content.ts` | emits `blog/*.json` (and `docs/*.json`); serves the same paths in dev |
-| `.github/workflows/publish-content.yml` | publishes `content/**` — syncs the `blog/`+`docs/` prefixes, no site deploy |
-| `.github/workflows/deploy.yml` | deploys the site itself; skips content-only pushes |
+| `scripts/prerender.mjs` | renders every route — each post's page, the index — to static HTML, plus the sitemaps and `feed.xml` |
+| `scripts/sync-site.sh` | uploads `dist/` with per-class headers and invalidates CloudFront; called by both deploy paths |
+| `scripts/check-seo-output.mjs` | CI: every prerendered page has one `<title>`, one `<h1>`, a canonical, a description and an OG image; sitemaps list only real pages |
+| `.github/workflows/deploy.yml` | builds and deploys on every push to `main` — content included |
 | `src/content/frontmatter.ts` | the YAML subset, slug/excerpt/read-time derivation — shared with docs |
 | `src/content/json.ts` | fetch, memo, "missing vs. broken" classification — shared with docs |
 | `src/content/format.ts` | date formatting and excerpt truncation — shared with docs |

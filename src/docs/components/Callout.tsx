@@ -5,9 +5,10 @@ import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { calloutTints, palette, radii, soft } from '../../theme/tokens';
 import { wellSx } from '../../theme/neu';
-import { inlineCode } from './Prose';
+import { inlineCode } from './inlineCode';
 
 type Variant = 'info' | 'warning' | 'tip' | 'danger' | 'success';
 
@@ -17,40 +18,38 @@ interface CalloutProps {
   children: ReactNode;
 }
 
-const styles: Record<Variant, { color: string; bg: string; icon: ReactNode; label: string }> = {
+// The default label per variant lives in the `pages` catalog (`docs.callout.*`)
+// so a Spanish reader sees "Nota" over an untitled note.
+const styles: Record<Variant, { color: string; bg: string; icon: ReactNode }> = {
   info: {
     color: palette.navy,
     bg: calloutTints.info,
     icon: <InfoOutlinedIcon sx={{ fontSize: 18 }} />,
-    label: 'Note',
   },
   warning: {
     color: palette.warning,
     bg: calloutTints.warning,
     icon: <WarningAmberOutlinedIcon sx={{ fontSize: 18 }} />,
-    label: 'Warning',
   },
   tip: {
     color: palette.goldDeep,
     bg: calloutTints.tip,
     icon: <LightbulbOutlinedIcon sx={{ fontSize: 18 }} />,
-    label: 'Tip',
   },
   danger: {
     color: palette.danger,
     bg: calloutTints.danger,
     icon: <ErrorOutlineIcon sx={{ fontSize: 18 }} />,
-    label: 'Caution',
   },
   success: {
     color: palette.success,
     bg: calloutTints.success,
     icon: <CheckCircleOutlineIcon sx={{ fontSize: 18 }} />,
-    label: 'Success',
   },
 };
 
 export const Callout = ({ variant = 'info', title, children }: CalloutProps) => {
+  const { t } = useTranslation('pages');
   const s = styles[variant];
   return (
     <Box
@@ -100,7 +99,7 @@ export const Callout = ({ variant = 'info', title, children }: CalloutProps) => 
             mb: 0.5,
           }}
         >
-          {title ?? s.label}
+          {title ?? t(`docs.callout.${variant}`)}
         </Typography>
         <Box
           sx={{

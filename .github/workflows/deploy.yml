@@ -1,6 +1,7 @@
 name: Deploy
 
-# Deploys the site to S3 + CloudFront.
+# Builds the site — bundle, prerendered HTML for every route, sitemaps, RSS
+# feed, blog/docs JSON — and syncs it to S3 + CloudFront.
 #
 # Every AWS identifier is a repository VARIABLE, not a literal, so this public
 # workflow discloses no account id, bucket name or distribution id:
@@ -18,17 +19,24 @@ name: Deploy
 # Forks cannot deploy: `environment: prod` gates on approval and the variables are
 # not shared with forks.
 #
-# A content-only push does NOT come here: `publish-content.yml` handles it by
-# syncing the `blog/` and `docs/` prefixes alone, which is a complete publish
-# because content is fetched at runtime rather than bundled. Sending it through
-# this workflow instead would rebuild and re-invalidate the entire app to change
-# two JSON files. A push touching both content and the site still lands here, and
-# the sync below covers both.
+# One workflow, every push. There used to be a second one, `publish-content.yml`,
+# that handled a content-only push by syncing the `blog/` and `docs/` prefixes
+# alone — a complete publish back when a post was two JSON files fetched at run
+# time and nothing else in dist/ changed. Routes are prerendered now: a new post
+# changes its own `blog/<slug>/index.html`, the blog index page, the home page's
+# Insights band, `sitemap-blog.xml`, `sitemap.xml` and `feed.xml` — objects at
+# the bucket root and under several prefixes. There is no prefix to sync alone,
+# so there is one path, and it costs what a deploy always cost: a build and a
+# `/*` invalidation, about three minutes. The upload itself lives in
+# scripts/sync-site.sh so that deploy.sh (the local escape hatch) does exactly
+# the same thing.
+#
+# The CloudFront side — the viewer-request router that serves the prerendered
+# pages and issues the 301s, the security headers, the 404 document — is
+# configured separately and by hand: infra/cloudfront/README.md.
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'content/**'
   workflow_dispatch:
 
 permissions:
@@ -48,7 +56,11 @@ jobs:
     # cutover a deliberate act: setting S3_BUCKET is what arms deployment.
     if: vars.S3_BUCKET != ''
     steps:
+      # Full history: the prerender stamps each sitemap <lastmod> with the
+      # file's last commit date, which a shallow checkout cannot answer.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -57,57 +69,47 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run build
+      # A malformed post or doc is skipped with a warning rather than failing the
+      # build, so a silent publish-nothing is the failure mode the next step
+      # exists to catch — surfacing the reason in the run log instead of leaving
+      # it to be noticed on the live site. See "Why a post doesn't appear" in
+      # BLOG.md.
+      - name: Build
+        # Optional repository variable: when set, the prerender emits the
+        # <meta name="google-site-verification"> tag on every page (one of the
+        # two Search Console options in infra/cloudfront/README.md). Empty is
+        # fine — the tag is simply not emitted.
+        env:
+          VITE_GOOGLE_SITE_VERIFICATION: ${{ vars.VITE_GOOGLE_SITE_VERIFICATION }}
+        # pipefail: the default `run` shell is `bash -e` only, and `tee` would
+        # otherwise turn a failed build into a green step that syncs half a dist/.
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+
+      - name: Report skipped content
+        run: |
+          # No anchor: the generator prefixes every line with "[plugin ...]".
+          grep -E '(blog|docs): emitted' build.log || true
+
+          # Drafts are routine — `_template.md` is always one, so alerting on
+          # them would make this warning fire on every single run and train
+          # everyone to scroll past it. Only a file that was *meant* to publish
+          # and didn't is worth a warning.
+          if grep 'content: skipped' build.log | grep -v 'published: false (draft)' > unpublished.log; then
+            echo "::group::Files that did NOT publish"
+            cat unpublished.log
+            echo "::endgroup::"
+            echo "::warning::Content did not publish — see \"Files that did NOT publish\" in this step."
+          fi
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      # The app: content-hashed assets + index.html. The content and media
-      # prefixes are excluded because their objects need different cache
-      # headers, applied next.
-      - name: Sync the site
-        run: |
-          aws s3 sync dist/ "s3://${{ vars.S3_BUCKET }}" --delete \
-            --exclude 'blog/*' --exclude 'docs/*' --exclude 'media/*'
-
-      # Blog and docs JSON URLs are not content-hashed, hence the short TTLs.
-      # Publishing a post or a documentation page is a sync of its prefix alone —
-      # no bundle changes, so no cache bust of the app itself. Blog covers share
-      # the prefix but are images, so they are synced apart with their own type.
-      - name: Sync the content prefixes
-        run: |
-          for prefix in blog docs; do
-            aws s3 sync "dist/$prefix/" "s3://${{ vars.S3_BUCKET }}/$prefix/" --delete \
-              --exclude 'covers/*' \
-              --content-type application/json \
-              --cache-control "public, max-age=60, s-maxage=900"
-          done
-          if [ -d dist/blog/covers ]; then
-            aws s3 sync dist/blog/covers/ "s3://${{ vars.S3_BUCKET }}/blog/covers/" --delete \
-              --cache-control "public, max-age=3600, s-maxage=86400"
-          fi
-
-      # Demo videos and captions (see src/media/README.md): not content-hashed,
-      # but large and rarely re-cut, so they cache for a day at the edge; the
-      # invalidation below covers a re-cut. Captions need their MIME type set.
-      - name: Sync the media prefix
-        run: |
-          if [ -d dist/media ]; then
-            aws s3 sync dist/media/ "s3://${{ vars.S3_BUCKET }}/media/" --delete \
-              --exclude '*.vtt' \
-              --cache-control "public, max-age=86400, s-maxage=604800"
-            aws s3 sync dist/media/ "s3://${{ vars.S3_BUCKET }}/media/" \
-              --exclude '*' --include '*.vtt' \
-              --content-type 'text/vtt; charset=utf-8' \
-              --cache-control "public, max-age=3600, s-maxage=86400"
-          fi
-
-      # The bundle is hashed but index.html is not, so skipping this leaves
-      # CloudFront serving HTML that points at deleted asset hashes.
-      - name: Invalidate CloudFront
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION }}" \
-            --paths '/*'
+      # One pass per object class (Content-Type + Cache-Control), stale objects
+      # deleted, then a single `/*` invalidation. The filter table and the
+      # reasoning are in the script's header.
+      - name: Sync the site and invalidate CloudFront
+        run: bash scripts/sync-site.sh "${{ vars.S3_BUCKET }}" "${{ vars.CLOUDFRONT_DISTRIBUTION }}"

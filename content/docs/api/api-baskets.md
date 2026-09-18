@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 6
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: How to pull your Portfolio Groups (baskets), their combined track record, the broker connections they trade through, and their full trading history into your own tools through Fintela's read only API.
 keywords: baskets, portfolio groups, track record, backtest, trading costs, operations, allocations, orders, audit trail, end-of-day reports, data freshness, rebalancing, read-only API
 ---

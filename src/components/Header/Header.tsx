@@ -1,33 +1,40 @@
-import { useState, useEffect } from 'react';
-import type { MouseEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent, MouseEvent, SyntheticEvent } from 'react';
 import {
   AppBar,
-  Toolbar,
-  Button,
   Box,
-  IconButton,
+  Button,
+  ClickAwayListener,
   Drawer,
+  Grow,
+  IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
   ListSubheader,
-  Menu,
   MenuItem,
+  MenuList,
+  Paper,
+  Popper,
+  Toolbar,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import fintelaLargeLogo from '../../assets/logos/fintela_large_logo.png';
 import { motion, radii, shadows, soft } from '../../theme/tokens';
-import { eyebrowSx, focusRingSx, navPillSx, neuIconButtonSx } from '../../theme/neu';
+import { eyebrowSx, focusRingSx, navPillSx, neuIconButtonSx, srOnly } from '../../theme/neu';
 import { NeuButton } from '../primitives/NeuButton';
 import { Groove } from '../primitives/Groove';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { AUDIENCES } from '../../lib/audience';
 import { SOLUTION_PATHS } from '../../solutions/registry';
+import { DOCS_HOME } from '../../seo/routes';
+import { useSearchPalette } from '../../search/searchContext';
 
 interface HeaderProps {
   /** The home page's scroll-spy; pages without in-page bands leave both unset. */
@@ -39,9 +46,15 @@ type NavItem = {
   id: string;
   /** i18n key (within the `header` namespace) for the nav label. */
   labelKey: string;
-  /** scroll target on home, or absolute route path. */
+  /** Where the anchor points: a home band (`/#platform`) or a route. */
   href: string;
   type: 'scroll' | 'route';
+  /**
+   * Marks the item current for every path under this prefix when that differs
+   * from the link target (the docs link lands on the overview, but every
+   * `/docs/*` page is "in the docs").
+   */
+  activePrefix?: string;
 };
 
 /**
@@ -52,12 +65,34 @@ type NavItem = {
 const SOLUTIONS_POSITION = 1;
 
 const navItems: NavItem[] = [
-  { id: 'platform', labelKey: 'nav.platform', href: 'platform', type: 'scroll' },
-  { id: 'fintelligent', labelKey: 'nav.fintelagent', href: 'fintelligent', type: 'scroll' },
+  { id: 'platform', labelKey: 'nav.platform', href: '/#platform', type: 'scroll' },
+  { id: 'fintelligent', labelKey: 'nav.fintelagent', href: '/#fintelligent', type: 'scroll' },
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
-  { id: 'documentation', labelKey: 'nav.documentation', href: '/docs', type: 'route' },
+  { id: 'documentation', labelKey: 'nav.documentation', href: DOCS_HOME, type: 'route', activePrefix: '/docs' },
   { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
 ];
+
+/**
+ * Warms a route's chunk when its nav item is hovered or focused, so the click
+ * lands on code that is already in the cache. The specifiers are the ones
+ * `App.tsx` lazy-loads, so Vite resolves each to that route's chunk rather
+ * than a second copy.
+ */
+const PREFETCH: Record<string, () => Promise<unknown>> = {
+  pricing: () => import('../../pages/PricingPage'),
+  documentation: () => import('../../pages/DocPage'),
+  blog: () => import('../../pages/BlogPage'),
+  solutions: () => import('../../pages/SolutionPage'),
+};
+
+const prefetch = (id: string) => {
+  // A failed prefetch is not an error the user needs to hear about; the click
+  // will load the chunk the normal way.
+  void PREFETCH[id]?.().catch(() => undefined);
+};
+
+/** The section id a band link scrolls to: `/#platform` → `platform`. */
+const bandId = (item: NavItem) => item.href.replace(/^\/#/, '');
 
 const navPillButtonSx = {
   px: 1.75,
@@ -68,14 +103,60 @@ const navPillButtonSx = {
   textTransform: 'none',
 } as const;
 
+/** The theme's MuiMenu paper, for the Popper the Solutions menu renders into. */
+const menuPaperSx = {
+  bgcolor: soft.surfaceRaised,
+  backgroundImage: 'none',
+  border: '1px solid transparent',
+  borderRadius: `${radii.neuInner}px`,
+  boxShadow: shadows.neuFloat,
+  mt: 1,
+  minWidth: 160,
+  p: 0.75,
+  '@media (forced-colors: active)': { boxShadow: 'none', borderColor: 'CanvasText' },
+} as const;
+
+/**
+ * Visually hidden until it takes focus, then a raised pill over the bar: the
+ * first tab stop on every page, pointing at the page's `<main id="content">`.
+ */
+const skipLinkSx = {
+  ...srOnly,
+  '&:focus, &:focus-visible': {
+    position: 'fixed',
+    top: 12,
+    left: 12,
+    // Above the sticky AppBar (theme.zIndex.appBar is 1100).
+    zIndex: 1200,
+    width: 'auto',
+    height: 'auto',
+    margin: 0,
+    padding: '10px 16px',
+    clip: 'auto',
+    overflow: 'visible',
+    bgcolor: soft.surfaceRaised,
+    color: soft.accent,
+    fontWeight: 700,
+    fontSize: '0.9rem',
+    textDecoration: 'none',
+    borderRadius: `${radii.neuWell}px`,
+    boxShadow: shadows.neuFloat,
+    outline: `2px solid ${soft.accent}`,
+    outlineOffset: 2,
+  },
+} as const;
+
 export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const { t } = useTranslation('header');
+  const { openSearch } = useSearchPalette();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [solutionsAnchor, setSolutionsAnchor] = useState<HTMLElement | null>(null);
-  const solutionsOpen = Boolean(solutionsAnchor);
+  const [solutionsOpen, setSolutionsOpen] = useState(false);
+  // The trigger element, held in state (a callback ref) rather than a ref so
+  // it can be read during render as the Popper's anchor.
+  const [solutionsButton, setSolutionsButton] = useState<HTMLButtonElement | null>(null);
   const onSolutions = location.pathname.startsWith('/solutions');
 
   useEffect(() => {
@@ -85,32 +166,80 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleNavigation = (item: NavItem) => {
-    if (item.type === 'route') {
-      navigate(item.href);
-    } else if (location.pathname !== '/' || !onNavigate) {
-      navigate('/', { state: { scrollTo: item.id } });
-    } else {
-      onNavigate(item.id);
-    }
+  // Focus goes back to the trigger when the menu closes from the keyboard
+  // (Escape, Tab), so the tab sequence resumes where it left the bar.
+  const wasSolutionsOpen = useRef(solutionsOpen);
+  useEffect(() => {
+    if (wasSolutionsOpen.current && !solutionsOpen) solutionsButton?.focus();
+    wasSolutionsOpen.current = solutionsOpen;
+  }, [solutionsOpen, solutionsButton]);
+
+  /**
+   * Every item is a real anchor, so crawlers, middle-clicks and "open in new
+   * tab" all work. A plain click on a band item is intercepted: on the home
+   * page it scrolls in place (the router would only change the hash), from
+   * anywhere else it navigates home and hands the target over in state, the
+   * way the footer does. Route items are left to the router.
+   */
+  const handleNavClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     setMobileOpen(false);
+    if (item.type !== 'scroll') return;
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return;
+    }
+    e.preventDefault();
+    if (location.pathname === '/' && onNavigate) {
+      onNavigate(bandId(item));
+    } else {
+      navigate('/', { state: { scrollTo: bandId(item) } });
+    }
   };
 
-  const openSolutions = (e: MouseEvent<HTMLElement>) => setSolutionsAnchor(e.currentTarget);
-  const closeSolutions = () => setSolutionsAnchor(null);
+  const closeSolutions = (event?: Event | SyntheticEvent) => {
+    // The trigger toggles on its own click; a click-away that also closed
+    // would reopen it on the same press.
+    if (event && solutionsButton?.contains(event.target as Node)) return;
+    setSolutionsOpen(false);
+  };
+
+  const onSolutionsKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      setSolutionsOpen(false);
+    } else if (e.key === 'Escape') {
+      setSolutionsOpen(false);
+    }
+  };
+
+  /**
+   * The skip link's target is the page's `<main id="content">`. It is focused
+   * directly rather than through the hash, which keeps the URL clean and, on
+   * the home page, keeps the hash-scroll effect out of it. Without a `<main>`
+   * the browser follows the href as usual.
+   */
+  const skipToContent = (e: MouseEvent<HTMLAnchorElement>) => {
+    const main = document.getElementById('content');
+    if (!main) return;
+    e.preventDefault();
+    main.setAttribute('tabindex', '-1');
+    main.style.outline = 'none';
+    main.focus();
+  };
 
   const isActive = (item: NavItem) => {
     if (item.type === 'route') {
-      return (
-        location.pathname === item.href ||
-        location.pathname.startsWith(item.href + '/')
-      );
+      const prefix = item.activePrefix ?? item.href;
+      return location.pathname === prefix || location.pathname.startsWith(prefix + '/');
     }
-    return location.pathname === '/' && activeSection === item.id;
+    return location.pathname === '/' && activeSection === bandId(item);
   };
 
   return (
     <>
+      <Box component="a" href="#content" onClick={skipToContent} sx={skipLinkSx}>
+        {t('aria.skipToContent')}
+      </Box>
+
       <AppBar
         position="sticky"
         elevation={0}
@@ -137,39 +266,38 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             width: '100%',
           }}
         >
-          {/* Logo */}
+          {/* Logo: a real link home. The intrinsic size keeps the row from
+              reflowing while the file arrives (CSS still sets the height). */}
           <Box
-            role="link"
-            tabIndex={0}
+            component={RouterLink}
+            to="/"
+            aria-label={t('aria.home')}
+            // Same-page click: the router replaces the entry in place and
+            // nothing else scrolls, so this does.
+            onClick={() => window.scrollTo(0, 0)}
             sx={{
               display: 'flex',
               alignItems: 'center',
-              cursor: 'pointer',
               height: { xs: 30, md: 40 },
               borderRadius: `${radii.neuWell}px`,
               ...focusRingSx,
             }}
-            onClick={() => {
-              navigate('/');
-              window.scrollTo(0, 0);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                navigate('/');
-                window.scrollTo(0, 0);
-              }
-            }}
-            aria-label={t('aria.home')}
           >
             <img
               src={fintelaLargeLogo}
               alt="Fintela"
+              width={442}
+              height={154}
               style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
             />
           </Box>
 
-          {/* Desktop Navigation */}
+          {/* Desktop navigation: a landmark of anchors. The Solutions menu is a
+              Popper kept mounted in place (no portal), so its three links are in
+              the prerendered HTML and the DOM whether or not it is open. */}
           <Box
+            component="nav"
+            aria-label={t('aria.primaryNav')}
             sx={{
               display: { xs: 'none', md: 'flex' },
               gap: 0.5,
@@ -181,7 +309,10 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                 {idx === SOLUTIONS_POSITION && (
                   <Button
                     id="solutions-menu-button"
-                    onClick={openSolutions}
+                    ref={setSolutionsButton}
+                    onClick={() => setSolutionsOpen((open) => !open)}
+                    onMouseEnter={() => prefetch('solutions')}
+                    onFocus={() => prefetch('solutions')}
                     disableRipple
                     aria-haspopup="menu"
                     aria-controls={solutionsOpen ? 'solutions-menu' : undefined}
@@ -195,7 +326,11 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                   </Button>
                 )}
                 <Button
-                  onClick={() => handleNavigation(item)}
+                  component={RouterLink}
+                  to={item.href}
+                  onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
+                  onMouseEnter={() => prefetch(item.id)}
+                  onFocus={() => prefetch(item.id)}
                   disableRipple
                   aria-current={isActive(item) ? 'page' : undefined}
                   sx={[navPillSx, navPillButtonSx]}
@@ -204,31 +339,57 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                 </Button>
               </Box>
             ))}
-            <Menu
-              id="solutions-menu"
-              anchorEl={solutionsAnchor}
+            <Popper
               open={solutionsOpen}
-              onClose={closeSolutions}
-              slotProps={{ list: { 'aria-labelledby': 'solutions-menu-button', sx: { display: 'flex', flexDirection: 'column', gap: 0.25 } } }}
+              anchorEl={solutionsButton}
+              placement="bottom-start"
+              role={undefined}
+              transition
+              keepMounted
+              disablePortal
             >
-              {AUDIENCES.map((a) => (
-                <MenuItem
-                  key={a}
-                  component={RouterLink}
-                  to={SOLUTION_PATHS[a]}
-                  onClick={closeSolutions}
-                  selected={location.pathname === SOLUTION_PATHS[a]}
-                  aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
-                  sx={[navPillSx, { px: 1.75, py: 1, fontSize: '0.92rem', minWidth: 200 }]}
-                >
-                  {t(`solutions.${a}`)}
-                </MenuItem>
-              ))}
-            </Menu>
+              {({ TransitionProps }) => (
+                <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
+                  <Paper sx={menuPaperSx}>
+                    <ClickAwayListener onClickAway={closeSolutions}>
+                      <MenuList
+                        id="solutions-menu"
+                        aria-labelledby="solutions-menu-button"
+                        autoFocusItem={solutionsOpen}
+                        onKeyDown={onSolutionsKeyDown}
+                        sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}
+                      >
+                        {AUDIENCES.map((a) => (
+                          <MenuItem
+                            key={a}
+                            component={RouterLink}
+                            to={SOLUTION_PATHS[a]}
+                            onClick={() => setSolutionsOpen(false)}
+                            selected={location.pathname === SOLUTION_PATHS[a]}
+                            aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
+                            sx={[navPillSx, { px: 1.75, py: 1, fontSize: '0.92rem', minWidth: 200 }]}
+                          >
+                            {t(`solutions.${a}`)}
+                          </MenuItem>
+                        ))}
+                      </MenuList>
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+              )}
+            </Popper>
           </Box>
 
           {/* Actions */}
           <Box sx={{ display: 'flex', gap: { xs: 1, md: 1.5 }, alignItems: 'center' }}>
+            <IconButton
+              aria-label={t('aria.search')}
+              aria-keyshortcuts="Meta+K Control+K"
+              onClick={openSearch}
+              sx={neuIconButtonSx}
+            >
+              <SearchIcon />
+            </IconButton>
             <LanguageSwitcher />
             <NeuButton tone="accent" size="sm" sx={{ px: { xs: 2, md: 2.5 } }}>
               {t('actions.getStarted')}
@@ -245,12 +406,14 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         </Toolbar>
       </AppBar>
 
+      {/* Kept mounted so its anchors are in the DOM before it is ever opened;
+          MUI hides it (visibility) while closed. */}
       <Drawer
         anchor="right"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         sx={{ display: { xs: 'block', md: 'none' } }}
-        slotProps={{ paper: { elevation: 0, sx: { width: 300 } } }}
+        slotProps={{ root: { keepMounted: true }, paper: { elevation: 0, sx: { width: 300 } } }}
       >
         <Box
           sx={{
@@ -265,6 +428,8 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             <img
               src={fintelaLargeLogo}
               alt="Fintela"
+              width={442}
+              height={154}
               style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
             />
           </Box>
@@ -278,50 +443,54 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         </Box>
         <Groove sx={{ mx: 3 }} />
 
-        <List disablePadding sx={{ pt: 1 }}>
-          {navItems.map((item, idx) => (
-            <Box key={item.id} sx={{ display: 'contents' }}>
-              {idx === SOLUTIONS_POSITION && (
-                <>
-                  <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 2, pb: 1 }}>
-                    {t('nav.solutions')}
-                  </ListSubheader>
-                  {AUDIENCES.map((a) => (
-                    <ListItem key={a} disablePadding>
-                      <ListItemButton
-                        component={RouterLink}
-                        to={SOLUTION_PATHS[a]}
-                        onClick={() => setMobileOpen(false)}
-                        selected={location.pathname === SOLUTION_PATHS[a]}
-                        aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
-                        sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
-                      >
-                        <ListItemText
-                          primary={t(`solutions.${a}`)}
-                          slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                  <Groove sx={{ my: 1, mx: 3 }} />
-                </>
-              )}
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={() => handleNavigation(item)}
-                  selected={isActive(item)}
-                  aria-current={isActive(item) ? 'page' : undefined}
-                  sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1.25 }]}
-                >
-                  <ListItemText
-                    primary={t(item.labelKey)}
-                    slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '1rem' } } }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            </Box>
-          ))}
-        </List>
+        <Box component="nav" aria-label={t('aria.primaryNav')}>
+          <List disablePadding sx={{ pt: 1 }}>
+            {navItems.map((item, idx) => (
+              <Box key={item.id} sx={{ display: 'contents' }}>
+                {idx === SOLUTIONS_POSITION && (
+                  <>
+                    <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 2, pb: 1 }}>
+                      {t('nav.solutions')}
+                    </ListSubheader>
+                    {AUDIENCES.map((a) => (
+                      <ListItem key={a} disablePadding>
+                        <ListItemButton
+                          component={RouterLink}
+                          to={SOLUTION_PATHS[a]}
+                          onClick={() => setMobileOpen(false)}
+                          selected={location.pathname === SOLUTION_PATHS[a]}
+                          aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
+                          sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
+                        >
+                          <ListItemText
+                            primary={t(`solutions.${a}`)}
+                            slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                    <Groove sx={{ my: 1, mx: 3 }} />
+                  </>
+                )}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    component={RouterLink}
+                    to={item.href}
+                    onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
+                    selected={isActive(item)}
+                    aria-current={isActive(item) ? 'page' : undefined}
+                    sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1.25 }]}
+                  >
+                    <ListItemText
+                      primary={t(item.labelKey)}
+                      slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '1rem' } } }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </Box>
+            ))}
+          </List>
+        </Box>
 
         <Groove sx={{ my: 2, mx: 3 }} />
 

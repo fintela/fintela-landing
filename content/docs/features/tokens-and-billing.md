@@ -4,7 +4,7 @@ section: Features
 sectionOrder: 7
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: How Fintela's token based billing works: what uses tokens, how your balance is tracked, and which features unlock once your organization is on a paid plan.
 keywords: tokens, billing, ai tokens, usage, quota, plan limits, locked features, purchase tokens, usage dashboard, upgrade
 ---
@@ -465,3 +465,7 @@ built keeps working, before asking you to buy more or delete something.
 If Fintela can't confirm your plan status for any reason, it always fails on the side of letting you
 continue rather than blocking you unfairly: the real check happens at the moment you actually try
 to spend or create something, so this can never let you bypass what you're actually charged.
+
+> [!NOTE] Plans and prices
+> The monthly token pool, storage and overage rate of each plan are on the
+> [pricing page](/pricing), with a side by side comparison of Trader, Quant and Institutional.

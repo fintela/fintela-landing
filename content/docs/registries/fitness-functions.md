@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 5
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Define what "better" means for your studies: score simulated trades with a built in performance metric, your own logic written inside Fintela, or your own external service.
 keywords: fitness, objective, score, sharpe, sortino, calmar, direction, maximize, minimize, custom scoring, external scoring, built-in metrics, portfolio metric
 ---

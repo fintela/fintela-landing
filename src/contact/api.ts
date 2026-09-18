@@ -18,7 +18,7 @@
  * backend's, and the page only needs "received" or "not received, and why".
  */
 
-export type ContactKind = 'walkthrough' | 'demo' | 'support';
+export type ContactKind = 'walkthrough' | 'support';
 
 export interface ContactRequest {
   kind: ContactKind;
@@ -29,7 +29,7 @@ export interface ContactRequest {
   message: string;
   /** The visitor's UI language, so whoever answers writes back in it. */
   locale: string;
-  /** Where the form was on — `/contact` or `/contact?intent=walkthrough`. */
+  /** Where the form was on — always `/contact`, the page's only address now. */
   page_url: string;
   /**
    * The honeypot. A field no human sees and therefore never fills; a bot that

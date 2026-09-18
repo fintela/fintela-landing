@@ -5,7 +5,14 @@
   },
   "actions": {
     "getStarted": "Começar",
-    "learnMore": "Saiba mais"
+    "learnMore": "Saiba mais",
+    "contactUs": "Fale conosco"
+  },
+  "cookieConsent": {
+    "message": "Usamos cookies para entender como os visitantes usam a Fintela e melhorar o produto. Leia nossa",
+    "privacyLink": "Política de privacidade",
+    "accept": "Aceitar",
+    "decline": "Recusar"
   },
   "footer": {
     "legal": {

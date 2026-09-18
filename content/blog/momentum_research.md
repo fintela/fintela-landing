@@ -5,10 +5,12 @@ date: 2026-09-03
 excerpt: Momentum is one of the most replicated anomalies in finance and one of the hardest to explain cleanly. Two competing behavioral stories both predict it, and the same mechanism that produces the effect is also what makes it crash.
 tags: Research
 published: true
+updated: 2026-09-16
+cover: covers/momentum-research.jpg
+coverAlt: Line chart of the cumulated alpha of a simulated momentum portfolio from 2002 to 2015, climbing to about 50% with a sharp drawdown in 2008 and 2009.
 ---
 
-
-![Alt text](https://i.ibb.co/NdmZ3Zp0/R.png)
+![Line chart of the cumulated alpha of a simulated momentum portfolio from 2002 to 2015, climbing to about 50% with a sharp drawdown in 2008 and 2009.](covers/momentum-research.jpg)
 
 Momentum is an unusually well-documented anomaly. Buy the stocks that performed best over the past three to twelve months, sell the ones that performed worst, and the long-short portfolio has produced positive average returns across nearly every market and era it's been tested on since Jegadeesh and Titman first formalized the effect in 1993. What's less settled, even three decades later, is why continuation happens at all, since it isn't the direction an efficient market should move in on its own.
 
@@ -36,6 +38,12 @@ The uncomfortable part of momentum is that the same herding dynamic that generat
 
 ## Why this matters for how a strategy gets built
 
-None of this makes momentum uninvestable, but it does mean the naive version, rank and hold, ignores a known source of tail risk that isn't visible in an average return or even a standard Sharpe ratio computed over a full sample. Position sizing that scales down when recent volatility spikes, or that treats the short leg differently during and after a broad market decline, addresses a specific, documented failure mode rather than a generic risk. It's the difference between capturing a real anomaly and being unknowingly short a crash-recovery option that only shows itself once, at the worst possible time.
+None of this makes momentum uninvestable, but it does mean the naive version, rank and hold, ignores a known source of tail risk that isn't visible in an average return or even a standard [Sharpe ratio](/docs/metrics-reference) computed over a full sample. Position sizing that scales down when recent volatility spikes, or that treats the short leg differently during and after a broad market decline, addresses a specific, documented failure mode rather than a generic risk. In Fintela a rule of that kind lives in a [risk manager](/docs/risk-managers), which is checked on every simulated day of a backtest alongside the [strategy](/docs/strategies) itself, so the guard is tested against the same history as the signal. It's the difference between capturing a real anomaly and being unknowingly short a crash-recovery option that only shows itself once, at the worst possible time.
+
+## Further reading
+
+- [External strategies](/docs/external-strategies): run the signal on your own systems, in any language, and let Fintela score and trade it.
+- [Live trading](/docs/live-trading): connect a brokerage account and deploy a portfolio group against it.
+- [Fintela for quant teams](/solutions/quant-teams): one shared library of strategies, asset groups and results for a research desk.
 
 Sources: Jegadeesh, N. and Titman, S. (1993), Returns to Buying Winners and Selling Losers, Journal of Finance. Barberis, N., Shleifer, A., and Vishny, R. (1998), A Model of Investor Sentiment, Journal of Financial Economics. Daniel, K., Hirshleifer, D., and Subrahmanyam, A. (1998), Investor Psychology and Security Market Under- and Overreactions, Journal of Finance. Daniel, K. and Moskowitz, T. (2016), Momentum Crashes, Journal of Financial Economics.

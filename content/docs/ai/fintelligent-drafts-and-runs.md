@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: How Fintelligent proposes changes as an unsaved draft, and how you track, confirm or stop it while it's working.
 keywords: draft, unsaved changes, run, in progress, approve, apply, review, confirmation, discard, notifications
 ---

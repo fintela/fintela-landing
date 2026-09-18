@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Build and manage the saved lists of tickers and portfolios your studies trade against.
 keywords: asset group, universe, tickers, portfolio group, index membership, screener, market filters, registry
 ---

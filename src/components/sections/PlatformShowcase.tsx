@@ -12,9 +12,12 @@ import { HERO_POSTER, VIDEOS } from '../../media/registry';
 import momentoCapitalLogo from '../../assets/clients/momento_capital_logo.png';
 import edgebridgeCapitalLogo from '../../assets/clients/edgebridge_capital_logo.jpeg';
 
+// Intrinsic sizes ride along so each tile has its final width before the
+// file arrives (CSS still bounds the height); the files are the source of
+// truth for the numbers.
 const partners = [
-  { name: 'Momento Capital', logo: momentoCapitalLogo, url: 'https://momentocapital.com/' },
-  { name: 'EdgeBridge Capital', logo: edgebridgeCapitalLogo, url: 'https://www.edgebridgecapital.com/' },
+  { name: 'Momento Capital', logo: momentoCapitalLogo, url: 'https://momentocapital.com/', width: 605, height: 138 },
+  { name: 'EdgeBridge Capital', logo: edgebridgeCapitalLogo, url: 'https://www.edgebridgecapital.com/', width: 200, height: 65 },
 ];
 
 /**
@@ -93,7 +96,12 @@ export const PlatformShowcase = () => {
                 <img
                   src={p.logo}
                   alt={p.name}
-                  style={{ maxHeight: '100%', maxWidth: 150, objectFit: 'contain', opacity: 0.8, filter: 'grayscale(0.4)' }}
+                  width={p.width}
+                  height={p.height}
+                  loading="lazy"
+                  // width/height auto with the max bounds: the attributes give the
+                  // ratio, the bounds give the size, and nothing is letterboxed.
+                  style={{ width: 'auto', height: 'auto', maxHeight: '100%', maxWidth: 150, objectFit: 'contain', opacity: 0.8, filter: 'grayscale(0.4)' }}
                 />
               </NeuPanel>
             ))}

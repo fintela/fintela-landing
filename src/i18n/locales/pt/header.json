@@ -14,7 +14,10 @@
   "aria": {
     "home": "Fintela, início",
     "openMenu": "Abrir menu",
-    "closeMenu": "Fechar menu"
+    "closeMenu": "Fechar menu",
+    "primaryNav": "Principal",
+    "skipToContent": "Pular para o conteúdo",
+    "search": "Pesquisar"
   },
   "solutions": {
     "funds": "Hedge funds",

@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: What Fintela is, what you can do with it, and where to go next.
 keywords: overview, introduction, what is fintela, trading, quant, backtesting, optimization, portfolios, documentation
 ---
@@ -174,3 +174,8 @@ actually do.
 | **Nothing in a registry is shareable.** There is no per row visibility setting and no cross organization catalogue in any registry. The [Laboratory](/docs/laboratory)'s public catalog is a separate surface | [Registries](/docs/registries) |
 | **Deletes are permanent.** No undelete and no archive anywhere in the registries | [Registries](/docs/registries) |
 | **Data Pipelines has been retired.** It's now folded into the Data Explorer; strategies, fitness functions and risk managers pick their data sources inside their own editors | [Data Explorer](/docs/data-explorer) |
+
+> [!NOTE] Who Fintela is for
+> The platform is described from the reader's side on three pages: Fintela for
+> [hedge funds](/solutions/hedge-funds), for [quant teams](/solutions/quant-teams) and for
+> [independent quants](/solutions/independent-quants).

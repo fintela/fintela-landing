@@ -4,7 +4,7 @@ section: Workflows
 sectionOrder: 5
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-09
 summary: Connect a brokerage account, deploy a portfolio group to trade it, and monitor and manage the operation that results.
 keywords: live trading, paper trading, broker, Broker, connect broker, deploy, operation, orders, reconciliation, monitoring, end of day
 ---

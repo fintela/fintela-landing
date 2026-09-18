@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { Box, IconButton, Drawer, Typography, Container } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
@@ -16,6 +17,7 @@ import { DocsSearch } from './DocsSearch';
 import { KbdKey } from './components/KbdKey';
 import { bySection } from './format';
 import type { DocSummary, DocsIndex } from './types';
+import { DOCS_HOME } from '../seo/routes';
 import { radii, soft } from '../theme/tokens';
 import {
   eyebrowSx,
@@ -51,6 +53,7 @@ const TOC_WIDTH = 240;
  * all consequences of the frontmatter in `content/docs/`.
  */
 export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutProps) => {
+  const { t } = useTranslation('pages');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { prev, next } = adjacent(index, current?.slug);
@@ -70,8 +73,21 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // The section crumb is a real link — to the section's opening page — so a
+  // reader (and a crawler) can step up a level without the sidebar. It goes
+  // plain only when the current page *is* that opening page.
+  const sectionHome = current ? sectionFirstPage(index, current.section) : null;
   const breadcrumbs = current
-    ? [{ label: current.section }, { label: current.title }]
+    ? [
+        {
+          label: current.section,
+          href:
+            sectionHome && sectionHome.slug !== current.slug
+              ? `/docs/${sectionHome.slug}`
+              : undefined,
+        },
+        { label: current.title },
+      ]
     : [];
 
   return (
@@ -112,19 +128,26 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
           {/* Mobile sidebar toggle + breadcrumb */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
             <IconButton
-              aria-label="Open documentation menu"
+              aria-label={t('docs.openMenu')}
               onClick={() => setMobileNavOpen(true)}
               sx={[neuIconButtonSx, { display: { xs: 'inline-flex', md: 'none' } }]}
             >
               <MenuIcon />
             </IconButton>
-            <Breadcrumbs items={breadcrumbs} />
+            <Breadcrumbs
+              items={breadcrumbs}
+              homeLabel={t('docs.crumb')}
+              navLabel={t('docs.breadcrumb')}
+            />
           </Box>
 
-          {/* Search button */}
+          {/* Search button. Its visible label is hidden on phones, so the
+              accessible name is set explicitly. */}
           <Box
             role="button"
             tabIndex={0}
+            aria-label={t('docs.searchDocs')}
+            aria-keyshortcuts="Meta+K Control+K"
             onClick={() => setSearchOpen(true)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') setSearchOpen(true);
@@ -152,7 +175,7 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
                 display: { xs: 'none', sm: 'block' },
               }}
             >
-              Search docs
+              {t('docs.searchDocs')}
             </Box>
             <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
               <KbdKey>⌘</KbdKey>
@@ -197,8 +220,12 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
           <DocsSidebar index={index} currentSlug={current?.slug} />
         </Box>
 
-        {/* Main */}
-        <Box component="main" sx={{ minWidth: 0, px: { xs: 3, md: 0 }, py: { xs: 3, md: 5 } }}>
+        {/* Main — `#content` is the Header's skip-link target on every page. */}
+        <Box
+          component="main"
+          id="content"
+          sx={{ minWidth: 0, px: { xs: 3, md: 0 }, py: { xs: 3, md: 5 } }}
+        >
           <Box sx={{ maxWidth: 780, mx: { xs: 'auto', md: 0 } }}>
             <NeuPanel sx={{ p: { xs: 3, md: 5 } }}>{children}</NeuPanel>
 
@@ -217,6 +244,7 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
                   {prev ? (
                     <PrevNextCard
                       direction="prev"
+                      label={t('docs.previous')}
                       title={prev.title}
                       href={`/docs/${prev.slug}`}
                     />
@@ -226,6 +254,7 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
                   {next && (
                     <PrevNextCard
                       direction="next"
+                      label={t('docs.next')}
                       title={next.title}
                       href={`/docs/${next.slug}`}
                     />
@@ -259,9 +288,9 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
             py: 1.5,
           }}
         >
-          <Typography sx={{ fontWeight: 700 }}>Documentation</Typography>
+          <Typography sx={{ fontWeight: 700 }}>{t('docs.menuTitle')}</Typography>
           <IconButton
-            aria-label="Close menu"
+            aria-label={t('docs.closeMenu')}
             onClick={() => setMobileNavOpen(false)}
             sx={neuIconButtonSx}
           >
@@ -300,8 +329,26 @@ function adjacent(index: DocsIndex, slug: string | undefined) {
   };
 }
 
-const Breadcrumbs = ({ items }: { items: { label: string; href?: string }[] }) => (
+/** The page a section opens with — the first in the order the sidebar shows. */
+function sectionFirstPage(index: DocsIndex, section: string): DocSummary | null {
+  const group = bySection(index.sections, index.pages).find((g) => g.section === section);
+  return group?.pages[0] ?? null;
+}
+
+const Breadcrumbs = ({
+  items,
+  homeLabel,
+  navLabel,
+}: {
+  items: { label: string; href?: string }[];
+  /** The first crumb's text — "Docs". */
+  homeLabel: string;
+  /** The landmark's accessible name — "Breadcrumb". */
+  navLabel: string;
+}) => (
   <Box
+    component="nav"
+    aria-label={navLabel}
     sx={{
       display: 'flex',
       alignItems: 'center',
@@ -311,12 +358,14 @@ const Breadcrumbs = ({ items }: { items: { label: string; href?: string }[] }) =
       minWidth: 0,
     }}
   >
+    {/* `/docs` itself only redirects; link straight to the overview so the
+        crumb is a 200 for readers and crawlers alike. */}
     <Box
       component={RouterLink}
-      to="/docs"
+      to={DOCS_HOME}
       sx={[quietLinkSx, { '@media (hover: hover)': { '&:hover': { color: soft.text } } }]}
     >
-      Docs
+      {homeLabel}
     </Box>
     {items.map((item, idx) => (
       <Box key={idx} sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
@@ -350,10 +399,13 @@ const Breadcrumbs = ({ items }: { items: { label: string; href?: string }[] }) =
 
 const PrevNextCard = ({
   direction,
+  label,
   title,
   href,
 }: {
   direction: 'prev' | 'next';
+  /** The translated eyebrow — "Previous" / "Next". */
+  label: string;
   title: string;
   href: string;
 }) => (
@@ -377,7 +429,7 @@ const PrevNextCard = ({
       <ArrowBackIcon sx={{ color: soft.textSecondary }} />
     )}
     <Box sx={{ flex: 1, minWidth: 0 }}>
-      <Typography sx={eyebrowSx}>{direction === 'next' ? 'Next' : 'Previous'}</Typography>
+      <Typography sx={eyebrowSx}>{label}</Typography>
       <Typography sx={{ fontWeight: 600, color: soft.text, fontSize: '0.95rem' }}>
         {title}
       </Typography>

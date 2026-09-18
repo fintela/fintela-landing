@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles';
-import { motion, palette, radii, shadows, soft } from './tokens';
+import { fonts, motion, palette, radii, shadows, soft } from './tokens';
 
 /**
  * The theme carries only what cannot be expressed per element: the ground,
@@ -39,8 +39,7 @@ export const theme = createTheme({
     borderRadius: radii.md,
   },
   typography: {
-    fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontFamily: fonts.sans,
     h1: {
       fontWeight: 800,
       lineHeight: 1.05,
@@ -214,6 +213,24 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '@media (prefers-reduced-motion: reduce)': { transition: 'none !important' },
+        },
+      },
+    },
+    MuiSkeleton: {
+      defaultProps: { animation: 'wave' },
+      styleOverrides: {
+        // A sunken well, the same tone the empty state (IconWell) already uses
+        // for "content isn't here yet" — the wave sweeps a raised highlight
+        // across it rather than the theme default's flat text-alpha grey.
+        root: {
+          backgroundColor: soft.groundSunken,
+          '&::after': {
+            background: `linear-gradient(90deg, transparent, ${soft.surfaceRaised}, transparent)`,
+          },
+          '@media (prefers-reduced-motion: reduce)': {
+            animation: 'none !important',
+            '&::after': { animation: 'none !important' },
+          },
         },
       },
     },

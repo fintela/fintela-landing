@@ -4,7 +4,7 @@ section: Workflows
 sectionOrder: 5
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: How to read a completed study: rank candidates, compare portfolios, and judge whether a result is real.
 keywords: results, analysis, trials, ranking, compare, equity curve, overfitting, robustness, promote, pivot table
 ---

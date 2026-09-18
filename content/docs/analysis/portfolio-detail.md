@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: The six views inside a single portfolio: performance, holdings, trades and orders, risk analytics, robustness, and a shareable investor profile.
 keywords: portfolio detail, performance, holdings, transactions, trades, orders, risk analytics, robustness, tearsheet, profile
 ---

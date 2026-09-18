@@ -45,6 +45,11 @@ export function describeSkip(filename: string, source: string): string | null {
   );
   if (missing.length) return `frontmatter missing ${missing.join(', ')}`;
   if (!parseDate(data.date)) return `date "${String(data.date)}" is not YYYY-MM-DD`;
+  // `updated` is optional, but a malformed one is a mistake worth stopping on:
+  // it would silently fall back to `date` and misreport the post as untouched.
+  if (String(data.updated ?? '').trim() && !parseDate(data.updated)) {
+    return `updated "${String(data.updated)}" is not YYYY-MM-DD`;
+  }
 
   const published = parseBool(data.published);
   if (published === undefined) return "'published' is missing or unparseable";
@@ -73,14 +78,18 @@ export function buildPost(filename: string, source: string): BlogPost | null {
   const explicitCover = cover && isValidCover(cover);
   const fallbackImage = explicitCover ? null : extractFirstImage(markdown);
 
+  const updated = parseDate(data.updated);
+
   return {
     slug: deriveSlug(filename, data),
     title: String(data.title).trim(),
     author: String(data.author).trim(),
     date: parseDate(data.date)!,
+    ...(updated ? { updated } : {}),
     excerpt: String(data.excerpt ?? '').trim() || firstParagraph(markdown),
     tags: parseList(data.tags),
     readingMinutes: readingMinutes(markdown),
+    sourcePath: filename,
     ...(explicitCover
       ? { cover, ...(coverAlt ? { coverAlt } : {}) }
       : fallbackImage

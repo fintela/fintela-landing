@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Live market data: indices, sector and country performance, an indicator based screener, and a deep dive on every ticker.
 keywords: market, markets, screener, tickers, fundamentals, news, quotes, sectors, countries, coverage, asset classes, crypto, equities
 ---

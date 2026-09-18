@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 3
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: Pull the strategies you've built in Fintela (their details, parameters, and edit history) into your own tools and dashboards.
 keywords: strategies, api integration, parameters, version history, read-only, personal access key, dashboards
 ---

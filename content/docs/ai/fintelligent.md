@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 1
 published: true
-updated: 2026-09-07
+updated: 2026-09-08
 summary: Fintelligent is Fintela's built in AI assistant, what it can do for you, where to find it, and how to chat with it.
 keywords: fintelligent, ai assistant, chat, conversations, trading strategies, portfolios, ai tokens, prompts
 ---

@@ -2,7 +2,12 @@
   "common": {
     "watch": "See the platform",
     "chaptersLabel": "Capabilities on this page",
-    "readDocs": "Read the docs",
+    "alsoFor": {
+      "label": "Also built for"
+    },
+    "research": {
+      "label": "From the research blog"
+    },
     "why": {
       "eyebrow": "Why they switch",
       "title": "Stop building infrastructure.",
@@ -44,6 +49,10 @@
     }
   },
   "funds": {
+    "seo": {
+      "title": "Quant Platform for Hedge Funds | Fintela",
+      "description": "Research at fund scale without the infrastructure: concurrent studies, cryptographic provenance and broker-connected execution in one cloud workspace."
+    },
     "badge": "For hedge funds & institutional traders",
     "title": "Research at fund scale,",
     "titleAccent": "without the infrastructure.",
@@ -101,6 +110,7 @@
     "chapters": {
       "research": {
         "title": "Research at scale",
+        "docsLabel": "How studies work",
         "mediaAlt": "The portfolio analysis performance tab: a radar of metrics and the train, validation and test comparison",
         "description": "Every quant on the desk launches studies in parallel; nobody waits for the optimizer box. Bayesian search focuses thousands of trials on the promising regions, and every study is scored on train, validation and out-of-sample windows.",
         "outcomes": [
@@ -111,6 +121,7 @@
       },
       "governance": {
         "title": "Governance & provenance",
+        "docsLabel": "Strategy registry docs",
         "description": "Strategies and configurations are cryptographically hashed and time-stamped, so authorship, versions and results are verifiable long after the study ran. Keep everything private, then share selectively.",
         "outcomes": [
           "Hashed, time-stamped strategy history",
@@ -121,6 +132,7 @@
       },
       "execution": {
         "title": "Execution & risk managers",
+        "docsLabel": "Live trading docs",
         "description": "Promote validated portfolios to live operations that execute through your connected brokerage. Risk managers attach to any strategy, identical in backtest and live, with real-time order logs and a one-click pause.",
         "outcomes": [
           "Broker-connected live long/short operations",
@@ -131,6 +143,7 @@
       },
       "workspace": {
         "title": "Team workspace & permissions",
+        "docsLabel": "Registries docs",
         "description": "Shared registries for asset groups, strategies, fitness functions and risk managers, in one organisational workspace. Publish results-only dashboards that hide code and parameters.",
         "outcomes": [
           "One source of truth across the desk",
@@ -141,6 +154,7 @@
       },
       "security": {
         "title": "Security & AI providers",
+        "docsLabel": "Fintelligent drafts and runs docs",
         "description": "Choose which provider powers Fintelligent, with Fintela-managed access and no API key to bring. Every tool call is visible in the conversation, and every irreversible action waits for explicit confirmation.",
         "outcomes": [
           "Provider choice, Fintela-managed access",
@@ -150,6 +164,9 @@
       }
     },
     "faqIntro": "The questions institutional desks ask first: security, providers, execution and data.",
+    "research": {
+      "label": "Why quantitative finance teams are moving away from legacy tools"
+    },
     "faq": {
       "onboarding": {
         "q": "How long does it take a fund to onboard?",
@@ -167,6 +184,10 @@
     }
   },
   "teams": {
+    "seo": {
+      "title": "Quant Research Team Workspace | Fintela",
+      "description": "One library, one workspace, one source of truth: shared registries, hashed history and committee-ready reports for quant research desks."
+    },
     "badge": "For quant research teams",
     "title": "One library, one workspace,",
     "titleAccent": "one source of truth.",
@@ -224,6 +245,7 @@
     "chapters": {
       "workspace": {
         "title": "Shared registries",
+        "docsLabel": "Registries docs",
         "description": "Asset groups, strategies, fitness functions and risk managers live in registries the whole desk reads from. A colleague's validated strategy is one click from your next study, not an export away.",
         "outcomes": [
           "One catalogue for the whole desk",
@@ -234,6 +256,7 @@
       },
       "research": {
         "title": "Concurrent research",
+        "docsLabel": "How studies work",
         "mediaAlt": "Rate-of-change and Sharpe charts for the top trials, with the desk's top ten spanning three distinct strategies",
         "description": "Everyone launches studies at once. Bayesian search over thousands of trials, scored on train, validation and out-of-sample windows, with results the desk compares in one dashboard.",
         "outcomes": [
@@ -244,6 +267,7 @@
       },
       "provenance": {
         "title": "Provenance and versions",
+        "docsLabel": "Strategy registry docs",
         "description": "Every strategy and configuration is hashed and time-stamped, with version history, so the desk can say who wrote what, when, and which version produced which result.",
         "outcomes": [
           "Cryptographically hashed history",
@@ -254,6 +278,7 @@
       },
       "reports": {
         "title": "Committee-ready reports",
+        "docsLabel": "Portfolio detail docs",
         "description": "Results-only dashboards and PDF reports that show equity curves, drawdowns and parameter importance while hiding code and hyperparameters.",
         "outcomes": [
           "PDF reports on demand",
@@ -264,6 +289,7 @@
       },
       "agents": {
         "title": "Fintelligent on the desk",
+        "docsLabel": "Fintelligent docs",
         "description": "An assistant wired into the platform's data and actions: it explains a study, drafts the next strategy, and stages runs for a human to confirm. Every tool call is visible.",
         "outcomes": [
           "Answers about any study with sources",
@@ -273,6 +299,9 @@
       }
     },
     "faqIntro": "The questions research desks ask first: sharing, provenance, exports and providers.",
+    "research": {
+      "label": "Why momentum works, and why it sometimes stops working"
+    },
     "faq": {
       "sharing": {
         "q": "Can we keep some strategies private inside the team?",
@@ -290,6 +319,10 @@
     }
   },
   "independents": {
+    "seo": {
+      "title": "Fintela for Independent Quants & Systematic Traders",
+      "description": "From notebook to live without a devops project: Python strategies, Bayesian optimization and broker-connected execution in the browser."
+    },
     "badge": "For independent quants & systematic traders",
     "title": "From notebook to live,",
     "titleAccent": "without a devops project.",
@@ -347,6 +380,7 @@
     "chapters": {
       "noDevops": {
         "title": "No environment to build",
+        "docsLabel": "Quickstart guide",
         "mediaAlt": "The platform home in the browser, greeting the user with the Fintelligent prompt; nothing installed",
         "description": "Write plain Python in the Laboratory with NumPy, pandas, SciPy and scikit-learn already there. Named parameters, typed ranges and version history, and no local install to keep alive.",
         "outcomes": [
@@ -357,6 +391,7 @@
       },
       "optimization": {
         "title": "Optimization built in",
+        "docsLabel": "Choosing a sampler",
         "mediaAlt": "The metrics table of a study: Calmar, Sharpe, Sortino and trade statistics across train, validation and test",
         "description": "Bayesian search over thousands of trials with train, validation and out-of-sample windows by default, plus parameter importance so you know which knobs matter.",
         "outcomes": [
@@ -367,6 +402,7 @@
       },
       "live": {
         "title": "Live through your broker",
+        "docsLabel": "Live trading docs",
         "description": "Promote a validated portfolio to a live operation that trades through your connected brokerage, with real-time order logs, P&L and a one-click pause.",
         "outcomes": [
           "Broker-connected execution",
@@ -377,6 +413,7 @@
       },
       "agent": {
         "title": "An assistant that does the work",
+        "docsLabel": "Fintelligent docs",
         "description": "Describe the idea in plain English and Fintelligent writes the Python, configures the parameters and stages the study, then waits for you to confirm.",
         "outcomes": [
           "Strategies drafted from a description",
@@ -386,6 +423,9 @@
       }
     },
     "faqIntro": "The questions systematic traders ask first: Python, optimization, speed and going live.",
+    "research": {
+      "label": "The backtest you didn't run is still costing you"
+    },
     "faq": {
       "cost": {
         "q": "What does it cost to start?",

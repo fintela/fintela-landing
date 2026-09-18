@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 6
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: What actually happens when you launch a study, how Fintela runs your trials in parallel, tracks progress and health, recovers from failures automatically, and what you can and can't control.
 keywords: architecture, optimizer, parallelism, workers, trials, progress, health, failure recovery, memory, samplers, limits
 ---

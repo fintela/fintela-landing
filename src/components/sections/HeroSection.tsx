@@ -55,7 +55,7 @@ export const HeroSection = () => {
 
         <AnimateOnScroll delay={100}>
           <Box sx={[ctaRowSx, { mb: 3.5 }]}>
-            <NeuButton tone="raised" to="/docs" startIcon={<PlayCircleOutlineIcon />}>
+            <NeuButton tone="raised" to="/docs/overview" startIcon={<PlayCircleOutlineIcon />}>
               {t('hero.ctaSecondary')}
             </NeuButton>
           </Box>

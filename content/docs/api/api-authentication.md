@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 2
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: How to find your personal API key, connect it to your own tools, and the request limits that apply to your organization.
 keywords: authentication, api key, personal access key, bearer token, read-only access, rate limit, integrations, dashboards
 ---

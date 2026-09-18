@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: A map of the Fintela workspace: the sidebar, top bar, search, notifications, keyboard shortcuts, and how locked features and permissions work.
 keywords: navigation, sidebar, top bar, search, keyboard shortcuts, notifications, help menu, account menu, locked features, permissions, mobile navigation, product tours
 ---

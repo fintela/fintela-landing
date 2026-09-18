@@ -4,7 +4,7 @@ section: Workflows
 sectionOrder: 5
 order: 1
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: The full workflow in order: build a universe, write a strategy, optimize it, pick a winner, and put it live.
 keywords: workflow, lifecycle, end to end, asset group, strategy, study, optimize, promote, deploy, paper trading, live trading
 ---

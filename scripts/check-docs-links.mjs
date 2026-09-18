@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Fails when a documentation page links to a page or an anchor that does not exist.
+ * Fails when a documentation page — or a blog post — links to a documentation page
+ * or an anchor that does not exist.
  *
  * At run time a dead cross-reference degrades to plain text (see DOCS.md), which is
  * the right behaviour for a reader — but it is silent, so a typo'd link just loses
@@ -9,9 +10,14 @@
  * request against: a PR touching only `content/` is otherwise gated by nothing but
  * the build.
  *
- * Reads `dist/docs/` rather than `content/docs/`, so it validates exactly what was
- * published — drafts are absent by then, which is the point: a link into an
- * unpublished page must fail here.
+ * Reads `dist/docs/` (and `dist/blog/`) rather than `content/`, so it validates
+ * exactly what was published — drafts are absent by then, which is the point: a
+ * link into an unpublished page must fail here.
+ *
+ * Blog posts cross-reference the docs too ("Further reading" lists), and a post
+ * outlives the page it points at just as easily, so their `/docs/<slug>` links are
+ * checked against the same published set. Everything else a post links to is
+ * `scripts/check-content.mjs`'s business.
  *
  * Run after `npm run build`.
  */
@@ -19,6 +25,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const DIST = 'dist/docs';
+const BLOG_DIST = 'dist/blog';
 
 /** Mirrors `slugify` in src/content/frontmatter.ts. */
 const slugify = (value) =>
@@ -95,25 +102,43 @@ async function main() {
   const problems = [];
   let checked = 0;
 
-  for (const [slug, page] of pages) {
-    for (const line of codeFreeLines(page.markdown)) {
+  /** Every `/docs/…` (or `.md`) link in a body, resolved against the published set. */
+  const checkBody = (sourcePath, markdown, selfSlug) => {
+    for (const line of codeFreeLines(markdown)) {
       for (const [, href] of line.matchAll(LINK)) {
         if (EXTERNAL.test(href)) continue;
         checked++;
 
+        // A bare `#anchor` points into the page itself — only meaningful for a doc.
         const [target, anchor] = href.startsWith('#')
-          ? [slug, href.slice(1)]
+          ? [selfSlug, href.slice(1)]
           : parseDocHref(href);
 
         if (target === null) continue; // some other in-app path — not ours to check
 
         if (!pages.has(target)) {
-          problems.push(`${page.sourcePath}: → ${href} — no published page "${target}"`);
+          problems.push(`${sourcePath}: → ${href} — no published page "${target}"`);
         } else if (anchor && !pages.get(target).anchors.has(anchor)) {
-          problems.push(`${page.sourcePath}: → ${href} — no heading anchor "#${anchor}"`);
+          problems.push(`${sourcePath}: → ${href} — no heading anchor "#${anchor}"`);
         }
       }
     }
+  };
+
+  for (const [slug, page] of pages) checkBody(page.sourcePath, page.markdown, slug);
+
+  let posts = 0;
+  try {
+    const blogIndex = JSON.parse(await readFile(path.join(BLOG_DIST, 'index.json'), 'utf8'));
+    for (const summary of blogIndex.posts ?? []) {
+      const post = JSON.parse(
+        await readFile(path.join(BLOG_DIST, `${summary.slug}.json`), 'utf8'),
+      );
+      checkBody(post.sourcePath ?? `blog/${summary.slug}`, post.markdown, null);
+      posts++;
+    }
+  } catch {
+    // No blog output is an empty collection, not a failure — the docs still checked.
   }
 
   if (problems.length) {
@@ -127,7 +152,8 @@ async function main() {
   }
 
   console.log(
-    `check-docs-links: ${checked} internal link(s) across ${pages.size} page(s) all resolve.`,
+    `check-docs-links: ${checked} internal link(s) across ${pages.size} doc page(s) and ` +
+      `${posts} post(s) all resolve.`,
   );
 }
 

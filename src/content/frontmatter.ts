@@ -188,17 +188,60 @@ export function isSafeCardImageSrc(src: string): boolean {
   return SAFE_IMAGE_DATA_URI.test(src);
 }
 
+/** A Markdown image as the author wrote it, and where in the body it sits. */
+export interface MarkdownImage {
+  /** The `src` exactly as written — the key the generator's size map uses. */
+  src: string;
+  alt: string;
+  /** Character offset of the `![` in the body, matching the parser's node position. */
+  offset: number;
+}
+
+const FENCE_LINE = /^\s{0,3}(`{3,}|~{3,})/;
+const IMAGE = /!\[([^\]]*)\]\(\s*([^\s)]+)[^)]*\)/g;
+
 /**
- * The first Markdown image (`![alt](src)`) in a post body, for posts that
- * don't set an explicit `cover` — a plain regex scan rather than a full parse,
- * since all that's needed is the earliest match. Returns `null` when there is
- * no image, or its `src` isn't safe to show outside the post's own page.
+ * Every Markdown image (`![alt](src)`) in a body, in document order, with
+ * fenced code blocks skipped so a snippet that *shows* image syntax is not
+ * mistaken for one. A regex scan rather than a full parse: the renderer and
+ * the generator both need only the src, the alt and the position, and the
+ * offset is what lets the renderer tell the lead image apart from a later
+ * repeat of the same file.
+ */
+export function extractImages(markdown: string): MarkdownImage[] {
+  const images: MarkdownImage[] = [];
+  let fence: string | null = null;
+  let offset = 0;
+
+  for (const line of markdown.split('\n')) {
+    const fenceMatch = FENCE_LINE.exec(line);
+    if (fenceMatch) {
+      const ticks = fenceMatch[1][0];
+      if (!fence) fence = ticks;
+      else if (ticks === fence) fence = null;
+    } else if (!fence) {
+      for (const match of line.matchAll(IMAGE)) {
+        images.push({
+          src: match[2].trim(),
+          alt: match[1].trim(),
+          offset: offset + (match.index ?? 0),
+        });
+      }
+    }
+    offset += line.length + 1;
+  }
+  return images;
+}
+
+/**
+ * The first Markdown image in a post body, for posts that don't set an
+ * explicit `cover`. Returns `null` when there is no image, or its `src` isn't
+ * safe to show outside the post's own page.
  */
 export function extractFirstImage(markdown: string): { src: string; alt: string } | null {
-  const match = /!\[([^\]]*)\]\(\s*([^\s)]+)[^)]*\)/.exec(markdown);
-  if (!match) return null;
-  const src = match[2].trim();
-  return isSafeCardImageSrc(src) ? { src, alt: match[1].trim() } : null;
+  const first = extractImages(markdown)[0];
+  if (!first) return null;
+  return isSafeCardImageSrc(first.src) ? { src: first.src, alt: first.alt } : null;
 }
 
 export const readingMinutes = (markdown: string): number =>

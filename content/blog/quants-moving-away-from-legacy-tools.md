@@ -5,6 +5,7 @@ date: 2026-08-07
 excerpt: How fragmented infrastructure is costing funds thousands and thousands of hours (and money), and why a unified platform is becoming the competitive advantage.
 tags: Finance, Infrastructure, Trading
 published: true
+updated: 2026-09-14
 cover: covers/quants-moving-away-from-legacy-tools.jpg
 coverAlt: A laptop screen with a legacy charting terminal, a price line and volume bars on a dark grid.
 ---
@@ -306,6 +307,6 @@ The best time to act was two years ago. The second best time is right now.
 
 ---
 
-*Fintela is a platform built on the principles outlined in this article: unified infrastructure for quantitative finance. We're in active use at forward thinking hedge funds and asset managers, and we're happy to discuss how modern infrastructure fits into a quant team's workflow.*
+*Fintela is a platform built on the principles outlined in this article: unified infrastructure for quantitative finance. We're in active use at forward thinking hedge funds and asset managers, and we're happy to discuss how modern infrastructure fits into a quant team's workflow. See [Fintela for hedge funds](/solutions/hedge-funds), [how the platform works](/docs/architecture) and [plans and pricing](/pricing).*
 
-*Questions? Reach out to our team at ivan.buda@fintela.io*
+*Questions? Reach out to our team at ivan.buda@fintela.io or [book a walkthrough](/contact).*

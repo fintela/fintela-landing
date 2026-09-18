@@ -24,8 +24,10 @@ export function LanguageSwitcher() {
   return (
     <>
       <Tooltip title={t('language.change')}>
+        {/* The accessible name carries the visible code so it never contradicts
+            what the button shows ("Change language: EN"). */}
         <IconButton
-          aria-label={t('language.change')}
+          aria-label={`${t('language.change')}: ${current?.toUpperCase() ?? ''}`}
           onClick={(e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)}
           sx={[neuIconButtonSx, { fontSize: '0.75rem', fontWeight: 700, letterSpacing: 0.5 }]}
         >

@@ -4,7 +4,7 @@ section: Integration Guides
 sectionOrder: 9
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Connect a strategy or fitness function you've built in Python to Fintela: while your code, models, and data stay on your own systems.
 keywords: fastapi, python, external strategy, external fitness function, integration guide, self-hosted, signal generation, deployment
 ---

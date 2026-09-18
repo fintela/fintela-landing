@@ -129,7 +129,9 @@ export const SeatPanel = ({ audience }: SeatProps) => {
         >
           {t(`${audience}.why.panel.eyebrow`)}
         </Typography>
+        {/* The seat statement is the "why they switch" band's one sub-heading. */}
         <Typography
+          component="h3"
           sx={{
             fontSize: { xs: '1.5rem', md: '1.85rem' },
             fontWeight: 800,

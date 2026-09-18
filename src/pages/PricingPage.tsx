@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import FlashOnOutlinedIcon from '@mui/icons-material/FlashOnOutlined';
 import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
@@ -16,8 +16,17 @@ import { TierBadge } from '../components/primitives/TierBadge';
 import { IconWell } from '../components/primitives/IconWell';
 import { Groove } from '../components/primitives/Groove';
 import { AnimateOnScroll } from '../components/common/AnimateOnScroll';
-import { cellGrooveSx, clippedGradientSx, raisedPanelSx, srOnly } from '../theme/neu';
+import { cellGrooveSx, clippedGradientSx, quietLinkSx, raisedPanelSx, srOnly } from '../theme/neu';
 import { gradients, motion, palette, radii, shadows, soft } from '../theme/tokens';
+import { Seo } from '../seo/Seo';
+import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
+import { absoluteUrl } from '../seo/site';
+import { DOCS_HOME } from '../seo/routes';
+
+const PRICING_OG_IMAGE = '/og/pricing.png';
+
+/** Where "What is a token?" lands: the doc that defines the unit every plan is priced in. */
+const TOKEN_DOCS = '/docs/tokens-and-billing';
 
 
 type TierKey = 'trader' | 'quant' | 'institutional';
@@ -74,6 +83,8 @@ interface PlanCardProps {
   features: string[];
   overageRateLabel: string;
   overageRate: string;
+  /** Label of the link under the overage rate, to the tokens doc. */
+  tokenHelp: string;
   support: string;
   cta: string;
   /** Internal route for the CTA; without it the CTA points at the app. */
@@ -92,6 +103,7 @@ const PlanCard = ({
   features,
   overageRateLabel,
   overageRate,
+  tokenHelp,
   support,
   cta,
   ctaTo,
@@ -140,8 +152,10 @@ const PlanCard = ({
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, minHeight: 48, mb: 2 }}>
         <IconWell>{icon}</IconWell>
+        {/* The plan name is the card's heading: an h3 under the sr-only "Plans" h2. */}
         <Typography
           id={`plan-${id}-name`}
+          component="h3"
           sx={{
             fontSize: { xs: '1.25rem', md: '1.375rem' },
             fontWeight: 800,
@@ -255,6 +269,13 @@ const PlanCard = ({
           <Typography sx={{ fontSize: '0.875rem', fontWeight: 700, color: soft.text }}>
             {overageRate}
           </Typography>
+        </Box>
+        <Box
+          component={RouterLink}
+          to={TOKEN_DOCS}
+          sx={[quietLinkSx, { alignSelf: 'flex-start', fontSize: '0.8rem', fontWeight: 600, color: soft.accent }]}
+        >
+          {tokenHelp}
         </Box>
         <Typography sx={{ fontSize: '0.8rem', color: soft.textSecondary }}>{support}</Typography>
       </Box>
@@ -473,146 +494,162 @@ const ComparisonTable = () => {
  */
 export const PricingPage = () => {
   const { t } = useTranslation('pages');
-  const [activeSection, setActiveSection] = useState('pricing');
-
-  const handleNavigate = (section: string) => {
-    setActiveSection(section);
-    if (section === 'home') window.location.href = '/';
-  };
 
   return (
     // The ground and colorScheme come from the theme (MuiCssBaseline).
     <Box sx={{ minHeight: '100vh' }}>
-      <Header activeSection={activeSection} onNavigate={handleNavigate} />
+      {/* No Offer markup on purpose: the plans shown here and the Terms
+          describe different commercial models, and structured data must not
+          assert what the page cannot back. WebPage + breadcrumbs only. */}
+      <Seo
+        title={t('seo.pricing.title')}
+        description={t('seo.pricing.description')}
+        image={PRICING_OG_IMAGE}
+        jsonLd={[
+          organization(),
+          webSite(),
+          webPage({
+            name: t('seo.pricing.title'),
+            description: t('seo.pricing.description'),
+            url: absoluteUrl('/pricing'),
+            image: absoluteUrl(PRICING_OG_IMAGE),
+          }),
+          breadcrumbList([homeCrumb(), { name: 'Pricing' }]),
+        ]}
+      />
+      <Header />
 
-      {/* Hero. Short on purpose: the cards are the content, so they start
-          inside the first viewport instead of below a second display heading. */}
-      <Section tone="hero" size="sm" sx={{ pt: { xs: 7, md: 11 }, pb: { xs: 5, md: 7 } }}>
-        <SectionHeader
-          level="h1"
-          title={t('pricing.hero.title')}
-          titleAccent={t('pricing.hero.titleAccent')}
-          description={t('pricing.hero.subtitle')}
-        />
-      </Section>
+      <Box component="main" id="content">
+        {/* Hero. Short on purpose: the cards are the content, so they start
+            inside the first viewport instead of below a second display heading. */}
+        <Section tone="hero" size="sm" sx={{ pt: { xs: 7, md: 11 }, pb: { xs: 5, md: 7 } }}>
+          <SectionHeader
+            level="h1"
+            title={t('pricing.hero.title')}
+            titleAccent={t('pricing.hero.titleAccent')}
+            description={t('pricing.hero.subtitle')}
+          />
+        </Section>
 
-      {/* Plans. The h1 already names this section, so its own heading is for
-          the outline only. */}
-      <Section id="plans" tone="soft" size="md" sx={{ pt: { xs: 2, md: 3 } }}>
-        <Typography component="h2" sx={srOnly}>
-          {t('pricing.individual.title')}
-        </Typography>
+        {/* Plans. The h1 already names this section, so its own heading is for
+            the outline only. */}
+        <Section id="plans" tone="soft" size="md" sx={{ pt: { xs: 2, md: 3 } }}>
+          <Typography component="h2" sx={srOnly}>
+            {t('pricing.individual.title')}
+          </Typography>
 
-        <Box
-          sx={{
-            display: 'grid',
-            // minmax(0, 1fr), not 1fr: a bare 1fr is minmax(auto, 1fr), so one
-            // long token in an es/pt string would widen its column silently.
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
-            alignItems: 'stretch',
-            // 32px at md is load-bearing: neuRaised spreads ~34px, and at a
-            // tighter gutter adjacent cards' shadows collide into a gray seam.
-            gap: { xs: 3, md: 4 },
-          }}
-        >
-          {PLAN_TIERS.map((tier, idx) => (
-            <AnimateOnScroll key={tier.key} delay={idx * 80} stretch>
-              <PlanCard
-                id={tier.key}
-                icon={tier.icon}
-                featured={tier.featured}
-                name={t(`pricing.individual.plans.${tier.key}.name`)}
-                price={t(`pricing.individual.plans.${tier.key}.price`)}
-                period={t(`pricing.individual.plans.${tier.key}.period`)}
-                badge={t(`pricing.individual.plans.${tier.key}.badge`)}
-                description={t(`pricing.individual.plans.${tier.key}.description`)}
-                features={
-                  t(`pricing.individual.plans.${tier.key}.features`, {
-                    returnObjects: true,
-                  }) as string[]
-                }
-                overageRateLabel={t('pricing.individual.overageRateLabel')}
-                overageRate={t(`pricing.individual.plans.${tier.key}.overageRate`)}
-                support={t(`pricing.individual.plans.${tier.key}.support`)}
-                cta={t(`pricing.individual.plans.${tier.key}.cta`)}
-                ctaTo={tier.key === 'institutional' ? '/contact' : undefined}
-              />
-            </AnimateOnScroll>
-          ))}
-        </Box>
-      </Section>
-
-      {/* Compare */}
-      <Section id="compare" tone="soft" size="md" sx={{ pt: 0 }}>
-        <SectionHeader
-          level="h2"
-          title={t('pricing.compare.title')}
-          titleAccent={t('pricing.compare.titleAccent')}
-          description={t('pricing.compare.description')}
-        />
-        <AnimateOnScroll delay={60}>
-          <ComparisonTable />
-        </AnimateOnScroll>
-      </Section>
-
-      {/* Closing CTA */}
-      <Section tone="soft" size="md" sx={{ pt: 0, pb: { xs: 10, md: 14 } }}>
-        <AnimateOnScroll>
           <Box
             sx={{
-              ...raisedPanelSx,
-              maxWidth: 880,
-              mx: 'auto',
-              px: { xs: 3, md: 8 },
-              py: { xs: 5, md: 7 },
-              textAlign: 'center',
+              display: 'grid',
+              // minmax(0, 1fr), not 1fr: a bare 1fr is minmax(auto, 1fr), so one
+              // long token in an es/pt string would widen its column silently.
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+              alignItems: 'stretch',
+              // 32px at md is load-bearing: neuRaised spreads ~34px, and at a
+              // tighter gutter adjacent cards' shadows collide into a gray seam.
+              gap: { xs: 3, md: 4 },
             }}
           >
-            <Typography
-              component="h2"
-              sx={{
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
-                fontWeight: 800,
-                lineHeight: 1.15,
-                letterSpacing: '-0.025em',
-                color: soft.text,
-                textWrap: 'balance',
-              }}
-            >
-              {t('pricing.cta.title')}
-            </Typography>
-            <Typography
-              sx={{
-                mt: 1.5,
-                mx: 'auto',
-                maxWidth: 520,
-                fontSize: { xs: '0.9375rem', md: '1rem' },
-                lineHeight: 1.65,
-                color: soft.textSecondary,
-              }}
-            >
-              {t('pricing.cta.description')}
-            </Typography>
+            {PLAN_TIERS.map((tier, idx) => (
+              <AnimateOnScroll key={tier.key} delay={idx * 80} stretch>
+                <PlanCard
+                  id={tier.key}
+                  icon={tier.icon}
+                  featured={tier.featured}
+                  name={t(`pricing.individual.plans.${tier.key}.name`)}
+                  price={t(`pricing.individual.plans.${tier.key}.price`)}
+                  period={t(`pricing.individual.plans.${tier.key}.period`)}
+                  badge={t(`pricing.individual.plans.${tier.key}.badge`)}
+                  description={t(`pricing.individual.plans.${tier.key}.description`)}
+                  features={
+                    t(`pricing.individual.plans.${tier.key}.features`, {
+                      returnObjects: true,
+                    }) as string[]
+                  }
+                  overageRateLabel={t('pricing.individual.overageRateLabel')}
+                  overageRate={t(`pricing.individual.plans.${tier.key}.overageRate`)}
+                  tokenHelp={t('pricing.individual.tokenHelp')}
+                  support={t(`pricing.individual.plans.${tier.key}.support`)}
+                  cta={t(`pricing.individual.plans.${tier.key}.cta`)}
+                  ctaTo={tier.key === 'institutional' ? '/contact' : undefined}
+                />
+              </AnimateOnScroll>
+            ))}
+          </Box>
+        </Section>
+
+        {/* Compare */}
+        <Section id="compare" tone="soft" size="md" sx={{ pt: 0 }}>
+          <SectionHeader
+            level="h2"
+            title={t('pricing.compare.title')}
+            titleAccent={t('pricing.compare.titleAccent')}
+            description={t('pricing.compare.description')}
+          />
+          <AnimateOnScroll delay={60}>
+            <ComparisonTable />
+          </AnimateOnScroll>
+        </Section>
+
+        {/* Closing CTA */}
+        <Section tone="soft" size="md" sx={{ pt: 0, pb: { xs: 10, md: 14 } }}>
+          <AnimateOnScroll>
             <Box
               sx={{
-                mt: 3.5,
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                gap: 2,
-                '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } },
+                ...raisedPanelSx,
+                maxWidth: 880,
+                mx: 'auto',
+                px: { xs: 3, md: 8 },
+                py: { xs: 5, md: 7 },
+                textAlign: 'center',
               }}
             >
-              <NeuButton tone="accent" to="/contact">
-                {t('pricing.cta.primary')}
-              </NeuButton>
-              <NeuButton tone="raised" to="/docs">
-                {t('pricing.cta.secondary')}
-              </NeuButton>
+              <Typography
+                component="h2"
+                sx={{
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
+                  fontWeight: 800,
+                  lineHeight: 1.15,
+                  letterSpacing: '-0.025em',
+                  color: soft.text,
+                  textWrap: 'balance',
+                }}
+              >
+                {t('pricing.cta.title')}
+              </Typography>
+              <Typography
+                sx={{
+                  mt: 1.5,
+                  mx: 'auto',
+                  maxWidth: 520,
+                  fontSize: { xs: '0.9375rem', md: '1rem' },
+                  lineHeight: 1.65,
+                  color: soft.textSecondary,
+                }}
+              >
+                {t('pricing.cta.description')}
+              </Typography>
+              <Box
+                sx={{
+                  mt: 3.5,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: 2,
+                  '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } },
+                }}
+              >
+                <NeuButton tone="accent" to="/contact">
+                  {t('pricing.cta.primary')}
+                </NeuButton>
+                <NeuButton tone="raised" to={DOCS_HOME}>
+                  {t('pricing.cta.secondary')}
+                </NeuButton>
+              </Box>
             </Box>
-          </Box>
-        </AnimateOnScroll>
-      </Section>
+          </AnimateOnScroll>
+        </Section>
+      </Box>
 
       <Footer />
     </Box>

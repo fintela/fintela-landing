@@ -9,7 +9,7 @@ import {
   readingMinutes,
   toPlainText,
 } from '../content/frontmatter';
-import type { DocDetail } from './types';
+import type { DocDetail, DocSearchEntry } from './types';
 
 /**
  * Turns a `.md` file from `content/docs/` into a documentation page.
@@ -21,14 +21,22 @@ import type { DocDetail } from './types';
  */
 
 /**
- * How much plain text goes into `index.json` for client-side content search.
+ * How much plain text goes into `search.json` for client-side content search.
  *
- * Capped because the index is fetched to render the `/docs` grid: the full bodies
- * of every page would be hundreds of KB on a route whose job is to show cards.
+ * Capped because the whole file is fetched the first time the ⌘K palette opens:
+ * the full bodies of every page would be hundreds of KB for a substring test.
  * A few thousand characters covers the summary, the headings and the opening of
  * each section, which is what a reader actually searches for.
  */
 const SEARCH_TEXT_LIMIT = 2400;
+
+/**
+ * What `buildDoc` produces: the page as published (`DocDetail`) plus the search
+ * text the generator files separately. The two travel together out of the
+ * parser so the search index can never describe a page other than the one that
+ * was emitted.
+ */
+export type ParsedDoc = DocDetail & Pick<DocSearchEntry, 'searchText'>;
 
 /** Sections sort by the smallest `sectionOrder` any of their pages declares. */
 export const DEFAULT_SECTION_ORDER = 999;
@@ -69,7 +77,7 @@ export function docSectionOrder(source: string): number {
 }
 
 /** A publishable doc page, or `null` when the file is a draft or malformed. */
-export function buildDoc(filename: string, source: string): DocDetail | null {
+export function buildDoc(filename: string, source: string): ParsedDoc | null {
   if (describeDocSkip(filename, source)) return null;
 
   // describeDocSkip has already validated everything below.

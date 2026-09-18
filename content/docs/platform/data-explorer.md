@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 4
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Browse what every built in dataset actually contains before you build it into a strategy, fitness function or risk manager.
 keywords: data explorer, data library, market data, fundamentals, coverage, freshness, data sources, asset groups
 ---
@@ -455,3 +455,8 @@ Four places on this page let you download what's currently on screen as a CSV fi
 - **No control over an indicator's calculation window.** Technical Indicators are calculated
   using platform defaults; there's no control here to adjust the window used behind an
   indicator's calculation.
+
+> [!TIP] Further reading
+> A research note that leans on the datasets above, scoring agricultural tickers on climate
+> anomalies and price momentum:
+> [Climate Risk against Agricultural Stocks](/blog/climate-analysis).

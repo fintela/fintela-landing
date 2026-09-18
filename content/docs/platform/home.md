@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: What the Home dashboard shows you, how to arrange and customize it, and how to read every card's numbers.
 keywords: home, dashboard, overview, cards, metrics, layout
 ---

@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 5
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Score every trial using scoring logic you write and host on your own systems, instead of inside Fintela.
 keywords: external fitness, self hosted scoring, custom fitness function, fitness parameters, timeout, security
 ---

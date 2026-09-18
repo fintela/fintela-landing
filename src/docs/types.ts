@@ -24,20 +24,44 @@ export interface DocSummary {
   sourcePath: string;
   /** Author-supplied search terms, on top of the title and body text. */
   keywords: string[];
-  /**
-   * Plain-text body, capped by the generator. This is the whole static search
-   * index: it makes "filter by content" a substring test over `index.json`
-   * instead of 25 extra fetches or a search service.
-   */
-  searchText: string;
+}
+
+/** Intrinsic pixel size of an image the generator could read from disk. */
+export interface ImageSize {
+  width: number;
+  height: number;
 }
 
 /** A full documentation page — `docs/<slug>.json`. */
 export interface DocDetail extends DocSummary {
   markdown: string;
+  /**
+   * Sizes of the body's local images, keyed by the `src` exactly as written in
+   * the Markdown, so the renderer can reserve their space before they load.
+   * Only present when at least one image could be measured.
+   */
+  images?: Record<string, ImageSize>;
 }
 
-/** `docs/index.json` — the whole published set, section order then page order. */
+/**
+ * One page's share of `docs/search.json` — the text the ⌘K palette searches,
+ * kept out of `index.json` so the sidebar on every page does not pay for it.
+ * `searchText` is the plain-text body, capped by the generator; the rest is
+ * repeated from the summary so the file stands on its own.
+ */
+export interface DocSearchEntry {
+  slug: string;
+  title: string;
+  section: string;
+  keywords: string[];
+  searchText: string;
+}
+
+/**
+ * `docs/index.json` — the whole published set, section order then page order.
+ * Small enough to embed in every prerendered documentation page: it carries no
+ * body text (that is `docs/search.json`, see `DocSearchEntry`).
+ */
 export interface DocsIndex {
   generatedAt: string;
   /** Section titles in display order — empty sections are already omitted. */

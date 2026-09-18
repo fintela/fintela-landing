@@ -10,7 +10,7 @@ import VolumeOffRoundedIcon from '@mui/icons-material/VolumeOffRounded';
 import FullscreenRoundedIcon from '@mui/icons-material/FullscreenRounded';
 import FullscreenExitRoundedIcon from '@mui/icons-material/FullscreenExitRounded';
 import { neuIconButtonSx, trackWellSx } from '../../theme/neu';
-import { motion, shadows, soft } from '../../theme/tokens';
+import { fonts, motion, shadows, soft } from '../../theme/tokens';
 import { chapterAt, formatTime } from '../../media/chapters';
 import type { VideoChapter, VideoPlateHandle } from '../../media/chapters';
 import type { VideoSource } from '../../media/registry';
@@ -27,8 +27,11 @@ export interface VideoCaption {
 export interface VideoPlateProps {
   /** Files under the media prefix. Missing on disk → the plate stays a poster. */
   src?: VideoSource;
+  /** A registry still: rendered as a responsive <picture> under the video. */
   poster: string;
   posterAlt: string;
+  /** How wide the plate renders, for the poster's rung choice (MediaWell `sizes`). */
+  sizes?: string;
   captions?: VideoCaption[];
   /** The file has no audio track: no volume control to offer. */
   silent?: boolean;
@@ -71,6 +74,15 @@ export interface VideoPlateProps {
 
 const SEEK_STEP = 5;
 
+/** A plate is roughly a column of the grid: two thirds of the viewport from md, all of it below. */
+const DEFAULT_SIZES = '(min-width: 1200px) 760px, (min-width: 900px) 66vw, 100vw';
+
+/** The controls row's height (the 40 px icon buttons), reserved before the controls exist. */
+const CONTROLS_HEIGHT = 40;
+
+/** AV1 Main profile, level 4.0, 8-bit — what scripts/encode-media.sh writes. */
+const AV1_TYPE = 'video/mp4; codecs="av01.0.08M.08"';
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -83,15 +95,22 @@ const saveData = () =>
  * plate. No player library: the surface IS the design, and the element already
  * does captions, fullscreen and keyboard focus.
  *
- * Sources attach lazily — on intersection for 'ambient', on mount (metadata
- * only) for 'player' — so the home page never downloads a demo nobody watches.
- * If every source fails (the file is not published yet) the plate quietly
- * becomes its poster: no broken control, no console noise in production.
+ * The poster is a responsive <picture> in the well (lazy, so a plate below the
+ * fold costs nothing on the first paint); the <video> sits over it, transparent
+ * until it has a frame, and never carries a `poster` attribute — that would
+ * fetch the JPEG the picture already replaced. Sources attach lazily — on
+ * intersection for both modes, or on the first play/seek for 'player' — so
+ * the home page never downloads a demo nobody watches; the controls row keeps
+ * its height from the first paint and fills in on `loadedmetadata`, so
+ * neither a late file nor a missing one moves what is below the plate. If
+ * every source fails (the file is not published yet) the plate quietly stays
+ * its poster: no broken control, no console noise in production.
  */
 export const VideoPlate = ({
   src,
   poster,
   posterAlt,
+  sizes = DEFAULT_SIZES,
   captions = [],
   silent = false,
   mode,
@@ -111,12 +130,18 @@ export const VideoPlate = ({
   const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const pendingSeek = useRef<number | null>(null);
+  /** play() was asked for before the sources were attached: honour it once they are. */
+  const pendingPlay = useRef(false);
   const scrubbing = useRef(false);
   const lastChapter = useRef<string | undefined>(undefined);
 
-  const hasSource = Boolean(src?.mp4 || src?.webm);
-  const [attached, setAttached] = useState(mode === 'player' && hasSource);
+  const hasSource = Boolean(src?.mp4 || src?.webm || src?.av1);
+  const [attached, setAttached] = useState(false);
   const [failed, setFailed] = useState(!hasSource);
+  /** Metadata is in: duration is known, the controls can mean something. */
+  const [ready, setReady] = useState(false);
+  /** A frame is decoded: the video can show over the poster. */
+  const [hasFrame, setHasFrame] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(mode === 'ambient');
   const [currentTime, setCurrentTime] = useState(0);
@@ -125,24 +150,27 @@ export const VideoPlate = ({
 
   const isPlayer = mode === 'player' && !failed;
 
-  // Ambient: attach and play only while on screen, never under reduced motion
-  // or a data-saver connection. Off screen, pause — a loop nobody sees still
-  // burns a core.
+  // Attach on intersection. Ambient plays only while on screen, never under
+  // reduced motion or a data-saver connection, and pauses off screen — a loop
+  // nobody sees still burns a core. A player only fetches its metadata once
+  // it is nearly in view (the puck and the chapter rail attach it earlier on
+  // demand), so a demo three viewports down costs the first paint nothing.
   useEffect(() => {
-    if (mode !== 'ambient' || failed || !hasSource) return;
+    if (failed || !hasSource) return;
     const frame = frameRef.current;
-    if (!frame || prefersReducedMotion() || saveData()) return;
+    if (!frame) return;
+    if (mode === 'ambient' && (prefersReducedMotion() || saveData())) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         const video = videoRef.current;
         if (entry.isIntersecting) {
           setAttached(true);
-          video?.play().catch(() => {});
-        } else {
+          if (mode === 'ambient') video?.play().catch(() => {});
+        } else if (mode === 'ambient') {
           video?.pause();
         }
       },
-      { threshold: 0.25 },
+      mode === 'ambient' ? { threshold: 0.25 } : { rootMargin: '200px 0px', threshold: 0 }
     );
     observer.observe(frame);
     return () => observer.disconnect();
@@ -154,7 +182,10 @@ export const VideoPlate = ({
     const video = videoRef.current;
     if (!video) return;
     video.load();
-    if (mode === 'ambient') video.play().catch(() => {});
+    if (mode === 'ambient' || pendingPlay.current) {
+      pendingPlay.current = false;
+      video.play().catch(() => {});
+    }
   }, [attached, mode]);
 
   useEffect(() => {
@@ -164,7 +195,12 @@ export const VideoPlate = ({
   }, []);
 
   const play = useCallback(() => {
-    if (!attached) setAttached(true);
+    if (!attached) {
+      // No <source> yet: attach, and let the load effect start playback.
+      pendingPlay.current = true;
+      setAttached(true);
+      return;
+    }
     videoRef.current?.play().catch(() => {});
   }, [attached]);
   const pause = useCallback(() => videoRef.current?.pause(), []);
@@ -183,7 +219,7 @@ export const VideoPlate = ({
       setCurrentTime(time);
       if (autoplay) play();
     },
-    [attached, chapters, play],
+    [attached, chapters, play]
   );
 
   useImperativeHandle(
@@ -194,7 +230,7 @@ export const VideoPlate = ({
       pause,
       reveal: () => frameRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
     }),
-    [seekTo, play, pause],
+    [seekTo, play, pause]
   );
 
   const onTimeUpdate = () => {
@@ -214,6 +250,7 @@ export const VideoPlate = ({
     const video = videoRef.current;
     if (!video) return;
     setDuration(Number.isFinite(video.duration) ? video.duration : 0);
+    setReady(true);
     if (pendingSeek.current !== null) {
       video.currentTime = pendingSeek.current;
       pendingSeek.current = null;
@@ -247,7 +284,10 @@ export const VideoPlate = ({
         break;
       case 'ArrowRight':
         e.preventDefault();
-        seekTo(Math.min(duration || video.currentTime + SEEK_STEP, video.currentTime + SEEK_STEP), false);
+        seekTo(
+          Math.min(duration || video.currentTime + SEEK_STEP, video.currentTime + SEEK_STEP),
+          false
+        );
         break;
       case 'm':
         setMuted((m) => !m);
@@ -275,16 +315,26 @@ export const VideoPlate = ({
   };
 
   const captionLang = i18n.resolvedLanguage ?? i18n.language;
-  const sources = attached && src ? (
-    <>
-      {src.webm && <source src={src.webm} type="video/webm" />}
-      {src.mp4 ? (
-        <source src={src.mp4} type="video/mp4" onError={onSourceError} />
-      ) : (
-        <source src={src.webm} type="video/webm" onError={onSourceError} />
-      )}
-    </>
-  ) : null;
+  // Smallest first: the browser takes the first type it can play. The error
+  // handler goes on the last one — that is the only <source> whose failure
+  // means the element has run out of candidates.
+  const candidates = src
+    ? [
+        src.av1 && { src: src.av1, type: AV1_TYPE },
+        src.webm && { src: src.webm, type: 'video/webm' },
+        src.mp4 && { src: src.mp4, type: 'video/mp4' },
+      ].filter((c): c is { src: string; type: string } => Boolean(c))
+    : [];
+  const sources = attached
+    ? candidates.map((c, i) => (
+        <source
+          key={c.src}
+          src={c.src}
+          type={c.type}
+          onError={i === candidates.length - 1 ? onSourceError : undefined}
+        />
+      ))
+    : null;
 
   return (
     <Box
@@ -302,6 +352,9 @@ export const VideoPlate = ({
         tier={tier}
         tone="plain"
         flush={flush}
+        src={poster}
+        alt={posterAlt}
+        sizes={sizes}
         role={isPlayer ? 'group' : undefined}
         aria-label={isPlayer ? label : undefined}
         tabIndex={isPlayer ? 0 : undefined}
@@ -312,24 +365,26 @@ export const VideoPlate = ({
           // A definite height from flex-grow wins over the ratio, so the
           // viewport fills whatever the plate was stretched to.
           ...(grow ? { flex: '1 1 auto', minHeight: 0 } : {}),
-          ...(ground ? { bgcolor: ground, '& > img, & > video': { objectFit: 'contain' } } : {}),
+          ...(ground
+            ? { bgcolor: ground, '& > img, & > picture > img, & > video': { objectFit: 'contain' } }
+            : {}),
           ...(flush ? { mt: { xs: -1.5, md: -2 }, mx: { xs: -1.5, md: -2 } } : {}),
           '&:focus-visible': { outline: `2px solid ${soft.accent}`, outlineOffset: 3 },
           '&:fullscreen': { aspectRatio: 'auto', borderRadius: 0, bgcolor: soft.deep },
           // The puck hides while playing and returns on hover or focus.
           '&[data-playing="true"] .play-puck': { opacity: 0, transition: `opacity ${motion.base}` },
-          '&[data-playing="true"]:hover .play-puck, &[data-playing="true"]:focus-within .play-puck': {
-            opacity: 1,
+          '&[data-playing="true"]:hover .play-puck, &[data-playing="true"]:focus-within .play-puck':
+            {
+              opacity: 1,
+            },
+          '@media (forced-colors: active)': {
+            '&:focus-visible': { outline: '3px solid Highlight' },
           },
-          '@media (forced-colors: active)': { '&:focus-visible': { outline: '3px solid Highlight' } },
         }}
       >
-        {failed ? (
-          <img src={poster} alt={posterAlt} loading={mode === 'ambient' ? 'eager' : 'lazy'} decoding="async" />
-        ) : (
+        {!failed && (
           <video
             ref={videoRef}
-            poster={poster}
             preload={mode === 'player' ? 'metadata' : 'none'}
             playsInline
             muted={muted}
@@ -341,9 +396,16 @@ export const VideoPlate = ({
             onEnded={() => setPlayingState(false)}
             onTimeUpdate={onTimeUpdate}
             onLoadedMetadata={onLoadedMetadata}
+            onLoadedData={() => setHasFrame(true)}
+            onPlaying={() => setHasFrame(true)}
             onVolumeChange={() => setMuted(videoRef.current?.muted ?? muted)}
             onClick={isPlayer ? toggle : undefined}
-            style={{ cursor: isPlayer ? 'pointer' : 'default' }}
+            style={{
+              cursor: isPlayer ? 'pointer' : 'default',
+              // The poster <picture> shows through until a frame is decoded.
+              opacity: hasFrame ? 1 : 0,
+              transition: `opacity ${motion.base}`,
+            }}
           >
             {sources}
             {isPlayer &&
@@ -370,83 +432,108 @@ export const VideoPlate = ({
         )}
       </MediaWell>
 
-      {isPlayer && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 1.5 }, mt: 1.75, px: 0.25 }}>
-          <IconButton
-            aria-label={playing ? t('player.pause') : t('player.play')}
-            onClick={toggle}
-            sx={neuIconButtonSx}
-          >
-            {playing ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
-          </IconButton>
-          <Slider
-            aria-label={t('player.seek')}
-            value={Math.min(currentTime, duration || currentTime)}
-            min={0}
-            max={duration || 1}
-            step={0.5}
-            onChange={onScrub}
-            onChangeCommitted={onScrubEnd}
-            valueLabelDisplay="auto"
-            valueLabelFormat={(v) => formatTime(v)}
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              height: 8,
-              py: '10px',
-              color: soft.accent,
-              '& .MuiSlider-rail': { ...trackWellSx, opacity: 1 },
-              '& .MuiSlider-track': { border: 0, height: 8, borderRadius: '6px', bgcolor: soft.accent },
-              '& .MuiSlider-thumb': {
-                width: 16,
-                height: 16,
-                bgcolor: soft.surfaceRaised,
-                boxShadow: shadows.neuRaisedSm,
-                transition: `box-shadow ${motion.fast}`,
-                '&::before': { display: 'none' },
-                '&:hover, &.Mui-focusVisible, &.Mui-active': { boxShadow: shadows.neuRaisedMd },
-              },
-              '& .MuiSlider-valueLabel': {
-                bgcolor: soft.accent,
-                borderRadius: '8px',
-                fontFamily: '"JetBrains Mono", monospace',
-                fontSize: '0.72rem',
-              },
-              '@media (forced-colors: active)': {
-                '& .MuiSlider-track': { background: 'Highlight' },
-                '& .MuiSlider-thumb': { boxShadow: 'none', border: '2px solid ButtonText' },
-              },
-            }}
-          />
-          <Typography
-            component="span"
-            sx={{
-              fontFamily: '"JetBrains Mono", monospace',
-              fontVariantNumeric: 'tabular-nums',
-              fontSize: '0.75rem',
-              color: soft.textSecondary,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </Typography>
-          {!silent && (
-            <IconButton
-              aria-label={muted ? t('player.unmute') : t('player.mute')}
-              aria-pressed={muted}
-              onClick={() => setMuted((m) => !m)}
-              sx={[neuIconButtonSx, { width: 34, height: 34, '& svg': { fontSize: 18 } }]}
-            >
-              {muted ? <VolumeOffRoundedIcon /> : <VolumeUpRoundedIcon />}
-            </IconButton>
+      {/*
+        The row exists from the first paint whenever the registry promises a
+        file, at its final height; the controls themselves arrive with the
+        metadata. Filling a box of fixed height moves nothing, and a file that
+        never arrives (a stale registry, a CDN answering HTML) leaves a quiet
+        band rather than a jump — scripts/check-media.mjs catches the former.
+      */}
+      {mode === 'player' && hasSource && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 1, md: 1.5 },
+            mt: 1.75,
+            px: 0.25,
+            minHeight: CONTROLS_HEIGHT,
+          }}
+        >
+          {isPlayer && ready && (
+            <>
+              <IconButton
+                aria-label={playing ? t('player.pause') : t('player.play')}
+                onClick={toggle}
+                sx={neuIconButtonSx}
+              >
+                {playing ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
+              </IconButton>
+              <Slider
+                aria-label={t('player.seek')}
+                value={Math.min(currentTime, duration || currentTime)}
+                min={0}
+                max={duration || 1}
+                step={0.5}
+                onChange={onScrub}
+                onChangeCommitted={onScrubEnd}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(v) => formatTime(v)}
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  height: 8,
+                  py: '10px',
+                  color: soft.accent,
+                  '& .MuiSlider-rail': { ...trackWellSx, opacity: 1 },
+                  '& .MuiSlider-track': {
+                    border: 0,
+                    height: 8,
+                    borderRadius: '6px',
+                    bgcolor: soft.accent,
+                  },
+                  '& .MuiSlider-thumb': {
+                    width: 16,
+                    height: 16,
+                    bgcolor: soft.surfaceRaised,
+                    boxShadow: shadows.neuRaisedSm,
+                    transition: `box-shadow ${motion.fast}`,
+                    '&::before': { display: 'none' },
+                    '&:hover, &.Mui-focusVisible, &.Mui-active': { boxShadow: shadows.neuRaisedMd },
+                  },
+                  '& .MuiSlider-valueLabel': {
+                    bgcolor: soft.accent,
+                    borderRadius: '8px',
+                    fontFamily: fonts.mono,
+                    fontSize: '0.72rem',
+                  },
+                  '@media (forced-colors: active)': {
+                    '& .MuiSlider-track': { background: 'Highlight' },
+                    '& .MuiSlider-thumb': { boxShadow: 'none', border: '2px solid ButtonText' },
+                  },
+                }}
+              />
+              <Typography
+                component="span"
+                sx={{
+                  fontFamily: fonts.mono,
+                  fontVariantNumeric: 'tabular-nums',
+                  fontSize: '0.75rem',
+                  color: soft.textSecondary,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </Typography>
+              {!silent && (
+                <IconButton
+                  aria-label={muted ? t('player.unmute') : t('player.mute')}
+                  aria-pressed={muted}
+                  onClick={() => setMuted((m) => !m)}
+                  sx={[neuIconButtonSx, { width: 34, height: 34, '& svg': { fontSize: 18 } }]}
+                >
+                  {muted ? <VolumeOffRoundedIcon /> : <VolumeUpRoundedIcon />}
+                </IconButton>
+              )}
+              <IconButton
+                aria-label={fullscreen ? t('player.exitFullscreen') : t('player.fullscreen')}
+                onClick={toggleFullscreen}
+                sx={[neuIconButtonSx, { width: 34, height: 34, '& svg': { fontSize: 18 } }]}
+              >
+                {fullscreen ? <FullscreenExitRoundedIcon /> : <FullscreenRoundedIcon />}
+              </IconButton>
+            </>
           )}
-          <IconButton
-            aria-label={fullscreen ? t('player.exitFullscreen') : t('player.fullscreen')}
-            onClick={toggleFullscreen}
-            sx={[neuIconButtonSx, { width: 34, height: 34, '& svg': { fontSize: 18 } }]}
-          >
-            {fullscreen ? <FullscreenExitRoundedIcon /> : <FullscreenRoundedIcon />}
-          </IconButton>
         </Box>
       )}
     </Box>

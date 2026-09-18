@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 6
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Every performance metric Fintela calculates, explained in plain language: what each one measures, how to read it, and where it shows up in the app.
 keywords: metrics, sharpe ratio, sortino ratio, calmar ratio, cagr, max drawdown, win rate, volatility, definitions, reference
 ---
@@ -449,3 +449,8 @@ handful of screens present them.
   and the trailing periods) are only populated by processes introduced after a certain point; a study
   created well before that will still have all its named stage values, but ranking by a rolling
   window may come up empty for it.
+
+> [!TIP] Further reading
+> Why the best Sharpe ratio out of a thousand trials is not the one you should expect live, and
+> how the Deflated Sharpe ratio corrects for it:
+> [The backtest you didn't run is still costing you](/blog/deflated-sharpe).

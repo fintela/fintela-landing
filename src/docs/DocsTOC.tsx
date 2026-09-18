@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { soft } from '../theme/tokens';
 import { navPillSx } from '../theme/neu';
 import type { TocItem } from './toc';
@@ -9,6 +10,7 @@ interface DocsTOCProps {
 }
 
 export const DocsTOC = ({ items }: DocsTOCProps) => {
+  const { t } = useTranslation('pages');
   const [active, setActive] = useState<string | null>(items[0]?.id ?? null);
 
   useEffect(() => {
@@ -35,6 +37,8 @@ export const DocsTOC = ({ items }: DocsTOCProps) => {
 
   return (
     <Box
+      component="nav"
+      aria-label={t('docs.onThisPage')}
       sx={{
         position: 'sticky',
         top: 96,
@@ -57,7 +61,7 @@ export const DocsTOC = ({ items }: DocsTOCProps) => {
           pl: 1,
         }}
       >
-        On this page
+        {t('docs.onThisPage')}
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         {items.map((it) => (

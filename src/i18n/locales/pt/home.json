@@ -165,19 +165,23 @@
     "capabilities": {
       "readsData": {
         "title": "Lê seus dados",
-        "desc": "Qualquer métrica, qualquer curva de equity, qualquer operação, qualquer estudo, respondido em linguagem natural e com fontes."
+        "desc": "Qualquer métrica, qualquer curva de equity, qualquer operação, qualquer estudo, respondido em linguagem natural e com fontes.",
+        "docsLabel": "Docs de capacidades do Fintelligent"
       },
       "generatesStrategies": {
         "title": "Gera estratégias",
-        "desc": "Descreva uma ideia, e o Fintelligent escreve o Python, configura os parâmetros e prepara o formulário para revisão."
+        "desc": "Descreva uma ideia, e o Fintelligent escreve o Python, configura os parâmetros e prepara o formulário para revisão.",
+        "docsLabel": "Docs de capacidades do Fintelligent"
       },
       "operatesUi": {
         "title": "Opera a interface",
-        "desc": "«Abra o estudo 8 e clone-o.» «Leve-me a Mercados.» Páginas e ações acessíveis por intenção."
+        "desc": "«Abra o estudo 8 e clone-o.» «Leve-me a Mercados.» Páginas e ações acessíveis por intenção.",
+        "docsLabel": "Docs do Fintelligent"
       },
       "transparent": {
         "title": "Transparente por design",
-        "desc": "As chamadas de ferramentas são visíveis, e as ações irreversíveis aguardam sua confirmação explícita."
+        "desc": "As chamadas de ferramentas são visíveis, e as ações irreversíveis aguardam sua confirmação explícita.",
+        "docsLabel": "Docs de rascunhos e execuções"
       }
     },
     "chat": {
@@ -365,36 +369,28 @@
       "title": "Ainda tem perguntas?",
       "body": "Uma demonstração de 30 minutos sobre as suas próprias estratégias, com a equipe que construiu a plataforma.",
       "cta": "Fale conosco",
-      "docs": "Ler a documentação"
+      "docs": "Ler a documentação",
+      "pricing": "Comparar planos"
     }
   },
   "audiences": {
     "eyebrow": "Para quem é",
     "title": "Feito para a mesa que",
     "titleAccent": "gere capital.",
-    "description": "Gerindo capital, trabalhando sozinho ou liderando uma mesa de pesquisa: as mesmas primitivas e o mesmo motor. Escolha o seu assento e a página se reorganiza ao seu redor.",
-    "switchLabel": "Escolha o seu assento",
-    "switch": {
-      "funds": "Hedge funds",
-      "independents": "Prop e independentes",
-      "teams": "Equipes de pesquisa"
-    },
-    "explore": "Explorar",
+    "description": "Gerindo capital, trabalhando sozinho ou liderando uma mesa de pesquisa: as mesmas primitivas e o mesmo motor, feito para cada assento da mesa.",
     "items": {
       "funds": {
         "cta": "Veja por que funciona para o seu fundo",
-        "imageAlt": "O canto de uma torre de escritórios com colunas de mármore contra um céu branco",
-        "doorBlurb": "Elimine a fragmentação entre pesquisa, backtesting e execução sem operar a sua própria infraestrutura."
+        "pricingLink": "Ver preços Institutional",
+        "imageAlt": "O canto de uma torre de escritórios com colunas de mármore contra um céu branco"
       },
       "independents": {
         "cta": "Veja por que funciona para você",
-        "imageAlt": "Por cima do ombro de um quant em uma mesa com um laptop e dois monitores, com código na tela mais próxima",
-        "doorBlurb": "Do notebook ao deploy ao vivo, sem um projeto de devops."
+        "imageAlt": "Por cima do ombro de um quant em uma mesa com um laptop e dois monitores, com código na tela mais próxima"
       },
       "teams": {
         "cta": "Veja por que funciona para a sua mesa",
-        "imageAlt": "Visto de costas, um analista trabalhando diante de um monitor em uma sala à meia-luz",
-        "doorBlurb": "Uma biblioteca compartilhada, um espaço de trabalho, uma única fonte de verdade."
+        "imageAlt": "Visto de costas, um analista trabalhando diante de um monitor em uma sala à meia-luz"
       }
     },
     "advantages": {
@@ -485,7 +481,15 @@
     "playerLabel": "Passo a passo das funcionalidades",
     "chaptersLabel": "Capítulos do passo a passo",
     "posterAlt": "O pulso de mercado da Fintela: movimentos de índices, rendimentos do Tesouro e um mapa de calor por setor",
-    "docs": "Docs",
+    "docsLabels": {
+      "fintelligent": "Docs do Fintelligent",
+      "laboratory": "Docs do Laboratório",
+      "optimizationDashboard": "Docs do painel de otimização",
+      "samplerSelection": "Docs de seleção de sampler",
+      "portfolioGroups": "Docs de grupos de portfólios",
+      "market": "Docs de dados de mercado",
+      "liveTrading": "Docs de trading ao vivo"
+    },
     "chapters": {
       "pulse": "Pulso",
       "ticker": "Ticker",
@@ -523,7 +527,7 @@
     "titleAccent": "para o seu fundo.",
     "body": "Uma demonstração de 30 minutos sobre as suas próprias estratégias, ou comece no plano gratuito e traga um estudo para a conversa.",
     "ctaPrimary": "Agendar uma demonstração",
-    "ctaSecondary": "Começar grátis",
+    "ctaSecondary": "Comparar planos",
     "strip": "Sem infraestrutura · Sem instalação local · Conectado à corretora · Proveniência criptográfica"
   }
 }

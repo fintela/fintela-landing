@@ -1,16 +1,24 @@
 /**
  * Every image and video slot on the marketing pages, in one typed map.
  *
- * Stills are imported so Vite hashes and caches them. Product stills are
- * frames of the demo recordings, cropped to drop the app's sidebar and the
- * recorder's status bar; photographs are cropped to their slot's ratio around
- * their subject. Each file is placed exactly once on the site.
+ * Stills are imported so Vite hashes and caches them — through vite-imagetools'
+ * picture directive, so each one ships as AVIF, WebP and JPEG at the widths
+ * its slot needs (`w=` below is "the slot at 1x; the slot at 2x", from the
+ * media audit; the plugin never upscales, so a rung wider than the source is
+ * clamped to it). The registry keeps handing out plain URL strings (the JPEG
+ * fallback), and MediaWell finds the full source set from that string; see
+ * src/media/picture.ts for why. Product stills are frames of the demo
+ * recordings, cropped to drop the app's sidebar and the recorder's status
+ * bar; photographs are cropped to their slot's ratio around their subject.
+ * Each file is placed exactly once on the site.
  *
  * Videos never enter the bundle: they are read from the `media/` prefix
  * (`public/media/` in this repo, or another origin through
  * `VITE_MEDIA_BASE_URL`, the same way `VITE_BLOG_BASE_URL` repoints the blog).
- * Until a file exists at its URL the plate shows its poster, so a page never
- * breaks on a missing demo.
+ * scripts/encode-media.sh writes those files from the masters in
+ * media-masters/, and scripts/check-media.mjs fails the build when a URL
+ * listed here has no file behind it — a missing file is not a broken page
+ * (the plate shows its poster) but it is a wasted request on every visit.
  *
  * The demo recordings are silent screen captures, so they carry no captions;
  * a video with speech lists its WebVTT files (one per locale) under
@@ -18,34 +26,39 @@
  * from i18n, which is the same text those captions carry.
  */
 import { LNG_LABELS, SUPPORTED_LNGS } from '../i18n/config';
-import heroPlatformHome from '../assets/media/hero/platform-home-poster.jpg';
-import heroBackdropPoster from '../assets/media/hero/backdrop-poster.jpg';
-import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg';
-import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg';
-import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg';
-import liveOps from '../assets/media/capabilities/live-ops.jpg';
-import audienceFunds from '../assets/media/audiences/funds.jpg';
-import audienceTeams from '../assets/media/audiences/teams.jpg';
-import audienceIndependents from '../assets/media/audiences/independents.jpg';
-import solutionFunds from '../assets/media/solutions/funds-hero.jpg';
-import solutionTeams from '../assets/media/solutions/teams-hero.jpg';
-import solutionIndependents from '../assets/media/solutions/independents-hero.jpg';
-import fundsResearch from '../assets/media/solutions/chapters/funds-research.jpg';
-import fundsGovernance from '../assets/media/solutions/chapters/funds-governance.jpg';
-import fundsExecution from '../assets/media/solutions/chapters/funds-execution.jpg';
-import fundsWorkspace from '../assets/media/solutions/chapters/funds-workspace.jpg';
-import teamsWorkspace from '../assets/media/solutions/chapters/teams-workspace.jpg';
-import teamsResearch from '../assets/media/solutions/chapters/teams-research.jpg';
-import teamsProvenance from '../assets/media/solutions/chapters/teams-provenance.jpg';
-import teamsReports from '../assets/media/solutions/chapters/teams-reports.jpg';
-import independentsNoDevops from '../assets/media/solutions/chapters/independents-no-devops.jpg';
-import independentsOptimization from '../assets/media/solutions/chapters/independents-optimization.jpg';
-import independentsLive from '../assets/media/solutions/chapters/independents-live.jpg';
+import { registerPicture } from './picture';
+import type { Picture, PictureFraming } from './picture';
+import heroPlatformHome from '../assets/media/hero/platform-home-poster.jpg?w=768;1280&format=avif;webp;jpeg&as=picture';
+import heroBackdropPoster from '../assets/media/hero/backdrop-poster.jpg?w=828;1280;1920&format=avif;webp;jpeg&as=picture';
+import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
+import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
+import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
+import liveOps from '../assets/media/capabilities/live-ops.jpg?w=260;520&format=avif;webp;jpeg&as=picture';
+import audienceFunds from '../assets/media/audiences/funds.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
+import audienceTeams from '../assets/media/audiences/teams.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
+import audienceIndependents from '../assets/media/audiences/independents.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
+import solutionFunds from '../assets/media/solutions/funds-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
+import solutionTeams from '../assets/media/solutions/teams-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
+import solutionIndependents from '../assets/media/solutions/independents-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
+import fundsResearch from '../assets/media/solutions/chapters/funds-research.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import fundsGovernance from '../assets/media/solutions/chapters/funds-governance.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import fundsExecution from '../assets/media/solutions/chapters/funds-execution.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import fundsWorkspace from '../assets/media/solutions/chapters/funds-workspace.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import teamsWorkspace from '../assets/media/solutions/chapters/teams-workspace.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import teamsResearch from '../assets/media/solutions/chapters/teams-research.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import teamsProvenance from '../assets/media/solutions/chapters/teams-provenance.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import teamsReports from '../assets/media/solutions/chapters/teams-reports.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import independentsNoDevops from '../assets/media/solutions/chapters/independents-no-devops.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import independentsOptimization from '../assets/media/solutions/chapters/independents-optimization.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+import independentsLive from '../assets/media/solutions/chapters/independents-live.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
+
+/** A still's URL for the slots typed against a string; MediaWell recovers the picture. */
+const still = (picture: Picture, framing?: PictureFraming): string =>
+  registerPicture(picture, framing);
 
 /** `<base>media/`; mirrors `collectionBase` in src/content/json.ts. */
 const MEDIA_BASE = (
-  (import.meta.env.VITE_MEDIA_BASE_URL as string | undefined) ||
-  `${import.meta.env.BASE_URL}media/`
+  (import.meta.env.VITE_MEDIA_BASE_URL as string | undefined) || `${import.meta.env.BASE_URL}media/`
 ).replace(/\/?$/, '/');
 
 export const mediaUrl = (file: string): string => `${MEDIA_BASE}${file}`;
@@ -58,11 +71,21 @@ const APP_GROUND = '#f8fbfd';
 export interface VideoSource {
   mp4: string;
   webm?: string;
+  /**
+   * AV1 in MP4 (`libsvtav1`, see scripts/encode-media.sh), offered first: a
+   * browser that decodes it takes a file a third smaller, the rest fall
+   * through to `mp4`. Only kept when the saving is real (>30 %).
+   */
+  av1?: string;
 }
 
 export interface VideoAsset {
-  /** Files under the media prefix. */
-  src: VideoSource;
+  /**
+   * Files under the media prefix. Absent (not merely missing on disk) when
+   * the recording does not exist yet: the plate is then its poster from the
+   * first paint, with no request that the CDN could only answer with HTML.
+   */
+  src?: VideoSource;
   /** Trimmed, silent loop for the hero plate. Falls back to `src` when absent. */
   ambient?: VideoSource;
   poster: string;
@@ -96,25 +119,29 @@ export const VIDEOS: Record<VideoId, VideoAsset> = {
     src: { mp4: mediaUrl('platform-home.mp4') },
     /** The platform home scrolled once, top to bottom and back (7 s, silent). */
     ambient: { mp4: mediaUrl('platform-home-loop.mp4') },
-    poster: tourPlatformHome,
+    poster: still(tourPlatformHome),
     posterAltKey: 'tour.posterAlt',
     silent: true,
     ground: APP_GROUND,
   },
+  /**
+   * The multi-agent conversation — not recorded yet, so no `src` and no
+   * `captions`: the band shows the poster. To enable it once the files are in
+   * public/media (agents-conversation.mp4, optionally .av1.mp4/.webm, and
+   * captions/agents-conversation.<en|es|pt>.vtt), add
+   *   src: { mp4: mediaUrl(…) }  and  captions: { en: mediaUrl(…), … }
+   * here; scripts/check-media.mjs then confirms every file exists.
+   */
   agents: {
-    src: { mp4: mediaUrl('agents-conversation.mp4'), webm: mediaUrl('agents-conversation.webm') },
-    poster: agentsPoster,
+    poster: still(agentsPoster),
     posterAltKey: 'fintelligent.posterAlt',
-    captions: {
-      en: mediaUrl('captions/agents-conversation.en.vtt'),
-      es: mediaUrl('captions/agents-conversation.es.vtt'),
-      pt: mediaUrl('captions/agents-conversation.pt.vtt'),
-    },
   },
   /** Markets: pulse → ticker → groups → screener (21 s, silent). */
   walkthrough: {
+    // No `av1`: at crf 38 SVT-AV1 came out larger than x264 crf 27 on this
+    // capture (scripts/encode-media.sh drops an AV1 that is not >30 % smaller).
     src: { mp4: mediaUrl('feature-walkthrough.mp4') },
-    poster: walkthroughPoster,
+    poster: still(walkthroughPoster),
     posterAltKey: 'capabilities.posterAlt',
     silent: true,
     ground: APP_GROUND,
@@ -129,48 +156,71 @@ export const captionTracks = (video: VideoAsset) => {
 };
 
 /** The platform plate's poster is a frame of the ambient loop, already 16/10. */
-export const HERO_POSTER = heroPlatformHome;
+export const HERO_POSTER = still(heroPlatformHome);
+
+/** One width of the hero loop; HeroVideoBackdrop takes the first rung the viewport meets. */
+export interface HeroBackdropRung {
+  /** CSS px; matched with `(min-width: …)` when the video attaches. */
+  minWidth: number;
+  src: string;
+}
 
 /**
  * The full-bleed loop behind the hero copy (36 s, silent). The source promo
- * carries burnt-in captions in its bottom 200 px, so the file is cropped to
- * 1920×880 at encode time; the hero's own fade covers what remains.
+ * carries burnt-in captions in its bottom 200 px, so the master is cropped to
+ * 1920×880; the hero's own fade covers what remains. That master is never
+ * served: the loop sits blurred behind copy, so a 1280 rung for desktops and
+ * a 960 rung for tablets are all the pixels anyone can see, and below 600 px
+ * the poster stands in (scripts/encode-media.sh, audit IMG-01). The poster is
+ * the LCP image of the home page — the `Picture` itself, not its URL, because
+ * HeroVideoBackdrop also preloads its AVIF rungs.
  */
 export const HERO_BACKDROP = {
-  src: mediaUrl('hero-backdrop.mp4'),
   poster: heroBackdropPoster,
+  rungs: [
+    { minWidth: 1024, src: mediaUrl('hero-backdrop-1280.mp4') },
+    { minWidth: 600, src: mediaUrl('hero-backdrop-960.mp4') },
+  ] as readonly HeroBackdropRung[],
 } as const;
 
 export const STILLS = {
-  liveOps,
+  liveOps: still(liveOps),
+  /**
+   * 800×1000 portraits (cropped for the dossier's former 4/5 seat) in what is
+   * now a 16/9 well, which shows a 45 % band of each: `objectPosition` puts
+   * that band on the subject — the building's corner, the two heads and their
+   * screens — instead of the middle (audit IMG-08). A 16/9 re-crop of the
+   * originals (src/media/README.md lists them) would also recover the
+   * resolution the slot wants at 2x; that is a creative cut, left to the user.
+   */
   audiences: {
-    funds: audienceFunds,
-    teams: audienceTeams,
-    independents: audienceIndependents,
+    funds: still(audienceFunds, { objectPosition: 'center 30%' }),
+    teams: still(audienceTeams, { objectPosition: 'center 28%' }),
+    independents: still(audienceIndependents, { objectPosition: 'center 20%' }),
   },
   solutions: {
-    funds: solutionFunds,
-    teams: solutionTeams,
-    independents: solutionIndependents,
+    funds: still(solutionFunds),
+    teams: still(solutionTeams),
+    independents: still(solutionIndependents),
   },
   /** Product frames for the solution chapters, one per chapter. */
   chapters: {
     funds: {
-      research: fundsResearch,
-      governance: fundsGovernance,
-      execution: fundsExecution,
-      workspace: fundsWorkspace,
+      research: still(fundsResearch),
+      governance: still(fundsGovernance),
+      execution: still(fundsExecution),
+      workspace: still(fundsWorkspace),
     },
     teams: {
-      workspace: teamsWorkspace,
-      research: teamsResearch,
-      provenance: teamsProvenance,
-      reports: teamsReports,
+      workspace: still(teamsWorkspace),
+      research: still(teamsResearch),
+      provenance: still(teamsProvenance),
+      reports: still(teamsReports),
     },
     independents: {
-      noDevops: independentsNoDevops,
-      optimization: independentsOptimization,
-      live: independentsLive,
+      noDevops: still(independentsNoDevops),
+      optimization: still(independentsOptimization),
+      live: still(independentsLive),
     },
   },
 } as const;

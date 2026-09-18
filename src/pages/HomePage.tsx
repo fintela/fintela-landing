@@ -15,6 +15,9 @@ import { Footer } from '../components/Footer/Footer';
 import { ScrollTop } from '../components/common/ScrollTop';
 import { scrollToSection as scrollToId } from '../lib/scrollToSection';
 import { AudienceContext, useAudienceState } from '../lib/audience';
+import { orderFaq } from '../lib/faqOrder';
+import { Seo } from '../seo/Seo';
+import { faqPage, organization, softwareApplication, webSite } from '../seo/jsonld';
 
 /** Band ids the header's scroll-spy follows, in page order. */
 const SCROLL_SECTIONS = ['for-funds', 'platform', 'fintelligent', 'capabilities', 'insights', 'faq'] as const;
@@ -37,9 +40,17 @@ const resolveTarget = (id: string) => HASH_ALIASES[id] ?? id;
 
 export const HomePage = () => {
   const { t } = useTranslation('home');
+  const { t: tPages } = useTranslation('pages');
   const [activeSection, setActiveSection] = useState<string>('platform');
   const location = useLocation();
   const audienceState = useAudienceState();
+
+  // The FAQ band's questions, in the order it renders them for this audience —
+  // the FAQPage markup must mirror the visible text, not a fixed list.
+  const faqItems = orderFaq(audienceState.audience).map((key) => ({
+    q: t(`faq.items.${key}.q`),
+    a: t(`faq.items.${key}.a`),
+  }));
 
   const scrollToSection = useCallback((section: string) => {
     const target = resolveTarget(section);
@@ -84,23 +95,35 @@ export const HomePage = () => {
   return (
     <AudienceContext.Provider value={audienceState}>
       <Box sx={{ minHeight: '100vh' }}>
-        <Header activeSection={activeSection} onNavigate={scrollToSection} />
-        <HeroDiorama onWatch={() => scrollToSection('platform')} />
-        <InstitutionalSection />
-        <WorkflowSection />
-        <FintelligentSection />
-        <CapabilitiesBento />
-        <InsightsSection />
-        <FAQSection />
-        <ClosingSection
-          eyebrow={t('closing.eyebrow')}
-          title={t('closing.title')}
-          titleAccent={t('closing.titleAccent')}
-          body={t('closing.body')}
-          primary={{ label: t('closing.ctaPrimary'), to: '/contact?intent=walkthrough' }}
-          secondary={{ label: t('closing.ctaSecondary') }}
-          strip={t('closing.strip')}
+        <Seo
+          title={tPages('seo.home.title')}
+          description={tPages('seo.home.description')}
+          jsonLd={[
+            organization(),
+            webSite(),
+            softwareApplication(tPages('seo.home.description')),
+            faqPage(faqItems),
+          ]}
         />
+        <Header activeSection={activeSection} onNavigate={scrollToSection} />
+        <Box component="main" id="content">
+          <HeroDiorama onWatch={() => scrollToSection('platform')} />
+          <InstitutionalSection />
+          <WorkflowSection />
+          <FintelligentSection />
+          <CapabilitiesBento />
+          <InsightsSection />
+          <FAQSection />
+          <ClosingSection
+            eyebrow={t('closing.eyebrow')}
+            title={t('closing.title')}
+            titleAccent={t('closing.titleAccent')}
+            body={t('closing.body')}
+            primary={{ label: t('closing.ctaPrimary'), to: '/contact' }}
+            secondary={{ label: t('closing.ctaSecondary'), to: '/pricing' }}
+            strip={t('closing.strip')}
+          />
+        </Box>
         <Footer />
         <ScrollTop />
       </Box>

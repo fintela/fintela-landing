@@ -7,7 +7,12 @@ tags: Engineering
 published: false
 ---
 
-![Alt text](https://tse1.mm.bing.net/th/id/OIP.Oq0IXk59gNDahqAYp7lciAHaDr?r=0&rs=1&pid=ImgDetMain&o=7&rm=3)
+<!--
+  Lead image removed: it pointed at a Bing image-search cache of someone else's
+  picture, which cannot be self-hosted. Before publishing, add a licensed image as
+  covers/tree-structured-parzen-estimator.jpg, set `cover:` + `coverAlt:` above, and
+  reference it here as ![...](covers/tree-structured-parzen-estimator.jpg).
+-->
 
 
 

@@ -63,8 +63,10 @@ export const BlogCard = ({ post }: { post: BlogPostSummary }) => {
           </Typography>
         </Box>
 
+        {/* h6 for the size; h2 because the card sits directly under the /blog h1. */}
         <Typography
           variant="h6"
+          component="h2"
           sx={{ fontWeight: 700, mb: 1, color: soft.text, lineHeight: 1.4 }}
         >
           {post.title}

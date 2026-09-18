@@ -4,7 +4,7 @@ section: Integration Guides
 sectionOrder: 9
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Build your external strategy or fitness service in Node.js and Express, and connect it to Fintela.
 keywords: express, node, javascript, guide, external strategy, external fitness, own logic, going live checklist
 ---

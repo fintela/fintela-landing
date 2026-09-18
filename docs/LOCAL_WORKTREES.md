@@ -57,8 +57,9 @@ a port can be reserved with nothing listening.
 | `.env.development.local` (managed block) | `VITE_FINTELA_API` | Read **only** in development mode, and highest precedence there. A localhost URL here cannot reach `npm run build` output — the same rule the product frontend uses. |
 
 Only the block between the markers is rewritten; anything outside survives.
-`deploy.sh` sources `.env.local` for `S3_BUCKET` / `CLOUDFRONT_DISTRIBUTION`,
-which therefore live in its tail.
+`deploy.sh` (and `infra/cloudfront/apply.sh`) source `.env.local` for
+`S3_BUCKET` / `CLOUDFRONT_DISTRIBUTION`, which therefore live in its tail.
+`deploy.sh` is `npm run build` + `scripts/sync-site.sh`, the same upload CI does.
 
 ## 4 · The contact form and the product backend
 

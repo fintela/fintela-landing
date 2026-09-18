@@ -46,6 +46,7 @@ export const RotatingWord = ({
   const [phase, setPhase] = useState(0);
   const [width, setWidth] = useState<number>();
   const measureRef = useRef<HTMLSpanElement>(null);
+  const rootRef = useRef<HTMLSpanElement>(null);
 
   const n = words.length;
   const current = words[phase % n];
@@ -62,17 +63,52 @@ export const RotatingWord = ({
     setWidth(Math.ceil(widest));
   }, [words]);
 
+  // The timer runs only while the slot is on screen, the tab is visible and
+  // motion is not reduced: a re-render every two seconds for the life of the
+  // page is wasted below the fold, and a word that changes while a
+  // reduced-motion visitor reads is the motion they asked not to see. Each
+  // resume waits `startDelay` again, so a return to the top never lands on a
+  // mid-swap.
   useEffect(() => {
-    if (n <= 1) return;
+    const el = rootRef.current;
+    if (n <= 1 || !el) return undefined;
 
-    let tick: ReturnType<typeof setInterval>;
-    const kickoff = setTimeout(() => {
-      tick = setInterval(() => setPhase((p) => p + 1), interval);
-    }, startDelay);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let inView = false;
+    let kickoff: ReturnType<typeof setTimeout> | undefined;
+    let tick: ReturnType<typeof setInterval> | undefined;
 
-    return () => {
+    const stop = () => {
       clearTimeout(kickoff);
       clearInterval(tick);
+      kickoff = undefined;
+      tick = undefined;
+    };
+    const start = () => {
+      if (kickoff || tick) return;
+      kickoff = setTimeout(() => {
+        kickoff = undefined;
+        tick = setInterval(() => setPhase((p) => p + 1), interval);
+      }, startDelay);
+    };
+    const update = () => {
+      if (inView && document.visibilityState === 'visible' && !reduced.matches) start();
+      else stop();
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      update();
+    });
+    observer.observe(el);
+    document.addEventListener('visibilitychange', update);
+    reduced.addEventListener('change', update);
+
+    return () => {
+      stop();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', update);
+      reduced.removeEventListener('change', update);
     };
   }, [n, interval, startDelay]);
 
@@ -92,6 +128,7 @@ export const RotatingWord = ({
   return (
     <Box
       component="span"
+      ref={rootRef}
       sx={{
         position: 'relative',
         display: 'inline-block',

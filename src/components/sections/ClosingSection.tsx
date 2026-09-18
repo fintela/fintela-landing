@@ -7,7 +7,7 @@ import { NeuButton } from '../primitives/NeuButton';
 import { Groove } from '../primitives/Groove';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { ctaRowSx } from '../../theme/neu';
-import { soft } from '../../theme/tokens';
+import { fonts, soft } from '../../theme/tokens';
 
 export interface ClosingCta {
   label: string;
@@ -59,7 +59,7 @@ export const ClosingSection = ({ id = 'start', eyebrow, title, titleAccent, body
           <>
             <Groove sx={{ mt: 4, mb: 2.25, mx: { xs: 0, md: 4 } }} />
             <Typography
-              sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.72rem', letterSpacing: '0.02em', color: soft.textSecondary, lineHeight: 1.7 }}
+              sx={{ fontFamily: fonts.mono, fontSize: '0.72rem', letterSpacing: '0.02em', color: soft.textSecondary, lineHeight: 1.7 }}
             >
               {strip}
             </Typography>

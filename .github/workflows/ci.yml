@@ -17,7 +17,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      # Full history, as in deploy.yml: the prerender reads each content file's
+      # last commit date for the sitemap <lastmod>, so the build under test is
+      # the build that ships.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -28,6 +33,12 @@ jobs:
 
       - name: Typecheck
         run: npx tsc -b
+
+      # Gated since the three errors inherited from the monorepo were fixed
+      # (AnimateOnScroll refs-during-render, DocsSearch set-state-in-effect,
+      # Prose fast-refresh export).
+      - name: Lint
+        run: npm run lint
 
       - name: Build
         run: npm run build
@@ -41,6 +52,33 @@ jobs:
       # without this. Runs on dist/, so it validates what actually publishes.
       - name: Documentation links resolve
         run: node scripts/check-docs-links.mjs
+
+      # Content hygiene for what a crawler will see: no hot-linked images, real
+      # alt text, no links to redirecting paths (/docs, /solutions, trailing
+      # slashes), every referenced cover published. Runs on dist/ like the above.
+      - name: Content images and links are clean
+        run: node scripts/check-content.mjs
+
+      # Every video the registry points at must exist under public/media — a
+      # missing file used to cost three failed requests per page view, answered
+      # by the SPA fallback with HTML.
+      - name: Registered media files exist
+        run: node scripts/check-media.mjs
+
+      # The prerendered site is what crawlers index. Every route must have its
+      # HTML with exactly one <title>, <h1> and canonical, a description, an OG
+      # image and parseable JSON-LD; the sitemaps must list only pages that
+      # exist and none of the redirect paths. The <h1> rule is the
+      # heading-hierarchy gate: a page that fails it is a page whose outline
+      # regressed.
+      - name: Prerendered output and sitemaps
+        run: node scripts/check-seo-output.mjs
+
+      # The CloudFront router carries copies of the redirect maps in
+      # src/App.tsx (LEGACY_DOC_PATHS, DOC_SLUG_REDIRECTS); the test fails when
+      # they drift, and exercises every redirect and rewrite the edge performs.
+      - name: CloudFront router
+        run: node --test infra/cloudfront/router.test.mjs
 
       # These hosts do not serve the site and have each spread through the codebase
       # once already: "api." never existed, and "home." resolved to a distribution
@@ -60,9 +98,3 @@ jobs:
           done
           [ "$FAILED" -eq 0 ] || exit 1
           echo "No stale references to non-existent hosts."
-
-  # NOTE: `npm run lint` is deliberately NOT gated yet. It is red with 3
-  # pre-existing errors inherited from the monorepo — AnimateOnScroll.tsx
-  # (refs-during-render), DocsSearch.tsx (set-state-in-effect), Prose.tsx
-  # (fast-refresh-export). Gating on it now would make CI permanently red; fixing
-  # those three is a good first contribution.

@@ -1,13 +1,7 @@
 {
   "contact": {
-    "hero": {
-      "chip": "We're Here to Help",
-      "title": "Get in Touch",
-      "subtitle": "Request a demo or get support from our team. We'll get back to you within 24 hours."
-    },
     "toggle": {
       "heading": "How can we help you?",
-      "demo": "Request a Demo",
       "support": "Contact Support"
     },
     "form": {
@@ -15,14 +9,11 @@
       "company": "Company",
       "email": "Email Address",
       "phone": "Phone Number",
-      "messageLabelDemo": "Tell us about your needs",
       "messageLabelSupport": "Describe your issue or question",
-      "messagePlaceholderDemo": "What features are you most interested in? What are your use cases?",
       "messagePlaceholderSupport": "Please provide as much detail as possible about your issue..."
     },
     "submit": {
       "sending": "Sending...",
-      "demo": "Request Demo",
       "support": "Submit Support Request"
     },
     "alert": {
@@ -31,9 +22,6 @@
       "error": "Failed to send message. Please try again or contact us directly.",
       "tooMany": "Too many requests from your network. Please wait a few minutes and try again.",
       "rejected": "We couldn't accept the form as filled in. Please check the email address and try again."
-    },
-    "assistance": {
-      "heading": "Need immediate assistance?"
     },
     "intent": {
       "walkthrough": {
@@ -56,6 +44,7 @@
     "individual": {
       "title": "Plans",
       "overageRateLabel": "Overage rate",
+      "tokenHelp": "What is a token?",
       "plans": {
         "trader": {
           "name": "Trader",
@@ -228,6 +217,16 @@
     "readMore": "Read More",
     "readTime": "{{minutes}} min read",
     "backToBlog": "Back to Blog",
+    "loading": "Loading articles…",
+    "loadingPost": "Loading article…",
+    "related": {
+      "title": "Related posts"
+    },
+    "postNav": {
+      "label": "More posts",
+      "newer": "Newer post",
+      "older": "Older post"
+    },
     "empty": {
       "title": "No posts yet",
       "body": "We're working on the first articles. Check back soon for insights on quantitative finance and algorithmic trading."
@@ -245,6 +244,38 @@
     "readTime": "{{minutes}} min read",
     "updated": "Updated {{date}}",
     "backToIndex": "Browse all documentation",
+    "loadingPage": "Loading documentation…",
+    "crumb": "Docs",
+    "breadcrumb": "Breadcrumb",
+    "navLabel": "Documentation",
+    "menuTitle": "Documentation",
+    "openMenu": "Open documentation menu",
+    "closeMenu": "Close menu",
+    "searchDocs": "Search docs",
+    "searchPlaceholder": "Search docs — strategies, fitness, errors, endpoints…",
+    "searchLoading": "Loading the search index…",
+    "searchNoResults": "No results for \"{{query}}\". Try \"study\", \"fitness\", or \"endpoint\".",
+    "searchHints": {
+      "navigate": "navigate",
+      "open": "open",
+      "close": "close"
+    },
+    "onThisPage": "On this page",
+    "previous": "Previous",
+    "next": "Next",
+    "sectionLink": "Link to this section",
+    "code": {
+      "tabs": "Code examples",
+      "copy": "Copy code",
+      "copied": "Copied"
+    },
+    "callout": {
+      "info": "Note",
+      "warning": "Warning",
+      "tip": "Tip",
+      "danger": "Caution",
+      "success": "Success"
+    },
     "error": {
       "title": "Documentation couldn't be loaded",
       "body": "Something went wrong while fetching the pages. Refresh the page or try again in a few minutes."
@@ -254,11 +285,69 @@
       "body": "This documentation page may have been renamed or unpublished. Head back to the index to see everything that's live."
     }
   },
+  "search": {
+    "placeholder": "Search Fintela — docs, blog, pricing…",
+    "ariaLabel": "Search the site",
+    "noResults": "No results for \"{{query}}\". Try a different search.",
+    "sectionPages": "Pages",
+    "sectionBlog": "Blog",
+    "pages": {
+      "home": "Home",
+      "pricing": "Pricing",
+      "solutionsFunds": "Hedge Funds",
+      "solutionsTeams": "Quant Teams",
+      "solutionsIndependents": "Independent Quants",
+      "contact": "Contact",
+      "blog": "Blog",
+      "docs": "Documentation"
+    }
+  },
   "notFound": {
     "code": "Error 404",
     "title": "This page does not exist",
     "body": "The link may be out of date, or the address may have a typo. Nothing is broken on our side. The page simply isn't here.",
     "home": "Back to home",
-    "docs": "Browse the docs"
+    "docs": "Browse the docs",
+    "blog": "Read the blog",
+    "pricing": "See pricing",
+    "contact": "Contact us"
+  },
+  "seo": {
+    "home": {
+      "title": "Fintela | AI-Native Quant Platform for Trading Strategies",
+      "description": "Build, backtest, optimize and deploy quantitative trading strategies in one cloud platform. Bayesian optimization and broker-connected execution."
+    },
+    "pricing": {
+      "title": "Pricing & Plans | Fintela",
+      "description": "Every plan includes the full platform: any broker, unlimited strategies, fitness functions and risk managers. Compare Trader, Quant and Institutional."
+    },
+    "contactWalkthrough": {
+      "title": "Book a Walkthrough | Fintela",
+      "description": "Thirty minutes on your own strategies with the team that built the platform. Tell us about your desk and we confirm a time within one business day."
+    },
+    "blog": {
+      "title": "Fintela Blog | Quant Research Notes & Platform Updates",
+      "description": "Insights, tutorials and practical guides for quantitative finance and algorithmic trading, from the team building the Fintela platform."
+    },
+    "docs": {
+      "title": "Documentation | Fintela Docs",
+      "description": "Guides, concepts and API reference for the Fintela platform: from your first optimization study to live trading through your connected broker."
+    },
+    "terms": {
+      "title": "Terms and Conditions | Fintela",
+      "description": "The terms and conditions that govern access to and use of the Fintela platform, operated by Momento Capital, S.A.P.I. de C.V. The Spanish version prevails."
+    },
+    "privacy": {
+      "title": "Privacy Notice | Fintela",
+      "description": "How Fintela collects, uses, stores and protects personal data across the platform and this website, and the rights you have over your information."
+    },
+    "riskDisclosures": {
+      "title": "Risk Disclosures | Fintela",
+      "description": "General risk notice for using Fintela: backtested results, optimization, live trading and market risk. Read it before deploying any capital."
+    },
+    "notFound": {
+      "title": "Page Not Found | Fintela",
+      "description": "The link may be out of date or the address may have a typo. Head back to the home page or browse the documentation to find what you were looking for."
+    }
   }
 }

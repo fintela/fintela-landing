@@ -92,7 +92,8 @@ const FeatureTile = ({
     sx={{ height: '100%', p: { xs: 3, md: 3 }, display: 'flex', flexDirection: 'column' }}
   >
     {lead ?? (badge ? <Box sx={{ mb: 2 }}><TierBadge featured>{badge}</TierBadge></Box> : <Rule />)}
-    <Typography sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>{title}</Typography>
+    {/* A sub-topic of the band, so a heading — the size is the tile's own. */}
+    <Typography component="h3" sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>{title}</Typography>
     <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6, mb: 2 }}>{description}</Typography>
     <Box
       component={RouterLink}
@@ -115,7 +116,9 @@ export const CapabilitiesBento = () => {
   const { t } = useTranslation('home');
   const chapters = WALKTHROUGH_CHAPTERS.map((c) => ({ ...c, label: t(`capabilities.chapters.${c.id}`) }));
   const { activeId, setActiveId, playerRef, seekTo } = useVideoChapters(chapters);
-  const docsLabel = t('capabilities.docs');
+  // Each docs link is named for its destination: seven identical "Docs"
+  // anchors to six pages tell neither a link list nor a crawler apart.
+  const docsLabel = (key: string) => t(`capabilities.docsLabels.${key}`);
 
   const watch = () => {
     playerRef.current?.reveal();
@@ -142,7 +145,7 @@ export const CapabilitiesBento = () => {
               title={t('features.items.ai.title')}
               description={t('features.items.ai.description')}
               docs="/docs/fintelligent"
-              docsLabel={docsLabel}
+              docsLabel={docsLabel('fintelligent')}
             />
           </AnimateOnScroll>
         </BentoTile>
@@ -152,7 +155,7 @@ export const CapabilitiesBento = () => {
               title={t('features.items.laboratory.title')}
               description={t('features.items.laboratory.description')}
               docs="/docs/laboratory"
-              docsLabel={docsLabel}
+              docsLabel={docsLabel('laboratory')}
             />
           </AnimateOnScroll>
         </BentoTile>
@@ -203,7 +206,7 @@ export const CapabilitiesBento = () => {
             >
               <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <Rule />
-                <Typography sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>
+                <Typography component="h3" sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>
                   {t('features.items.bayesian.title')}
                 </Typography>
                 <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6, mb: 2 }}>
@@ -214,7 +217,7 @@ export const CapabilitiesBento = () => {
                   to="/docs/optimization-dashboard"
                   sx={[quietLinkSx, { mt: 'auto', fontSize: '0.82rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 0.5, alignSelf: 'flex-start' }]}
                 >
-                  {docsLabel}
+                  {docsLabel('optimizationDashboard')}
                   <ArrowForwardIcon sx={{ fontSize: 14 }} />
                 </Box>
               </Box>
@@ -242,7 +245,7 @@ export const CapabilitiesBento = () => {
               title={t('capabilities.quantum.title')}
               description={t('capabilities.quantum.description')}
               docs="/docs/sampler-selection"
-              docsLabel={docsLabel}
+              docsLabel={docsLabel('samplerSelection')}
             />
           </AnimateOnScroll>
         </BentoTile>
@@ -252,7 +255,7 @@ export const CapabilitiesBento = () => {
               title={t('features.items.allocation.title')}
               description={t('features.items.allocation.description')}
               docs="/docs/portfolio-groups"
-              docsLabel={docsLabel}
+              docsLabel={docsLabel('portfolioGroups')}
             />
           </AnimateOnScroll>
         </BentoTile>
@@ -262,7 +265,7 @@ export const CapabilitiesBento = () => {
               title={t('features.items.crossMarket.title')}
               description={t('features.items.crossMarket.description')}
               docs="/docs/market"
-              docsLabel={docsLabel}
+              docsLabel={docsLabel('market')}
             />
           </AnimateOnScroll>
         </BentoTile>
@@ -284,7 +287,7 @@ export const CapabilitiesBento = () => {
               title={t('features.items.liveTrading.title')}
               description={t('features.items.liveTrading.description')}
               docs="/docs/live-trading"
-              docsLabel={docsLabel}
+              docsLabel={docsLabel('liveTrading')}
             />
           </AnimateOnScroll>
         </BentoTile>

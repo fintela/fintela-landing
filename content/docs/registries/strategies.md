@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: How to define the trading logic a study optimizes: write it directly in Fintela's Python editor, or connect a service you run yourself.
 keywords: strategy, signal, parameters, python editor, internal, external, backtest, lookback, versions, execution mode
 ---
@@ -483,3 +483,8 @@ Fintela checks your address both when you save it and before every call:
 | Rule based mode | Not available for strategies at all, internal or external: that's a [risk manager](/docs/risk-managers) feature |
 
 Everything else works the same either way: your warmup (lookback) function, an optional validation universe, parameters and the search space a study builds from them, Run a Backtest, the strategies list, duplication, and version history of your settings.
+
+> [!TIP] Further reading
+> A worked example of a strategy built on one of the most replicated anomalies in finance, and
+> why it sometimes stops working:
+> [Why momentum works, and why it sometimes stops working](/blog/momentum-research).

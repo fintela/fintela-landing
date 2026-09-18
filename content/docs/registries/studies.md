@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 4
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Set up an optimization run that tests one strategy against a chosen universe and objective across many parameter combinations, then review, rank and promote the trials it produces.
 keywords: study, optimization, trials, sampler, trial budget, backtesting, walk-forward, progress, health, status, autostop, risk managers
 ---

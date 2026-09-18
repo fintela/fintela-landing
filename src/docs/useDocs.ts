@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { DocNotFoundError, fetchDoc, fetchDocsIndex } from './api';
+import { DocNotFoundError, fetchDoc, fetchDocsIndex, peekDoc, peekDocsIndex } from './api';
 import type { DocDetail, DocsIndex } from './types';
 
 /**
  * Fetch-on-mount hooks over the memoized `api` layer — the same pattern as
- * `src/blog/useBlog.ts`, which is all a static CDN payload needs.
+ * `src/blog/useBlog.ts`, which is all a static CDN payload needs. As there,
+ * each hook starts `ready` when its JSON was seeded (by the prerender, or from
+ * the payload embedded in the prerendered HTML), so server and client render
+ * the same first frame.
  */
 
 export type DocsStatus = 'loading' | 'ready' | 'error';
@@ -22,16 +25,22 @@ const EMPTY_INDEX: DocsIndex = { generatedAt: '', sections: [], pages: [] };
  * which is why it is memoized in `api` rather than passed down.
  */
 export function useDocsIndex(): IndexState {
-  const [state, setState] = useState<IndexState>({
-    status: 'loading',
-    index: EMPTY_INDEX,
+  const [state, setState] = useState<IndexState>(() => {
+    const index = peekDocsIndex();
+    return index ? { status: 'ready', index } : { status: 'loading', index: EMPTY_INDEX };
   });
 
   useEffect(() => {
     let active = true;
     fetchDocsIndex()
       .then((index) => {
-        if (active) setState({ status: 'ready', index });
+        if (active) {
+          setState((prev) =>
+            prev.status === 'ready' && prev.index.pages === index.pages
+              ? prev
+              : { status: 'ready', index },
+          );
+        }
       })
       .catch((err) => {
         console.warn('[docs] could not load the documentation index', err);
@@ -59,7 +68,11 @@ interface DocResult {
 }
 
 export function useDoc(slug: string | undefined): DocState {
-  const [result, setResult] = useState<DocResult | null>(null);
+  const [result, setResult] = useState<DocResult | null>(() => {
+    if (!slug) return null;
+    const doc = peekDoc(slug);
+    return doc ? { slug, status: 'ready', doc } : null;
+  });
 
   useEffect(() => {
     if (!slug) return;
@@ -67,7 +80,13 @@ export function useDoc(slug: string | undefined): DocState {
     let active = true;
     fetchDoc(slug)
       .then((doc) => {
-        if (active) setResult({ slug, status: 'ready', doc });
+        if (active) {
+          setResult((prev) =>
+            prev?.slug === slug && prev.status === 'ready' && prev.doc === doc
+              ? prev
+              : { slug, status: 'ready', doc },
+          );
+        }
       })
       .catch((err) => {
         if (!active) return;

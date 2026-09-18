@@ -8,7 +8,7 @@ import { IconWell } from '../primitives/IconWell';
 import { Groove } from '../primitives/Groove';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { forcedColorsSurface, neuFieldSx, wellSx } from '../../theme/neu';
-import { palette, radii, shadows, soft } from '../../theme/tokens';
+import { fonts, palette, radii, shadows, soft } from '../../theme/tokens';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import CodeIcon from '@mui/icons-material/Code';
@@ -282,7 +282,7 @@ const AgentMessage = ({
           fontWeight: 600,
           letterSpacing: '0.04em',
           textTransform: 'uppercase',
-          fontFamily: '"JetBrains Mono", monospace',
+          fontFamily: fonts.mono,
           '& svg': { color: tone === 'success' ? palette.success : soft.accent },
           ...forcedColorsSurface,
         }}

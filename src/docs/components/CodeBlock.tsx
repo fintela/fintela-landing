@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import { tokenize, TOKEN_COLORS, type Language } from '../syntax/highlight';
-import { gradients, palette, radii, shadows, soft } from '../../theme/tokens';
+import { fonts, gradients, palette, radii, shadows, soft } from '../../theme/tokens';
 import { inkGrooveSx, inkSurfaceSx } from '../../theme/neu';
 
 export interface CodeSnippet {
@@ -34,6 +35,7 @@ export const CodeBlock = ({
   lineNumbers = false,
   maxHeight,
 }: CodeBlockProps) => {
+  const { t } = useTranslation('pages');
   const activeTabs = tabs ?? [{ label: filename ?? language, language, code }];
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -86,11 +88,18 @@ export const CodeBlock = ({
           pr: 1,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, overflowX: 'auto' }}>
+        {/* A tab needs a tablist parent to be a tab at all (ARIA
+            aria-required-parent); a single-snippet block is a list of one. */}
+        <Box
+          role="tablist"
+          aria-label={t('docs.code.tabs')}
+          sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, overflowX: 'auto' }}
+        >
           {activeTabs.map((tab, idx) => (
             <Box
               key={tab.label + idx}
               role="tab"
+              aria-selected={active === idx}
               tabIndex={0}
               onClick={() => setActive(idx)}
               onKeyDown={(e) => {
@@ -103,7 +112,7 @@ export const CodeBlock = ({
                 fontWeight: 600,
                 color: active === idx ? soft.white : soft.onInk,
                 cursor: activeTabs.length > 1 ? 'pointer' : 'default',
-                fontFamily: '"JetBrains Mono", monospace',
+                fontFamily: fonts.mono,
                 letterSpacing: '0.01em',
                 position: 'relative',
                 whiteSpace: 'nowrap',
@@ -133,9 +142,9 @@ export const CodeBlock = ({
           ))}
         </Box>
 
-        <Tooltip title={copied ? 'Copied' : 'Copy code'} placement="left">
+        <Tooltip title={copied ? t('docs.code.copied') : t('docs.code.copy')} placement="left">
           <IconButton
-            aria-label="Copy code"
+            aria-label={t('docs.code.copy')}
             size="small"
             onClick={handleCopy}
             sx={{
@@ -164,6 +173,7 @@ export const CodeBlock = ({
       {/* Code body */}
       <Box
         component="pre"
+        role="tabpanel"
         sx={{
           m: 0,
           px: 2,

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
@@ -7,13 +6,18 @@ import { Section } from '../components/primitives/Section';
 import { SectionHeader } from '../components/primitives/SectionHeader';
 import { BentoGrid, BentoTile } from '../components/primitives/BentoGrid';
 import { BlogCard } from '../blog/BlogCard';
+import { BlogCardSkeleton } from '../blog/BlogCardSkeleton';
 import { BlogEmptyState } from '../blog/BlogEmptyState';
 import { CompactPostCard, FeaturedPostCard, TextPostCard, VerticalPostCard } from '../blog/BentoCards';
 import { layoutPuzzle, type PuzzleShape } from '../blog/puzzleLayout';
 import { useBlogIndex } from '../blog/useBlog';
-import { neuGrid } from '../theme/neu';
-import { soft } from '../theme/tokens';
+import { neuGrid, srOnly } from '../theme/neu';
 import type { BlogPostSummary } from '../blog/types';
+import { Seo } from '../seo/Seo';
+import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
+import { absoluteUrl } from '../seo/site';
+
+const BLOG_OG_IMAGE = '/og/blog.png';
 
 const SHAPE_VARIANT: Record<PuzzleShape, typeof CompactPostCard> = {
   tall: VerticalPostCard,
@@ -28,6 +32,13 @@ const SHAPE_VARIANT: Record<PuzzleShape, typeof CompactPostCard> = {
  * how every other responsive span in this codebase is done. The puzzle's
  * explicit column/row placement assumes the 3-column desktop grid, so tablet
  * and below get the plain stacked grid instead of trying to reflow it.
+ *
+ * Both stay mounted on purpose. The page is prerendered and hydrated, and a
+ * `useMediaQuery` switch would render one grid on the server and possibly the
+ * other on the client — a hydration mismatch and a layout shift on first
+ * paint. The cost is that every post title is in the DOM twice; both copies
+ * are proper `<h2>`s under the page's `<h1>`, so the outline reads the same
+ * whichever grid a viewport shows.
  */
 const BlogPuzzleGrid = ({ posts }: { posts: BlogPostSummary[] }) => {
   const [hero, second, ...bandPosts] = posts;
@@ -38,11 +49,11 @@ const BlogPuzzleGrid = ({ posts }: { posts: BlogPostSummary[] }) => {
       <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
         <BentoGrid columns={3}>
           <BentoTile col={layout.heroCol} row={layout.heroRow}>
-            <FeaturedPostCard post={hero} />
+            <FeaturedPostCard post={hero} titleAs="h2" />
           </BentoTile>
           {layout.companion && second && (
             <BentoTile col={layout.companion.col} row={layout.companion.row}>
-              <VerticalPostCard post={second} />
+              <VerticalPostCard post={second} titleAs="h2" />
             </BentoTile>
           )}
           {layout.bandTiles.map((tile, i) => {
@@ -50,7 +61,7 @@ const BlogPuzzleGrid = ({ posts }: { posts: BlogPostSummary[] }) => {
             const Variant = SHAPE_VARIANT[tile.shape];
             return (
               <BentoTile key={post.slug} col={tile.col} row={tile.row}>
-                <Variant post={post} />
+                <Variant post={post} titleAs="h2" />
               </BentoTile>
             );
           })}
@@ -83,42 +94,64 @@ const BlogPuzzleGrid = ({ posts }: { posts: BlogPostSummary[] }) => {
  */
 export const BlogPage = () => {
   const { t } = useTranslation('pages');
-  const [activeSection, setActiveSection] = useState('blog');
   const { status, posts } = useBlogIndex();
-
-  const scrollToSection = (section: string) => {
-    setActiveSection(section);
-    if (section === 'home') {
-      window.location.href = '/';
-    }
-  };
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
-      <Header activeSection={activeSection} onNavigate={scrollToSection} />
+      <Seo
+        title={t('seo.blog.title')}
+        description={t('seo.blog.description')}
+        image={BLOG_OG_IMAGE}
+        jsonLd={[
+          organization(),
+          webSite(),
+          webPage({
+            type: 'Blog',
+            name: t('seo.blog.title'),
+            description: t('seo.blog.description'),
+            url: absoluteUrl('/blog'),
+            image: absoluteUrl(BLOG_OG_IMAGE),
+          }),
+          breadcrumbList([homeCrumb(), { name: 'Blog' }]),
+        ]}
+      />
+      <Header />
 
-      {/* Hero */}
-      <Section tone="hero" size="sm" sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 8 } }}>
-        <SectionHeader
-          level="h2"
-          hero
-          title={t('blog.hero.title')}
-          description={t('blog.hero.subtitle')}
-        />
-      </Section>
+      <Box component="main" id="content">
+        {/* Hero */}
+        <Section tone="hero" size="sm" sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 8 } }}>
+          <SectionHeader
+            level="h1"
+            title={t('blog.hero.title')}
+            description={t('blog.hero.subtitle')}
+          />
+        </Section>
 
-      {/* Grid */}
-      <Section size="md" maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, minHeight: '40vh' }}>
-        {status === 'loading' && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress size={28} sx={{ color: soft.accent }} />
-          </Box>
-        )}
+        {/* Grid */}
+        <Section size="md" maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, minHeight: '40vh' }}>
+          {status === 'loading' && (
+            <Box role="status">
+              <Box sx={srOnly}>{t('blog.loading')}</Box>
+              <Box
+                aria-hidden="true"
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: neuGrid.columns(2) },
+                  gap: neuGrid.gap,
+                }}
+              >
+                {Array.from({ length: 6 }, (_, i) => (
+                  <BlogCardSkeleton key={i} />
+                ))}
+              </Box>
+            </Box>
+          )}
 
-        {status !== 'loading' && posts.length === 0 && <BlogEmptyState status={status} />}
+          {status !== 'loading' && posts.length === 0 && <BlogEmptyState status={status} />}
 
-        {posts.length > 0 && <BlogPuzzleGrid posts={posts} />}
-      </Section>
+          {posts.length > 0 && <BlogPuzzleGrid posts={posts} />}
+        </Section>
+      </Box>
 
       <Footer />
     </Box>

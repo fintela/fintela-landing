@@ -8,7 +8,7 @@
     "ctaSecondary": "See how it works",
     "headline": "The Future of",
     "headlineAccent": "Intelligent Investing.",
-    "ctaPrimary": "See why it works for your fund",
+    "ctaPrimary": "See why it works for you",
     "ctaWatch": "Watch the platform",
     "plateCaption": "Platform home · asset exposure, deployed portfolios and the strategies in use",
     "liveBadge": "Live",
@@ -165,19 +165,23 @@
     "capabilities": {
       "readsData": {
         "title": "Reads your data",
-        "desc": "Any metric, any equity curve, any trade, any study, answered in plain English with sources."
+        "desc": "Any metric, any equity curve, any trade, any study, answered in plain English with sources.",
+        "docsLabel": "Fintelligent capabilities docs"
       },
       "generatesStrategies": {
         "title": "Generates strategies",
-        "desc": "Describe an idea, and Fintelligent writes the Python, configures parameters, and stages the form for review."
+        "desc": "Describe an idea, and Fintelligent writes the Python, configures parameters, and stages the form for review.",
+        "docsLabel": "Fintelligent capabilities docs"
       },
       "operatesUi": {
         "title": "Operates the UI",
-        "desc": "\"Open study 8 and clone it.\" \"Switch to Markets.\" Pages and actions reachable by intent."
+        "desc": "\"Open study 8 and clone it.\" \"Switch to Markets.\" Pages and actions reachable by intent.",
+        "docsLabel": "Fintelligent docs"
       },
       "transparent": {
         "title": "Transparent by design",
-        "desc": "Tool calls are visible, and irreversible actions wait for your explicit confirmation."
+        "desc": "Tool calls are visible, and irreversible actions wait for your explicit confirmation.",
+        "docsLabel": "Drafts and runs docs"
       }
     },
     "chat": {
@@ -365,36 +369,28 @@
       "title": "Still have questions?",
       "body": "A 30-minute walkthrough on your own strategies, with the team that built the platform.",
       "cta": "Talk to us",
-      "docs": "Read the docs"
+      "docs": "Read the docs",
+      "pricing": "Compare plans"
     }
   },
   "audiences": {
     "eyebrow": "Who it's for",
     "title": "Built for the desk that",
     "titleAccent": "manages capital.",
-    "description": "Managing capital, working solo, or leading a research desk: the same primitives and the same engine. Pick your seat and the page re-arranges around it.",
-    "switchLabel": "Choose your seat",
-    "switch": {
-      "funds": "Hedge funds",
-      "independents": "Prop & independent",
-      "teams": "Research teams"
-    },
-    "explore": "Explore",
+    "description": "Managing capital, working solo, or leading a research desk: the same primitives and the same engine, built for every seat on the desk.",
     "items": {
       "funds": {
         "cta": "See why it works for your fund",
-        "imageAlt": "The corner of a marble-columned office tower against a white sky",
-        "doorBlurb": "Eliminate fragmentation between research, backtesting and execution, without running your own infrastructure."
+        "pricingLink": "See Institutional pricing",
+        "imageAlt": "The corner of a marble-columned office tower against a white sky"
       },
       "independents": {
         "cta": "See why it works for you",
-        "imageAlt": "Over the shoulder of a quant at a desk with a laptop and two monitors, code on the nearest screen",
-        "doorBlurb": "From notebook to live deployment, without a devops project."
+        "imageAlt": "Over the shoulder of a quant at a desk with a laptop and two monitors, code on the nearest screen"
       },
       "teams": {
         "cta": "See why it works for your desk",
-        "imageAlt": "Seen from behind, an analyst working at a monitor in a dim room",
-        "doorBlurb": "One shared library, one workspace, one source of truth."
+        "imageAlt": "Seen from behind, an analyst working at a monitor in a dim room"
       }
     },
     "advantages": {
@@ -485,7 +481,15 @@
     "playerLabel": "Feature walkthrough",
     "chaptersLabel": "Walkthrough chapters",
     "posterAlt": "The Fintela market pulse: index moves, treasury yields and a sector heatmap",
-    "docs": "Docs",
+    "docsLabels": {
+      "fintelligent": "Fintelligent docs",
+      "laboratory": "Laboratory docs",
+      "optimizationDashboard": "Optimization dashboard docs",
+      "samplerSelection": "Sampler selection docs",
+      "portfolioGroups": "Portfolio groups docs",
+      "market": "Market data docs",
+      "liveTrading": "Live trading docs"
+    },
     "chapters": {
       "pulse": "Pulse",
       "ticker": "Ticker",
@@ -523,7 +527,7 @@
     "titleAccent": "for your fund.",
     "body": "A 30-minute walkthrough on your own strategies, or start on the free tier and bring a study to the call.",
     "ctaPrimary": "Book a walkthrough",
-    "ctaSecondary": "Get started free",
+    "ctaSecondary": "Compare plans",
     "strip": "No infrastructure · No local install · Broker-connected · Cryptographic provenance"
   }
 }

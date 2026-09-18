@@ -2,43 +2,108 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b1020" />
-    <meta
-      name="description"
-      content="Fintela is the AI-native quantitative platform for building, optimizing, and deploying trading strategies — concept to live in days, not weeks."
-    />
-    <meta property="og:title" content="Fintela — AI-native quantitative platform" />
-    <meta
-      property="og:description"
-      content="Design, optimize, and deploy trading strategies across equities, ETFs, forex, and global markets. One platform. Unified workflows."
-    />
-    <meta property="og:type" content="website" />
-    <title>Fintela — The AI-native quant platform</title>
+    <!-- soft.ground (src/theme/tokens.ts): the browser chrome matches the page. -->
+    <meta name="theme-color" content="#edf0f5" />
+    <!--
+      No title, description or og:* here: every route renders its own through
+      src/seo/Seo.tsx (React 19 hoists them into the head), and the build writes
+      them into each route's HTML. A static title would sit beside the real one.
+    -->
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon-192.png" sizes="192x192" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="alternate" type="application/rss+xml" title="Fintela Blog" href="/feed.xml" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <!--
+      The document is prerendered in English. A visitor whose language is
+      Spanish or Portuguese would see that English for a moment before the app
+      re-renders in theirs, so the same detection src/main.tsx performs runs
+      here first and hides #root until then. Keep the two in step.
+    -->
+    <script>
+      (function () {
+        var supported = ['en', 'es', 'pt'];
+        var candidates = [];
+        try {
+          var stored = localStorage.getItem('fintela-lng');
+          if (stored) candidates.push(stored);
+        } catch (e) {}
+        candidates = candidates.concat(navigator.languages || [navigator.language || '']);
+        for (var i = 0; i < candidates.length; i++) {
+          var base = String(candidates[i]).toLowerCase().split('-')[0];
+          if (supported.indexOf(base) === -1) continue;
+          if (base !== 'en') document.documentElement.setAttribute('data-hide-prerender', '');
+          return;
+        }
+      })();
+    </script>
+    <style>
+      [data-hide-prerender] #root {
+        visibility: hidden;
+      }
+    </style>
 
-    <!-- Microsoft Clarity — web analytics + heatmaps. Production only (fintela.io); skips localhost dev/preview. -->
-    <script type="text/javascript">
-      if (window.location.hostname === "fintela.io") {
-        (function (c, l, a, r, i, t, y) {
+    <!--
+      Fonts are self-hosted: src/index.css declares Inter and JetBrains Mono
+      from the @fontsource-variable packages (hashed into /assets by the build)
+      with metric-matched local fallbacks, and scripts/prerender.mjs preloads
+      the Inter file. No third-party font origin, nothing render-blocking.
+    -->
+
+    <!--
+      Microsoft Clarity — web analytics + heatmaps. Production only
+      (fintela.io); skips localhost dev/preview. The queue stub is defined
+      right away so an early `clarity(...)` call is not lost, but the tag
+      itself only ever loads once `localStorage['fintela-consent']` is
+      "accepted" (closes audit GAP-06) — set by the cookie banner
+      (src/components/common/CookieConsentBanner.tsx), which also calls
+      `window.__fintelaEnableAnalytics()` directly so accepting mid-session
+      doesn't wait for a reload. When consent is already on hand (a
+      returning visitor), the tag still only fetches after the window
+      `load` event, in idle time, so it never competes with the hero, the
+      fonts or hydration.
+    -->
+    <script>
+      if (window.location.hostname === 'fintela.io') {
+        (function (c, l, a, r, i) {
           c[a] =
             c[a] ||
             function () {
               (c[a].q = c[a].q || []).push(arguments);
             };
-          t = l.createElement(r);
-          t.async = 1;
-          t.src = "https://www.clarity.ms/tag/" + i;
-          y = l.getElementsByTagName(r)[0];
-          y.parentNode.insertBefore(t, y);
-        })(window, document, "clarity", "script", "xq3qvkyxmp");
+          var injected = false;
+          var inject = function () {
+            if (injected) return;
+            injected = true;
+            var t = l.createElement(r);
+            t.async = 1;
+            t.src = 'https://www.clarity.ms/tag/' + i;
+            var y = l.getElementsByTagName(r)[0];
+            y.parentNode.insertBefore(t, y);
+          };
+          var whenIdle = function () {
+            if ('requestIdleCallback' in c) c.requestIdleCallback(inject, { timeout: 4000 });
+            else setTimeout(inject, 2000);
+          };
+          var hasConsent = function () {
+            try {
+              return localStorage.getItem('fintela-consent') === 'accepted';
+            } catch (e) {
+              return false;
+            }
+          };
+          // The banner calls this directly on "Accept", bypassing the idle
+          // wait: by then the page has been interactive for a while, so
+          // there is no first-paint cost left to protect.
+          c.__fintelaEnableAnalytics = inject;
+          var start = function () {
+            if (hasConsent()) whenIdle();
+          };
+          if (l.readyState === 'complete') start();
+          else c.addEventListener('load', start, { once: true });
+        })(window, document, 'clarity', 'script', 'xq3qvkyxmp');
       }
     </script>
   </head>

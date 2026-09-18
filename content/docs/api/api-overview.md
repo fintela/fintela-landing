@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 1
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: What the Fintela Developer API lets you do, how to connect to it, and the ground rules for pulling your results into your own tools.
 keywords: api, developer api, read-only, personal access key, integrations, dashboards, export results, rate limits, automation
 ---

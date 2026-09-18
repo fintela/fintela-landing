@@ -3,6 +3,20 @@
  * radius, shadow and motion. Import from here, not from raw hex values.
  */
 
+/**
+ * Font stacks. The web fonts are self-hosted (src/index.css declares them from
+ * the @fontsource-variable packages); right behind each sits a metric-matched
+ * local fallback (`Inter Fallback`, `JetBrains Mono Fallback`, also declared
+ * there) so the text laid out before the woff2 arrives has the same advance
+ * widths and line boxes, and the swap moves nothing. Every `fontFamily` in
+ * `sx` should reach for `fonts.sans` / `fonts.mono` rather than spelling the
+ * family out: a hand-written `'JetBrains Mono', monospace` skips the fallback.
+ */
+export const fonts = {
+  sans: "'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  mono: "'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Menlo, monospace",
+} as const;
+
 export const palette = {
   // Brand: institutional navy with a restrained gold highlight. Navy carries
   // every control, link and accent word; gold is a highlight surface — chips,

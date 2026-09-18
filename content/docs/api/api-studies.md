@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 4
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: Pull a study's configuration, progress, health, run status, error details, and optimization results into your own tools or dashboards.
 keywords: studies, optimization progress, study health, run status, error breakdown, optimization curve, parameter importance, developer API, personal access key
 ---

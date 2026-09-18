@@ -58,11 +58,15 @@ Tables use GitHub syntax and scroll horizontally on narrow screens:
 | Weekly | 1.12 | 160% |
 | Monthly | 1.31 | 38% |
 
-For images, put the file in `landing/public/blog-assets/` and reference it with an
-absolute path, so it resolves the same on every route:
+For images, put the file in `content/blog/covers/`, named after the post's slug,
+point the `cover:` and `coverAlt:` fields in the frontmatter at it, and reference
+it in the body with the same relative path. The build copies only frontmatter
+covers into `dist/blog/covers/`, so the lead image and the card image are one
+file. Describe the picture in the alt text, and never hot-link an image host: the
+cover doubles as the post's social preview.
 
 ```markdown
-![Alt text](/blog-assets/my-diagram.png)
+![A rolling Sharpe line dipping below zero during 2020.](covers/my-post.jpg)
 ```
 
 ---

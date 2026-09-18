@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 8
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: The permanent portfolio a promoted trial becomes: the only kind of portfolio you can add to a portfolio group.
 keywords: promoted portfolio, managed portfolio, promotion, trial, snapshot, immutable, lineage, registry
 ---

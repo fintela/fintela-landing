@@ -19,7 +19,7 @@ import { TranscriptRail } from '../primitives/TranscriptRail';
 import type { TranscriptSpeaker } from '../primitives/TranscriptRail';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { quietLinkSx } from '../../theme/neu';
-import { soft } from '../../theme/tokens';
+import { fonts, soft } from '../../theme/tokens';
 import { useVideoChapters } from '../../media/chapters';
 import { VIDEOS, captionTracks } from '../../media/registry';
 
@@ -155,7 +155,7 @@ export const FintelligentSection = () => {
                 {t('fintelligent.agentsCount', { count: Object.keys(SPEAKER_TONE).length })}
               </Typography>
               <Typography
-                sx={{ ml: 'auto', fontSize: '0.72rem', color: soft.textSecondary, fontFamily: '"JetBrains Mono", monospace', fontVariantNumeric: 'tabular-nums' }}
+                sx={{ ml: 'auto', fontSize: '0.72rem', color: soft.textSecondary, fontFamily: fonts.mono, fontVariantNumeric: 'tabular-nums' }}
               >
                 {t('fintelligent.turns', { current: activeIndex + 1, total: cues.length })}
               </Typography>
@@ -196,18 +196,21 @@ export const FintelligentSection = () => {
               }}
             >
               <IconWell size={40}>{c.icon}</IconWell>
-              <Typography sx={{ fontWeight: 700, color: soft.text, mt: 1.75, mb: 0.5, fontSize: '0.98rem' }}>
+              {/* A sub-topic of the band, so a heading — the size is the tile's own. */}
+              <Typography component="h3" sx={{ fontWeight: 700, color: soft.text, mt: 1.75, mb: 0.5, fontSize: '0.98rem' }}>
                 {t(`fintelAgent.capabilities.${c.key}.title`)}
               </Typography>
               <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.6, mb: 2 }}>
                 {t(`fintelAgent.capabilities.${c.key}.desc`)}
               </Typography>
+              {/* Named for its destination: four "Docs" links to three pages
+                  tell neither a reader of a link list nor a crawler apart. */}
               <Box
                 component={RouterLink}
                 to={c.docs}
                 sx={[quietLinkSx, { mt: 'auto', fontSize: '0.82rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 0.5, alignSelf: 'flex-start' }]}
               >
-                {t('capabilities.docs')}
+                {t(`fintelAgent.capabilities.${c.key}.docsLabel`)}
                 <ArrowForwardIcon sx={{ fontSize: 14 }} />
               </Box>
             </NeuPanel>

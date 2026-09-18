@@ -5,6 +5,7 @@ date: 2026-07-28
 excerpt: We built a strategy that scores agricultural tickers on climate anomalies and price momentum, then checked our results against the academic research it's based on, including the parts of that research that should make us skeptical of our own numbers.
 tags: Research
 published: true
+updated: 2026-09-14
 cover: covers/climate-analysis.jpg
 coverAlt: A green price line stepping across a laptop screen, hour marks along the bottom axis.
 ---
@@ -13,7 +14,7 @@ coverAlt: A green price line stepping across a laptop screen, hour marks along t
 
 
 
-Ten tickers, eight countries, one climate index adapted from an actuarial standard that was originally built to price insurance risk rather than to trade equities. That's the starting point for climate_pok, a strategy we backtested that combines price momentum with a monthly climate anomaly score across a small universe of agriculture-linked stocks.
+Ten tickers, eight countries, one climate index adapted from an actuarial standard that was originally built to price insurance risk rather than to trade equities. That's the starting point for climate_pok, a [strategy](/docs/strategies) we backtested that combines price momentum with a monthly climate anomaly score across a small [universe](/docs/asset-groups) of agriculture-linked stocks.
 
 
 ## Where the idea comes from
@@ -58,11 +59,16 @@ Every ticker in the universe is tied to a real place where the underlying busine
 
 ## What the source research actually found, and why it changes how to read our number
 
-The author is careful not to claim causation from the data available, but the implication for us is unavoidable: our backtest runs from 2024 to 2026, nearly a decade after the thesis documented the signal going quiet. A positive result in our window can't lean on the original signal's validity without some independent evidence that it's actually come back.
+The author is careful not to claim causation from the data available, but the implication for us is unavoidable: our [backtest](/docs/studies) runs from 2024 to 2026, nearly a decade after the thesis documented the signal going quiet. A positive result in our window can't lean on the original signal's validity without some independent evidence that it's actually come back.
 
 The second finding is about the thesis's component level breakdown finds wind to be the single strongest predictor, drought reasonably useful, and temperature essentially not predictive, since the market appears to price temperature correctly without delay. Our formula weights temperature equally alongside rain, drought, and wind, which raises the possibility that we're diluting the strongest available signal by averaging it in equally with the weakest one.
 
 The third finding is more reassuring. The thesis compares a risk ranking fixed from 1992 and held constant for 26 years against updating it annually, and finds the two approaches produce similar results, because the relative order between regions turns out to be fairly stable over time. That offers some indirect support for our dynamic, per rebalance selection, though it's not a direct comparison, since the thesis compares fixed versus dynamic at the region and year level while we select dynamically at the ticker level every month.
 
+## Further reading
+
+- [Data Explorer](/docs/data-explorer): what every built in dataset contains before you build it into a strategy.
+- [Fitness functions](/docs/fitness-functions): how a study decides which trial counts as better.
+- [End to end workflow](/docs/end-to-end-workflow): from a universe and a strategy to a promoted portfolio.
 
 Sources: Jiang, R. and Weng, C. (2019), Climate Change Risk and Agriculture-Related Stocks, SSRN. Jiang, R. (2020), Climate Change Risk in Stock Markets, master's thesis, University of Waterloo.

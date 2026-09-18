@@ -1,3 +1,158 @@
+/* ---------------------------------------------------------------------------
+   Fonts. Self-hosted from @fontsource-variable (one variable woff2 per subset,
+   hashed into /assets by Vite) instead of the fonts.googleapis.com stylesheet:
+   no third-party DNS+TLS before first paint, and the file URL is known to the
+   HTML up front, so scripts/prerender.mjs can preload it. Family names stay
+   'Inter' / 'JetBrains Mono' (not fontsource's '… Variable') so every stack in
+   the codebase keeps resolving. Latin + Latin Extended only: the unicode-range
+   is what makes a subset download, and the site's three languages never leave
+   those blocks. The stacks that consume these live in src/theme/tokens.ts.
+   --------------------------------------------------------------------------- */
+
+/* inter-latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* inter-latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* jetbrains-mono-latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* jetbrains-mono-latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* Metric-matched fallbacks: what the browser lays the page out in while the
+   woff2 is in flight. size-adjust scales the local face to Inter's average
+   advance width, and the overrides pin its ascent/descent/line-gap to Inter's,
+   so line boxes and wrap points do not change when the swap happens (CLS 0
+   from fonts). Inter 4 (upem 2048, read from the shipped woff2 with fontTools)
+   has hhea ascender 1984 and descender -494 = 96.88% / 24.12% of the em, so
+   each face's overrides are those two numbers divided by its size-adjust.
+
+   One face per weight bucket: Inter widens with weight (800 is 4.7% wider
+   than 400) while a local face has one regular and one bold, so a single
+   size-adjust that fits body text leaves headlines 4-5% narrow. The
+   size-adjust values were measured in Chromium against the site's own copy
+   (scratchpad measure-weights.mjs); 107.12% for regular is also next/font's
+   published Inter->Arial pair. Liberation Sans is metric-compatible with
+   Arial and Helvetica is within 0.1%, so the same numbers hold for them. */
+/* Inter 400 over Arial (next/font's published pair) */
+@font-face {
+  font-family: 'Inter Fallback';
+  font-weight: 100 450;
+  src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+  size-adjust: 107.12%;
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+}
+
+/* Inter 500 is 1.1% wider than 400; Arial has no medium */
+@font-face {
+  font-family: 'Inter Fallback';
+  font-weight: 451 550;
+  src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+  size-adjust: 108.34%;
+  ascent-override: 89.42%;
+  descent-override: 22.26%;
+  line-gap-override: 0%;
+}
+
+/* Inter 600 over Arial Bold */
+@font-face {
+  font-family: 'Inter Fallback';
+  font-weight: 551 650;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
+  size-adjust: 101.13%;
+  ascent-override: 95.79%;
+  descent-override: 23.85%;
+  line-gap-override: 0%;
+}
+
+/* Inter 700 over Arial Bold */
+@font-face {
+  font-family: 'Inter Fallback';
+  font-weight: 651 750;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
+  size-adjust: 102.23%;
+  ascent-override: 94.76%;
+  descent-override: 23.59%;
+  line-gap-override: 0%;
+}
+
+/* Inter 800 over Arial Bold (the display headings) */
+@font-face {
+  font-family: 'Inter Fallback';
+  font-weight: 751 850;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
+  size-adjust: 103.58%;
+  ascent-override: 93.53%;
+  descent-override: 23.29%;
+  line-gap-override: 0%;
+}
+
+/* Inter 900 over Arial Bold */
+@font-face {
+  font-family: 'Inter Fallback';
+  font-weight: 851 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
+  size-adjust: 105.05%;
+  ascent-override: 92.22%;
+  descent-override: 22.96%;
+  line-gap-override: 0%;
+}
+
+/* JetBrains Mono (upem 1000): advance 600, hhea ascender 1020, descender -300,
+   line gap 0 — read from the shipped woff2 with fontTools. Menlo and DejaVu
+   Sans Mono advance 1233/2048 = 0.6021 em and Courier New 1229/2048 = 0.6001,
+   so size-adjust 600 / 602.1 = 99.65% (Courier New lands 0.3% narrow, which
+   is under a pixel per 80-character line). Overrides are 102% / 30% of the em
+   divided by the same 0.9965. */
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Menlo'), local('DejaVu Sans Mono'), local('Courier New');
+  size-adjust: 99.65%;
+  ascent-override: 102.36%;
+  descent-override: 30.11%;
+  line-gap-override: 0%;
+}
+
 *,
 *::before,
 *::after {
@@ -19,7 +174,8 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* fonts.sans in src/theme/tokens.ts — keep the two in sync. */
+  font-family: 'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

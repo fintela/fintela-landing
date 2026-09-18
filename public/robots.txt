@@ -1,0 +1,10 @@
+# https://fintela.io — see infra/cloudfront/README.md for how this is served.
+#
+# /assets/ and the blog/docs *.json are deliberately NOT disallowed: Googlebot
+# fetches both while rendering a page, and blocking them would blind it.
+User-agent: *
+Allow: /
+Disallow: /404.html
+Disallow: /executive-overview.html
+
+Sitemap: https://fintela.io/sitemap.xml

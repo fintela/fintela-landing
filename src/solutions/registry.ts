@@ -57,6 +57,12 @@ export interface SolutionConfig {
   extraFaq: string[];
   /** Primary CTA: a walkthrough for desks, the app for individuals. */
   primaryCta: 'walkthrough' | 'app';
+  /**
+   * The blog post that backs this seat's pitch — slug under `/blog/`, label
+   * under `solutions.<audience>.research.label`. One research link per page,
+   * so the blog's authority flows into the landing pages and back.
+   */
+  research: string;
 }
 
 export const SOLUTIONS: Record<Audience, SolutionConfig> = {
@@ -73,6 +79,7 @@ export const SOLUTIONS: Record<Audience, SolutionConfig> = {
     faq: ['security', 'poweredBy', 'liveTrading', 'seedExport'],
     extraFaq: ['onboarding', 'data'],
     primaryCta: 'walkthrough',
+    research: 'quants-moving-away-from-legacy-tools',
   },
   teams: {
     slug: SOLUTION_SLUGS.teams,
@@ -87,6 +94,7 @@ export const SOLUTIONS: Record<Audience, SolutionConfig> = {
     faq: ['security', 'seedExport', 'vsBacktesting', 'poweredBy'],
     extraFaq: ['sharing', 'committee'],
     primaryCta: 'walkthrough',
+    research: 'momentum-research',
   },
   independents: {
     slug: SOLUTION_SLUGS.independents,
@@ -100,5 +108,6 @@ export const SOLUTIONS: Record<Audience, SolutionConfig> = {
     faq: ['python', 'optimization', 'speed', 'liveTrading'],
     extraFaq: ['cost', 'ownership'],
     primaryCta: 'app',
+    research: 'deflated-sharpe',
   },
 };

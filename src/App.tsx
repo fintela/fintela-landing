@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
+import type { ComponentType } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -8,13 +9,23 @@ import {
   Navigate,
 } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { Box, CircularProgress, CssBaseline } from '@mui/material';
+import { Box, CssBaseline } from '@mui/material';
 import { theme } from './theme/theme';
-import { radii, shadows, soft } from './theme/tokens';
-import { forcedColorsSurface } from './theme/neu';
+import { gradients } from './theme/tokens';
 import { HomePage } from './pages/HomePage';
-import { ContactPage } from './pages/ContactPage';
 import { SOLUTION_PATHS } from './solutions/registry';
+import { ScrollProgressBar } from './components/common/ScrollProgressBar';
+import { FloatingContactButton } from './components/common/FloatingContactButton';
+import { CookieConsentBanner } from './components/common/CookieConsentBanner';
+import { SearchProvider } from './search/SearchProvider';
+
+// Contact is a cold path like every route below: its form pulls in TextField,
+// ToggleButton, Alert and their Popover/Modal chain, none of which the home
+// page needs. Eagerly imported once, it was the single largest avoidable slice
+// of the main chunk.
+const ContactPage = lazy(() =>
+  import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })),
+);
 
 // Both blog routes are code-split. Post bodies are fetched from the CDN at runtime
 // (see BLOG.md), and the post page also pulls in the markdown renderer + syntax
@@ -153,82 +164,164 @@ const DOC_SLUG_REDIRECTS: Record<string, string> = {
  * The redirect is decided here rather than inside `DocPage` so a renamed slug never
  * mounts the page, fetches its JSON, and 404s before bouncing.
  */
-function DocPageOrRedirect() {
+function DocPageOrRedirect({ page: Page }: { page: ComponentType }) {
   const { slug } = useParams<{ slug: string }>();
   const { hash } = useLocation();
   const renamed = slug ? DOC_SLUG_REDIRECTS[slug] : undefined;
-  return renamed ? <Navigate to={`/docs/${renamed}${hash}`} replace /> : <DocPage />;
+  return renamed ? <Navigate to={`/docs/${renamed}${hash}`} replace /> : <Page />;
 }
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     if (hash) return; // anchor links handle their own scroll
-    window.scrollTo(0, 0);
+    // `instant`, not the html's `scroll-behavior: smooth`: a route change is
+    // a new page, and a new page must not slide in from where the last one
+    // was scrolled to. In-page navigation (src/lib/scrollToSection.ts) is
+    // the one place that animates.
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [pathname, hash]);
   return null;
 }
 
-const DocsLoader = () => (
-  <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+/**
+ * What a lazy route shows while its chunk is on the way: a thin progress bar
+ * pinned to the top edge over a full-height empty ground. Nothing sits in the
+ * middle of the viewport, so the header does not jump around a spinner and
+ * the incoming page replaces blank ground rather than a centred widget. Full
+ * height keeps the scrollbar (and so the layout width) stable through the
+ * transition. It is never part of a prerendered document — the server renders
+ * every page eagerly — so it only ever appears on a client-side transition.
+ */
+const RouteFallback = () => (
+  <Box aria-hidden="true" sx={{ minHeight: '100dvh' }}>
     <Box
       sx={{
-        width: 56,
-        height: 56,
-        borderRadius: `${radii.pill}px`,
-        bgcolor: soft.surfaceRaised,
-        boxShadow: shadows.neuRaisedMd,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...forcedColorsSurface,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 3,
+        zIndex: (t) => t.zIndex.appBar + 1,
+        overflow: 'hidden',
+        pointerEvents: 'none',
+        '& > span': {
+          display: 'block',
+          height: '100%',
+          width: '40%',
+          background: gradients.brandHorizontal,
+          animation: 'fintela-route-progress 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        },
+        '@keyframes fintela-route-progress': {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(250%)' },
+        },
+        '@media (prefers-reduced-motion: reduce)': {
+          '& > span': { animation: 'none', width: '100%' },
+        },
       }}
     >
-      <CircularProgress size={24} sx={{ color: soft.accent }} />
+      <span />
     </Box>
   </Box>
 );
+
+/**
+ * The page component behind each route. The browser build passes the lazy
+ * wrappers above; the prerenderer (`src/entry-server.tsx`) passes the pages
+ * imported eagerly, since `React.lazy` cannot resolve inside `renderToString`.
+ */
+export interface Pages {
+  HomePage: ComponentType;
+  BlogPage: ComponentType;
+  BlogPostPage: ComponentType;
+  ContactPage: ComponentType;
+  PricingPage: ComponentType;
+  SolutionPage: ComponentType;
+  TermsPage: ComponentType;
+  PrivacyPage: ComponentType;
+  RiskDisclosuresPage: ComponentType;
+  DocPage: ComponentType;
+  NotFoundPage: ComponentType;
+}
+
+const lazyPages: Pages = {
+  HomePage,
+  BlogPage,
+  BlogPostPage,
+  ContactPage,
+  PricingPage,
+  SolutionPage,
+  TermsPage,
+  PrivacyPage,
+  RiskDisclosuresPage,
+  DocPage,
+  NotFoundPage,
+};
+
+/**
+ * The route table, shared by the browser app and the build-time prerender so
+ * the two can never disagree about what a URL renders.
+ *
+ * The Suspense boundary lives here rather than in `App` on purpose: the server
+ * markup must carry the same boundary the client renders, or a lazy page that
+ * suspends while hydrating has no dehydrated boundary to wait in. Its fallback
+ * never shows on a prerendered route — the server HTML stays on screen until
+ * the chunk arrives.
+ */
+export function AppRoutes({ pages }: { pages: Pages }) {
+  return (
+    <SearchProvider>
+      <ScrollToTop />
+      <ScrollProgressBar />
+      <FloatingContactButton />
+      <CookieConsentBanner />
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<pages.HomePage />} />
+          <Route path="/blog" element={<pages.BlogPage />} />
+          <Route path="/blog/:slug" element={<pages.BlogPostPage />} />
+          <Route path="/contact" element={<pages.ContactPage />} />
+          <Route path="/pricing" element={<pages.PricingPage />} />
+
+          {/* Solutions — `/solutions` has no index of its own; it lands on the
+              fund page, the way `/docs` lands on the overview. */}
+          <Route path="/solutions" element={<Navigate to={SOLUTION_PATHS.funds} replace />} />
+          <Route path="/solutions/:slug" element={<pages.SolutionPage />} />
+
+          {/* Legal */}
+          <Route path="/terms" element={<pages.TermsPage />} />
+          <Route path="/privacy" element={<pages.PrivacyPage />} />
+          <Route path="/risk-disclosures" element={<pages.RiskDisclosuresPage />} />
+
+          {/* Documentation — `/docs` has no page of its own; it lands readers on
+              the overview doc, with the full sidebar/search chrome, instead of
+              an intermediate index of cards. */}
+          <Route path="/docs" element={<Navigate to="/docs/overview" replace />} />
+          <Route path="/docs/:slug" element={<DocPageOrRedirect page={pages.DocPage} />} />
+
+          {/* Every pre-migration doc URL still resolves. */}
+          <Route path="/documentation" element={<LegacyDocsRedirect />} />
+          <Route path="/documentation/*" element={<LegacyDocsRedirect />} />
+
+          {/* Everything else. CloudFront rewrites S3 404s to /index.html with a
+              200 so the SPA can route; without this route that rewrite rendered
+              a blank page for every typo'd URL and every removed static file.
+              The prerender writes this page to dist/404.html so the edge can
+              serve a real 404 once it is configured to. */}
+          <Route path="*" element={<pages.NotFoundPage />} />
+        </Routes>
+      </Suspense>
+    </SearchProvider>
+  );
+}
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
       <Router>
-        <ScrollToTop />
-        <Suspense fallback={<DocsLoader />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:slug" element={<BlogPostPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-
-            {/* Solutions — `/solutions` has no index of its own; it lands on the
-                fund page, the way `/docs` lands on the overview. */}
-            <Route path="/solutions" element={<Navigate to={SOLUTION_PATHS.funds} replace />} />
-            <Route path="/solutions/:slug" element={<SolutionPage />} />
-
-            {/* Legal */}
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/risk-disclosures" element={<RiskDisclosuresPage />} />
-
-            {/* Documentation — `/docs` has no page of its own; it lands readers on
-                the overview doc, with the full sidebar/search chrome, instead of
-                an intermediate index of cards. */}
-            <Route path="/docs" element={<Navigate to="/docs/overview" replace />} />
-            <Route path="/docs/:slug" element={<DocPageOrRedirect />} />
-
-            {/* Every pre-migration doc URL still resolves. */}
-            <Route path="/documentation" element={<LegacyDocsRedirect />} />
-            <Route path="/documentation/*" element={<LegacyDocsRedirect />} />
-
-            {/* Everything else. CloudFront rewrites S3 404s to /index.html with a
-                200 so the SPA can route; without this route that rewrite rendered
-                a blank page for every typo'd URL and every removed static file. */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
+        <AppRoutes pages={lazyPages} />
       </Router>
     </ThemeProvider>
   );

@@ -1,18 +1,47 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { useCallback, useMemo } from 'react';
+import { Box, Typography } from '@mui/material';
 import { SearchOff, UpdateOutlined } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MarkdownContent } from '../blog/MarkdownContent';
 import { formatContentDate } from '../content/format';
+import { ArticleSkeleton } from '../components/common/ArticleSkeleton';
 import { DocsLayout } from '../docs/DocsLayout';
 import { extractToc } from '../docs/toc';
 import { useDoc, useDocsIndex } from '../docs/useDocs';
-import type { DocsIndex } from '../docs/types';
+import type { DocDetail, DocsIndex } from '../docs/types';
 import { gradients, soft } from '../theme/tokens';
 import { NeuButton } from '../components/primitives/NeuButton';
 import { IconWell } from '../components/primitives/IconWell';
 import { TierBadge } from '../components/primitives/TierBadge';
+import { Seo } from '../seo/Seo';
+import { pageTitle, truncateDescription } from '../seo/text';
+import { breadcrumbList, docsCrumb, homeCrumb, organization, techArticle, webSite } from '../seo/jsonld';
+import { absoluteUrl } from '../seo/site';
+import { DOCS_HOME } from '../seo/routes';
+
+const DOCS_OG_IMAGE = '/og/docs.png';
+const TITLE_SUFFIX = 'Fintela Docs';
+
+/** `{Title} · {Section} | Fintela Docs`, the page's excerpt, and a TechArticle node. */
+const DocSeo = ({ doc }: { doc: DocDetail }) => {
+  const url = absoluteUrl(`/docs/${doc.slug}`);
+  return (
+    <Seo
+      title={pageTitle(`${doc.title} · ${doc.section}`, TITLE_SUFFIX)}
+      description={truncateDescription(doc.excerpt)}
+      type="article"
+      image={DOCS_OG_IMAGE}
+      article={{ modifiedTime: doc.updated, section: doc.section, tags: doc.keywords }}
+      jsonLd={[
+        organization(),
+        webSite(),
+        techArticle(doc, url),
+        breadcrumbList([homeCrumb(), docsCrumb(), { name: doc.title }]),
+      ]}
+    />
+  );
+};
 
 /**
  * `/docs/:slug` — one documentation page, rendered from the Markdown body in its
@@ -38,17 +67,6 @@ export const DocPage = () => {
     [index.pages, slug],
   );
 
-  // The page title only becomes known after the fetch, so the tab title is set
-  // here rather than in the static index.html.
-  useEffect(() => {
-    if (!doc) return;
-    const previous = document.title;
-    document.title = `${doc.title} — Fintela Docs`;
-    return () => {
-      document.title = previous;
-    };
-  }, [doc]);
-
   const toc = useMemo(() => (doc ? extractToc(doc.markdown) : []), [doc]);
   const resolveHref = useDocLinkResolver(index, indexStatus === 'ready');
 
@@ -57,25 +75,44 @@ export const DocPage = () => {
   // breadcrumb and highlighted sidebar entry either way.
   return (
     <DocsLayout index={index} current={summary ?? doc} toc={toc}>
-      {status === 'loading' && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-          <CircularProgress size={28} sx={{ color: soft.accent }} />
-        </Box>
+      {/* The head follows the fetch, as on BlogPostPage: the page's own metadata
+          once it is in hand, noindex for a dead slug, the docs' generic head
+          while loading. DocsLayout owns the <main> landmark. */}
+      {status === 'ready' && doc && <DocSeo doc={doc} />}
+      {(status === 'notFound' || status === 'error') && (
+        <Seo
+          noindex
+          title={pageTitle(
+            t(status === 'notFound' ? 'docs.notFound.title' : 'docs.error.title'),
+            TITLE_SUFFIX,
+          )}
+          description={t(status === 'notFound' ? 'docs.notFound.body' : 'docs.error.body')}
+          image={DOCS_OG_IMAGE}
+        />
       )}
+      {status === 'loading' && (
+        <Seo title={t('seo.docs.title')} description={t('seo.docs.description')} image={DOCS_OG_IMAGE} />
+      )}
+      {/* The skeleton reserves the article's height. Only ever seen on a
+          client-side navigation (the prerendered HTML carries the doc), but
+          without the reserve the footer sits in the first viewport during the
+          fetch and is pushed a whole screen down when the body lands. */}
+      {status === 'loading' && <ArticleSkeleton label={t('docs.loadingPage')} />}
 
       {(status === 'notFound' || status === 'error') && (
         <Box sx={{ textAlign: 'center', py: { xs: 8, md: 12 } }}>
           <IconWell size={72} round sx={{ mx: 'auto', mb: 3 }}>
             <SearchOff />
           </IconWell>
-          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5, color: soft.text }}>
+          {/* h4 for the size; h1 because it is the only title this state has. */}
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1.5, color: soft.text }}>
             {status === 'notFound' ? t('docs.notFound.title') : t('docs.error.title')}
           </Typography>
           <Typography sx={{ color: soft.textSecondary, maxWidth: 480, mx: 'auto', lineHeight: 1.7 }}>
             {status === 'notFound' ? t('docs.notFound.body') : t('docs.error.body')}
           </Typography>
           <Box sx={{ mt: 4 }}>
-            <NeuButton tone="raised" to="/docs">
+            <NeuButton tone="raised" to={DOCS_HOME}>
               {t('docs.backToIndex')}
             </NeuButton>
           </Box>
@@ -143,7 +180,12 @@ export const DocPage = () => {
             sx={{ width: 36, height: 3, borderRadius: '2px', background: gradients.gold, mb: 3 }}
           />
 
-          <MarkdownContent markdown={doc.markdown} headingAnchors resolveHref={resolveHref} />
+          <MarkdownContent
+            markdown={doc.markdown}
+            headingAnchors
+            resolveHref={resolveHref}
+            imageSizes={doc.images}
+          />
         </Box>
       )}
     </DocsLayout>

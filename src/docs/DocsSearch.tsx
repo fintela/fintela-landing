@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Box, Modal, Typography, Fade, Backdrop } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { KbdKey } from './components/KbdKey';
-import { searchDocs } from './search';
+import { fetchDocsSearch } from './api';
+import { searchDocs, toDocBodies, type DocBodies } from './search';
 import { truncate } from '../content/format';
 import { radii, shadows, soft } from '../theme/tokens';
 import { eyebrowSx, floatPaperSx, neuFieldSx } from '../theme/neu';
@@ -24,30 +26,63 @@ const MAX_HITS = 10;
 /**
  * ⌘K search inside a documentation page.
  *
- * Scores through the same `searchDocs` the `/docs` search bar uses, so a query
- * that finds a page in one place finds it in the other. With no query it shows the
+ * Scores through `searchDocs` over the index every page already has, plus the
+ * body text from `docs/search.json`, which is fetched the first time the palette
+ * opens and never again (`loadJson` memoizes it). With no query it shows the
  * first pages in reading order, which makes the palette usable as a jump list.
  */
 export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
+  const { t } = useTranslation('pages');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // Reset on every open, during render rather than in an effect: the palette
+  // must not show the previous query for a frame before clearing it.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) {
       setQuery('');
       setSelected(0);
-      setTimeout(() => inputRef.current?.focus(), 30);
+    }
+  }
+
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 30);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
+  // The body-text index: `null` until the palette has been opened once. Only
+  // ever requested from here, so a reader who never searches never pays for it.
+  const [bodies, setBodies] = useState<DocBodies | null>(null);
+  const [bodiesFailed, setBodiesFailed] = useState(false);
+  useEffect(() => {
+    if (!open || bodies) return;
+    let active = true;
+    fetchDocsSearch()
+      .then((entries) => {
+        if (active) setBodies(toDocBodies(entries));
+      })
+      .catch((err) => {
+        console.warn('[docs] could not load the search index', err);
+        if (active) setBodiesFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [open, bodies]);
+  const bodiesLoading = open && !bodies && !bodiesFailed;
+
   const hits = useMemo(() => {
     if (!query.trim()) return index.pages.slice(0, 8);
-    return searchDocs(index.pages, query)
+    return searchDocs(index.pages, query, bodies ?? undefined)
       .slice(0, MAX_HITS)
       .map((hit) => hit.page);
-  }, [index.pages, query]);
+  }, [index.pages, query, bodies]);
 
   const go = useCallback(
     (slug: string) => {
@@ -118,7 +153,7 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
               component="input"
               ref={inputRef}
               type="text"
-              placeholder="Search docs — strategies, fitness, errors, endpoints…"
+              placeholder={t('docs.searchPlaceholder')}
               value={query}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setQuery(e.target.value);
@@ -134,7 +169,7 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
                 caretColor: soft.accent,
                 bgcolor: 'transparent',
               }}
-              aria-label="Search docs"
+              aria-label={t('docs.searchDocs')}
             />
             <Box onClick={onClose} sx={{ cursor: 'pointer', display: 'inline-flex' }}>
               <KbdKey>esc</KbdKey>
@@ -142,6 +177,14 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
           </Box>
 
           <Box sx={{ maxHeight: 420, overflowY: 'auto', py: 1, px: 1.5 }}>
+            {bodiesLoading && (
+              <Box
+                role="status"
+                sx={{ px: 2, pt: 0.5, pb: 0.75, color: soft.textSecondary, fontSize: '0.75rem' }}
+              >
+                {t('docs.searchLoading')}
+              </Box>
+            )}
             {hits.length === 0 ? (
               <Box
                 sx={{
@@ -152,7 +195,7 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
                   fontSize: '0.9rem',
                 }}
               >
-                No results for "{query}". Try "study", "fitness", or "endpoint".
+                {t('docs.searchNoResults', { query })}
               </Box>
             ) : (
               hits.map((page, idx) => (
@@ -226,15 +269,15 @@ export const DocsSearch = ({ open, onClose, index }: DocsSearchProps) => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <KbdKey>↑</KbdKey>
               <KbdKey>↓</KbdKey>
-              <Box component="span">navigate</Box>
+              <Box component="span">{t('docs.searchHints.navigate')}</Box>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <KbdKey>↵</KbdKey>
-              <Box component="span">open</Box>
+              <Box component="span">{t('docs.searchHints.open')}</Box>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <KbdKey>esc</KbdKey>
-              <Box component="span">close</Box>
+              <Box component="span">{t('docs.searchHints.close')}</Box>
             </Box>
           </Box>
         </Box>

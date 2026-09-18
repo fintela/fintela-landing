@@ -79,7 +79,8 @@ export const OnboardingTimeline = () => {
             </AnimateOnScroll>
             <AnimateOnScroll delay={idx * 90 + 60} stretch>
               <NeuPanel variant="tile" sx={{ p: { xs: 2.25, md: 2.5 }, width: '100%', textAlign: { xs: 'left', md: 'center' } }}>
-                <Typography sx={{ fontWeight: 700, color: soft.text, fontSize: '0.98rem', mb: 0.5 }}>
+                {/* Each step names a stage of the sequence: an h3 under the band's h2. */}
+                <Typography component="h3" sx={{ fontWeight: 700, color: soft.text, fontSize: '0.98rem', mb: 0.5 }}>
                   {t(`common.onboarding.steps.${step}.title`)}
                 </Typography>
                 <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.6 }}>

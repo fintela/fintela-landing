@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 4
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Sign in, set up your organization, understand team roles and plan limits, and find your API key.
 keywords: account, signup, login, organization, workspace, roles, team, entitlements, plan, api key, two step authentication, consent
 ---

@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: See which parameter combinations your study produced the strongest results, compare candidates side by side, and promote the ones worth trading.
 keywords: optimization, candidates, trials, ranking, parameter importance, pivot table, sensitivity, compare, promote, robustness
 ---

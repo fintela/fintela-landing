@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 9
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: What each kind of error from Fintela's Developer API means, why it happens, and how to handle it in your own integration.
 keywords: errors, troubleshooting, rate limits, authentication, not found, retry, developer api, read-only, personal access key
 ---

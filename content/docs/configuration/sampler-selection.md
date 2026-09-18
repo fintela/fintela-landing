@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 2
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: Which optimization algorithm (sampler) to pick for a study, and when each one is the right call.
 keywords: sampler, tpe, cma-es, nsga-ii, qmc, random search, grid search, bayesian optimization, multi-objective, parallel workers, seed, reproducibility
 ---
@@ -357,3 +357,7 @@ Related reading: [optimizer architecture](/docs/optimizer-architecture),
 [execution modes](/docs/execution-modes), [study lifecycle](/docs/study-lifecycle), and the read
 only [Developer API](/docs/api-studies), where a study's configured sampler is one of the fields
 you can pull back.
+
+> [!TIP] Further reading
+> The more trials a sampler runs, the more the winning Sharpe ratio owes to luck. The blog works
+> through the correction: [The backtest you didn't run is still costing you](/blog/deflated-sharpe).

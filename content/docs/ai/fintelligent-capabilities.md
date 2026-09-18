@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 2
 published: true
-updated: 2026-09-07
+updated: 2026-09-08
 summary: Everything Fintelligent can do for you inside Fintela, and exactly where it needs your confirmation before anything changes.
 keywords: capabilities, permissions, confirmations, creating strategies, launching studies, editing risk managers, reading portfolios, limits
 ---

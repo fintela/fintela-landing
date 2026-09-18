@@ -50,18 +50,30 @@ export const FAQSection = () => {
               <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6, mt: 0.5, mb: 2 }}>
                 {t('faq.aside.body')}
               </Typography>
-              <NeuButton tone="accent" size="sm" to="/contact?intent=walkthrough">
+              <NeuButton tone="accent" size="sm" to="/contact">
                 {t('faq.aside.cta')}
               </NeuButton>
             </NeuPanel>
           </AnimateOnScroll>
-          <Box
-            component={RouterLink}
-            to="/docs/overview"
-            sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 2.5, fontSize: '0.9rem', fontWeight: 600, color: soft.accent }]}
-          >
-            {t('faq.aside.docs')}
-            <ArrowForwardIcon sx={{ fontSize: 16 }} />
+          {/* The two self-serve exits next to the human one: the docs, and the
+              plans — the questions here are the ones a buyer asks. */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, mt: 2.5 }}>
+            <Box
+              component={RouterLink}
+              to="/docs/overview"
+              sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.9rem', fontWeight: 600, color: soft.accent }]}
+            >
+              {t('faq.aside.docs')}
+              <ArrowForwardIcon sx={{ fontSize: 16 }} />
+            </Box>
+            <Box
+              component={RouterLink}
+              to="/pricing"
+              sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.9rem', fontWeight: 600, color: soft.accent }]}
+            >
+              {t('faq.aside.pricing')}
+              <ArrowForwardIcon sx={{ fontSize: 16 }} />
+            </Box>
           </Box>
         </StickyAside>
 

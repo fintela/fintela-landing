@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Every status a study and its trials can be in, what causes it to change, and what you can do at each stage.
 keywords: lifecycle, study status, trial status, queued, running, completed, failed, stopped, pruned, resume, autostop, delete study, stalled run
 ---

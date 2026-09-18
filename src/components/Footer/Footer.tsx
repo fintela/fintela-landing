@@ -2,13 +2,26 @@ import type { MouseEvent } from 'react';
 import { Box, Container, Typography, Link } from '@mui/material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import fintelaLargeLogo from '../../assets/logos/fintela_large_logo.png';
 import { gradients, shadows, soft } from '../../theme/tokens';
-import { quietLinkSx } from '../../theme/neu';
+import { neuIconButtonSx, quietLinkSx } from '../../theme/neu';
 import { Groove } from '../primitives/Groove';
 import { scrollToSection } from '../../lib/scrollToSection';
 import { SOLUTION_PATHS } from '../../solutions/registry';
+import { DOCS_HOME } from '../../seo/routes';
+import { ORG } from '../../seo/site';
 import { useTranslation } from 'react-i18next';
+
+// `site.ts` lists the profiles in this order; the same URLs go out as the
+// Organization's `sameAs`, so the visible links and the structured data agree.
+const [LINKEDIN_URL, GITHUB_URL] = ORG.sameAs;
+
+const socialLinks = [
+  { id: 'linkedin', labelKey: 'footer:social.linkedin', href: LINKEDIN_URL, Icon: LinkedInIcon },
+  { id: 'github', labelKey: 'footer:social.github', href: GITHUB_URL, Icon: GitHubIcon },
+] as const;
 
 type FooterLink = {
   id: string;
@@ -82,7 +95,20 @@ const columns: FooterColumn[] = [
       {
         id: 'documentation',
         labelKey: 'footer:columns.resources.links.documentation',
-        href: '/docs',
+        // `/docs` itself only redirects; link straight to where it lands.
+        href: DOCS_HOME,
+        type: 'route',
+      },
+      {
+        id: 'quickstart',
+        labelKey: 'footer:columns.resources.links.quickstart',
+        href: '/docs/quickstart',
+        type: 'route',
+      },
+      {
+        id: 'api',
+        labelKey: 'footer:columns.resources.links.api',
+        href: '/docs/api-overview',
         type: 'route',
       },
       {
@@ -94,7 +120,7 @@ const columns: FooterColumn[] = [
       {
         id: 'datacluster',
         labelKey: 'footer:columns.resources.links.datacluster',
-        href: '/docs/core-concepts',
+        href: '/docs/asset-groups',
         type: 'route',
       },
       { id: 'blog', labelKey: 'footer:columns.resources.links.blog', href: '/blog', type: 'route' },
@@ -167,6 +193,8 @@ export const Footer = () => {
               <img
                 src={fintelaLargeLogo}
                 alt="Fintela"
+                width={442}
+                height={154}
                 style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
               />
             </Box>
@@ -182,16 +210,41 @@ export const Footer = () => {
               {t('footer:tagline')}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+              {/* The role address, as the Organization schema names it — never
+                  a person's mailbox, which gets scraped and goes stale. */}
               <Link
-                href="mailto:manuel.padron@fintela.io"
+                href={`mailto:${ORG.email}`}
                 sx={[
                   quietLinkSx,
                   { display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: '0.88rem' },
                 ]}
               >
                 <EmailOutlinedIcon sx={{ fontSize: 16 }} />
-                manuel.padron@fintela.io
+                {ORG.email}
               </Link>
+            </Box>
+            <Box
+              component="nav"
+              aria-label={t('footer:social.label')}
+              sx={{ display: 'flex', gap: 1, mt: 2.5 }}
+            >
+              {/* rel="me": these are the company's own profiles, the ones the
+                  Organization's sameAs points at. */}
+              {socialLinks.map(({ id, labelKey, href, Icon }) => (
+                <Link
+                  key={id}
+                  href={href}
+                  target="_blank"
+                  rel="me noopener"
+                  aria-label={t(labelKey)}
+                  sx={[
+                    neuIconButtonSx,
+                    { display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+                  ]}
+                >
+                  <Icon />
+                </Link>
+              ))}
             </Box>
           </Box>
 
@@ -252,7 +305,10 @@ export const Footer = () => {
                 background: gradients.gold,
               }}
             />
-            <Typography sx={{ fontSize: '0.82rem', color: soft.textSecondary }}>
+            {/* The year is computed at build time by the prerender and again in
+                the browser; across a New Year the two differ, which is not
+                worth a hydration error. */}
+            <Typography suppressHydrationWarning sx={{ fontSize: '0.82rem', color: soft.textSecondary }}>
               © {new Date().getFullYear()} Fintela. All rights reserved.
             </Typography>
           </Box>

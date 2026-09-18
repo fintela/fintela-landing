@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 2
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: What happens behind the scenes when you use Fintela, from instant actions to background jobs and daily data updates.
 keywords: architecture, how it works, background jobs, studies, live trading, market data, sign in, developer api
 ---

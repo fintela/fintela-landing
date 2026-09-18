@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { radii, shadows, soft } from '../../theme/tokens';
+import { fonts, radii, shadows, soft } from '../../theme/tokens';
 import { forcedColorsSurface } from '../../theme/neu';
 
 interface KbdKeyProps {
@@ -19,7 +19,7 @@ export const KbdKey = ({ children }: KbdKeyProps) => (
       mx: 0.25,
       fontSize: '0.7rem',
       fontWeight: 600,
-      fontFamily: '"JetBrains Mono", monospace',
+      fontFamily: fonts.mono,
       letterSpacing: 0,
       color: soft.text,
       bgcolor: soft.surfaceRaised,

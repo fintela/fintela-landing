@@ -1,16 +1,18 @@
 import { Box, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import LinkIcon from '@mui/icons-material/Link';
 import { isValidElement, useMemo, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
-import { slugify } from '../content/frontmatter';
+import { extractImages, slugify } from '../content/frontmatter';
 import { remarkCallouts } from '../content/remarkCallouts';
 import { CodeBlock } from '../docs/components/CodeBlock';
 import { Callout } from '../docs/components/Callout';
 import type { Language } from '../docs/syntax/highlight';
-import { inlineCode } from '../docs/components/Prose';
+import { inlineCode } from '../docs/components/inlineCode';
 import { cellGrooveSx, eyebrowSx, grooveSx, proseLinkSx, quietLinkSx, wellSx } from '../theme/neu';
 import { radii, soft } from '../theme/tokens';
 
@@ -138,6 +140,13 @@ function urlTransform(url: string, key: string): string {
 const isExternal = (href: string | undefined) => !!href && /^https?:/i.test(href);
 
 /**
+ * A plain `<img>` with `sx` support. Not a `Box`: Box reads `width` and `height`
+ * as system (CSS) props, and the whole point of passing them here is to land
+ * as HTML attributes so the browser knows the aspect ratio before the file loads.
+ */
+const ArticleImage = styled('img')({});
+
+/**
  * A path this app's router owns: leading `/`, but not `//host` (protocol-relative,
  * i.e. off-site) and not a bare `#anchor`, which must stay a plain anchor so the
  * browser scrolls instead of the router navigating.
@@ -161,6 +170,11 @@ function nodeText(node: ReactNode): string {
   return '';
 }
 
+export interface ImageSize {
+  width: number;
+  height: number;
+}
+
 export interface MarkdownContentProps {
   markdown: string;
   /**
@@ -176,6 +190,14 @@ export interface MarkdownContentProps {
    * of sending readers to a 404.
    */
   resolveHref?: (href: string | undefined) => string | null | undefined;
+  /**
+   * Intrinsic sizes of the body's images, keyed by the `src` as written in the
+   * Markdown — the `images` map the generator publishes with each post and
+   * doc. An image with a known size renders with `width`/`height`, so the
+   * browser reserves its box before the file arrives and the text below it
+   * never jumps. Unknown images render as before.
+   */
+  imageSizes?: Readonly<Record<string, ImageSize>>;
 }
 
 const headingSizes = {
@@ -186,6 +208,23 @@ const headingSizes = {
 
 type HeadingKey = keyof typeof headingSizes;
 
+/** What identifies the article's lead image; see `buildComponents`. */
+interface LeadImage {
+  src: string;
+  offset: number;
+}
+
+interface BuildOptions extends Omit<MarkdownContentProps, 'markdown'> {
+  /** The translated "Link to this section" label for heading anchors. */
+  anchorLabel: string;
+  /**
+   * The first image in the body. It is usually the largest thing above the
+   * fold — the LCP candidate — so it loads eagerly and at high priority while
+   * every later image stays lazy.
+   */
+  leadImage: LeadImage | null;
+}
+
 /**
  * Every component that varies with props is built here, so `useMemo` in the
  * exported component can keep one stable object per configuration instead of
@@ -194,7 +233,10 @@ type HeadingKey = keyof typeof headingSizes;
 function buildComponents({
   headingAnchors,
   resolveHref,
-}: Omit<MarkdownContentProps, 'markdown'>): Components {
+  imageSizes,
+  anchorLabel,
+  leadImage,
+}: BuildOptions): Components {
   const heading = (key: HeadingKey) =>
     function Heading({ children }: { children?: ReactNode }) {
       const spec = headingSizes[key];
@@ -226,7 +268,7 @@ function buildComponents({
               component="a"
               href={`#${id}`}
               className="heading-anchor"
-              aria-label="Link to this section"
+              aria-label={anchorLabel}
               sx={[
                 quietLinkSx,
                 {
@@ -412,21 +454,39 @@ function buildComponents({
     // CodeBlock brings its own <pre>; this keeps the wrapper from double-nesting.
     pre: ({ children }) => <>{children}</>,
 
-    img: ({ src, alt }) => {
+    img: ({ src, alt, node }) => {
       // `urlTransform` returns '' for a blocked URL. Rendering `<img src="">` would
       // make the browser re-request the current page, so drop the node instead of
       // leaving a broken image behind.
       if (typeof src !== 'string' || !src) return null;
 
+      // The size map is keyed by the src as written; `urlTransform` only ever
+      // prefixes it with ASSET_BASE, so strip that to look it up.
+      const written = ASSET_BASE && src.startsWith(ASSET_BASE) ? src.slice(ASSET_BASE.length) : src;
+      const size = imageSizes?.[written] ?? imageSizes?.[src];
+
+      // The lead image is matched by its position in the source (the parser's
+      // node offset equals the scanner's), falling back to its src, so a later
+      // repeat of the same file is not also made eager.
+      const offset = node?.position?.start.offset;
+      const isLead =
+        !!leadImage &&
+        (offset !== undefined ? offset === leadImage.offset : written === leadImage.src);
+
       return (
-        <Box
-          component="img"
+        <ArticleImage
           src={src}
           alt={alt ?? ''}
-          loading="lazy"
+          width={size?.width}
+          height={size?.height}
+          loading={isLead ? 'eager' : 'lazy'}
+          fetchPriority={isLead ? 'high' : undefined}
+          decoding="async"
           sx={{
             display: 'block',
             maxWidth: '100%',
+            // Overrides the height attribute: the box keeps the attributes'
+            // aspect ratio, but the rendered height follows the scaled width.
             height: 'auto',
             my: 4,
             mx: 'auto',
@@ -503,10 +563,21 @@ export const MarkdownContent = ({
   markdown,
   headingAnchors,
   resolveHref,
+  imageSizes,
 }: MarkdownContentProps) => {
+  const { t } = useTranslation('pages');
+  const anchorLabel = t('docs.sectionLink');
+
+  // Found by the same fence-aware scan the generator uses, so the lead image
+  // here is the one whose size the generator measured first.
+  const leadImage = useMemo<LeadImage | null>(() => {
+    const first = extractImages(markdown)[0];
+    return first ? { src: first.src, offset: first.offset } : null;
+  }, [markdown]);
+
   const components = useMemo(
-    () => buildComponents({ headingAnchors, resolveHref }),
-    [headingAnchors, resolveHref],
+    () => buildComponents({ headingAnchors, resolveHref, imageSizes, anchorLabel, leadImage }),
+    [headingAnchors, resolveHref, imageSizes, anchorLabel, leadImage],
   );
 
   return (

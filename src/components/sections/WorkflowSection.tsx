@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Section } from '../primitives/Section';
@@ -27,6 +28,42 @@ const AUTOPLAY_MS = 4200;
 const RESUME_DELAY_MS = 8000;
 
 /**
+ * Whether the carousel may tick: the panel is on screen, the tab is visible
+ * and the visitor has not asked for reduced motion. Off screen, every tick
+ * re-rendered the hexagon and its SVG filters for nobody; on a phone, a
+ * description that changes length while the band is in view is a layout
+ * shift the visitor did not cause.
+ */
+function useAutoplayAllowed(target: RefObject<HTMLElement | null>): boolean {
+  // False on the server and on the first client render alike; the effect
+  // decides once the element is measurable.
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    const el = target.current;
+    if (!el) return undefined;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let inView = false;
+    const update = () =>
+      setAllowed(inView && document.visibilityState === 'visible' && !reduced.matches);
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      update();
+    });
+    observer.observe(el);
+    document.addEventListener('visibilitychange', update);
+    reduced.addEventListener('change', update);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', update);
+      reduced.removeEventListener('change', update);
+    };
+  }, [target]);
+
+  return allowed;
+}
+
+/**
  * Band 3. Opens with the product plate and client logos (PlatformShowcase).
  * The hexagon (left) is the map of the six objects the platform is
  * built from; the panel (right) is a carousel that cycles through each one's
@@ -38,12 +75,14 @@ export const WorkflowSection = () => {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const autoplay = useAutoplayAllowed(carouselRef);
 
   useEffect(() => {
-    if (paused) return undefined;
+    if (paused || !autoplay) return undefined;
     const id = setInterval(() => setActive((i) => (i + 1) % nodes.length), AUTOPLAY_MS);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, autoplay]);
 
   useEffect(
     () => () => {
@@ -74,6 +113,7 @@ export const WorkflowSection = () => {
 
       <AnimateOnScroll delay={150}>
         <Box
+          ref={carouselRef}
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 5fr) minmax(0, 7fr)' },
@@ -198,10 +238,15 @@ export const WorkflowSection = () => {
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
           >
+            {/* From md the row stretches to the hexagon's height, so the copy
+                never moves the panel; below it the copy sets the height, and
+                the reserve is sized for the longest node (Portuguese, at
+                360px: 232px; at 600px: 157px) so a tick is not a layout shift. */}
             <Box
               key={activeNode.num}
               sx={{
                 flexGrow: 1,
+                minHeight: { xs: 236, sm: 160, md: 0 },
                 animation: 'workflowFade 0.35s ease',
                 '@keyframes workflowFade': {
                   from: { opacity: 0, transform: 'translateY(6px)' },

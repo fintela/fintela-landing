@@ -5,6 +5,7 @@ date: 2026-07-28
 excerpt: What we plan to write about here: research notes, engineering write-ups, and practical guides for building quantitative strategies on Fintela.
 tags: Announcements
 published: true
+updated: 2026-09-14
 cover: covers/welcome-to-the-fintela-blog.jpg
 coverAlt: A laptop on a desk showing an analytics dashboard of charts, a heat map and a world map.
 ---
@@ -23,7 +24,7 @@ work behind the platform, in more depth than a product page allows.
 
 ## Where to start meanwhile
 
-The [documentation](/docs) is the fastest way in: the
+The [documentation](/docs/overview) is the fastest way in: the
 [quickstart](/docs/quickstart) takes you from an empty workspace to a
 first simulated portfolio, and [core concepts](/docs/core-concepts) explains
 the vocabulary the rest of the platform assumes.

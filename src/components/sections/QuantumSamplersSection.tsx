@@ -7,7 +7,7 @@ import { IconWell } from '../primitives/IconWell';
 import { TierBadge } from '../primitives/TierBadge';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { inkSurfaceSx } from '../../theme/neu';
-import { palette, radii, soft } from '../../theme/tokens';
+import { fonts, palette, radii, soft } from '../../theme/tokens';
 import BlurOnIcon from '@mui/icons-material/BlurOn';
 import GrainIcon from '@mui/icons-material/Grain';
 import MemoryIcon from '@mui/icons-material/Memory';
@@ -130,7 +130,7 @@ const QuantumVisual = () => {
       <Box sx={{ position: 'relative' }}>
         <Typography
           sx={{
-            fontFamily: '"JetBrains Mono", monospace',
+            fontFamily: fonts.mono,
             fontSize: '0.72rem',
             color: soft.onInk,
             letterSpacing: '0.04em',

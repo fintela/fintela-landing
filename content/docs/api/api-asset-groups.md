@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 8
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: Pull the asset group definitions you've built in Fintela (their names, descriptions, and universe size) into your own tools and dashboards.
 keywords: asset groups, universe, tickers, portfolio groups, api integration, read-only, personal access key, dashboards
 ---

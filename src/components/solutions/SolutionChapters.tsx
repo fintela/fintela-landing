@@ -171,7 +171,9 @@ const ChapterBand = ({ chapter, audience, index }: { chapter: SolutionChapter; a
           <Typography sx={{ mt: 1.5, fontSize: { xs: '0.98rem', md: '1.05rem' }, lineHeight: 1.65, color: soft.textSecondary }}>
             {t(`${audience}.chapters.${chapter.key}.description`)}
           </Typography>
-          <NeuPanel variant="tile" component="section" sx={{ mt: 3, p: { xs: 2.25, md: 2.5 } }}>
+          {/* A div, not a section: a section landmark with no heading of its
+              own is noise in the outline, and the list is the chapter's. */}
+          <NeuPanel variant="tile" sx={{ mt: 3, p: { xs: 2.25, md: 2.5 } }}>
             <Box component="ul" role="list" sx={{ m: 0, p: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               {outcomes.map((o) => (
                 <Box component="li" key={o} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
@@ -183,12 +185,14 @@ const ChapterBand = ({ chapter, audience, index }: { chapter: SolutionChapter; a
               ))}
             </Box>
           </NeuPanel>
+          {/* Named for where it lands: five "Read the docs" to five pages tell
+              neither a link list nor a crawler apart. */}
           <Box
             component={RouterLink}
             to={chapter.docs}
             sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 2.5, fontSize: '0.9rem', fontWeight: 600, color: soft.accent }]}
           >
-            {t('common.readDocs')}
+            {t(`${audience}.chapters.${chapter.key}.docsLabel`)}
             <ArrowForwardIcon sx={{ fontSize: 16 }} />
           </Box>
         </Box>

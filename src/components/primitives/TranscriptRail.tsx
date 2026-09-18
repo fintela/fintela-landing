@@ -3,7 +3,7 @@ import type { SxProps, Theme } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import { forcedColorsSurface, raisedTileSx, wellSx } from '../../theme/neu';
-import { accents, motion, radii, soft } from '../../theme/tokens';
+import { accents, fonts, motion, radii, soft } from '../../theme/tokens';
 import { formatTime } from '../../media/chapters';
 import { AgentCoin } from './AgentCoin';
 
@@ -156,7 +156,7 @@ export const TranscriptRail = ({
                         fontSize: '0.65rem',
                         fontWeight: 600,
                         letterSpacing: '0.04em',
-                        fontFamily: '"JetBrains Mono", monospace',
+                        fontFamily: fonts.mono,
                         '& svg': { fontSize: 11, color: soft.accent },
                         ...forcedColorsSurface,
                       }}

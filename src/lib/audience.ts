@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-/** The three seats the site is written for. `funds` is the default and the featured one. */
-export const AUDIENCES = ['funds', 'independents', 'teams'] as const;
+/** The three seats the site is written for, in nav order. `funds` is the `?for=` default. */
+export const AUDIENCES = ['independents', 'teams', 'funds'] as const;
 export type Audience = (typeof AUDIENCES)[number];
 
 export const isAudience = (value: unknown): value is Audience =>

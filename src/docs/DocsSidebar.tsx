@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { bySection } from './format';
 import { soft } from '../theme/tokens';
 import { focusRingTight, navPillSx } from '../theme/neu';
@@ -22,12 +23,13 @@ interface DocsSidebarProps {
  * second file to edit and no way for the nav and the content to disagree.
  */
 export const DocsSidebar = ({ index, currentSlug, onNavigate }: DocsSidebarProps) => {
+  const { t } = useTranslation('pages');
   const groups = bySection(index.sections, index.pages);
 
   return (
     <Box
       component="nav"
-      aria-label="Documentation"
+      aria-label={t('docs.navLabel')}
       sx={{ py: { xs: 2, md: 4 }, pr: { xs: 1, md: 3 }, pl: { xs: 1, md: 0.5 } }}
     >
       {groups.map((group, gi) => (

@@ -2,7 +2,9 @@
 
 Documentation pages are Markdown files in [`content/docs/`](content/docs/). There is
 no CMS, no database, no API and no credential of any kind. A page is a file in the
-repo, and merging it to `main` publishes it — **without deploying the site**.
+repo, and merging it to `main` publishes it: the deploy builds the site, renders
+the page to its own HTML, regenerates the sitemaps, and syncs the bucket — about
+three minutes, no step of it manual.
 
 This is the same system the blog uses; [BLOG.md](BLOG.md) is its counterpart. Both
 collections share one parser, one fetch layer, one renderer and one generator.
@@ -15,12 +17,12 @@ cp content/docs/_template.md content/docs/getting-started/my-page.md
 npm run dev                        # preview at localhost:5173/docs
 ```
 
-Commit and merge to `main`. That's it — **no site deploy is needed.** Pushing a
-change under `content/docs/` triggers
-[`publish-content.yml`](.github/workflows/publish-content.yml), which regenerates
-the docs JSON and syncs only the `docs/` prefix of the bucket. The page is live in
-about a minute — a content-only push never reaches `deploy.yml`, so the bundle is
-neither rebuilt nor invalidated.
+Commit and merge to `main`. That's it. Every push to `main` runs
+[`deploy.yml`](.github/workflows/deploy.yml): build, prerender, sync, one
+CloudFront invalidation. The page is live in about three minutes, at
+`/docs/<slug>` as a real HTML page with its own `<title>`, description,
+breadcrumbs and `TechArticle` structured data — what a crawler sees without
+running any JavaScript. The docs sitemap is regenerated in the same build.
 
 **The filename becomes the URL, not the folder.** `content/docs/api/rate-limits.md`
 publishes at `/docs/rate-limits`. Folders exist so the tree is readable in the repo;
@@ -55,11 +57,11 @@ Body starts here.
 |---|---|---|
 | `title` | **yes** | Shown on the index card, in the sidebar, and as the page's `h1`. |
 | `section` | **yes** | Parent section, e.g. `Configuration`. Free text — a new value creates a new section. |
-| `updated` | **yes** | `YYYY-MM-DD`. Shown on the card and the page. Calendar-invalid dates are rejected. |
+| `updated` | **yes** | `YYYY-MM-DD`. Shown on the card and the page, reported as `dateModified` in the page's structured data and as `<lastmod>` in the sitemap. **Bump it on every substantive edit** — it is how Google decides whether to re-crawl the page, and a date that lags the edit history is one it learns to ignore. Calendar-invalid dates are rejected. |
 | `published` | **yes** | `true` publishes. Anything else — including a missing or misspelled value — is treated as a draft and stays off the site. |
 | `order` | no | Position within the section, ascending. Defaults to `999`, which sinks the page to the bottom of its section. |
 | `sectionOrder` | no | Where the whole *section* sits. A section takes the **lowest** `sectionOrder` any of its pages declares; sections that declare none fall to the bottom, alphabetically. Set it on every page of a section so the ordering survives a page being unpublished. |
-| `summary` | no | Card summary and the page's lead paragraph. Defaults to the first real paragraph. Cards truncate at ~150 characters. |
+| `summary` | no | Card summary, the page's lead paragraph, and its meta description (what appears under the title in a search result). Defaults to the first real paragraph. Cards truncate at ~150 characters; a search snippet at about 155. |
 | `keywords` | no | `keywords: A, B` or `[A, B]` or a `- item` list. Extra search terms on top of the title and body. |
 | `slug` | no | Overrides the URL. Defaults to the filename without `.md`, slugified. |
 
@@ -182,11 +184,19 @@ vite-plugin-content.ts             parse frontmatter, drop drafts, order section
    │   dev:   serves /docs/*.json from disk, per request
    │   build: emits dist/docs/index.json + dist/docs/<slug>.json
    ▼
-publish-content.yml  (push to main touching content/docs/**)
-   │   aws s3 sync dist/docs/ s3://$S3_BUCKET/docs/ --delete
-   │   cloudfront create-invalidation --paths /blog/* /docs/*
+scripts/prerender.mjs              renders every route with react-dom/server
+   │   dist/docs/<slug>/index.html — sidebar, breadcrumbs, the article,
+   │   <title>, meta description, canonical, JSON-LD, and the page's JSON
+   │   embedded for hydration
+   │   dist/sitemap-docs.xml, dist/sitemap.xml
    ▼
-src/docs/api.ts fetches /docs/index.json → DocsIndexPage / DocPage
+deploy.yml  (every push to main)
+   │   scripts/sync-site.sh: one `aws s3 sync` pass per object class,
+   │   Content-Type and Cache-Control per class, stale objects deleted,
+   │   then `cloudfront create-invalidation --paths '/*'`
+   ▼
+CloudFront serves /docs/<slug> from docs/<slug>/index.html (infra/cloudfront/);
+the client hydrates, and in-app navigation fetches /docs/*.json as before
 ```
 
 `docs/index.json` carries every published page's metadata plus a capped plain-text
@@ -202,15 +212,24 @@ already has, with no request and no search service.
 | `/docs/:slug` | One page: sidebar, breadcrumbs, the rendered Markdown, an "On this page" rail, prev/next, and "Edit this page on GitHub". |
 
 `/documentation/*` — every URL the previous hand-written docs tree served — redirects
-to its `/docs/<slug>` equivalent, so no public link broke. The map is
-`LEGACY_DOC_PATHS` in `src/App.tsx`.
+to its `/docs/<slug>` equivalent, so no public link broke, and `/docs` itself lands
+on the overview. The maps are `LEGACY_DOC_PATHS` and `DOC_SLUG_REDIRECTS` in
+`src/App.tsx`; CloudFront answers them with a real 301 at the edge
+(`infra/cloudfront/router.js` carries a verbatim copy, and CI fails if the two
+drift), and the SPA keeps its own `<Navigate>` for in-app navigation. Renaming a
+file means adding its old slug to `DOC_SLUG_REDIRECTS` in both places.
 
-### Why the pages are fetched rather than bundled
+### Why the pages are both prerendered and fetched
 
-So that publishing does not require a site deploy, and so that the app's bundle does
-not grow with the documentation. Adding one `.md` changes `docs/index.json` and
-`docs/<slug>.json` and **nothing else** in `dist/` — not index.html and not a single
-hashed asset. That is what makes syncing one prefix a complete publish.
+Each page is rendered to static HTML at build time, so a crawler or a reader with
+JavaScript still loading gets the article — title, summary, breadcrumbs,
+structured data, body — from the first response. The JSON the page was rendered
+from is embedded in that HTML, so hydration needs no request; in-app navigation
+then fetches `/docs/<slug>.json` as before, which keeps the documentation out of
+the bundle: adding one `.md` adds one page and one JSON file and changes no hashed
+asset. Publishing is a deploy (the page, the sitemap and the search index all
+change), which is why the old content-only workflow was retired — see the header
+of `deploy.yml`.
 
 It also means the routing table stopped growing. The previous system had one lazy
 import and one `<Route>` per page — twenty-five of each — and adding a page meant
@@ -267,3 +286,7 @@ from the repo:
 | `src/blog/MarkdownContent.tsx` | the sanitized Markdown renderer, shared with the blog |
 | `src/pages/DocsIndexPage.tsx` | `/docs` grid + search |
 | `src/pages/DocPage.tsx` | `/docs/:slug` |
+| `scripts/prerender.mjs` | renders every page to static HTML, plus `sitemap-docs.xml` |
+| `scripts/sync-site.sh` | uploads `dist/` with per-class headers and invalidates CloudFront; called by `deploy.yml` and `deploy.sh` |
+| `scripts/check-seo-output.mjs` | CI: every prerendered page has one `<title>`, one `<h1>`, a canonical, a description; sitemaps list only real pages |
+| `infra/cloudfront/router.js` | the edge 301s for `/documentation/*`, renamed slugs and `/docs`; must match `src/App.tsx` |

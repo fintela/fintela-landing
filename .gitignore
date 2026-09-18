@@ -2,6 +2,9 @@
 node_modules
 dist
 dist-ssr
+# The SSR bundle scripts/prerender.mjs builds and then imports — a build
+# intermediate, regenerated on every `npm run build`.
+.prerender/
 
 # Local env — never commit. This is a PUBLIC repository.
 .env

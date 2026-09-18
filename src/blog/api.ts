@@ -1,4 +1,5 @@
-import { ContentFetchError, collectionBase, isSafeSlug, loadJson } from '../content/json';
+import { ContentFetchError, collectionBase, isSafeSlug, loadJson, peekJson } from '../content/json';
+import { absoluteUrl } from '../seo/site';
 import type { BlogIndex, BlogPost, BlogPostSummary } from './types';
 
 /**
@@ -16,6 +17,14 @@ import type { BlogIndex, BlogPost, BlogPostSummary } from './types';
 const BASE = collectionBase('blog', import.meta.env.VITE_BLOG_BASE_URL);
 
 /**
+ * The URL a file under the blog prefix is fetched from — `index.json`,
+ * `<slug>.json`. It is also the key the prerender seeds data under and the key
+ * the embedded `#__fintela_data` payload uses, so anything that seeds must build
+ * the URL here and nowhere else.
+ */
+export const blogJsonUrl = (file: string): string => `${BASE}${file}`;
+
+/**
  * A cover (or any file the generator published beside the JSON) as a URL.
  *
  * Most covers are a bare filename under `content/blog/covers/`, published
@@ -26,6 +35,41 @@ const BASE = collectionBase('blog', import.meta.env.VITE_BLOG_BASE_URL);
  */
 export const blogAssetUrl = (path: string): string =>
   /^(https?:|data:)/i.test(path) || path.startsWith('/') ? path : `${BASE}${path}`;
+
+/**
+ * The image a post is shared with, as an absolute URL, or `undefined` when it
+ * has none. Prefers the 1200×630 crop the generator emits (`ogImage`) over the
+ * full cover, which is what the card and the article body show.
+ */
+export const blogPostImageUrl = (
+  post: Pick<BlogPostSummary, 'cover' | 'ogImage'>,
+): string | undefined => {
+  const image = post.ogImage ?? post.cover;
+  return image ? absoluteUrl(blogAssetUrl(image)) : undefined;
+};
+
+/** Well-formed enough to render: the generator's contract, checked at the edge. */
+const isPost = (post: unknown): post is BlogPost =>
+  !!post &&
+  typeof (post as BlogPost).markdown === 'string' &&
+  typeof (post as BlogPost).title === 'string';
+
+/**
+ * The index if it is already in hand (seeded or fetched earlier), else
+ * `undefined`. Synchronous, so a hook can start in the `ready` state.
+ */
+export function peekBlogIndex(): BlogPostSummary[] | undefined {
+  const index = peekJson<BlogIndex>(blogJsonUrl('index.json'));
+  if (index === undefined) return undefined;
+  return Array.isArray(index?.posts) ? index.posts : [];
+}
+
+/** One post if it is already in hand. Same validation as `fetchBlogPost`. */
+export function peekBlogPost(slug: string): BlogPost | undefined {
+  if (!isSafeSlug(slug)) return undefined;
+  const post = peekJson<BlogPost>(blogJsonUrl(`${slug}.json`));
+  return isPost(post) ? post : undefined;
+}
 
 /** A post that isn't in the published set — unpublished, renamed, or a bad URL. */
 export class BlogPostNotFoundError extends Error {
@@ -72,8 +116,6 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost> {
     throw err;
   }
 
-  if (!post || typeof post.markdown !== 'string' || typeof post.title !== 'string') {
-    throw new BlogPostNotFoundError(slug);
-  }
+  if (!isPost(post)) throw new BlogPostNotFoundError(slug);
   return post;
 }

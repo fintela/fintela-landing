@@ -1,5 +1,5 @@
-import { ContentFetchError, collectionBase, isSafeSlug, loadJson } from '../content/json';
-import type { DocDetail, DocsIndex } from './types';
+import { ContentFetchError, collectionBase, isSafeSlug, loadJson, peekJson } from '../content/json';
+import type { DocDetail, DocSearchEntry, DocsIndex } from './types';
 
 /**
  * Reads the static documentation payload generated from `content/docs/**.md` —
@@ -16,6 +16,12 @@ import type { DocDetail, DocsIndex } from './types';
  */
 const BASE = collectionBase('docs', import.meta.env.VITE_DOCS_BASE_URL);
 
+/**
+ * The URL a file under the docs prefix is fetched from — `index.json`,
+ * `<slug>.json`. Also the key data is seeded under (see `blogJsonUrl`).
+ */
+export const docJsonUrl = (file: string): string => `${BASE}${file}`;
+
 /** A page that isn't in the published set — a draft, renamed, or a bad URL. */
 export class DocNotFoundError extends Error {
   // Fields are declared and assigned explicitly: `erasableSyntaxOnly` (see
@@ -31,6 +37,38 @@ export class DocNotFoundError extends Error {
 
 const EMPTY_INDEX: DocsIndex = { generatedAt: '', sections: [], pages: [] };
 
+/** The generator's contract, checked at the edge: what makes a payload an index. */
+const normalizeIndex = (index: DocsIndex | undefined): DocsIndex => {
+  if (!index || !Array.isArray(index.pages)) return EMPTY_INDEX;
+  return {
+    generatedAt: index.generatedAt ?? '',
+    sections: Array.isArray(index.sections) ? index.sections : [],
+    pages: index.pages,
+  };
+};
+
+/** Well-formed enough to render. */
+const isDoc = (doc: unknown): doc is DocDetail =>
+  !!doc &&
+  typeof (doc as DocDetail).markdown === 'string' &&
+  typeof (doc as DocDetail).title === 'string';
+
+/**
+ * The index if it is already in hand (seeded or fetched earlier), else
+ * `undefined`. Synchronous, so a hook can start in the `ready` state.
+ */
+export function peekDocsIndex(): DocsIndex | undefined {
+  const index = peekJson<DocsIndex>(docJsonUrl('index.json'));
+  return index === undefined ? undefined : normalizeIndex(index);
+}
+
+/** One page if it is already in hand. Same validation as `fetchDoc`. */
+export function peekDoc(slug: string): DocDetail | undefined {
+  if (!isSafeSlug(slug)) return undefined;
+  const doc = peekJson<DocDetail>(docJsonUrl(`${slug}.json`));
+  return isDoc(doc) ? doc : undefined;
+}
+
 /**
  * The published pages, grouped-and-sorted by the generator.
  *
@@ -40,15 +78,25 @@ const EMPTY_INDEX: DocsIndex = { generatedAt: '', sections: [], pages: [] };
  */
 export async function fetchDocsIndex(): Promise<DocsIndex> {
   try {
-    const index = await loadJson<DocsIndex>(BASE, 'index.json');
-    if (!index || !Array.isArray(index.pages)) return EMPTY_INDEX;
-    return {
-      generatedAt: index.generatedAt ?? '',
-      sections: Array.isArray(index.sections) ? index.sections : [],
-      pages: index.pages,
-    };
+    return normalizeIndex(await loadJson<DocsIndex>(BASE, 'index.json'));
   } catch (err) {
     if (err instanceof ContentFetchError && err.missing) return EMPTY_INDEX;
+    throw err;
+  }
+}
+
+/**
+ * The ⌘K palette's body-text index (`docs/search.json`), fetched only when the
+ * palette first opens and memoized by `loadJson` for the life of the page. It
+ * is the part of the old index that was too big to ship with every page: a
+ * missing file simply means search matches titles and excerpts only.
+ */
+export async function fetchDocsSearch(): Promise<DocSearchEntry[]> {
+  try {
+    const entries = await loadJson<DocSearchEntry[]>(BASE, 'search.json');
+    return Array.isArray(entries) ? entries : [];
+  } catch (err) {
+    if (err instanceof ContentFetchError && err.missing) return [];
     throw err;
   }
 }
@@ -72,8 +120,6 @@ export async function fetchDoc(slug: string): Promise<DocDetail> {
     throw err;
   }
 
-  if (!doc || typeof doc.markdown !== 'string' || typeof doc.title !== 'string') {
-    throw new DocNotFoundError(slug);
-  }
+  if (!isDoc(doc)) throw new DocNotFoundError(slug);
   return doc;
 }

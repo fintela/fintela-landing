@@ -1,21 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
-import { radii, shadows, soft } from '../../theme/tokens';
-
-/** Inline code style — reusable. Plain object so it can be nested into `sx`. */
-export const inlineCode = {
-  fontFamily: '"JetBrains Mono", monospace',
-  fontSize: '0.84em',
-  px: 0.6,
-  py: 0.2,
-  borderRadius: `${radii.xs}px`,
-  bgcolor: soft.groundSunken,
-  boxShadow: shadows.neuInsetXs,
-  color: soft.accent,
-  whiteSpace: 'nowrap',
-  '@media (forced-colors: active)': { boxShadow: 'none', border: '1px solid CanvasText' },
-  '@media print': { boxShadow: 'none', border: `1px solid ${soft.deep}` },
-} as const;
+import { soft } from '../../theme/tokens';
+import { inlineCode } from './inlineCode';
 
 /** Plain paragraph for docs body text. */
 export const P = ({ children }: { children: ReactNode }) => (

@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 6
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: How Fintela's built in and custom risk managers protect a portfolio during a backtest: automatic stops, exposure caps, and trading halts, plus the order in which they act.
 keywords: risk manager, stop loss, trailing stop, take profit, max drawdown, exposure cap, position cap, cash floor, trading halt, re-entry block, risk manager activity log
 ---

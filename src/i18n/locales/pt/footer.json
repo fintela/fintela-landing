@@ -18,6 +18,8 @@
       "title": "Recursos",
       "links": {
         "documentation": "Documentação",
+        "quickstart": "Início rápido",
+        "api": "Referência da API",
         "engine": "Referência do motor",
         "datacluster": "Asset Groups",
         "blog": "Blog"
@@ -30,5 +32,10 @@
         "faq": "FAQ"
       }
     }
+  },
+  "social": {
+    "label": "Siga a Fintela",
+    "linkedin": "Fintela no LinkedIn",
+    "github": "Fintela no GitHub"
   }
 }

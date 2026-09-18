@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: How to choose between running your strategies, fitness functions and risk managers inside Fintela or on your own infrastructure, and what that choice means for validation, timing and live trading.
 keywords: internal, external, self-hosted, endpoint, strategies, fitness functions, risk managers, live trading, validation
 ---

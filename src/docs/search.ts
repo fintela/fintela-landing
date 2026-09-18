@@ -1,19 +1,27 @@
-import type { DocSummary } from './types';
+import type { DocSearchEntry, DocSummary } from './types';
 
 /**
  * Client-side documentation search, over the `docs/index.json` the page already
- * fetched. No search service, no build-time index beyond the capped `searchText`
- * the generator puts in each summary — which is the whole point of docs being
- * static files.
+ * has plus the body text from `docs/search.json`, which the palette fetches the
+ * first time it opens. No search service, no build-time index beyond the capped
+ * `searchText` the generator writes per page — which is the whole point of docs
+ * being static files.
  *
- * Used by both entry points so they can never disagree about what matches: the
- * search bar on `/docs`, and the ⌘K palette inside a page.
+ * The bodies are optional: until `search.json` lands, a query still matches
+ * titles, sections, keywords and excerpts, so the palette is usable at once and
+ * only gets deeper a moment later.
  */
 
 export interface DocHit {
   page: DocSummary;
   score: number;
 }
+
+/** Body text by slug, the shape `searchDocs` reads `search.json` in. */
+export type DocBodies = ReadonlyMap<string, string>;
+
+export const toDocBodies = (entries: readonly DocSearchEntry[]): DocBodies =>
+  new Map(entries.map((entry) => [entry.slug, entry.searchText.toLowerCase()]));
 
 /** Where a match landed, most specific first. Ties break on earlier position. */
 const WEIGHTS = {
@@ -30,7 +38,7 @@ const WEIGHTS = {
  * best field and the page takes the sum, so a page matching both terms in its
  * title outranks one matching each in passing.
  */
-export function searchDocs(pages: DocSummary[], query: string): DocHit[] {
+export function searchDocs(pages: DocSummary[], query: string, bodies?: DocBodies): DocHit[] {
   const phrase = query.toLowerCase().trim();
   const terms = phrase.split(/\s+/).filter(Boolean);
   if (terms.length === 0) return pages.map((page) => ({ page, score: 0 }));
@@ -43,7 +51,7 @@ export function searchDocs(pages: DocSummary[], query: string): DocHit[] {
       [WEIGHTS.section, page.section.toLowerCase()],
       [WEIGHTS.keyword, page.keywords.join(' ').toLowerCase()],
       [WEIGHTS.excerpt, page.excerpt.toLowerCase()],
-      [WEIGHTS.body, page.searchText.toLowerCase()],
+      [WEIGHTS.body, bodies?.get(page.slug) ?? ''],
     ];
 
     let total = 0;

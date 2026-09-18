@@ -5,11 +5,14 @@ date: 2026-09-03
 excerpt: Running a thousand parameter combinations and keeping the best Sharpe ratio isn't the same as finding a good strategy. It's closer to p-hacking, and there's a specific correction for how much to discount the number you end up with.
 tags: Research
 published: true
+updated: 2026-09-16
+cover: covers/deflated-sharpe.jpg
+coverAlt: Line chart of the expected maximum Sharpe ratio rising with the number of independent trials, from 0 to 1,000, for trial variances of 1 and 4.
 ---
 
-![Alt text](https://i.ibb.co/JjpD5sRh/v2-c1f228d1f39d14e9b77d886926441df9-r.jpg)
+![Line chart of the expected maximum Sharpe ratio rising with the number of independent trials, from 0 to 1,000, for trial variances of 1 and 4.](covers/deflated-sharpe.jpg)
 
-Every optimization engine, ours included, does the same basic thing underneath whatever sampler is driving it: it tries many parameter combinations and reports back the one that scored best. That process is exactly how a genuinely good strategy gets found, and it's also exactly how a mediocre or useless one gets dressed up to look good, and the two cases are statistically indistinguishable from the final number alone. The number of trials it took to get there is not a footnote. It's the missing half of the result.
+Every optimization engine, ours included, does the same basic thing underneath whatever [sampler](/docs/sampler-selection) is driving it: it tries many parameter combinations and reports back the one that scored best. That process is exactly how a genuinely good strategy gets found, and it's also exactly how a mediocre or useless one gets dressed up to look good, and the two cases are statistically indistinguishable from the final number alone. The number of [trials](/docs/studies) it took to get there is not a footnote. It's the missing half of the result.
 
 ## Why more trials quietly inflates the answer
 
@@ -39,6 +42,12 @@ with γ the Euler-Mascheroni constant. The result, DSR, is a probability: how li
 
 ## What this means for how many trials is too many
 
-The uncomfortable implication is not that optimization is bad, it's that N has to be tracked and disclosed as part of the result, the same way a clinical trial has to disclose how many endpoints it tested before reporting the one that came back significant. A study that ran 50 trials and a study that ran 5,000 trials, reporting the identical final Sharpe ratio, are not reporting equivalent evidence of skill, and treating them as equivalent is the most common way a backtest ends up overstating what it found. The fix isn't to run fewer trials out of caution, since a wider search is often exactly what surfaces a real effect. It's to carry N forward into how the final number gets interpreted, rather than discarding it the moment the best trial gets selected.
+The uncomfortable implication is not that optimization is bad, it's that N has to be tracked and disclosed as part of the result, the same way a clinical trial has to disclose how many endpoints it tested before reporting the one that came back significant. A study that ran 50 trials and a study that ran 5,000 trials, reporting the identical final Sharpe ratio, are not reporting equivalent evidence of skill, and treating them as equivalent is the most common way a backtest ends up overstating what it found. The fix isn't to run fewer trials out of caution, since a wider search is often exactly what surfaces a real effect. It's to carry N forward into how the final number gets interpreted, rather than discarding it the moment the best trial gets selected. That is also why a finished Fintela study reports Deflated Sharpe, Probabilistic Sharpe and a probability of backtest overfitting as a separate [robustness check](/docs/metrics-reference), computed once per study rather than offered as a metric you can rank on.
+
+## Further reading
+
+- [Studies](/docs/studies): how a study searches a strategy's parameter space, and what each trial leaves behind.
+- [Sampler selection](/docs/sampler-selection): which search algorithm to pick, and the trial budget each one expects.
+- [Study lifecycle](/docs/study-lifecycle): when the robustness step runs relative to the optimization itself.
 
 Sources: Bailey, D. and López de Prado, M. (2014), The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting, and Non-Normality, Journal of Portfolio Management.

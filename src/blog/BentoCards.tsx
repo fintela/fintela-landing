@@ -11,6 +11,18 @@ import { accentFor } from './format';
 import { blogAssetUrl } from './api';
 import type { BlogPostSummary } from './types';
 
+/**
+ * The heading level of a card's title. The cards sit directly under the `/blog`
+ * page's `<h1>` (so `h2`) and under the home page's Insights `<h2>` (so `h3`,
+ * the default); the size is the card's own either way.
+ */
+export type CardTitleLevel = 'h2' | 'h3';
+
+interface CardProps {
+  post: BlogPostSummary;
+  titleAs?: CardTitleLevel;
+}
+
 const ReadMore = ({ label, accent }: { label: string; accent: string }) => (
   <Box className="read-more" sx={{ mt: 'auto', display: 'flex', alignItems: 'center', gap: 0.75, color: accent, fontWeight: 600, fontSize: '0.88rem' }}>
     {label}
@@ -48,7 +60,7 @@ const MetaRow = ({
 };
 
 /** The 2×2 slot: cover in a 16/9 well, then the card at a larger type size. */
-export const FeaturedPostCard = ({ post }: { post: BlogPostSummary }) => {
+export const FeaturedPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
   const { t } = useTranslation('home');
   const accent = accentFor(post.slug);
   return (
@@ -85,7 +97,7 @@ export const FeaturedPostCard = ({ post }: { post: BlogPostSummary }) => {
       )}
       <Box sx={{ px: { xs: 3, md: 3.5 }, pt: 2.5, pb: { xs: 3, md: 3 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <MetaRow post={post} tag={post.tags[0]} />
-        <Typography component="h3" sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' }, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.2, color: soft.text, mt: 1.25, mb: 1 }}>
+        <Typography component={titleAs} sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' }, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.2, color: soft.text, mt: 1.25, mb: 1 }}>
           {post.title}
         </Typography>
         <Typography sx={{ color: soft.textSecondary, lineHeight: 1.65, fontSize: '0.95rem', maxWidth: 560, mb: 2.5 }}>
@@ -112,7 +124,7 @@ export const FeaturedPostCard = ({ post }: { post: BlogPostSummary }) => {
  * destructive middle ground. The excerpt earns its keep the same way: it fills
  * the column's extra height with typography instead of stretching the image.
  */
-export const VerticalPostCard = ({ post }: { post: BlogPostSummary }) => {
+export const VerticalPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
   const { t } = useTranslation('home');
   return (
     <NeuPanel
@@ -158,7 +170,7 @@ export const VerticalPostCard = ({ post }: { post: BlogPostSummary }) => {
       <Box sx={{ px: 2.5, pt: 2, pb: 2.5, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <MetaRow post={post} tag={post.tags[0]} />
         <Typography
-          component="h3"
+          component={titleAs}
           sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text, mt: 1, mb: 1 }}
         >
           {post.title}
@@ -179,7 +191,7 @@ export const VerticalPostCard = ({ post }: { post: BlogPostSummary }) => {
  * next to text, so it becomes texture instead, and every label switches to
  * white for contrast. Without a cover it stays the plain text tile.
  */
-export const CompactPostCard = ({ post }: { post: BlogPostSummary }) => {
+export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
   const { t } = useTranslation('home');
   const accent = accentFor(post.slug);
 
@@ -191,7 +203,7 @@ export const CompactPostCard = ({ post }: { post: BlogPostSummary }) => {
         sx={{ height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 1 }}
       >
         <MetaRow post={post} tag={post.tags[0]} />
-        <Typography component="h3" sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
+        <Typography component={titleAs} sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
           {post.title}
         </Typography>
         <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6, mt: 0.5 }}>{truncate(post.excerpt, 120)}</Typography>
@@ -234,7 +246,7 @@ export const CompactPostCard = ({ post }: { post: BlogPostSummary }) => {
       <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(8, 14, 28, 0.6)' }} />
       <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1 }}>
         <MetaRow post={post} tag={post.tags[0]} tone="onImage" />
-        <Typography component="h3" sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: '#fff' }}>
+        <Typography component={titleAs} sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: '#fff' }}>
           {post.title}
         </Typography>
         <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.88rem', lineHeight: 1.6, mt: 0.5 }}>
@@ -247,10 +259,10 @@ export const CompactPostCard = ({ post }: { post: BlogPostSummary }) => {
 };
 
 /** A text tile: meta with the lead tag, title, one line of excerpt. */
-export const TextPostCard = ({ post }: { post: BlogPostSummary }) => (
+export const TextPostCard = ({ post, titleAs = 'h3' }: CardProps) => (
   <NeuPanel to={`/blog/${post.slug}`} component="article" sx={{ height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
     <MetaRow post={post} tag={post.tags[0]} />
-    <Typography component="h3" sx={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
+    <Typography component={titleAs} sx={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
       {post.title}
     </Typography>
     <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.55 }}>{truncate(post.excerpt, 110)}</Typography>

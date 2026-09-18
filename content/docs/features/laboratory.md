@@ -4,7 +4,7 @@ section: Features
 sectionOrder: 7
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: An interactive Python notebook workspace for exploring data and testing strategies, fitness functions and risk managers before you save them for real.
 keywords: laboratory, notebook, python, session, workspace, editor, sdk, files, catalog, lab
 ---

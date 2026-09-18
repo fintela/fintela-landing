@@ -11,7 +11,7 @@ import { NeuPanel } from '../primitives/NeuPanel';
 import { IconWell } from '../primitives/IconWell';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { inkGrooveSx, inkSurfaceSx } from '../../theme/neu';
-import { motion, soft } from '../../theme/tokens';
+import { fonts, motion, soft } from '../../theme/tokens';
 
 const codeLines: { tokens: { text: string; color: string }[] }[] = [
   { tokens: [
@@ -117,7 +117,7 @@ export const DevExperienceSection = () => {
               <Typography
                 sx={{
                   ml: 1.5,
-                  fontFamily: '"JetBrains Mono", monospace',
+                  fontFamily: fonts.mono,
                   fontSize: '0.72rem',
                   color: soft.onInk,
                   letterSpacing: '0.04em',
@@ -133,7 +133,7 @@ export const DevExperienceSection = () => {
                 m: 0,
                 px: 2.5,
                 py: 2,
-                fontFamily: '"JetBrains Mono", monospace',
+                fontFamily: fonts.mono,
                 fontSize: { xs: '0.78rem', md: '0.84rem' },
                 lineHeight: 1.75,
                 color: soft.white,

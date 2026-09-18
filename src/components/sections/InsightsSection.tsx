@@ -9,7 +9,7 @@ import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { soft } from '../../theme/tokens';
 import { useBlogIndex } from '../../blog/useBlog';
 import { BlogEmptyState } from '../../blog/BlogEmptyState';
-import { CompactPostCard, FeaturedPostCard, PostCountCard, TextPostCard } from '../../blog/BentoCards';
+import { CompactPostCard, FeaturedPostCard, PostCountCard } from '../../blog/BentoCards';
 import type { BlogPostSummary } from '../../blog/types';
 
 /** The featured slot goes to a pinned post if there is one, else the newest. */
@@ -21,7 +21,7 @@ const pickFeatured = (posts: BlogPostSummary[]): BlogPostSummary[] => {
 
 /**
  * Band 6. The blog on the home page as a bento: the newest (or pinned) post
- * in a 2×2 plate with its cover, two compact rows beside it, two text tiles
+ * in a 2×2 plate with its cover, two compact cover tiles beside it, two more
  * under it, and a counter that is also the way to /blog. Degrades by count:
  * one post spans the row; up to three fill the first two rows; the counter
  * takes whatever cell is left.
@@ -75,7 +75,7 @@ export const InsightsSection = () => {
           {text.map((post, idx) => (
             <BentoTile key={post.slug}>
               <AnimateOnScroll delay={200 + idx * 80} stretch>
-                <TextPostCard post={post} />
+                <CompactPostCard post={post} />
               </AnimateOnScroll>
             </BentoTile>
           ))}

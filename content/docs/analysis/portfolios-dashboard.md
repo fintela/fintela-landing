@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 1
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Rank, compare, and act on your portfolios: the ranked list, its filters, and what each control does.
 keywords: portfolios, dashboard, ranking, filters, sharpe ratio, drawdown, comparison, promote, portfolio groups, strategy families
 ---

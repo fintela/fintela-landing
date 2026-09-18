@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 4
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Compare your whole book of portfolio groups side by side (performance, metrics, holdings and trades) then drill into any one group for a full analysis.
 keywords: portfolio manager, portfolio groups, comparative analysis, equity curve, metrics, holdings, trades, benchmark, rebalancing
 ---

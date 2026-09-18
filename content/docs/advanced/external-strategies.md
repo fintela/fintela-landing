@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 4
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Run your own trading logic on your own systems, in any language, and connect it to Fintela so it can be scored and traded alongside strategies you build in the app.
 keywords: external strategy, self hosted strategy, own infrastructure, trading signal, max concurrency, timeout, private data, own language
 ---

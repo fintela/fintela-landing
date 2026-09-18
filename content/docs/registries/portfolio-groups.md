@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 7
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: Combine your promoted portfolios into one book you can allocate, rebalance, and deploy to a broker as paper or live trading.
 keywords: portfolio group, allocation, rebalancing, weights, members, broker connection, paper trading, live trading, deploy, end-of-day report
 ---

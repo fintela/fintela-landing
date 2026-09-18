@@ -4,7 +4,7 @@ section: API Reference
 sectionOrder: 10
 order: 5
 published: true
-updated: 2026-09-08
+updated: 2026-09-09
 summary: Pull your optimization trial results and the managed portfolios promoted from them into your own tools with Fintela's read only API.
 keywords: developer API, trials, managed portfolios, promoted portfolios, equity curve, holdings, personal access key, read-only, deprecated
 ---

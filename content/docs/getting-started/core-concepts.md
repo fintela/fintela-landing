@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 3
 published: true
-updated: 2026-09-01
+updated: 2026-09-04
 summary: The core vocabulary of the platform, asset groups, strategies, fitness functions, risk managers, studies, trials, and portfolios, explained in plain language.
 keywords: concepts, vocabulary, glossary, strategy, fitness, study, trial, portfolio, asset group, risk manager, promotion, portfolio group
 ---
