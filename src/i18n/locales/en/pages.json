@@ -88,8 +88,8 @@
         },
         "institutional": {
           "name": "Institutional",
-          "price": "Custom",
-          "period": "",
+          "price": "$599",
+          "period": "/mo",
           "badge": "",
           "description": "Built for teams. Branded for you.",
           "features": [
@@ -101,7 +101,7 @@
             "Custom branding",
             "White-label possibility",
             "Hands-on workflow & strategy enablement",
-            "SSO & seat management"
+            "2 included seats, +$299.50/seat/mo"
           ],
           "overageRate": "$0.0125/token",
           "support": "Dedicated CSM + SLA",
@@ -122,7 +122,7 @@
           "label": "Price",
           "trader": "$79/mo ($787/yr)",
           "quant": "$159/mo ($1,589/yr)",
-          "institutional": "Custom — negotiated"
+          "institutional": "$599/mo (2 seats included)"
         },
         "tokenPool": {
           "label": "Token pool",
@@ -197,7 +197,7 @@
           "label": "Hands-on workflow & strategy enablement"
         },
         "ssoSeatManagement": {
-          "label": "SSO & seat management"
+          "label": "Included seats (+$299.50/seat/mo beyond 2)"
         }
       }
     },
@@ -210,8 +210,8 @@
   },
   "blog": {
     "hero": {
-      "chip": "Insights & Tutorials",
-      "title": "Fintela Blog",
+      "chip": "Research",
+      "title": "Fintela Research",
       "subtitle": "Insights, tutorials, and practical guides for quantitative finance and algorithmic trading."
     },
     "readMore": "Read More",
@@ -302,6 +302,1196 @@
       "docs": "Documentation"
     }
   },
+  "productTrain": {
+    "title": "Train",
+    "body": "This page is coming soon.",
+    "home": "Back to home"
+  },
+  "samplers": {
+    "seo": {
+      "title": "Optimization Engine | Fintela",
+      "description": "Seven search algorithms, how to pick the right one, and the engine that runs them in parallel, recovers from failures, and swaps your sampler for a grid when the space is finite."
+    },
+    "eyebrow": "How studies search",
+    "title": "Seven ways to explore",
+    "titleAccent": "a parameter space.",
+    "description": "The sampler is the algorithm that decides which parameter combination a study's next trial tries. Five classic algorithms, plus two experimental ones that run on a simulated quantum computer, all coordinated by the same optimization engine that scales, recovers from failures, and keeps your study running.",
+    "algorithms": {
+      "eyebrow": "The seven samplers",
+      "title": "The same field, seven ways to search it"
+    },
+    "items": {
+      "tpe": {
+        "title": "TPE",
+        "desc": "Learns from the trials already run: it models the \"good\" and \"bad\" results as two separate densities, and proposes points more likely under the good one. Fintela's default, and the right choice for most searches, especially on modest budgets, since it gets useful signal from relatively few trials.",
+        "bullets": [
+          {
+            "label": "Full name",
+            "desc": "Tree-structured Parzen Estimator."
+          },
+          {
+            "label": "Best for",
+            "desc": "General purpose, mixed parameter types."
+          },
+          {
+            "label": "Parallelism",
+            "desc": "Runs across multiple workers; adjusts itself so they don't propose near-identical combinations at once."
+          },
+          {
+            "label": "Recommended budget",
+            "desc": "100 to 1,000 trials."
+          }
+        ]
+      },
+      "cmaEs": {
+        "title": "CMA-ES",
+        "desc": "Evolves a population of candidates, adapting the mean and covariance of a multivariate Gaussian toward the best-performing regions each generation. Works best with continuous parameters and a large trial budget.",
+        "bullets": [
+          {
+            "label": "Full name",
+            "desc": "Covariance Matrix Adaptation Evolution Strategy."
+          },
+          {
+            "label": "Best for",
+            "desc": "High parallelism, continuous parameters."
+          },
+          {
+            "label": "Parallelism",
+            "desc": "Runs across multiple workers in parallel."
+          },
+          {
+            "label": "Recommended budget",
+            "desc": "1,000 to 10,000 trials."
+          }
+        ]
+      },
+      "nsga2": {
+        "title": "NSGA-II",
+        "desc": "A population-based genetic algorithm: instead of proposing one combination at a time, it evaluates a whole batch together, which makes it naturally suited to running many trials in parallel. Fintela always runs it against a single objective, even though algorithms like this are often used for multi-objective optimization elsewhere.",
+        "bullets": [
+          {
+            "label": "Full name",
+            "desc": "Non-dominated Sorting Genetic Algorithm II."
+          },
+          {
+            "label": "Best for",
+            "desc": "Large budgets, many categorical or discrete parameters."
+          },
+          {
+            "label": "Parallelism",
+            "desc": "Runs across multiple workers; batch size adjusts automatically."
+          },
+          {
+            "label": "Recommended budget",
+            "desc": "100 to 10,000 trials."
+          }
+        ]
+      },
+      "qmc": {
+        "title": "QMC",
+        "desc": "Uses a low-discrepancy sequence instead of pure randomness, spreading trials more evenly across the search space. Useful for sensitivity sweeps, or an early pass before committing a larger budget to a smarter sampler.",
+        "bullets": [
+          {
+            "label": "Full name",
+            "desc": "Quasi-Monte Carlo."
+          },
+          {
+            "label": "Best for",
+            "desc": "Systematic coverage, or a step up from a baseline."
+          },
+          {
+            "label": "Parallelism",
+            "desc": "Runs across multiple workers, no coordination needed."
+          },
+          {
+            "label": "Recommended budget",
+            "desc": "Unlimited."
+          }
+        ]
+      },
+      "random": {
+        "title": "Random",
+        "desc": "Pure uniform random sampling, with no memory of past trials. Scales to any number of parallel workers with no coordination overhead: the honest baseline any smarter sampler should beat.",
+        "bullets": [
+          {
+            "label": "Full name",
+            "desc": "Random Search."
+          },
+          {
+            "label": "Best for",
+            "desc": "A control baseline, or very large search spaces."
+          },
+          {
+            "label": "Parallelism",
+            "desc": "Runs across multiple workers, no coordination needed."
+          },
+          {
+            "label": "Recommended budget",
+            "desc": "Unlimited."
+          }
+        ]
+      },
+      "qaoa": {
+        "title": "QAOA",
+        "desc": "Experimental: proposes each combination using a simulated quantum circuit instead of classical statistics. Emulated in software: no real quantum hardware involved, and no current speed advantage over the classical samplers. Starts with random trials while it warms up, and falls back to random sampling if anything fails or the space is too large.",
+        "bullets": [
+          {
+            "label": "Full name",
+            "desc": "Quantum Approximate Optimization Algorithm (emulated)."
+          },
+          {
+            "label": "Best for",
+            "desc": "Experimenting with quantum-inspired search."
+          },
+          {
+            "label": "Parallelism",
+            "desc": "Runs on a single worker, since it keeps an internal model that can't be split."
+          },
+          {
+            "label": "Recommended budget",
+            "desc": "50 to 500 trials."
+          }
+        ]
+      },
+      "qKernel": {
+        "title": "Q-Kernel",
+        "desc": "Also experimental: Bayesian optimization in the spirit of TPE, but its similarity model is computed with a simulated quantum feature map instead of a classical kernel. Shares QAOA's random warmup and automatic fallback.",
+        "bullets": [
+          {
+            "label": "Full name",
+            "desc": "Quantum Kernel Bayesian Optimization (emulated)."
+          },
+          {
+            "label": "Best for",
+            "desc": "Experimenting with a simulated quantum similarity kernel."
+          },
+          {
+            "label": "Parallelism",
+            "desc": "Runs on a single worker."
+          },
+          {
+            "label": "Recommended budget",
+            "desc": "30 to 300 trials."
+          }
+        ]
+      }
+    },
+    "picking": {
+      "eyebrow": "How to pick one",
+      "title": "A quick guide for your situation",
+      "facts": {
+        "unsure": {
+          "label": "Not sure?",
+          "value": "Start with TPE: the default, and the right choice for most searches."
+        },
+        "continuous": {
+          "label": "All continuous, big budget, many workers",
+          "value": "CMA-ES."
+        },
+        "categorical": {
+          "label": "Many categorical parameters, big budget",
+          "value": "NSGA-II."
+        },
+        "coverage": {
+          "label": "Even coverage, or a sensitivity sweep",
+          "value": "QMC."
+        },
+        "baseline": {
+          "label": "A control baseline to beat",
+          "value": "Random."
+        },
+        "quantum": {
+          "label": "Want to experiment with quantum search",
+          "value": "QAOA or Q-Kernel."
+        }
+      }
+    },
+    "engine": {
+      "eyebrow": "The engine behind the search",
+      "title": "What actually happens when you launch a study",
+      "description": "The sampler decides what to try; the optimization engine decides how to run it: how many workers, in what order, and what to do when something goes wrong.",
+      "items": {
+        "automaticScaling": {
+          "title": "Automatic worker scaling",
+          "desc": "Fintela decides how many workers your study needs, with nothing for you to configure.",
+          "bullets": [
+            {
+              "label": "Bigger budget, more workers",
+              "desc": "a 20-trial study doesn't get the same compute as a 2,000-trial one."
+            },
+            {
+              "label": "External strategies and fitness functions",
+              "desc": "collapse the study to a single worker, respecting the concurrency limit you declared."
+            },
+            {
+              "label": "Automatic retry",
+              "desc": "if a worker runs out of memory, Fintela retries with a larger allocation, up to three times, without charging you again for what already ran."
+            }
+          ]
+        },
+        "batchPipeline": {
+          "title": "Pipelined batches, not trial by trial",
+          "desc": "Trials move in batches, and while one is being saved, the next is already being simulated.",
+          "bullets": [
+            {
+              "label": "Data processed once per batch",
+              "desc": "not once per trial, so nothing is redone."
+            },
+            {
+              "label": "Saved immediately",
+              "desc": "each finished batch saves right away; you never see a half-finished study."
+            },
+            {
+              "label": "Isolation",
+              "desc": "if one trial fails, only that one fails; the rest of the batch and the study continue."
+            }
+          ]
+        },
+        "finiteGrid": {
+          "title": "Finite grids replace your sampler",
+          "desc": "If your search space is small enough to enumerate completely, Fintela detects it before your study launches.",
+          "bullets": [
+            {
+              "label": "Up to 1,000,000 combinations",
+              "desc": "Fintela automatically switches to a grid search: every combination tried exactly once."
+            },
+            {
+              "label": "Your sampler simply doesn't apply then",
+              "desc": "except QAOA and Q-Kernel, which are exempt and keep their normal behavior."
+            },
+            {
+              "label": "The builder warns you",
+              "desc": "with the exact size of the space, before you spend any tokens."
+            }
+          ]
+        },
+        "failureRecovery": {
+          "title": "Automatic failure recovery",
+          "desc": "A study doesn't go down over one trial, one worker, or a memory spike.",
+          "bullets": [
+            {
+              "label": "Per-trial isolation",
+              "desc": "an error in one trial doesn't affect the rest of the batch or the study."
+            },
+            {
+              "label": "Early auto-stop",
+              "desc": "if too many trials fail, the study stops itself before it keeps spending your budget."
+            },
+            {
+              "label": "Everything finished stays",
+              "desc": "resuming or relaunching a partial study only computes what's left, not from scratch."
+            },
+            {
+              "label": "Automatic refund",
+              "desc": "Fintela compares what you were charged at launch against the actual cost, and refunds the difference."
+            }
+          ]
+        },
+        "liveProgress": {
+          "title": "Live progress and health",
+          "desc": "Nothing is pushed to you trial by trial: the app keeps itself current by checking in on the study for you.",
+          "bullets": [
+            {
+              "label": "About every 5 seconds",
+              "desc": "while the study is active, the status, progress, and health indicators update."
+            },
+            {
+              "label": "Progress and Health",
+              "desc": "what share of your budget has resolved, and what share of that succeeded."
+            },
+            {
+              "label": "Never a stale snapshot",
+              "desc": "the progress you see always reflects the live number, not a minute-old picture."
+            }
+          ]
+        },
+        "sameEngine": {
+          "title": "The same engine, from sandbox to full study",
+          "desc": "The simulation engine behind a single sandbox backtest is exactly the same one that runs every trial inside a full study.",
+          "bullets": [
+            {
+              "label": "No surprises",
+              "desc": "a strategy that behaves a certain way in a quick test behaves the same inside a study; the only difference is how many combinations get tried."
+            },
+            {
+              "label": "Risk managers evaluated per simulated day",
+              "desc": "inside each trial, not once per trial."
+            },
+            {
+              "label": "External code, same rules",
+              "desc": "Fintela retries automatically on connection failures, never on an endpoint that's simply slow."
+            }
+          ]
+        }
+      }
+    },
+    "limits": {
+      "eyebrow": "What it doesn't do",
+      "title": "The limits, with no fine print",
+      "facts": {
+        "noMultiObjective": {
+          "label": "No multi-objective search",
+          "value": "Every study optimizes a single objective. To balance two goals, build the tradeoff into one custom fitness function."
+        },
+        "noSeed": {
+          "label": "No seed",
+          "value": "There's no reproducibility setting: TPE, CMA-ES, Random, QMC, and NSGA-II each explore a different trial sequence on every run."
+        },
+        "samplerLocked": {
+          "label": "The sampler locks in at launch",
+          "value": "You can only change it while the study is still a draft; duplicate the study to try a different one."
+        },
+        "noWorkerControl": {
+          "label": "No manual worker control",
+          "value": "How many workers run your study is decided automatically by Fintela, based on your execution type, sampler, and trial budget."
+        }
+      }
+    },
+    "note": "These are general descriptions of each algorithm family, meant as guidance, not an exact specification of Fintela's implementation.",
+    "docsLinks": {
+      "samplerSelection": {
+        "label": "Read the full sampler guide",
+        "href": "/docs/sampler-selection"
+      },
+      "optimizerArchitecture": {
+        "label": "Read how the optimization engine works",
+        "href": "/docs/optimizer-architecture"
+      }
+    }
+  },
+  "inDepthAnalysis": {
+    "seo": {
+      "title": "In-Depth Analysis | Fintela Data Explorer",
+      "description": "Browse every dataset powering the platform and drill into a full robustness, clustering and optimization report for any strategy search."
+    },
+    "hero": {
+      "moduleTag": "Data Explorer",
+      "eyebrow": "Products",
+      "title": "In-Depth",
+      "titleAccent": "Analysis.",
+      "description": "Browse every dataset powering the platform: live coverage, freshness, and raw records. Data Library: every dataset powering the platform, in one place. Pick a dataset to inspect its per-ticker coverage, time distribution, and raw records, with live row counts and freshness below."
+    },
+    "library": {
+      "meta": {
+        "rows": "Rows",
+        "window": "Window",
+        "updated": "Updated"
+      },
+      "freshness": {
+        "today": "Today",
+        "daysAgo": "{{count}}d ago",
+        "none": "—"
+      },
+      "categories": {
+        "market": {
+          "title": "Market Data"
+        },
+        "fundamentals": {
+          "title": "Fundamentals"
+        },
+        "corporateActions": {
+          "title": "Corporate Actions"
+        },
+        "eventsCalendar": {
+          "title": "Events Calendar"
+        },
+        "alternativeData": {
+          "title": "Alternative Data"
+        },
+        "macroRates": {
+          "title": "Macro & Rates"
+        },
+        "reference": {
+          "title": "Reference"
+        }
+      },
+      "datasets": {
+        "priceData": {
+          "name": "Price Data",
+          "desc": "Daily OHLCV price data for all tracked tickers."
+        },
+        "technicalIndicators": {
+          "name": "Technical Indicators",
+          "desc": "Computed rolling indicators stored in the indicators table."
+        },
+        "marketCapHistory": {
+          "name": "Market Cap History",
+          "tag": "S&P 500 universe",
+          "desc": "Daily historical market capitalization per ticker."
+        },
+        "usEquityFundamentals": {
+          "name": "US Equity Fundamentals",
+          "desc": "Fundamental snapshots for US-listed equities."
+        },
+        "cryptoFundamentals": {
+          "name": "Crypto Fundamentals",
+          "desc": "On-chain snapshots for crypto assets."
+        },
+        "analystTrends": {
+          "name": "Analyst Trends",
+          "tag": "S&P 500 universe",
+          "desc": "Forward analyst estimates per ticker (EPS/revenue consensus, 30-day revisions)."
+        },
+        "fundFundamentals": {
+          "name": "Fund Fundamentals",
+          "desc": "ETF / mutual-fund snapshots (AUM, expense ratio, yield, holdings count)."
+        },
+        "dividends": {
+          "name": "Dividends",
+          "desc": "Dividend history per ticker (ex/record/payment dates, per-share amounts adjusted/as-reported)."
+        },
+        "splits": {
+          "name": "Splits",
+          "desc": "Stock split events per ticker (split date, numerator/denominator ratio)."
+        },
+        "earningsCalendar": {
+          "name": "Earnings Calendar",
+          "desc": "Forward earnings calendar (report dates, timing BMO/AMC, EPS estimate vs actual)."
+        },
+        "ipoCalendar": {
+          "name": "IPO Calendar",
+          "desc": "Upcoming and recent IPOs (offer dates, price ranges, shares, deal type)."
+        },
+        "newsSentiment": {
+          "name": "News Sentiment",
+          "tag": "S&P 500 universe",
+          "desc": "Daily aggregated news sentiment score and article count per ticker."
+        },
+        "insiderTransactions": {
+          "name": "Insider Transactions",
+          "tag": "S&P 500 universe",
+          "desc": "SEC Form 4 insider transactions (owner, role, buy/sell, shares, price)."
+        },
+        "interestRates": {
+          "name": "Interest Rates",
+          "desc": "US Treasury yield curve (daily rate observations per tenor 1M–30Y)."
+        },
+        "macroIndicators": {
+          "name": "Macro Indicators",
+          "desc": "Macroeconomic indicators by country (GDP, inflation, unemployment, quarterly/annual)."
+        },
+        "indexConstituents": {
+          "name": "Index Constituents",
+          "desc": "Historical index constituent membership (source of truth for the groupings namespace='index')."
+        },
+        "tickerMetadata": {
+          "name": "Ticker Metadata",
+          "desc": "Static descriptors per ticker (sector, industry, identifiers for the meta injectable)."
+        },
+        "dataSources": {
+          "name": "Data Sources",
+          "desc": "Every injectable source (prices, fundamentals, groupings, default clusters) with usage code & live sample."
+        },
+        "hierarchicalGroupings": {
+          "name": "Hierarchical Groupings",
+          "desc": "Universe membership by date (indices, sector/country ETFs, default-cluster collections)."
+        },
+        "symbolChanges": {
+          "name": "Symbol Changes",
+          "desc": "US symbol rename history (e.g., FB → META)."
+        }
+      }
+    },
+    "datasets": {
+      "eyebrow": "Explore every dataset",
+      "title": "Everything that feeds the platform, before you build anything",
+      "description": "The Data Explorer is Fintela's data library: check coverage, freshness, and raw records for every source before you inject it into a strategy, a fitness function, or a risk manager.",
+      "items": {
+        "marketData": {
+          "title": "Market data",
+          "desc": "Prices, technical indicators, and market-cap history: the base every strategy is built on.",
+          "bullets": [
+            {
+              "label": "Price Data",
+              "desc": "Open, High, Low, Close, adjusted close, and volume, per ticker, with daily coverage."
+            },
+            {
+              "label": "Technical Indicators",
+              "desc": "The same indicators available in Markets, ready to inspect before you use them in code."
+            },
+            {
+              "label": "Market Cap History",
+              "desc": "Market capitalization over time, ticker by ticker."
+            }
+          ]
+        },
+        "fundamentals": {
+          "title": "Fundamentals",
+          "desc": "The financial statements and valuation metrics behind companies and funds, ready to inject into your code.",
+          "bullets": [
+            {
+              "label": "US Equity Fundamentals",
+              "desc": "15 chartable metrics: P/E, ROE, ROA, margins, PEG, and more."
+            },
+            {
+              "label": "Crypto Fundamentals",
+              "desc": "Market cap, circulating and total supply, dominance, all-time high and low."
+            },
+            {
+              "label": "Fund Fundamentals",
+              "desc": "Net assets, expense ratio, yield, and holdings count."
+            },
+            {
+              "label": "Analyst Trends",
+              "desc": "Analyst estimates and revisions, table only."
+            }
+          ]
+        },
+        "corporateActions": {
+          "title": "Corporate actions",
+          "desc": "Dividends and splits, per ticker, so your strategy never mistakes a split for a real price drop.",
+          "bullets": [
+            {
+              "label": "Dividends",
+              "desc": "Value paid and unadjusted value, chartable as bars."
+            },
+            {
+              "label": "Splits",
+              "desc": "The full history of stock splits, table only."
+            }
+          ]
+        },
+        "eventsCalendar": {
+          "title": "Events calendar",
+          "desc": "What's coming up and what already happened, grouped by day.",
+          "bullets": [
+            {
+              "label": "Earnings Calendar",
+              "desc": "The next 30 days or the last 30, with the estimate, the actual figure, and the surprise."
+            },
+            {
+              "label": "IPO Calendar",
+              "desc": "The next 60 days or the last 30: expected price range, offer price, shares issued, and deal type."
+            }
+          ]
+        },
+        "alternativeData": {
+          "title": "Alternative data",
+          "desc": "Signals that don't come from price: news sentiment and insider activity.",
+          "bullets": [
+            {
+              "label": "News Sentiment",
+              "desc": "Sentiment score and article count, per ticker and per day."
+            },
+            {
+              "label": "Insider Transactions",
+              "desc": "Every SEC Form 4 transaction reported by insiders, table only."
+            }
+          ]
+        },
+        "macroRates": {
+          "title": "Macro & rates",
+          "desc": "The full macroeconomic picture: the yield curve and indicators by country.",
+          "bullets": [
+            {
+              "label": "Interest Rates",
+              "desc": "The US Treasury yield curve (3-month to 30-year) and the 2s10s spread, a closely watched recession signal."
+            },
+            {
+              "label": "Macro Indicators",
+              "desc": "Macroeconomic indicators by country, with their latest readings side by side."
+            }
+          ]
+        },
+        "reference": {
+          "title": "Reference",
+          "desc": "The map for everything else: what each ticker is, how it groups, and what you can wire into your own code.",
+          "bullets": [
+            {
+              "label": "Ticker Metadata",
+              "desc": "18 fields per ticker (sector, industry, country, ISIN…), flagged with which ones you can use in a strategy."
+            },
+            {
+              "label": "Hierarchical Groupings",
+              "desc": "Ready-made universes (sectors, indices) to use, flagged when their membership can introduce survivorship bias."
+            },
+            {
+              "label": "Index Constituents and Symbol Changes",
+              "desc": "Who belongs to which index, and every symbol change across exchanges."
+            },
+            {
+              "label": "Data Sources",
+              "desc": "The full catalog of sources you can inject into a strategy, with a live preview of real data."
+            }
+          ]
+        }
+      }
+    },
+    "workflow": {
+      "eyebrow": "From ranking to decision",
+      "title": "Everything you can do with a study's output",
+      "description": "Beyond the worked example above: the full Optimization Dashboard workflow, from thousands of trials to a candidate ready to trade.",
+      "items": {
+        "rankingComparison": {
+          "title": "Ranking and comparing candidates",
+          "desc": "Every trial a study produced, ranked by whatever metric and period you pick, with their curves overlaid.",
+          "bullets": [
+            {
+              "label": "Rank by any metric",
+              "desc": "from your study or all of them at once, over any stage or rolling window."
+            },
+            {
+              "label": "Overlaid equity curve",
+              "desc": "compare every selected candidate visually, without leaving the ranking."
+            },
+            {
+              "label": "Comparison tables",
+              "desc": "side-by-side metrics, a full pivot table, and parameter/risk-manager comparisons."
+            }
+          ]
+        },
+        "robustnessVerdict": {
+          "title": "Robustness verdict",
+          "desc": "Is the best result real skill, or just the luckiest of many backtests?",
+          "bullets": [
+            {
+              "label": "PBO",
+              "desc": "the probability your best trial is overfitting, not a real edge."
+            },
+            {
+              "label": "Deflated Sharpe",
+              "desc": "Sharpe adjusted for how many trials you ran: the more you ran, the higher the bar."
+            },
+            {
+              "label": "Train → validation → OOS degradation",
+              "desc": "whether the result holds up out of sample."
+            },
+            {
+              "label": "Final verdict",
+              "desc": "Well Trained · Borderline · Overfit Risk · Uncertain, computed automatically once the study finishes."
+            }
+          ]
+        },
+        "behavioralFamilies": {
+          "title": "Strategy families",
+          "desc": "How many genuinely different searches your study actually ran, and which are just variations on the same finding.",
+          "bullets": [
+            {
+              "label": "Behavioral map",
+              "desc": "every trial placed by how similar its returns are to the others."
+            },
+            {
+              "label": "Concentration warning",
+              "desc": "when your top candidates collapse into too few families, a real overfitting signal."
+            },
+            {
+              "label": "One representative per family",
+              "desc": "the most typical trial, the highest fitness, the highest out-of-sample Sharpe, or the lowest drawdown."
+            }
+          ]
+        },
+        "parameterImportance": {
+          "title": "Parameter importance",
+          "desc": "Which parameters actually moved the result, and which only helped during training.",
+          "bullets": [
+            {
+              "label": "Two methods",
+              "desc": "fANOVA and MDI, switchable instantly."
+            },
+            {
+              "label": "Overfitting divergence",
+              "desc": "flags any parameter whose effect reverses between training and validation."
+            },
+            {
+              "label": "Confidence range",
+              "desc": "plus a warning whenever too few trials exist to trust the ranking."
+            }
+          ]
+        },
+        "parameterExploration": {
+          "title": "Visual parameter exploration",
+          "desc": "Five views into how your search actually behaved, beyond a table of numbers.",
+          "bullets": [
+            {
+              "label": "Optimization trajectory",
+              "desc": "how the objective evolved, trial by trial."
+            },
+            {
+              "label": "Parameter impact",
+              "desc": "a scatter chart for every parameter against the objective."
+            },
+            {
+              "label": "3D explorer",
+              "desc": "any two parameters and the objective, plotted in three dimensions."
+            },
+            {
+              "label": "Patterns",
+              "desc": "a parallel-coordinates view connecting every parameter combination to its outcome."
+            }
+          ]
+        },
+        "promotion": {
+          "title": "From candidate to managed portfolio",
+          "desc": "Promote the winning trial into a portfolio Fintela updates every day, ready for a portfolio group.",
+          "bullets": [
+            {
+              "label": "A full snapshot",
+              "desc": "code, parameters, universe, fitness, and risk manager, frozen at the moment you promote."
+            },
+            {
+              "label": "Bulk promotion",
+              "desc": "up to 50 candidates at once, all or nothing, with your slots checked before anything applies."
+            },
+            {
+              "label": "Re-promoting is safe",
+              "desc": "a trial that's already promoted simply confirms the existing portfolio, no duplicates."
+            }
+          ]
+        }
+      }
+    },
+    "metrics": {
+      "eyebrow": "One metrics catalog",
+      "title": "35 metrics, the same definition everywhere",
+      "facts": {
+        "portfolioMetrics": {
+          "label": "26 portfolio metrics",
+          "value": "Return, CAGR, volatility, drawdowns, Sharpe, Sortino, Calmar, VaR/CVaR, win rate, and more."
+        },
+        "benchmarkMetrics": {
+          "label": "9 benchmark metrics",
+          "value": "Alpha, beta, information ratio, Treynor, up/down capture, tracking error, R²."
+        },
+        "everywhere": {
+          "label": "The same list, everywhere",
+          "value": "The metric picker, comparison tables, Markets screener, and the API all read from the same catalog."
+        },
+        "customMetrics": {
+          "label": "Your own metrics",
+          "value": "Any fitness function can be promoted into an organization metric and shown alongside the standard ones."
+        },
+        "objectives": {
+          "label": "27 objectives ready to optimize",
+          "value": "Pick exactly what your search optimizes toward, with no code required."
+        }
+      }
+    },
+    "closingLine": "Every number you see, in the ranking, in the robustness verdict, or in a scatter chart, comes from the same data catalog and the same metrics catalog: nothing is calculated differently depending on which screen you're looking at.",
+    "docsLinks": {
+      "optimizationDashboard": {
+        "label": "Read the Optimization Dashboard docs",
+        "href": "/docs/optimization-dashboard"
+      },
+      "metricsReference": {
+        "label": "Read the full metrics reference",
+        "href": "/docs/metrics-reference"
+      }
+    }
+  },
+  "fintelaApi": {
+    "seo": {
+      "title": "Fintela API | Fintela",
+      "description": "A read-only developer API, and the simulation engine behind every number: studies, trials, portfolios, and backtests, available in your own tools."
+    },
+    "eyebrow": "For developers",
+    "title": "Build on the",
+    "titleAccent": "Fintela API.",
+    "description": "A read-only channel into your account, and the simulation engine that computes everything that channel hands back. Pull studies, strategies, trials, and portfolios into your own dashboards and scripts, authenticated with a personal access key.",
+    "resources": {
+      "eyebrow": "What you can read",
+      "title": "Everything Fintela computes, in your own tools",
+      "items": {
+        "studies": {
+          "title": "Studies",
+          "desc": "Everything you need to track a study from outside the app.",
+          "bullets": [
+            {
+              "label": "Full configuration",
+              "desc": "Strategy, fitness, trial budget, search space, date windows, asset group."
+            },
+            {
+              "label": "Progress and health",
+              "desc": "Trials completed out of the total, and the success rate against failures."
+            },
+            {
+              "label": "Status and errors",
+              "desc": "Queued / Running / Completed / Failed / Stopped, grouped by cause when something fails."
+            },
+            {
+              "label": "Curves and importance",
+              "desc": "The optimization curve, the combined train + validation curve, and which parameters moved the result."
+            },
+            {
+              "label": "Search by name",
+              "desc": "Find a study by name and pull its best trials."
+            }
+          ]
+        },
+        "trialsPortfolios": {
+          "title": "Trials and managed portfolios",
+          "desc": "The detail behind every trial, and the portfolios you've already promoted to live operation.",
+          "bullets": [
+            {
+              "label": "Trial list",
+              "desc": "Every trial your studies produced, filterable by study."
+            },
+            {
+              "label": "One trial in detail",
+              "desc": "Per-period metrics, day-by-day equity curve, daily holdings, and the exact parameters evaluated."
+            },
+            {
+              "label": "Trial by study and number",
+              "desc": "Find Trial 42 of a study without knowing its id."
+            },
+            {
+              "label": "Managed portfolios",
+              "desc": "Full curve from the original backtest to today, current holdings, order log."
+            },
+            {
+              "label": "Promotion link",
+              "desc": "Which trial gave rise to each live portfolio."
+            },
+            {
+              "label": "You choose the detail",
+              "desc": "Metrics only, or curve, holdings, and parameters too: you pay in size only when you need it."
+            }
+          ]
+        },
+        "portfolioGroups": {
+          "title": "Portfolio groups (baskets)",
+          "desc": "The full trail of a live portfolio, from configuration to daily reconciliation.",
+          "bullets": [
+            {
+              "label": "Configuration",
+              "desc": "Members, weights, allocation method, rebalance cadence, benchmark."
+            },
+            {
+              "label": "Freshness and track record",
+              "desc": "Whether data is current enough, and the combined curve with its configuration history."
+            },
+            {
+              "label": "Operations",
+              "desc": "Every broker connection the group trades on: capital, status, and drift."
+            },
+            {
+              "label": "Allocation and order history",
+              "desc": "Every weight snapshot recorded at rebalance, and every order sent to the broker."
+            },
+            {
+              "label": "Traceability",
+              "desc": "Every status change and system event on an operation."
+            },
+            {
+              "label": "End-of-day reports",
+              "desc": "The daily reconciliation between Fintela's records and the broker's."
+            }
+          ]
+        },
+        "buildingBlocks": {
+          "title": "Strategies, fitness, and asset groups",
+          "desc": "The building blocks behind every study, with their full version history.",
+          "bullets": [
+            {
+              "label": "Strategies",
+              "desc": "Description, execution mode, declared parameters, and the studies that use it; internal ones return the Python code, external ones the endpoint and its configuration."
+            },
+            {
+              "label": "Version history",
+              "desc": "Every saved revision, so you know exactly what code a study ran even if you kept improving it."
+            },
+            {
+              "label": "Fitness functions",
+              "desc": "List, detail, configuration, and their version history."
+            },
+            {
+              "label": "Asset groups",
+              "desc": "Name, description, and universe size for every group you've defined."
+            }
+          ]
+        }
+      }
+    },
+    "useCases": {
+      "eyebrow": "What our customers use it for",
+      "title": "From one endpoint to a real workflow",
+      "items": {
+        "dashboards": {
+          "title": "Your own dashboards",
+          "desc": "Power BI, Tableau, Grafana, or a spreadsheet, fed with real metrics and equity curves."
+        },
+        "reporting": {
+          "title": "Committee reporting",
+          "desc": "Generated from your own templates, with Fintela's numbers."
+        },
+        "monitoring": {
+          "title": "Study monitoring",
+          "desc": "A scheduled job that checks progress and health, and pings when it finishes or fails."
+        },
+        "liveTracking": {
+          "title": "Live tracking",
+          "desc": "Orders, allocations, and daily reconciliation inside your own risk-control system."
+        },
+        "versionControl": {
+          "title": "Version control",
+          "desc": "Of strategies and fitness functions, in your own repository."
+        },
+        "backup": {
+          "title": "Backup copy",
+          "desc": "Of your results, kept outside the platform."
+        }
+      }
+    },
+    "connect": {
+      "eyebrow": "How it connects",
+      "title": "One key, one HTTP client, zero setup",
+      "facts": {
+        "key": {
+          "label": "Personal key",
+          "value": "Every team member has their own, visible on their account page and in the API docs, with a copy button. No login flow, no expiring sessions."
+        },
+        "bearer": {
+          "label": "Standard Bearer",
+          "value": "Works with any HTTP client, scripting language, or no-code tool, no special libraries needed."
+        },
+        "openapi": {
+          "label": "Always-current reference",
+          "value": "A full OpenAPI specification, generated from the live API, so standard tools can generate client code in your language."
+        },
+        "responses": {
+          "label": "Consistent responses",
+          "value": "Every response shares the same envelope; errors come with a clear message and a machine-checkable code, and every call carries an id support can trace."
+        },
+        "health": {
+          "label": "Service check",
+          "value": "An endpoint to confirm the connection is alive, useful when setting up a script or debugging a scheduled job."
+        }
+      }
+    },
+    "security": {
+      "eyebrow": "Security and limits",
+      "title": "Read-only, and only yours",
+      "facts": {
+        "readOnly": {
+          "label": "Read-only by design",
+          "value": "Any attempt to create, edit, or delete is flatly refused; it's never partially applied."
+        },
+        "scoped": {
+          "label": "Only yours",
+          "value": "The key reads exactly what your organization sees in the app. A resource from another org responds the same as one that doesn't exist."
+        },
+        "rateLimit": {
+          "label": "A generous limit",
+          "value": "Around 20 sustained requests per second per organization, with bursts up to 40. If you go over, the response tells you how long to wait."
+        },
+        "noPush": {
+          "label": "No push",
+          "value": "No webhooks or streams: poll at whatever interval makes sense. Most lists come back newest first, so checking the top is usually enough."
+        },
+        "plan": {
+          "label": "A plan feature",
+          "value": "The Developer API is turned on for your organization like any other premium capability."
+        }
+      }
+    },
+    "engine": {
+      "eyebrow": "The engine behind every number",
+      "title": "The same simulation engine, in every result",
+      "description": "A quick sandbox run, the thousands of trials in a study, a promoted portfolio's daily extension, and a Trading Lab what-if all come out of the same engine, with the same rules: the engine the API exposes.",
+      "items": {
+        "oneEngine": {
+          "title": "One engine for everything",
+          "desc": "The sandbox, every study trial, and a live portfolio's daily extension are all computed with the same logic.",
+          "bullets": [
+            {
+              "label": "The same engine everywhere",
+              "desc": "what you see in a quick test is exactly what you'll see inside a study."
+            },
+            {
+              "label": "A backtest is a record",
+              "desc": "every study freezes the engine version, cost rate, and benchmark it launched with."
+            },
+            {
+              "label": "Multi-asset",
+              "desc": "US equities, ETFs, indices, crypto, FX, and global markets, in the same engine and the same universe."
+            }
+          ]
+        },
+        "howItSimulates": {
+          "title": "How it simulates",
+          "desc": "A daily rebalance, with the data the strategy asks for and guardrails evaluated inside the loop.",
+          "bullets": [
+            {
+              "label": "Daily rebalance",
+              "desc": "the strategy hands back a signal and the engine executes it at adjusted closing prices."
+            },
+            {
+              "label": "Data the engine delivers",
+              "desc": "prices always, plus volume, fundamentals, indicators, or sector when the strategy selects them."
+            },
+            {
+              "label": "Risk managers inside the loop",
+              "desc": "evaluated every simulated day, before the rebalance: a real guardrail, not an after-the-fact filter."
+            },
+            {
+              "label": "A portfolio of portfolios",
+              "desc": "your own portfolio groups can enter the universe as just another asset."
+            },
+            {
+              "label": "Isolation",
+              "desc": "if one trial fails, only that one fails; the rest of the batch keeps going."
+            }
+          ]
+        },
+        "transactionCosts": {
+          "title": "Realistic transaction costs",
+          "desc": "Every trade pays, so the optimizer learns to actually win, not just to trade for free.",
+          "bullets": [
+            {
+              "label": "Every trade pays",
+              "desc": "10 bps on US equities, 30 bps on crypto, 5 bps on FX; a mixed universe pays the highest rate."
+            },
+            {
+              "label": "Cost-free, if you ask for it",
+              "desc": "run a frictionless study to measure how much of the result is the cost model."
+            },
+            {
+              "label": "Both versions, side by side",
+              "desc": "a promoted portfolio or portfolio group can be read under the other regime: a full twin simulation."
+            }
+          ]
+        },
+        "antiOverfitting": {
+          "title": "Built against overfitting",
+          "desc": "Three separate periods and an automatic statistical verdict, so the out-of-sample result is judged exactly once.",
+          "bullets": [
+            {
+              "label": "Three separate periods",
+              "desc": "the optimizer only ever sees train; validation is reported but never influences the search; out-of-sample is derived server-side, strictly after validation."
+            },
+            {
+              "label": "Real-life performance",
+              "desc": "a fourth period that only tells time: what the portfolio does once promoted, updated every day."
+            },
+            {
+              "label": "Automatic verdict",
+              "desc": "Well Trained · Borderline · Overfit Risk · Insufficient Data, based on Probabilistic and Deflated Sharpe, PBO, and train/validation-to-OOS degradation."
+            },
+            {
+              "label": "Skill vs. luck",
+              "desc": "the Sharpe the best trial would reach by pure luck; your result has to beat it to count as a real edge."
+            },
+            {
+              "label": "Strategy families",
+              "desc": "groups trials by their equity curve and tells you how many are genuinely distinct."
+            }
+          ]
+        },
+        "backtestOutput": {
+          "title": "What every backtest produces",
+          "desc": "An equity curve, 35 metrics, and the full detail behind every number.",
+          "bullets": [
+            {
+              "label": "Equity curve",
+              "desc": "day by day, across every period, with and without a benchmark."
+            },
+            {
+              "label": "35 metrics",
+              "desc": "26 portfolio metrics (Sharpe, Sortino, Calmar, drawdowns, VaR/CVaR…) and 9 benchmark-relative ones (alpha, beta, information ratio…)."
+            },
+            {
+              "label": "By period and by window",
+              "desc": "every metric across train / validation / OOS / real-life, and across 9 rolling windows."
+            },
+            {
+              "label": "Holdings, trades, and risk",
+              "desc": "what was held each day, every closed trade, drawdowns, and the risk manager's log."
+            },
+            {
+              "label": "Downloadable seed",
+              "desc": "the exact signal the strategy produced each day, in JSON or CSV."
+            }
+          ]
+        },
+        "askAgain": {
+          "title": "Ask the engine again",
+          "desc": "Sandbox, what-if, and the Trading Lab: the same engine, without spending a new study.",
+          "bullets": [
+            {
+              "label": "Sandbox",
+              "desc": "test a strategy, fitness function, or risk manager in a single backtest, before spending a study."
+            },
+            {
+              "label": "Instant what-if",
+              "desc": "invert the signal, shorten the window, exclude names; the engine re-simulates and shows the exact delta. It's never saved."
+            },
+            {
+              "label": "Trading Lab and Ideas",
+              "desc": "try a different rebalance cadence, allocation method, or excluding the worst detractor, with one click."
+            },
+            {
+              "label": "Group track record",
+              "desc": "a portfolio group's combined curve already includes the cost of rebalancing between members."
+            }
+          ]
+        },
+        "scale": {
+          "title": "Scales without you configuring it",
+          "desc": "Automatic parallelism, failure recovery, and seven search algorithms.",
+          "bullets": [
+            {
+              "label": "Automatic parallelism",
+              "desc": "a study is split across workers, with multiple trials running at once inside each; nothing to configure."
+            },
+            {
+              "label": "Results as they arrive",
+              "desc": "each finished batch is saved to your study immediately, complete or not saved at all: you never see a half-finished study."
+            },
+            {
+              "label": "Automatic recovery",
+              "desc": "a trial that runs out of memory is retried, an interrupted batch runs once more, a crashed worker never loses what was already saved."
+            },
+            {
+              "label": "Seven search algorithms",
+              "desc": "TPE (default), CMA-ES, NSGA-II (multi-objective), QMC, Random, and two research samplers with quantum emulation (QAOA and Q-Kernel)."
+            },
+            {
+              "label": "Autostop, pause, and resume",
+              "desc": "stop a study whenever you want and resume it later with more trials, without losing what's done."
+            }
+          ]
+        },
+        "yourCode": {
+          "title": "Your code, inside or outside",
+          "desc": "Python in Fintela's own editor, or your own server: the engine calls the logic the same way either way.",
+          "bullets": [
+            {
+              "label": "Internal",
+              "desc": "you write the strategy, fitness, or risk manager in Python (or Fintelligent drafts it) and the engine runs it."
+            },
+            {
+              "label": "External",
+              "desc": "the logic lives on your own server; Fintela never sees or stores your code, with automatic retries and a concurrency limit you set."
+            },
+            {
+              "label": "Validated before it saves",
+              "desc": "all internal code is compiled and tested against real data before it can be saved; errors show up in seconds, not mid-study."
+            }
+          ]
+        },
+        "toLive": {
+          "title": "From backtest to live, without switching engines",
+          "desc": "A promoted trial keeps extending every day with the same engine and the same costs.",
+          "bullets": [
+            {
+              "label": "Promotion",
+              "desc": "a trial becomes a managed portfolio, which stops moving with the study and extends every day with new market data."
+            },
+            {
+              "label": "Live operation",
+              "desc": "a portfolio group bundles managed portfolios and trades on a broker, paper or real."
+            },
+            {
+              "label": "Daily reconciliation",
+              "desc": "between what Fintela computes and what the broker reports."
+            }
+          ]
+        }
+      }
+    },
+    "closingLine": "A Fintela backtest isn't a pretty curve: it's a daily simulation with real costs, guardrails inside the loop, and a statistical verdict on whether the result is luck or skill: available in your own tools with a key and an HTTP client.",
+    "note": "Read-only: nothing sent through this channel can create, modify, or delete anything. Every response follows the same standard format, authenticated with a personal access key.",
+    "docsLink": "Read the full API reference"
+  },
   "notFound": {
     "code": "Error 404",
     "title": "This page does not exist",
@@ -326,12 +1516,16 @@
       "description": "Thirty minutes on your own strategies with the team that built the platform. Tell us about your desk and we confirm a time within one business day."
     },
     "blog": {
-      "title": "Fintela Blog | Quant Research Notes & Platform Updates",
+      "title": "Research Blog | Quant Research Notes & Platform Updates",
       "description": "Insights, tutorials and practical guides for quantitative finance and algorithmic trading, from the team building the Fintela platform."
     },
     "docs": {
       "title": "Documentation | Fintela Docs",
       "description": "Guides, concepts and API reference for the Fintela platform: from your first optimization study to live trading through your connected broker."
+    },
+    "agenticAi": {
+      "title": "Agentic AI | Fintela",
+      "description": "Fintelligent is wired into your data sources and the platform's actions: it drafts strategies, stages studies, attaches risk managers, and explains what it did in plain English."
     },
     "terms": {
       "title": "Terms and Conditions | Fintela",

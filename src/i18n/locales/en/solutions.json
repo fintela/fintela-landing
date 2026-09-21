@@ -19,30 +19,6 @@
     "chapters": {
       "eyebrow": "Capabilities"
     },
-    "onboarding": {
-      "eyebrow": "How you onboard",
-      "title": "Four steps to a",
-      "titleAccent": "live portfolio.",
-      "description": "No environment to build and no data pipeline to wire. The sequence below is the whole project.",
-      "steps": {
-        "connect": {
-          "title": "Connect data and broker",
-          "desc": "Define asset groups over equities, ETFs, forex and global markets, and link the brokerage you execute through."
-        },
-        "bring": {
-          "title": "Bring your strategies",
-          "desc": "Write Python in the Laboratory, let Fintelligent draft it, or call an external strategy and fitness through the API."
-        },
-        "run": {
-          "title": "Run studies",
-          "desc": "Bayesian search over thousands of trials, evaluated on train, validation and out-of-sample windows by default."
-        },
-        "promote": {
-          "title": "Promote to live",
-          "desc": "Validated portfolios become live operations with order logs, P&L and a one-click pause."
-        }
-      }
-    },
     "closing": {
       "eyebrow": "Ready when your desk is",
       "ctaSecondary": "Compare plans"
@@ -54,12 +30,14 @@
       "description": "Research at fund scale without the infrastructure: concurrent studies, cryptographic provenance and broker-connected execution in one cloud workspace."
     },
     "badge": "For hedge funds & institutional traders",
+    "badgeAccent": "institutional traders",
     "title": "Research at fund scale,",
     "titleAccent": "without the infrastructure.",
     "lead": "Concurrent studies, cryptographic provenance and broker-connected execution, in one cloud workspace your desk does not have to run.",
     "ctaPrimary": "Book a walkthrough",
     "heroCaption": "Institutional by design · research, governance and execution in one workspace",
     "heroAlt": "Two glass towers seen from the street, curving up into a clouded sky",
+    "heroImageAlt": "An executive briefing colleagues across a boardroom table, black and white",
     "stat": {
       "eyebrow": "Queue wait",
       "value": "0",
@@ -189,12 +167,14 @@
       "description": "One library, one workspace, one source of truth: shared registries, hashed history and committee-ready reports for quant research desks."
     },
     "badge": "For quant research teams",
+    "badgeAccent": "research teams",
     "title": "One library, one workspace,",
     "titleAccent": "one source of truth.",
     "lead": "Shared registries, hashed history and committee-ready reports, so a research desk stops reconciling notebooks and starts comparing results.",
     "ctaPrimary": "Book a walkthrough",
     "heroCaption": "Every seat in play · one shared library of strategies, asset groups and results",
     "heroAlt": "A row of chess pawns on a board, one in sharp focus in front of the king",
+    "heroImageAlt": "Two researchers comparing work on laptops across a table, a hand mid-gesture, black and white",
     "stat": {
       "eyebrow": "Sources of truth",
       "value": "1",
@@ -324,12 +304,14 @@
       "description": "From notebook to live without a devops project: Python strategies, Bayesian optimization and broker-connected execution in the browser."
     },
     "badge": "For independent quants & systematic traders",
+    "badgeAccent": "& systematic traders",
     "title": "From notebook to live,",
     "titleAccent": "without a devops project.",
     "lead": "Python strategies, Bayesian optimization and broker-connected execution in the browser, with nothing to install and nothing to keep running.",
     "ctaPrimary": "Start free",
     "heroCaption": "One seat, the whole board · from notebook to live deployment, without a devops project",
     "heroAlt": "A black knight standing alone on a chessboard, a pawn and the king out of focus behind it",
+    "heroImageAlt": "A trader alone at a multi-monitor desk, reading live charts, black and white",
     "stat": {
       "eyebrow": "Local installs",
       "value": "0",

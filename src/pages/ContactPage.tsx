@@ -27,21 +27,12 @@ import { NeuButton } from '../components/primitives/NeuButton';
 import { TierBadge } from '../components/primitives/TierBadge';
 import { wellSx } from '../theme/neu';
 import { motion, radii, shadows, soft } from '../theme/tokens';
-import { ContactApiError, submitContactRequest, type ContactKind } from '../contact/api';
+import { contactFailureKey, submitContactRequest, type ContactKind } from '../contact/api';
 import { Seo } from '../seo/Seo';
 import { breadcrumbList, contactPage, homeCrumb, organization, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
 
 const CONTACT_OG_IMAGE = '/og/contact.png';
-
-/** Which i18n message a failed submission shows. `error` is the catch-all. */
-const failureKey = (err: unknown): string => {
-  if (err instanceof ContactApiError) {
-    if (err.reason === 'rate_limited') return 'contact.alert.tooMany';
-    if (err.reason === 'rejected') return 'contact.alert.rejected';
-  }
-  return 'contact.alert.error';
-};
 
 export const ContactPage = () => {
   const { t, i18n } = useTranslation('pages');
@@ -114,7 +105,7 @@ export const ContactPage = () => {
       }, 5000);
     } catch (err) {
       console.error('contact request failed:', err);
-      setError(t(failureKey(err)));
+      setError(t(contactFailureKey(err)));
     } finally {
       setIsLoading(false);
     }

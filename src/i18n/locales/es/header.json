@@ -1,12 +1,15 @@
 {
   "nav": {
-    "platform": "Plataforma",
+    "product": "Soluciones",
+    "samplers": "Motor de Optimización",
     "fintelagent": "IA Agéntica",
+    "inDepthAnalysis": "Análisis en Profundidad",
+    "fintelaApi": "API de Fintela",
     "useCases": "Casos de uso",
     "pricing": "Precios",
     "documentation": "Documentación",
-    "blog": "Blog",
-    "solutions": "Soluciones"
+    "blog": "Investigación",
+    "solutions": "Clientes"
   },
   "actions": {
     "getStarted": "Comenzar"

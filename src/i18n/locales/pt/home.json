@@ -8,11 +8,12 @@
     "ctaSecondary": "Veja como funciona",
     "headline": "Pesquisa de estratégias em",
     "headlineAccent": "escala de fundo.",
-    "ctaPrimary": "Veja por que funciona para o seu fundo",
+    "ctaPrimary": "Descubra sua vantagem",
     "ctaWatch": "Ver a plataforma",
     "plateCaption": "Início da plataforma · exposição por ativo, carteiras implantadas e estratégias em uso",
     "liveBadge": "Ao vivo",
     "posterAlt": "O início da plataforma Fintela: exposição por ativo, as estratégias e grupos de ativos em uso, e o desempenho do grupo de carteiras ativo",
+    "deviceAlt": "O Data Explorer da plataforma Fintela, aberto no navegador de um laptop",
     "stat": {
       "eyebrow": "Estudo #142 · TPE bayesiano",
       "value": "312",
@@ -24,10 +25,16 @@
     "title": "Times construindo com a Fintela"
   },
   "workflow": {
-    "eyebrow": "A plataforma",
+    "eyebrow": "Da ideia à produção",
     "title": "Um único pipeline.",
     "titleAccent": "Cada etapa conectada.",
-    "description": "Chega de exportações de arquivos, scripts locais e ferramentas improvisadas. Cada etapa alimenta a seguinte, tudo no navegador, tudo reprodutível.",
+    "description": "Cada ideia percorre o mesmo pipeline, dos grupos de ativos e do código da estratégia até a execução ao vivo, com cada etapa alimentando a seguinte dentro do navegador. Sem exportação de arquivos, sem scripts locais, sem ferramentas improvisadas, e com cada resultado reprodutível.",
+    "pipelineHighlights": [
+      "Pesquise ideias em paralelo",
+      "Valide com testes estatísticos",
+      "Implante em operação ao vivo",
+      "Monitore risco e notícias do mercado"
+    ],
     "diagramLabel": "Fluxo da plataforma Fintela: seis etapas conectadas",
     "centerName": "FINTELA",
     "centerSub": "PLATAFORMA",
@@ -61,6 +68,11 @@
         "label": "Gestores de risco",
         "sub": "Suas barreiras de proteção",
         "desc": "Adicione barreiras que reduzem, encerram ou bloqueiam um rebalanceamento antes que ocorra: stops integrados e limites de posição, ou sua própria lógica personalizada, verificados em cada dia de negociação simulado."
+      },
+      "connectBroker": {
+        "label": "Conecte sua corretora",
+        "sub": "Vá ao vivo",
+        "desc": "Vincule sua conta de corretora e promova qualquer carteira validada para execução ao vivo, com registro de ordens em tempo real e pausa com um clique."
       }
     },
     "stats": {
@@ -82,15 +94,15 @@
     "eyebrow": "Capacidades",
     "title": "Feito para",
     "titleAccent": "trabalho quant sério.",
-    "description": "Infraestrutura configurável: bons padrões desde o início, controle total quando você precisar.",
+    "description": "A Fintela é a solução de IA nativa para a validação estatística quantitativa: uma IA agente que opera a plataforma para você, validação estatística robusta em cada etapa, e otimização bayesiana sobre milhares de testes, da ideia ao capital ao vivo, tudo em um único espaço de trabalho.",
     "items": {
       "crossMarket": {
         "title": "Multimercado por design",
         "description": "Um único motor de estratégias funciona em ações dos EUA, índices S&P, ETFs, forex e mercados globais. Um único modelo mental, todas as classes de ativos."
       },
-      "laboratory": {
-        "title": "Um laboratório para todo o seu fluxo",
-        "description": "Estratégias, funções de fitness, gestores de risco e pipelines de dados, criados lado a lado em um único espaço de trabalho, com um notebook Python ao vivo em um kernel na nuvem por sessão e dados de mercado curados dentro do app. Prototipe em uma célula, compile-a direto em um recurso pronto para usar, e publique em (ou faça fork de) um catálogo entre organizações."
+      "dataAnalysis": {
+        "title": "Cada dataset por trás das suas estratégias",
+        "description": "Explore toda a biblioteca de dados que alimenta a plataforma, cobertura, atualidade e registros por ticker, além de um relatório completo de robustez, clustering e otimização para qualquer busca."
       },
       "metaStrategies": {
         "title": "Metaestratégias sobre baskets",
@@ -102,11 +114,11 @@
       },
       "ai": {
         "title": "IA que opera a plataforma",
-        "description": "O Fintelligent não responde perguntas: ele gera código de estratégias, lança estudos, cria relatórios e explica os resultados em linguagem natural."
+        "description": "O Fintelligent redige estratégias, lança estudos, anexa gestores de risco e explica os resultados em linguagem simples, conectado diretamente aos seus dados e às ações da plataforma."
       },
       "bayesian": {
         "title": "Otimização bayesiana",
-        "description": "Milhares de trials buscados de forma inteligente: o motor aprende com cada execução e foca o processamento onde importa. Train / validação / OOS por padrão."
+        "description": "Sete samplers, com TPE por padrão, buscam entre milhares de testes e validam cada resultado em divisões de treino, validação e fora da amostra automaticamente."
       },
       "strategyClustering": {
         "title": "Veja suas estratégias distintas",
@@ -184,6 +196,120 @@
         "docsLabel": "Docs de rascunhos e execuções"
       }
     },
+    "fullCapabilities": {
+      "heading": "Tudo o que o Fintelligent pode fazer por você",
+      "subheading": "Dez formas em que ele trabalha dentro da Fintela, sempre sob seu controle e com sua confirmação antes de qualquer coisa que gaste ou não tenha volta.",
+      "items": {
+        "strategyBuilder": {
+          "title": "Transforma uma ideia em uma estratégia pronta para testar",
+          "desc": "Descreva o que você quer em linguagem natural e o Fintelligent escreve o código, escolhe os dados e valida a estratégia antes de salvá-la.",
+          "bullets": [
+            "Escreve o código Python e define os parâmetros a otimizar.",
+            "Escolhe as fontes de dados que precisa, sem que você precise saber como se conectam.",
+            "Valida contra dados reais antes de salvar: se algo falhar, corrige e valida de novo.",
+            "Faz o mesmo com funções de fitness, gestores de risco, asset groups e estudos."
+          ]
+        },
+        "researchMindset": {
+          "title": "Raciocina como um pesquisador quant, não como um gerador de código",
+          "desc": "Quando você traz uma ideia com uma causa por trás, ou um artigo acadêmico, ele não pula para o primeiro código que lhe ocorre: refina a tese com você primeiro.",
+          "bullets": [
+            "Propõe mecanismos alternativos e recomenda um, registrando os que foram descartados.",
+            "Verifica se os dados existem na plataforma antes de escrever uma linha sequer.",
+            "Pré-registra os critérios de sucesso antes de lançar a busca, para julgar o resultado fora da amostra uma única vez, com honestidade.",
+            "Sempre distingue o que verificou com dados, o que é seu julgamento e o que assumiu por padrão."
+          ]
+        },
+        "evidenceAnalysis": {
+          "title": "Analisa seus estudos e portfólios com evidências",
+          "desc": "Pergunte em linguagem natural sobre qualquer coisa do seu espaço de trabalho e obtenha respostas com números concretos.",
+          "bullets": [
+            "Status dos seus estudos: progresso, erros e quais vale a pena retomar com mais trials.",
+            "Detecção de overfitting: probabilidade de overfitting, Sharpe deflacionado, degradação validação → OOS.",
+            "Perfil de risco de um portfólio e simulações what-if, como inverter sinais ou encurtar a janela.",
+            "Vê exatamente o que você vê na tela e responde sobre isso, sem que você precise descrever nada."
+          ]
+        },
+        "marketResearch": {
+          "title": "Pesquisa o mercado",
+          "desc": "Acesso conversacional a todo o universo de dados de mercado da Fintela.",
+          "bullets": [
+            "Panorama de mercado: índices, setores, países, taxas, calendário de resultados.",
+            "Por ticker: preços e histórico, fundamentos, sentimento, atividade de insiders, notícias.",
+            "Screener: filtra o mercado pelos critérios que você descrever e transforma o resultado em um asset group.",
+            "Resumos das condições atuais em um parágrafo, ou em um relatório completo."
+          ]
+        },
+        "pdfReports": {
+          "title": "Gera relatórios em PDF",
+          "desc": "Com uma mensagem, o Fintelligent redige e baixa um relatório com seções, tabelas e gráficos.",
+          "bullets": [
+            "Relatório de estudo: configuração, histórico de otimização, importância dos parâmetros, diagnóstico de overfitting.",
+            "Relatório de portfólio: métricas por etapa, parâmetros, holdings e risco, pronto para um comitê de investimento.",
+            "Relatório de mercado: panorama geral, tickers específicos ou a análise que você pedir.",
+            "Gerado direto no seu navegador: nenhum documento fica armazenado fora dele."
+          ]
+        },
+        "platformOperator": {
+          "title": "Opera a plataforma por você",
+          "desc": "Leva você à página certa, abre o editor que você precisa e preenche os formulários.",
+          "bullets": [
+            "Encadeia ações: buscar um recurso, abri-lo, editar campos, validar, pedir para salvar.",
+            "Só pergunta quando realmente precisa, mostrando sua recomendação primeiro e valores padrão razoáveis para o resto.",
+            "Faz link para os recursos pelo nome, para você chegar direto com um clique."
+          ]
+        },
+        "teaches": {
+          "title": "Ensina enquanto trabalha",
+          "desc": "Atende igualmente bem um quant experiente e alguém que nunca construiu uma estratégia.",
+          "bullets": [
+            "Define cada conceito na primeira vez que aparece, e para de fazer isso assim que você mostra fluência.",
+            "Com um usuário novo, pergunta sobre os objetivos em termos humanos e traduz as respostas para a configuração da plataforma.",
+            "Guia passo a passo a construção do seu primeiro portfólio: universo → estratégia → objetivo → estudo → seleção.",
+            "Explica os resultados em linguagem clara, com a métrica precisa entre parênteses."
+          ]
+        },
+        "backgroundWork": {
+          "title": "Continua trabalhando mesmo quando você não está olhando",
+          "desc": "Continua se você mudar de página, de aba ou fechar o navegador.",
+          "bullets": [
+            "Valida, corrige e salva no servidor: não apenas na sua tela.",
+            "Rascunhos persistentes: o que ainda não está pronto espera para você revisar, editar ou descartar quando voltar.",
+            "Um indicador de atividade e notificações trazem você de volta quando termina ou precisa de você.",
+            "Retoma de qualquer dispositivo, incluindo o celular."
+          ]
+        },
+        "safety": {
+          "title": "Controle total e segurança",
+          "desc": "Nada que gaste dinheiro ou seja irreversível acontece sem sua confirmação explícita.",
+          "bullets": [
+            "Nunca apaga nada: excluir um recurso é sempre uma ação sua, feita na interface.",
+            "Nunca opera ao vivo: estritamente somente leitura sobre portfólios que estão em operação.",
+            "Só vê o que você vê, dentro da sua organização e permissões.",
+            "Cada ação fica registrada: quem pediu, quando e o que mudou."
+          ]
+        },
+        "oneClickIdeas": {
+          "title": "Ideias com um clique nos seus portfolio groups",
+          "desc": "Na aba Ideias de cada portfolio group, propõe melhorias concretas a partir da contribuição real de cada ativo para o resultado.",
+          "bullets": [
+            "Mudar a cadência de rebalanceamento, o método de alocação, ou excluir um nome ou um setor.",
+            "Cada ideia é testada com um clique: o motor re-simula o grupo e mostra o delta exato em cada métrica.",
+            "A IA propõe; os números são sempre calculados pelo motor."
+          ]
+        }
+      },
+      "usage": {
+        "facts": {
+          "where": { "label": "Onde", "value": "Painel flutuante em qualquer página, ou conversa em tela cheia. Também no celular." },
+          "history": { "label": "Histórico", "value": "Todas as suas conversas são salvas; busque, renomeie e fixe até 20." },
+          "language": { "label": "Idioma", "value": "Responde no idioma em que você escreve para ele." },
+          "suggestions": { "label": "Sugestões", "value": "Atalhos contextuais por página: revisar código, detectar overfitting, construir meu portfólio…" },
+          "cost": { "label": "Custo", "value": "Cobrado em tokens da Fintela. Cada resposta mostra o que custou. 10 mensagens grátis por dia." },
+          "who": { "label": "Quem", "value": "Contas com papel Manager ou Owner." }
+        }
+      }
+    },
     "chat": {
       "assistantName": "Fintelligent",
       "statusLine": "Conectado · Sonnet 4.6 · 12.4k tokens",
@@ -196,6 +322,71 @@
       "launchedTitle": "Estudo #142 lançado",
       "launchedBody": "312 / 500 trials concluídos. Progresso ao vivo na página de Estudos.",
       "inputPlaceholder": "Pergunte o que quiser, como «explique o estudo 142 vs 138»"
+    }
+  },
+  "algoAgentBuilder": {
+    "eyebrow": "Experimente o Fintelligent Builder",
+    "subtitle": "Peça ao Fintelligent para programar sua ideia",
+    "tryIt": "Experimentar",
+    "deviceAlt": "Um laptop mostrando o construtor de estratégias Fintelligent, percorrendo uma estratégia de momentum baseada em equações diferenciais",
+    "stepLabel": "Passo {{num}}",
+    "back": "Voltar",
+    "continue": "Continuar",
+    "runOptimization": "Executar Otimização",
+    "followUpPlaceholder": "Faça uma pergunta ou ajuste os parâmetros diferenciais...",
+    "steps": {
+      "model": {
+        "navLabel": "Passo 1: Modelo EDO",
+        "header": "Definir a Dinâmica da Equação Diferencial",
+        "description": "Modele o desvio do preço do ativo em relação a uma média móvel de longo prazo como uma equação diferencial de 2ª ordem, para capturar a velocidade (momentum) e a aceleração instantâneas do preço.",
+        "chatRole": "user",
+        "chatText": "Construa uma estratégia quantitativa long-only que modele o desvio de preço x(t) = P(t) - MédiaMóvel(100) usando uma equação diferencial amortecida de 2ª ordem. Calcule a velocidade dx/dt e a aceleração d2x/dt2 usando diferenças finitas.",
+        "tags": ["Equação Diferencial", "EDO de 2ª Ordem", "Oscilador Amortecido", "Diferenças Finitas", "Filtro de MA"],
+        "bullets": [
+          "Modela a velocidade (1ª derivada) e a aceleração (2ª derivada) do preço em relação à tendência.",
+          "Evita o atraso inerente aos indicadores de momentum tradicionais.",
+          "Filtra falsos rompimentos antes que ocorra o amortecimento crítico."
+        ]
+      },
+      "score": {
+        "navLabel": "Passo 2: Regras de Pontuação",
+        "header": "Formular o Score Alpha Composto",
+        "description": "Combine a aceleração diferencial positiva com volume relativo sustentado (RVOL) para classificar ativos candidatos, exigindo que o preço opere acima do filtro de tendência de longo prazo.",
+        "chatRole": "user",
+        "chatText": "Filtre os ativos onde P(t) > MA(100). Calcule um score composto que premie a aceleração positiva d2x/dt2 acompanhada de RVOL elevado em vários períodos, ignorando picos de volume de um único dia.",
+        "tags": ["Score Alpha", "Aceleração de Preço", "RVOL Sustentado", "Filtro de Tendência P > MA"],
+        "bullets": [
+          "Exige P(t) > MA(100) para garantir alinhamento long-only.",
+          "Premia a expansão contínua de volume institucional.",
+          "Elimina a dependência de picos atípicos de um único dia."
+        ]
+      },
+      "allocation": {
+        "navLabel": "Passo 3: Alocação",
+        "header": "Selecionar os Top-N Ativos e Alocar",
+        "description": "Classifique todo o universo de investimento pelo score composto, selecione os n_top ativos principais e aplique uma alocação de portfólio de peso igual com rebalanceamento periódico.",
+        "chatRole": "user",
+        "chatText": "Classifique todos os ativos do universo pelo score diferencial. Selecione n_top = 10 ativos e atribua pesos iguais (10% cada). Rotacione automaticamente os ativos que saírem do top 10 no rebalanceamento mensal.",
+        "tags": ["Peso Igual (10%)", "Seleção Top 10", "Rebalanceamento Mensal", "Auto-Rotação"],
+        "bullets": [
+          "Limite estrito de posições n_top para controle de risco.",
+          "Regra de saída automática quando um ativo sai do ranking top.",
+          "Período de aquecimento configurável para os cálculos da janela diferencial."
+        ]
+      },
+      "backtest": {
+        "navLabel": "Passo 4: Backtest",
+        "header": "Otimizar Parâmetros e Validar",
+        "description": "Configure os coeficientes de amortecimento da equação diferencial, as janelas de média móvel e o número alvo de posições para a otimização de parâmetros em múltiplos universos.",
+        "chatRole": "system",
+        "chatText": "Estratégia 'diff_eq_momentum_v1' compilada com sucesso. 7 parâmetros otimizáveis registrados (MA_window, dt_step, zeta_damping, omega_freq, RVOL_short, RVOL_med, n_top). Pronta para otimização no S&P 500.",
+        "tags": ["7 Parâmetros", "Otimização de Sharpe", "Controle de Drawdown", "Zero Dependência de Benchmark"],
+        "bullets": [
+          "Maximiza o Alpha e o índice de Sharpe enquanto limita estritamente o Máximo Drawdown.",
+          "Sem dependência do SPY ou de lógica de benchmark externo.",
+          "Pipeline de execução totalmente validado, pronto para lançar o estudo."
+        ]
+      }
     }
   },
   "devExperience": {
@@ -305,8 +496,6 @@
         "title": "Quants independentes e traders sistemáticos",
         "description": "Otimização, backtesting e implantação ao vivo configuráveis sem construir ou manter uma única linha de infraestrutura. Do notebook à implantação ao vivo, sem um projeto de devops.",
         "outcomes": [
-          "Sem ambiente local, sem devops",
-          "Otimização bayesiana com train/validação/OOS incluídos",
           "Implantação ao vivo conectada à sua corretora"
         ]
       },
@@ -380,16 +569,13 @@
     "description": "Gerindo capital, trabalhando sozinho ou liderando uma mesa de pesquisa: as mesmas primitivas e o mesmo motor, feito para cada assento da mesa.",
     "items": {
       "funds": {
-        "cta": "Veja por que funciona para o seu fundo",
         "pricingLink": "Ver preços Institutional",
         "imageAlt": "O canto de uma torre de escritórios com colunas de mármore contra um céu branco"
       },
       "independents": {
-        "cta": "Veja por que funciona para você",
         "imageAlt": "Por cima do ombro de um quant em uma mesa com um laptop e dois monitores, com código na tela mais próxima"
       },
       "teams": {
-        "cta": "Veja por que funciona para a sua mesa",
         "imageAlt": "Visto de costas, um analista trabalhando diante de um monitor em uma sala à meia-luz"
       }
     },
@@ -445,36 +631,7 @@
     }
   },
   "fintelligent": {
-    "exit": "Conheça o Fintelligent",
-    "playerLabel": "Conversa entre agentes",
-    "transcriptLabel": "Transcrição da conversa",
-    "posterAlt": "Uma densa rede de fios e nós, iluminada por trás",
-    "agentsCount": "{{count}} agentes",
-    "turns": "{{current}} de {{total}} turnos",
-    "agents": {
-      "orchestrator": {
-        "name": "Orquestrador",
-        "role": "planeja"
-      },
-      "strategist": {
-        "name": "Estrategista",
-        "role": "escreve"
-      },
-      "risk": {
-        "name": "Risco",
-        "role": "protege"
-      }
-    },
-    "cues": {
-      "brief": "Momentum sobre o grupo de ativos S&P 500, rebalanceamento semanal. Estrategista, redija; Risco, defina a proteção de drawdown.",
-      "draft": "Redigida MomentumV3: lookback de 20 a 120 dias, rebalanceamento de 12 semanas, faixas de parâmetros tipadas. Pronta no Laboratório.",
-      "guard": "Anexado um stop de drawdown máximo de 12% e volatility targeting de 10% anualizado.",
-      "stage": "Estudo preparado: fitness Sharpe, 500 trials, 70/15/15 train/validação/OOS. Este precisa da sua confirmação.",
-      "confirm": "Confirmado. Pode lançar.",
-      "launch": "O estudo #142 está rodando: 312 de 500 trials concluídos, melhor Sharpe de validação 1,84 até agora.",
-      "review": "O drawdown fora da amostra fica abaixo da proteção nos dez melhores trials. Nenhum parâmetro sozinho responde por mais de 40% do resultado.",
-      "report": "Gerando o relatório para o comitê a partir do trial 37: curvas de capital, importância de parâmetros e registro de operações."
-    }
+    "exit": "Conheça o Fintelligent"
   },
   "capabilities": {
     "exit": "Ver o passo a passo",
@@ -488,7 +645,10 @@
       "samplerSelection": "Docs de seleção de sampler",
       "portfolioGroups": "Docs de grupos de portfólios",
       "market": "Docs de dados de mercado",
-      "liveTrading": "Docs de trading ao vivo"
+      "liveTrading": "Docs de trading ao vivo",
+      "agenticAi": "Explore o Agentic AI",
+      "samplers": "Explore o motor de otimização",
+      "inDepthAnalysis": "Explore o In-Depth Analysis"
     },
     "chapters": {
       "pulse": "Pulso",
@@ -520,14 +680,5 @@
     "count_other": "{{count}} posts",
     "newest": "mais recente {{date}}",
     "coverAlt": "Imagem de capa de {{title}}"
-  },
-  "closing": {
-    "eyebrow": "Prontos quando a sua mesa estiver",
-    "title": "Veja por que funciona",
-    "titleAccent": "para o seu fundo.",
-    "body": "Uma demonstração de 30 minutos sobre as suas próprias estratégias, ou comece no plano gratuito e traga um estudo para a conversa.",
-    "ctaPrimary": "Agendar uma demonstração",
-    "ctaSecondary": "Comparar planos",
-    "strip": "Sem infraestrutura · Sem instalação local · Conectado à corretora · Proveniência criptográfica"
   }
 }

@@ -19,30 +19,6 @@
     "chapters": {
       "eyebrow": "Capacidades"
     },
-    "onboarding": {
-      "eyebrow": "Como é o onboarding",
-      "title": "Quatro passos até uma",
-      "titleAccent": "carteira ao vivo.",
-      "description": "Sem ambiente para construir nem pipeline de dados para conectar. A sequência abaixo é o projeto inteiro.",
-      "steps": {
-        "connect": {
-          "title": "Conecte dados e corretora",
-          "desc": "Defina grupos de ativos sobre ações, ETFs, forex e mercados globais, e vincule a corretora pela qual você executa."
-        },
-        "bring": {
-          "title": "Traga as suas estratégias",
-          "desc": "Escreva Python no Laboratório, deixe o Fintelligent redigir, ou chame uma estratégia e um fitness externos pela API."
-        },
-        "run": {
-          "title": "Rode estudos",
-          "desc": "Busca bayesiana sobre milhares de trials, avaliada por padrão em janelas de train, validação e fora da amostra."
-        },
-        "promote": {
-          "title": "Promova para ao vivo",
-          "desc": "Carteiras validadas viram operações ao vivo com registro de ordens, P&L e pausa com um clique."
-        }
-      }
-    },
     "closing": {
       "eyebrow": "Prontos quando a sua mesa estiver",
       "ctaSecondary": "Comparar planos"
@@ -54,12 +30,14 @@
       "description": "Pesquisa em escala de fundo sem a infraestrutura: estudos simultâneos, proveniência criptográfica e execução pela corretora em um único espaço na nuvem."
     },
     "badge": "Para hedge funds e traders institucionais",
+    "badgeAccent": "traders institucionais",
     "title": "Pesquisa em escala de fundo,",
     "titleAccent": "sem a infraestrutura.",
     "lead": "Estudos concorrentes, proveniência criptográfica e execução conectada à corretora, em um espaço de trabalho na nuvem que a sua mesa não precisa operar.",
     "ctaPrimary": "Agendar uma demonstração",
     "heroCaption": "Feito para instituições · pesquisa, governança e execução em um único espaço de trabalho",
     "heroAlt": "Duas torres de vidro vistas da rua, curvando-se para um céu nublado",
+    "heroImageAlt": "Um executivo reunido com colegas em torno de uma mesa de reunião, em preto e branco",
     "stat": {
       "eyebrow": "Espera na fila",
       "value": "0",
@@ -189,12 +167,14 @@
       "description": "Uma biblioteca, um espaço de trabalho, uma única fonte de verdade: registros compartilhados, histórico com hash e relatórios prontos para comitê."
     },
     "badge": "Para equipes de pesquisa quant",
+    "badgeAccent": "pesquisa quant",
     "title": "Uma biblioteca, um espaço de trabalho,",
     "titleAccent": "uma única fonte de verdade.",
     "lead": "Registros compartilhados, histórico com hash e relatórios prontos para o comitê, para que uma mesa de pesquisa pare de reconciliar notebooks e comece a comparar resultados.",
     "ctaPrimary": "Agendar uma demonstração",
     "heroCaption": "Todas as peças em jogo · uma biblioteca compartilhada de estratégias, grupos de ativos e resultados",
     "heroAlt": "Uma fileira de peões de xadrez no tabuleiro, um em foco à frente do rei",
+    "heroImageAlt": "Dois pesquisadores comparando trabalho em laptops sobre uma mesa, uma mão em pleno gesto, em preto e branco",
     "stat": {
       "eyebrow": "Fontes de verdade",
       "value": "1",
@@ -324,12 +304,14 @@
       "description": "Do notebook ao vivo sem um projeto de devops: estratégias em Python, otimização bayesiana e execução conectada à corretora, direto no navegador."
     },
     "badge": "Para quants independentes e traders sistemáticos",
+    "badgeAccent": "e traders sistemáticos",
     "title": "Do notebook ao ao vivo,",
     "titleAccent": "sem um projeto de devops.",
     "lead": "Estratégias em Python, otimização bayesiana e execução conectada à corretora no navegador, sem nada para instalar e nada para manter rodando.",
     "ctaPrimary": "Começar grátis",
     "heroCaption": "Uma só peça, o tabuleiro inteiro · do notebook à implantação ao vivo, sem um projeto de devops",
     "heroAlt": "Um cavalo preto sozinho no tabuleiro de xadrez, com um peão e o rei desfocados atrás",
+    "heroImageAlt": "Um trader sozinho em uma mesa com vários monitores, lendo gráficos ao vivo, em preto e branco",
     "stat": {
       "eyebrow": "Instalações locais",
       "value": "0",

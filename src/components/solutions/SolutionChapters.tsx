@@ -1,5 +1,4 @@
-import { Box, ButtonBase, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -12,92 +11,13 @@ import { MediaWell } from '../primitives/MediaWell';
 import { MediaPlate } from '../primitives/MediaPlate';
 import { VideoPlate } from '../primitives/VideoPlate';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { navPillSx, quietLinkSx, wellSx } from '../../theme/neu';
-import { radii, shadows, soft } from '../../theme/tokens';
-import { scrollToSection } from '../../lib/scrollToSection';
+import { quietLinkSx } from '../../theme/neu';
+import { soft } from '../../theme/tokens';
 import type { Audience } from '../../lib/audience';
 import { VIDEOS, TOUR_CHAPTERS, captionTracks } from '../../media/registry';
 import type { SolutionChapter } from '../../solutions/registry';
 
 const chapterId = (key: string) => `chapter-${key}`;
-
-/**
- * The sticky sub-nav: pressed pills in a well, one per chapter, following the
- * chapter bands with the same scroll-spy the header uses.
- */
-const ChapterNav = ({ chapters, audience }: { chapters: SolutionChapter[]; audience: Audience }) => {
-  const { t } = useTranslation('solutions');
-  const [active, setActive] = useState(chapters[0]?.key);
-
-  useEffect(() => {
-    const els = chapters.map((c) => document.getElementById(chapterId(c.key))).filter((e): e is HTMLElement => e !== null);
-    if (!els.length) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActive(visible[0].target.id.replace(/^chapter-/, ''));
-      },
-      { rootMargin: '-35% 0px -50% 0px', threshold: [0, 0.25, 0.5, 1] },
-    );
-    els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [chapters]);
-
-  return (
-    <Box
-      component="nav"
-      aria-label={t('common.chaptersLabel')}
-      sx={{
-        position: { md: 'sticky' },
-        top: { md: 80 },
-        zIndex: 2,
-        mb: { xs: 4, md: 6 },
-        display: 'flex',
-        justifyContent: 'center',
-      }}
-    >
-      <Box
-        component="ul"
-        sx={{
-          ...wellSx('sm'),
-          borderRadius: `${radii.pill}px`,
-          m: 0,
-          p: 0.75,
-          listStyle: 'none',
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: 0.5,
-          maxWidth: '100%',
-        }}
-      >
-        {chapters.map((c) => (
-          <li key={c.key}>
-            <ButtonBase
-              onClick={() => scrollToSection(chapterId(c.key))}
-              aria-current={active === c.key ? 'location' : undefined}
-              className={active === c.key ? 'is-active' : undefined}
-              sx={[
-                navPillSx,
-                {
-                  height: 34,
-                  px: 1.75,
-                  borderRadius: `${radii.pill}px`,
-                  fontSize: '0.84rem',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
-                  '&.is-active, &.is-active:hover': { backgroundColor: soft.surfaceRaised, boxShadow: shadows.neuRaisedXs },
-                },
-              ]}
-            >
-              {t(`${audience}.chapters.${c.key}.title`)}
-            </ButtonBase>
-          </li>
-        ))}
-      </Box>
-    </Box>
-  );
-};
 
 const ChapterMedia = ({ chapter, audience }: { chapter: SolutionChapter; audience: Audience }) => {
   const { t } = useTranslation(['solutions', 'home']);
@@ -210,7 +130,6 @@ export const SolutionChapters = ({ chapters, audience }: { chapters: SolutionCha
         title={t(`${audience}.chaptersTitle`)}
         titleAccent={t(`${audience}.chaptersTitleAccent`)}
       />
-      <ChapterNav chapters={chapters} audience={audience} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 8, md: 12 } }}>
         {chapters.map((c, idx) => (
           <ChapterBand key={c.key} chapter={c} audience={audience} index={idx} />

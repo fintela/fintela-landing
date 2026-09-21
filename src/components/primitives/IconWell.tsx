@@ -1,18 +1,15 @@
 import { Box } from '@mui/material';
 import type { BoxProps, SxProps, Theme } from '@mui/material';
-import { forcedColorsSurface } from '../../theme/neu';
-import { radii, shadows, soft } from '../../theme/tokens';
+import { gradientIconSx } from '../../theme/neu';
 
 export type IconWellProps = Omit<BoxProps, 'children'> & {
   children: React.ReactNode;
-  /** 48 default; >= 48 gets neuInset + neuInner radius, below gets neuInsetSm + neuWell. */
+  /** Slot size in px; the glyph itself is drawn at 0.46x that. */
   size?: number;
-  /** Pill radius (72/84px empty-state discs, 28px avatars). */
-  round?: boolean;
 };
 
-/** An inset well on a raised surface — the tier icon, embossed rather than branded. */
-export const IconWell = ({ children, size = 48, round = false, sx, ...rest }: IconWellProps) => (
+/** A bare icon slot — the glyph painted with the brand gradient, no well or shadow. */
+export const IconWell = ({ children, size = 48, sx, ...rest }: IconWellProps) => (
   <Box
     aria-hidden
     sx={
@@ -21,16 +18,17 @@ export const IconWell = ({ children, size = 48, round = false, sx, ...rest }: Ic
           width: size,
           height: size,
           flexShrink: 0,
-          borderRadius: round ? `${radii.pill}px` : `${size >= 48 ? radii.neuInner : radii.neuWell}px`,
-          bgcolor: soft.groundSunken,
-          boxShadow: size >= 48 ? shadows.neuInset : shadows.neuInsetSm,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: soft.accent,
           '& svg': { fontSize: Math.round(size * 0.46) },
-          ...forcedColorsSurface,
         },
+        // A separate array entry, not spread into the object above: emotion
+        // resolves an sx array through the CSS cascade (later rule for the
+        // same selector wins per-property), not a JS object merge — spreading
+        // it inline would have let its own `'& svg'` key silently replace the
+        // fontSize set here instead of adding `fill` alongside it.
+        gradientIconSx,
         ...(Array.isArray(sx) ? sx : [sx]),
       ] as SxProps<Theme>
     }

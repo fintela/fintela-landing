@@ -189,7 +189,7 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
       <Container
         maxWidth={false}
         sx={{
-          maxWidth: 1440,
+          maxWidth: 1640,
           mx: 'auto',
           px: { xs: 0, md: 4 },
           display: 'grid',
@@ -226,7 +226,7 @@ export const DocsLayout = ({ index, current, toc = [], children }: DocsLayoutPro
           id="content"
           sx={{ minWidth: 0, px: { xs: 3, md: 0 }, py: { xs: 3, md: 5 } }}
         >
-          <Box sx={{ maxWidth: 780, mx: { xs: 'auto', md: 0 } }}>
+          <Box sx={{ maxWidth: 1040, mx: { xs: 'auto', md: 0 } }}>
             <NeuPanel sx={{ p: { xs: 3, md: 5 } }}>{children}</NeuPanel>
 
             {/* Prev / Next nav */}

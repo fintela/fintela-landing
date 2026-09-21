@@ -3,13 +3,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import { Section } from '../primitives/Section';
-import { BandHeader } from '../primitives/BandHeader';
 import { NeuPanel } from '../primitives/NeuPanel';
-import { NeuButton } from '../primitives/NeuButton';
-import { TierBadge } from '../primitives/TierBadge';
-import { MediaWell } from '../primitives/MediaWell';
 import { VideoPlate } from '../primitives/VideoPlate';
 import { ChapterRail } from '../primitives/ChapterRail';
 import { BentoGrid, BentoTile } from '../primitives/BentoGrid';
@@ -17,7 +12,7 @@ import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { clippedGradientSx, quietLinkSx, wellSx } from '../../theme/neu';
 import { gradients, palette, radii, soft } from '../../theme/tokens';
 import { useVideoChapters } from '../../media/chapters';
-import { STILLS, VIDEOS, captionTracks } from '../../media/registry';
+import { VIDEOS, captionTracks } from '../../media/registry';
 
 /**
  * Chapters of the markets recording (`feature-walkthrough.mp4`, 21 s); labels
@@ -69,29 +64,106 @@ const Rule = () => (
   <Box aria-hidden sx={{ width: 28, height: 3, borderRadius: '2px', background: gradients.gold, mb: 2, flexShrink: 0 }} />
 );
 
+/**
+ * The band's header, in the ink palette (white on black) so it sits inside
+ * `CapabilitiesInkBand` rather than on the page's own ground.
+ */
+const CapabilitiesHeaderBand = ({
+  eyebrow,
+  title,
+  titleAccent,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+}) => (
+  <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+    <AnimateOnScroll delay={40}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: { xs: 'flex-start', md: 'flex-end' }, gap: 1.5, mb: 2.5 }}>
+        <Box aria-hidden sx={{ width: 28, height: 3, borderRadius: '2px', background: gradients.gold, flexShrink: 0, display: { xs: 'block', md: 'none' } }} />
+        <Typography
+          component="span"
+          sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: soft.onInk }}
+        >
+          {eyebrow}
+        </Typography>
+        <Box aria-hidden sx={{ width: 28, height: 3, borderRadius: '2px', background: gradients.gold, flexShrink: 0, display: { xs: 'none', md: 'block' } }} />
+      </Box>
+    </AnimateOnScroll>
+    <AnimateOnScroll delay={90}>
+      <Typography
+        component="h2"
+        sx={{
+          fontSize: { xs: '2rem', sm: '2.5rem', md: '3.25rem' },
+          fontWeight: 800,
+          letterSpacing: '-0.02em',
+          color: soft.white,
+          mb: 2.5,
+          textWrap: 'balance',
+        }}
+      >
+        {title}{' '}
+        <Box component="span" sx={clippedGradientSx(gradients.goldText)}>
+          {titleAccent}
+        </Box>
+      </Typography>
+    </AnimateOnScroll>
+    <AnimateOnScroll delay={150}>
+      <Typography
+        sx={{
+          fontSize: { xs: '1rem', md: '1.125rem' },
+          lineHeight: 1.65,
+          color: soft.onInk,
+          maxWidth: 640,
+          ml: { xs: 0, md: 'auto' },
+          mb: { xs: 5, md: 7 },
+        }}
+      >
+        {description}
+      </Typography>
+    </AnimateOnScroll>
+  </Box>
+);
+
+/**
+ * Full-bleed black strip (edge to edge with the viewport, ignoring the
+ * Section's Container gutter) spanning the whole Capabilities band — header
+ * and bento grid alike — so the ink surface runs from right under the hero
+ * down to where "The Platform" band picks back up.
+ */
+const CapabilitiesInkBand = ({ children }: { children: ReactNode }) => (
+  <Box
+    sx={{
+      width: '100vw',
+      position: 'relative',
+      left: '50%',
+      right: '50%',
+      marginLeft: '-50vw',
+      marginRight: '-50vw',
+      background: gradients.ink,
+      py: { xs: 8, md: 12 },
+      colorScheme: 'dark',
+    }}
+  >
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 3, md: 4 } }}>{children}</Box>
+  </Box>
+);
+
 const FeatureTile = ({
   title,
   description,
   docs,
   docsLabel,
-  lead,
-  featured = false,
-  badge,
 }: {
   title: string;
   description: string;
   docs: string;
   docsLabel: string;
-  /** What sits above the title: the gold rule, a badge, or a thumbnail. */
-  lead?: ReactNode;
-  featured?: boolean;
-  badge?: string;
 }) => (
-  <NeuPanel
-    featured={featured}
-    sx={{ height: '100%', p: { xs: 3, md: 3 }, display: 'flex', flexDirection: 'column' }}
-  >
-    {lead ?? (badge ? <Box sx={{ mb: 2 }}><TierBadge featured>{badge}</TierBadge></Box> : <Rule />)}
+  <NeuPanel sx={{ height: '100%', p: { xs: 3, md: 3 }, display: 'flex', flexDirection: 'column' }}>
+    <Rule />
     {/* A sub-topic of the band, so a heading — the size is the tile's own. */}
     <Typography component="h3" sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>{title}</Typography>
     <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6, mb: 2 }}>{description}</Typography>
@@ -107,55 +179,47 @@ const FeatureTile = ({
 );
 
 /**
- * Band 5. The six equal feature cards become a 4×3 bento: the walkthrough
- * video is the 2×2 anchor top-right with a pill strip that seeks to each
- * capability's chapter, the Bayesian tile runs wide with a real sparkline, the
- * quantum tile takes the band's one gold ring. DOM order is reading order.
+ * Band 5. Four tiles in a 4×2 bento: two equal feature cards top-left, the
+ * walkthrough video as the 2×2 anchor top-right with a pill strip that seeks
+ * to each capability's chapter, and the Bayesian tile running wide underneath
+ * with a real sparkline. DOM order is reading order.
  */
 export const CapabilitiesBento = () => {
   const { t } = useTranslation('home');
   const chapters = WALKTHROUGH_CHAPTERS.map((c) => ({ ...c, label: t(`capabilities.chapters.${c.id}`) }));
   const { activeId, setActiveId, playerRef, seekTo } = useVideoChapters(chapters);
-  // Each docs link is named for its destination: seven identical "Docs"
-  // anchors to six pages tell neither a link list nor a crawler apart.
+  // Each docs link is named for its destination: identical "Docs" anchors to
+  // different pages would tell neither a link list nor a crawler apart.
   const docsLabel = (key: string) => t(`capabilities.docsLabels.${key}`);
 
-  const watch = () => {
-    playerRef.current?.reveal();
-    seekTo(WALKTHROUGH_CHAPTERS[0].id);
-  };
-
   return (
-    <Section id="capabilities" size="lg">
-      <BandHeader
-        eyebrow={t('features.eyebrow')}
-        title={t('features.title')}
-        titleAccent={t('features.titleAccent')}
-        exit={
-          <NeuButton tone="raised" onClick={watch} startIcon={<PlayArrowRoundedIcon />}>
-            {t('capabilities.exit')}
-          </NeuButton>
-        }
-      />
+    <Section id="capabilities" size="lg" sx={{ py: 0 }}>
+      <CapabilitiesInkBand>
+        <CapabilitiesHeaderBand
+          eyebrow={t('features.eyebrow')}
+          title={t('features.title')}
+          titleAccent={t('features.titleAccent')}
+          description={t('features.description')}
+        />
 
-      <BentoGrid columns={{ xs: 1, sm: 2, lg: 4 }} autoRows={{ lg: 'minmax(150px, auto)' }}>
+        <BentoGrid columns={{ xs: 1, sm: 2, lg: 4 }} autoRows={{ lg: 'minmax(150px, auto)' }}>
         <BentoTile>
           <AnimateOnScroll delay={0} stretch>
             <FeatureTile
               title={t('features.items.ai.title')}
               description={t('features.items.ai.description')}
-              docs="/docs/fintelligent"
-              docsLabel={docsLabel('fintelligent')}
+              docs="/product/agentic-ai"
+              docsLabel={docsLabel('agenticAi')}
             />
           </AnimateOnScroll>
         </BentoTile>
         <BentoTile>
           <AnimateOnScroll delay={60} stretch>
             <FeatureTile
-              title={t('features.items.laboratory.title')}
-              description={t('features.items.laboratory.description')}
-              docs="/docs/laboratory"
-              docsLabel={docsLabel('laboratory')}
+              title={t('features.items.dataAnalysis.title')}
+              description={t('features.items.dataAnalysis.description')}
+              docs="/product/in-depth-analysis"
+              docsLabel={docsLabel('inDepthAnalysis')}
             />
           </AnimateOnScroll>
         </BentoTile>
@@ -214,10 +278,10 @@ export const CapabilitiesBento = () => {
                 </Typography>
                 <Box
                   component={RouterLink}
-                  to="/docs/optimization-dashboard"
+                  to="/product/samplers"
                   sx={[quietLinkSx, { mt: 'auto', fontSize: '0.82rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 0.5, alignSelf: 'flex-start' }]}
                 >
-                  {docsLabel('optimizationDashboard')}
+                  {docsLabel('samplers')}
                   <ArrowForwardIcon sx={{ fontSize: 14 }} />
                 </Box>
               </Box>
@@ -237,61 +301,8 @@ export const CapabilitiesBento = () => {
           </AnimateOnScroll>
         </BentoTile>
 
-        <BentoTile>
-          <AnimateOnScroll delay={0} stretch>
-            <FeatureTile
-              featured
-              badge={t('capabilities.quantum.badge')}
-              title={t('capabilities.quantum.title')}
-              description={t('capabilities.quantum.description')}
-              docs="/docs/sampler-selection"
-              docsLabel={docsLabel('samplerSelection')}
-            />
-          </AnimateOnScroll>
-        </BentoTile>
-        <BentoTile>
-          <AnimateOnScroll delay={60} stretch>
-            <FeatureTile
-              title={t('features.items.allocation.title')}
-              description={t('features.items.allocation.description')}
-              docs="/docs/portfolio-groups"
-              docsLabel={docsLabel('portfolioGroups')}
-            />
-          </AnimateOnScroll>
-        </BentoTile>
-        <BentoTile>
-          <AnimateOnScroll delay={120} stretch>
-            <FeatureTile
-              title={t('features.items.crossMarket.title')}
-              description={t('features.items.crossMarket.description')}
-              docs="/docs/market"
-              docsLabel={docsLabel('market')}
-            />
-          </AnimateOnScroll>
-        </BentoTile>
-        <BentoTile>
-          <AnimateOnScroll delay={180} stretch>
-            <FeatureTile
-              lead={
-                <MediaWell
-                  ratio="3/2"
-                  tier="sm"
-                  flush
-                  src={STILLS.liveOps}
-                  alt={t('capabilities.liveThumbAlt')}
-                  sizes="(min-width: 1200px) 260px, (min-width: 600px) 45vw, 90vw"
-                  // FeatureTile's own panel padding is a flat 24px at every breakpoint.
-                  sx={{ mt: -3, mx: -3, mb: 2 }}
-                />
-              }
-              title={t('features.items.liveTrading.title')}
-              description={t('features.items.liveTrading.description')}
-              docs="/docs/live-trading"
-              docsLabel={docsLabel('liveTrading')}
-            />
-          </AnimateOnScroll>
-        </BentoTile>
-      </BentoGrid>
+        </BentoGrid>
+      </CapabilitiesInkBand>
     </Section>
   );
 };

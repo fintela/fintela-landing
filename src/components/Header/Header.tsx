@@ -25,9 +25,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import fintelaLargeLogo from '../../assets/logos/fintela_large_logo.png';
+import fintelaLargeLogo from '../../assets/logos/fintela_logo_2.png';
 import { motion, radii, shadows, soft } from '../../theme/tokens';
-import { eyebrowSx, focusRingSx, navPillSx, neuIconButtonSx, srOnly } from '../../theme/neu';
+import { eyebrowSx, focusRingSx, navPillMobileSx, navPillSx, neuIconButtonSx, srOnly } from '../../theme/neu';
 import { NeuButton } from '../primitives/NeuButton';
 import { Groove } from '../primitives/Groove';
 import { LanguageSwitcher } from '../LanguageSwitcher';
@@ -58,15 +58,18 @@ type NavItem = {
 };
 
 /**
- * The Solutions menu sits between Platform and Fintelligent: three seats, each
- * a route under /solutions. It is a menu rather than three items so the bar
- * stays six items wide in every locale.
+ * The Product menu: Agentic AI and Samplers, each its own route. A
+ * menu rather than top-level items keeps the bar from growing every
+ * time a product area gets its own page.
  */
-const SOLUTIONS_POSITION = 1;
+const PRODUCT_ITEMS: NavItem[] = [
+  { id: 'fintelligent', labelKey: 'nav.fintelagent', href: '/product/agentic-ai', type: 'route' },
+  { id: 'samplers', labelKey: 'nav.samplers', href: '/product/samplers', type: 'route' },
+  { id: 'inDepthAnalysis', labelKey: 'nav.inDepthAnalysis', href: '/product/in-depth-analysis', type: 'route' },
+  { id: 'fintelaApi', labelKey: 'nav.fintelaApi', href: '/product/fintela-api', type: 'route' },
+];
 
 const navItems: NavItem[] = [
-  { id: 'platform', labelKey: 'nav.platform', href: '/#platform', type: 'scroll' },
-  { id: 'fintelligent', labelKey: 'nav.fintelagent', href: '/#fintelligent', type: 'scroll' },
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
   { id: 'documentation', labelKey: 'nav.documentation', href: DOCS_HOME, type: 'route', activePrefix: '/docs' },
   { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
@@ -83,6 +86,17 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   documentation: () => import('../../pages/DocPage'),
   blog: () => import('../../pages/BlogPage'),
   solutions: () => import('../../pages/SolutionPage'),
+  fintelligent: () => import('../../pages/AgenticAiPage'),
+  samplers: () => import('../../pages/SamplersPage'),
+  inDepthAnalysis: () => import('../../pages/InDepthAnalysisPage'),
+  fintelaApi: () => import('../../pages/FintelaApiPage'),
+  product: () =>
+    Promise.all([
+      import('../../pages/AgenticAiPage'),
+      import('../../pages/SamplersPage'),
+      import('../../pages/InDepthAnalysisPage'),
+      import('../../pages/FintelaApiPage'),
+    ]),
 };
 
 const prefetch = (id: string) => {
@@ -101,6 +115,18 @@ const navPillButtonSx = {
   fontSize: '0.92rem',
   borderRadius: `${radii.pill}px`,
   textTransform: 'none',
+} as const;
+
+/**
+ * Product and Customers open a dropdown rather than landing on a single page,
+ * so navPillSx's gradient underline (meant to mark the current page) has
+ * nothing correct to point at here — it stays visible via aria-current
+ * whenever a menu item is active, which reads as a stray line under the
+ * trigger. Drop the rule for these two; the accent color/weight still marks
+ * them active.
+ */
+const navMenuTriggerSx = {
+  '&::after': { display: 'none' },
 } as const;
 
 /** The theme's MuiMenu paper, for the Popper the Solutions menu renders into. */
@@ -154,10 +180,21 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
+  const [productOpen, setProductOpen] = useState(false);
   // The trigger element, held in state (a callback ref) rather than a ref so
   // it can be read during render as the Popper's anchor.
   const [solutionsButton, setSolutionsButton] = useState<HTMLButtonElement | null>(null);
+  const [productButton, setProductButton] = useState<HTMLButtonElement | null>(null);
   const onSolutions = location.pathname.startsWith('/solutions');
+
+  const isActive = (item: NavItem) => {
+    if (item.type === 'route') {
+      const prefix = item.activePrefix ?? item.href;
+      return location.pathname === prefix || location.pathname.startsWith(prefix + '/');
+    }
+    return location.pathname === '/' && activeSection === bandId(item);
+  };
+  const onProduct = PRODUCT_ITEMS.some((item) => isActive(item));
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -173,6 +210,12 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     if (wasSolutionsOpen.current && !solutionsOpen) solutionsButton?.focus();
     wasSolutionsOpen.current = solutionsOpen;
   }, [solutionsOpen, solutionsButton]);
+
+  const wasProductOpen = useRef(productOpen);
+  useEffect(() => {
+    if (wasProductOpen.current && !productOpen) productButton?.focus();
+    wasProductOpen.current = productOpen;
+  }, [productOpen, productButton]);
 
   /**
    * Every item is a real anchor, so crawlers, middle-clicks and "open in new
@@ -211,6 +254,25 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     }
   };
 
+  const closeProduct = (event?: Event | SyntheticEvent) => {
+    if (event && productButton?.contains(event.target as Node)) return;
+    setProductOpen(false);
+  };
+
+  const onProductKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      setProductOpen(false);
+    } else if (e.key === 'Escape') {
+      setProductOpen(false);
+    }
+  };
+
+  const handleProductItemClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
+    setProductOpen(false);
+    handleNavClick(e, item);
+  };
+
   /**
    * The skip link's target is the page's `<main id="content">`. It is focused
    * directly rather than through the hash, which keeps the URL clean and, on
@@ -224,14 +286,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     main.setAttribute('tabindex', '-1');
     main.style.outline = 'none';
     main.focus();
-  };
-
-  const isActive = (item: NavItem) => {
-    if (item.type === 'route') {
-      const prefix = item.activePrefix ?? item.href;
-      return location.pathname === prefix || location.pathname.startsWith(prefix + '/');
-    }
-    return location.pathname === '/' && activeSection === bandId(item);
   };
 
   return (
@@ -278,7 +332,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              height: { xs: 30, md: 40 },
+              height: { xs: 17, md: 22 },
               borderRadius: `${radii.neuWell}px`,
               ...focusRingSx,
             }}
@@ -292,9 +346,10 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             />
           </Box>
 
-          {/* Desktop navigation: a landmark of anchors. The Solutions menu is a
-              Popper kept mounted in place (no portal), so its three links are in
-              the prerendered HTML and the DOM whether or not it is open. */}
+          {/* Desktop navigation: a landmark of anchors. The Product and
+              Solutions menus are Poppers kept mounted in place (no portal),
+              so their links are in the prerendered HTML and the DOM whether
+              or not they are open. */}
           <Box
             component="nav"
             aria-label={t('aria.primaryNav')}
@@ -304,41 +359,105 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
               alignItems: 'center',
             }}
           >
-            {navItems.map((item, idx) => (
-              <Box key={item.id} sx={{ display: 'contents' }}>
-                {idx === SOLUTIONS_POSITION && (
-                  <Button
-                    id="solutions-menu-button"
-                    ref={setSolutionsButton}
-                    onClick={() => setSolutionsOpen((open) => !open)}
-                    onMouseEnter={() => prefetch('solutions')}
-                    onFocus={() => prefetch('solutions')}
-                    disableRipple
-                    aria-haspopup="menu"
-                    aria-controls={solutionsOpen ? 'solutions-menu' : undefined}
-                    aria-expanded={solutionsOpen || undefined}
-                    aria-current={onSolutions ? 'page' : undefined}
-                    className={solutionsOpen ? 'is-active' : undefined}
-                    endIcon={<ExpandMoreIcon sx={{ fontSize: '18px !important', ml: -0.5 }} />}
-                    sx={[navPillSx, navPillButtonSx, { pr: 1.25 }]}
-                  >
-                    {t('nav.solutions')}
-                  </Button>
-                )}
-                <Button
-                  component={RouterLink}
-                  to={item.href}
-                  onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
-                  onMouseEnter={() => prefetch(item.id)}
-                  onFocus={() => prefetch(item.id)}
-                  disableRipple
-                  aria-current={isActive(item) ? 'page' : undefined}
-                  sx={[navPillSx, navPillButtonSx]}
-                >
-                  {t(item.labelKey)}
-                </Button>
-              </Box>
+            <Button
+              id="product-menu-button"
+              ref={setProductButton}
+              onClick={() => setProductOpen((open) => !open)}
+              onMouseEnter={() => prefetch('product')}
+              onFocus={() => prefetch('product')}
+              disableRipple
+              aria-haspopup="menu"
+              aria-controls={productOpen ? 'product-menu' : undefined}
+              aria-expanded={productOpen || undefined}
+              aria-current={onProduct ? 'page' : undefined}
+              className={productOpen ? 'is-active' : undefined}
+              endIcon={<ExpandMoreIcon sx={{ fontSize: '18px !important', ml: -0.5 }} />}
+              sx={[navPillSx, navPillButtonSx, { pr: 1.25 }, navMenuTriggerSx]}
+            >
+              {t('nav.product')}
+            </Button>
+            <Button
+              id="solutions-menu-button"
+              ref={setSolutionsButton}
+              onClick={() => setSolutionsOpen((open) => !open)}
+              onMouseEnter={() => prefetch('solutions')}
+              onFocus={() => prefetch('solutions')}
+              disableRipple
+              aria-haspopup="menu"
+              aria-controls={solutionsOpen ? 'solutions-menu' : undefined}
+              aria-expanded={solutionsOpen || undefined}
+              aria-current={onSolutions ? 'page' : undefined}
+              className={solutionsOpen ? 'is-active' : undefined}
+              endIcon={<ExpandMoreIcon sx={{ fontSize: '18px !important', ml: -0.5 }} />}
+              sx={[navPillSx, navPillButtonSx, { pr: 1.25 }, navMenuTriggerSx]}
+            >
+              {t('nav.solutions')}
+            </Button>
+            {navItems.map((item) => (
+              <Button
+                key={item.id}
+                component={RouterLink}
+                to={item.href}
+                onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
+                onMouseEnter={() => prefetch(item.id)}
+                onFocus={() => prefetch(item.id)}
+                disableRipple
+                aria-current={isActive(item) ? 'page' : undefined}
+                sx={[navPillSx, navPillButtonSx]}
+              >
+                {t(item.labelKey)}
+              </Button>
             ))}
+            <Popper
+              open={productOpen}
+              anchorEl={productButton}
+              placement="bottom-start"
+              role={undefined}
+              transition
+              keepMounted
+              disablePortal
+            >
+              {({ TransitionProps }) => (
+                <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
+                  <Paper sx={menuPaperSx}>
+                    <ClickAwayListener onClickAway={closeProduct}>
+                      <MenuList
+                        id="product-menu"
+                        aria-labelledby="product-menu-button"
+                        autoFocusItem={productOpen}
+                        onKeyDown={onProductKeyDown}
+                        sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}
+                      >
+                        {PRODUCT_ITEMS.map((item) => (
+                          <MenuItem
+                            key={item.id}
+                            component={RouterLink}
+                            to={item.href}
+                            onClick={(e: MouseEvent<HTMLAnchorElement>) => handleProductItemClick(e, item)}
+                            selected={isActive(item)}
+                            aria-current={isActive(item) ? 'page' : undefined}
+                            sx={[
+                              navPillSx,
+                              {
+                                px: 1.75,
+                                py: 1,
+                                fontSize: '0.92rem',
+                                minWidth: 200,
+                                justifyContent: 'center',
+                                textAlign: 'center',
+                                '&::after': { display: 'none' },
+                              },
+                            ]}
+                          >
+                            {t(item.labelKey)}
+                          </MenuItem>
+                        ))}
+                      </MenuList>
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+              )}
+            </Popper>
             <Popper
               open={solutionsOpen}
               anchorEl={solutionsButton}
@@ -367,7 +486,18 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                             onClick={() => setSolutionsOpen(false)}
                             selected={location.pathname === SOLUTION_PATHS[a]}
                             aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
-                            sx={[navPillSx, { px: 1.75, py: 1, fontSize: '0.92rem', minWidth: 200 }]}
+                            sx={[
+                              navPillSx,
+                              {
+                                px: 1.75,
+                                py: 1,
+                                fontSize: '0.92rem',
+                                minWidth: 200,
+                                justifyContent: 'center',
+                                textAlign: 'center',
+                                '&::after': { display: 'none' },
+                              },
+                            ]}
                           >
                             {t(`solutions.${a}`)}
                           </MenuItem>
@@ -424,7 +554,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             py: 2,
           }}
         >
-          <Box sx={{ height: 28 }}>
+          <Box sx={{ height: 18 }}>
             <img
               src={fintelaLargeLogo}
               alt="Fintela"
@@ -445,49 +575,66 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
 
         <Box component="nav" aria-label={t('aria.primaryNav')}>
           <List disablePadding sx={{ pt: 1 }}>
-            {navItems.map((item, idx) => (
-              <Box key={item.id} sx={{ display: 'contents' }}>
-                {idx === SOLUTIONS_POSITION && (
-                  <>
-                    <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 2, pb: 1 }}>
-                      {t('nav.solutions')}
-                    </ListSubheader>
-                    {AUDIENCES.map((a) => (
-                      <ListItem key={a} disablePadding>
-                        <ListItemButton
-                          component={RouterLink}
-                          to={SOLUTION_PATHS[a]}
-                          onClick={() => setMobileOpen(false)}
-                          selected={location.pathname === SOLUTION_PATHS[a]}
-                          aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
-                          sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
-                        >
-                          <ListItemText
-                            primary={t(`solutions.${a}`)}
-                            slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                    <Groove sx={{ my: 1, mx: 3 }} />
-                  </>
-                )}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    component={RouterLink}
-                    to={item.href}
-                    onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
-                    selected={isActive(item)}
-                    aria-current={isActive(item) ? 'page' : undefined}
-                    sx={[navPillSx, { mx: 1.5, my: 0.25, px: 2, py: 1.25 }]}
-                  >
-                    <ListItemText
-                      primary={t(item.labelKey)}
-                      slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '1rem' } } }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              </Box>
+            <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 1, pb: 1 }}>
+              {t('nav.product')}
+            </ListSubheader>
+            {PRODUCT_ITEMS.map((item) => (
+              <ListItem key={item.id} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={item.href}
+                  onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
+                  selected={isActive(item)}
+                  aria-current={isActive(item) ? 'page' : undefined}
+                  sx={[navPillSx, navPillMobileSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
+                >
+                  <ListItemText
+                    primary={t(item.labelKey)}
+                    slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+            <Groove sx={{ my: 1, mx: 3 }} />
+
+            <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 1, pb: 1 }}>
+              {t('nav.solutions')}
+            </ListSubheader>
+            {AUDIENCES.map((a) => (
+              <ListItem key={a} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={SOLUTION_PATHS[a]}
+                  onClick={() => setMobileOpen(false)}
+                  selected={location.pathname === SOLUTION_PATHS[a]}
+                  aria-current={location.pathname === SOLUTION_PATHS[a] ? 'page' : undefined}
+                  sx={[navPillSx, navPillMobileSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
+                >
+                  <ListItemText
+                    primary={t(`solutions.${a}`)}
+                    slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+            <Groove sx={{ my: 1, mx: 3 }} />
+
+            {navItems.map((item) => (
+              <ListItem key={item.id} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={item.href}
+                  onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
+                  selected={isActive(item)}
+                  aria-current={isActive(item) ? 'page' : undefined}
+                  sx={[navPillSx, navPillMobileSx, { mx: 1.5, my: 0.25, px: 2, py: 1.25 }]}
+                >
+                  <ListItemText
+                    primary={t(item.labelKey)}
+                    slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '1rem' } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
             ))}
           </List>
         </Box>

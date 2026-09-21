@@ -4,6 +4,8 @@ import type { SxProps, Theme } from '@mui/material';
 import { clippedGradientSx } from '../../theme/neu';
 import { gradients } from '../../theme/tokens';
 
+type Alignment = 'left' | 'center' | 'right';
+
 interface RotatingWordProps {
   /** Words to cycle through, in order. */
   words: string[];
@@ -11,8 +13,9 @@ interface RotatingWordProps {
   interval?: number;
   /** Delay before the first rotation, in ms — offset slots so they don't tick in unison. */
   startDelay?: number;
-  /** Where the word sits within its fixed-width slot. */
-  align?: 'left' | 'center' | 'right';
+  /** Where the word sits within its fixed-width slot. A plain value, or a
+   *  breakpoint-keyed object (MUI's usual responsive sx shorthand). */
+  align?: Alignment | Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', Alignment>>;
   /** Paint the word with the brand gradient. */
   gradient?: boolean;
   sx?: SxProps<Theme>;

@@ -24,7 +24,7 @@ import { blogCrumb, blogPosting, breadcrumbList, homeCrumb, organization, webSit
 import { absoluteUrl } from '../seo/site';
 
 const BLOG_OG_IMAGE = '/og/blog.png';
-const TITLE_SUFFIX = 'Fintela Blog';
+const TITLE_SUFFIX = 'Research Blog';
 
 /** How many related posts sit under an article. */
 const MAX_RELATED = 3;
@@ -143,7 +143,7 @@ export const BlogPostPage = () => {
 
           {(status === 'notFound' || status === 'error') && (
             <Box sx={{ textAlign: 'center', py: { xs: 8, md: 12 } }}>
-              <IconWell size={72} round sx={{ mx: 'auto', mb: 3 }}>
+              <IconWell size={72} sx={{ mx: 'auto', mb: 3 }}>
                 <SearchOff />
               </IconWell>
               {/* h4 for the size; h1 because it is the only title this state has. */}

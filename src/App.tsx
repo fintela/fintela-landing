@@ -17,6 +17,7 @@ import { SOLUTION_PATHS } from './solutions/registry';
 import { ScrollProgressBar } from './components/common/ScrollProgressBar';
 import { FloatingContactButton } from './components/common/FloatingContactButton';
 import { CookieConsentBanner } from './components/common/CookieConsentBanner';
+import { IconGradientDefs } from './components/primitives/IconGradientDefs';
 import { SearchProvider } from './search/SearchProvider';
 
 // Contact is a cold path like every route below: its form pulls in TextField,
@@ -63,6 +64,29 @@ const PricingPage = lazy(() =>
 // institutional CTA lands.
 const SolutionPage = lazy(() =>
   import('./pages/SolutionPage').then((m) => ({ default: m.SolutionPage })),
+);
+
+// Product menu's "Agentic AI" item — the Fintelligent band, split off the
+// home page's bundle now that it lives on its own route.
+const AgenticAiPage = lazy(() =>
+  import('./pages/AgenticAiPage').then((m) => ({ default: m.AgenticAiPage })),
+);
+
+// Product menu's "Samplers" item — the optimization algorithms reference.
+const SamplersPage = lazy(() =>
+  import('./pages/SamplersPage').then((m) => ({ default: m.SamplersPage })),
+);
+
+// Product menu's "In-Depth Analysis" item — the Data Explorer catalog plus a
+// worked strategy robustness/clustering/optimization report.
+const InDepthAnalysisPage = lazy(() =>
+  import('./pages/InDepthAnalysisPage').then((m) => ({ default: m.InDepthAnalysisPage })),
+);
+
+// Product menu's "Fintela API" item — a marketing overview of the read-only
+// developer API, linking through to the full reference under /docs.
+const FintelaApiPage = lazy(() =>
+  import('./pages/FintelaApiPage').then((m) => ({ default: m.FintelaApiPage })),
 );
 
 // Documentation. Twenty-five hand-written page components used to be listed here,
@@ -238,6 +262,10 @@ export interface Pages {
   ContactPage: ComponentType;
   PricingPage: ComponentType;
   SolutionPage: ComponentType;
+  AgenticAiPage: ComponentType;
+  SamplersPage: ComponentType;
+  InDepthAnalysisPage: ComponentType;
+  FintelaApiPage: ComponentType;
   TermsPage: ComponentType;
   PrivacyPage: ComponentType;
   RiskDisclosuresPage: ComponentType;
@@ -252,6 +280,10 @@ const lazyPages: Pages = {
   ContactPage,
   PricingPage,
   SolutionPage,
+  AgenticAiPage,
+  SamplersPage,
+  InDepthAnalysisPage,
+  FintelaApiPage,
   TermsPage,
   PrivacyPage,
   RiskDisclosuresPage,
@@ -272,6 +304,7 @@ const lazyPages: Pages = {
 export function AppRoutes({ pages }: { pages: Pages }) {
   return (
     <SearchProvider>
+      <IconGradientDefs />
       <ScrollToTop />
       <ScrollProgressBar />
       <FloatingContactButton />
@@ -288,6 +321,11 @@ export function AppRoutes({ pages }: { pages: Pages }) {
               fund page, the way `/docs` lands on the overview. */}
           <Route path="/solutions" element={<Navigate to={SOLUTION_PATHS.funds} replace />} />
           <Route path="/solutions/:slug" element={<pages.SolutionPage />} />
+
+          <Route path="/product/agentic-ai" element={<pages.AgenticAiPage />} />
+          <Route path="/product/samplers" element={<pages.SamplersPage />} />
+          <Route path="/product/in-depth-analysis" element={<pages.InDepthAnalysisPage />} />
+          <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
 
           {/* Legal */}
           <Route path="/terms" element={<pages.TermsPage />} />

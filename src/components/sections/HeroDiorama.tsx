@@ -6,21 +6,20 @@ import { GradientText } from '../primitives/GradientText';
 import { RotatingWord } from '../primitives/RotatingWord';
 import { Section } from '../primitives/Section';
 import { NeuButton } from '../primitives/NeuButton';
-import { HeroVideoBackdrop } from '../primitives/HeroVideoBackdrop';
 import { bandClipSx } from '../../theme/neu';
 import { gradients, soft } from '../../theme/tokens';
-import { SOLUTION_PATHS } from '../../solutions/registry';
+import { fallbackSrcSet, pictureSources } from '../../media/picture';
+import laptopDashboard from '../../assets/media/hero/laptop-dashboard.png?w=480;760;1150;1715&format=avif;webp;png&as=picture';
 
 interface HeroDioramaProps {
   /** "Watch the platform": lands on the platform band and its ambient loop. */
   onWatch: () => void;
 }
 
+
 /**
- * Band 1. Copy only, left-aligned over a full-bleed video loop that fades into the
- * ground along its bottom edge. The product plate, the study tile and the
- * client logos live in the platform band (PlatformShowcase) so this one stays
- * quiet.
+ * Band 1. The laptop mock and the copy side by side on the plain page ground;
+ * stacked, image first, on a phone.
  */
 export const HeroDiorama = ({ onWatch }: HeroDioramaProps) => {
   const { t } = useTranslation('home');
@@ -28,9 +27,10 @@ export const HeroDiorama = ({ onWatch }: HeroDioramaProps) => {
 
   return (
     <Section
+      id="hero"
       tone="soft"
       size="lg"
-      background={<HeroVideoBackdrop />}
+      maxWidth="xl"
       sx={[
         bandClipSx,
         {
@@ -46,75 +46,152 @@ export const HeroDiorama = ({ onWatch }: HeroDioramaProps) => {
       <Box
         sx={{
           position: 'relative',
-          maxWidth: 760,
+          maxWidth: 1680,
+          mx: 'auto',
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          gap: { xs: 5, md: 2 },
         }}
       >
-        <AnimateOnScroll delay={80}>
-          <Typography
-            variant="h1"
-            sx={{
-              fontSize: { xs: '2.6rem', sm: '3.5rem', lg: '4.6rem' },
-              fontWeight: 800,
-              lineHeight: 1.04,
-              letterSpacing: '-0.035em',
-              color: soft.white,
-              textWrap: 'balance',
-              mb: 3,
-              // Keeps the white line legible when the backdrop video pans over light frames.
-              textShadow: '0 2px 6px rgba(10, 18, 36, 0.225), 0 10px 32px rgba(10, 18, 36, 0.175)',
-            }}
-          >
-            {t('hero.headline')}{' '}
-            <GradientText
-              gradient={gradients.goldText}
+        {/* The laptop mock sits left of the copy from md up, pinned to the
+            column's own left edge rather than centered in it; above the copy,
+            centered, on a phone — the same order the copy reads in either
+            layout. */}
+        <Box sx={{ flex: { md: '0 1 64%' }, display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, ml: { md: -4 } }}>
+          {/* Sized to the image itself (not the wider flex column) so the
+              glow stays pinned to the laptop's corner instead of drifting
+              into open space and reading as a second, detached gradient. */}
+          <Box sx={{ position: 'relative', width: 'fit-content', maxWidth: '100%' }}>
+            {/* Brand-color glow anchored to the laptop's top-left corner. */}
+            <Box
+              aria-hidden
               sx={{
-                // text-shadow paints over a clipped-gradient fill, so shadow the rendered glyphs instead.
-                textShadow: 'none',
-                filter: 'drop-shadow(0 2px 6px rgba(10, 18, 36, 0.225)) drop-shadow(0 10px 32px rgba(10, 18, 36, 0.175))',
+                position: 'absolute',
+                top: { xs: -120, md: -180 },
+                left: { xs: -140, md: -220 },
+                width: { xs: 420, md: 620 },
+                height: { xs: 420, md: 620 },
+                background:
+                  'radial-gradient(circle, rgba(232,185,35,0.32) 0%, rgba(241,53,60,0.20) 45%, rgba(26,26,26,0) 72%)',
+                filter: 'blur(40px)',
+                pointerEvents: 'none',
+                zIndex: 0,
+              }}
+            />
+            <AnimateOnScroll delay={40}>
+              <Box
+                component="picture"
+                sx={{
+                  position: 'relative',
+                  zIndex: 1,
+                  display: 'block',
+                  width: '100%',
+                  maxWidth: { xs: 460, sm: 640, md: 1000 },
+                }}
+              >
+                {pictureSources(laptopDashboard).map(({ type, srcSet }) => (
+                  <source
+                    key={type}
+                    type={type}
+                    srcSet={srcSet}
+                    sizes="(min-width: 900px) 1180px, (min-width: 600px) 640px, 460px"
+                  />
+                ))}
+                <Box
+                  component="img"
+                  src={laptopDashboard.img.src}
+                  srcSet={fallbackSrcSet(laptopDashboard)}
+                  sizes="(min-width: 900px) 1180px, (min-width: 600px) 640px, 460px"
+                  width={laptopDashboard.img.w}
+                  height={laptopDashboard.img.h}
+                  alt={t('hero.deviceAlt')}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  sx={{ width: '100%', height: 'auto', display: 'block' }}
+                />
+              </Box>
+            </AnimateOnScroll>
+          </Box>
+        </Box>
+
+        <Box sx={{ flex: { md: '0 1 28%' }, textAlign: { xs: 'center', md: 'left' } }}>
+          <AnimateOnScroll delay={120}>
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: { xs: '2.6rem', sm: '3.5rem', lg: '2.9rem' },
+                fontWeight: 800,
+                lineHeight: 1.04,
+                letterSpacing: '-0.035em',
+                color: soft.text,
+                textWrap: 'balance',
+                textAlign: { xs: 'center', md: 'left' },
+                mb: 3,
               }}
             >
-              {t('hero.headlineAccent')}
-            </GradientText>
-          </Typography>
-        </AnimateOnScroll>
+              {t('hero.headline')}{' '}
+              <GradientText gradient={gradients.goldText}>{t('hero.headlineAccent')}</GradientText>
+            </Typography>
+          </AnimateOnScroll>
 
-        <AnimateOnScroll delay={160}>
-          <Typography
-            sx={{
-              color: 'rgba(255, 255, 255, 0.88)',
-              fontSize: { xs: '1.15rem', md: '1.35rem' },
-              lineHeight: 1.6,
-              maxWidth: 520,
-              mb: 4.5,
-            }}
-          >
-            {t('hero.subtitlePrefix')}
-            {/* Its own line: the slot reserves the widest market's width, which
-                reads as a gap when a shorter word sits mid-sentence. */}
-            <Box component="span" sx={{ display: 'block', fontWeight: 600, color: soft.white }}>
-              <RotatingWord words={marketWords} startDelay={1000} align="left" />
+          <AnimateOnScroll delay={200}>
+            <Typography
+              sx={{
+                color: soft.textSecondary,
+                fontSize: { xs: '1.15rem', md: '1.35rem' },
+                lineHeight: 1.6,
+                maxWidth: 520,
+                mx: { xs: 'auto', md: 0 },
+                mb: 4.5,
+              }}
+            >
+              {t('hero.subtitlePrefix')}
+              {/* Its own line: the slot reserves the widest market's width, which
+                  reads as a gap when a shorter word sits mid-sentence. */}
+              <Box
+                component="span"
+                sx={{ display: 'block', fontWeight: 600, color: soft.text }}
+              >
+                <RotatingWord
+                  words={marketWords}
+                  startDelay={1000}
+                  align={{ xs: 'center', md: 'left' }}
+                />
+              </Box>
+              {t('hero.subtitleSuffix')}
+            </Typography>
+          </AnimateOnScroll>
+
+          <AnimateOnScroll delay={280}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: { xs: 'center', md: 'flex-start' },
+                gap: 1.75,
+                '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } },
+              }}
+            >
+              <NeuButton
+                tone="accent"
+                onClick={onWatch}
+                startIcon={<PlayArrowRoundedIcon />}
+                sx={{
+                  backgroundColor: '#000',
+                  '@media (hover: hover)': {
+                    '&:hover': { backgroundColor: '#000' },
+                  },
+                  '&:active': { backgroundColor: '#000' },
+                  '&.Mui-disabled': { backgroundColor: '#000' },
+                }}
+              >
+                {t('hero.ctaWatch')}
+              </NeuButton>
             </Box>
-            {t('hero.subtitleSuffix')}
-          </Typography>
-        </AnimateOnScroll>
-
-        <AnimateOnScroll delay={240}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 1.75,
-              '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } },
-            }}
-          >
-            <NeuButton tone="accent" to={SOLUTION_PATHS.funds}>
-              {t('hero.ctaPrimary')}
-            </NeuButton>
-            <NeuButton tone="raised" onClick={onWatch} startIcon={<PlayArrowRoundedIcon />}>
-              {t('hero.ctaWatch')}
-            </NeuButton>
-          </Box>
-        </AnimateOnScroll>
+          </AnimateOnScroll>
+        </Box>
       </Box>
     </Section>
   );

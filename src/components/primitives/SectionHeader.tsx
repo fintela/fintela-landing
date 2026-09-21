@@ -18,7 +18,7 @@ interface SectionHeaderProps {
   /** Optional highlighted span that follows the title, in the gold display ramp. */
   titleAccent?: ReactNode;
   description?: ReactNode;
-  align?: 'left' | 'center';
+  align?: 'left' | 'center' | 'right';
   /** Bottom margin under the block. `false` when a parent row (BandHeader) owns the spacing. */
   gutter?: boolean;
 }
@@ -47,6 +47,8 @@ export const SectionHeader = ({
   gutter = true,
 }: SectionHeaderProps) => {
   const centered = align === 'center';
+  const rightAligned = align === 'right';
+  const justify = centered ? 'center' : rightAligned ? 'flex-end' : 'flex-start';
   return (
     <Box
       sx={{
@@ -62,12 +64,12 @@ export const SectionHeader = ({
             sx={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: centered ? 'center' : 'flex-start',
+              justifyContent: justify,
               gap: 1.5,
               mb: 2.5,
             }}
           >
-            <Rule />
+            {!rightAligned && <Rule />}
             <Typography
               component="span"
               sx={{
@@ -80,13 +82,13 @@ export const SectionHeader = ({
             >
               {eyebrow}
             </Typography>
-            {centered && <Rule />}
+            {(centered || rightAligned) && <Rule />}
           </Box>
         </AnimateOnScroll>
       )}
       {!eyebrow && !hero && (
         <AnimateOnScroll delay={40}>
-          <Box sx={{ display: 'flex', justifyContent: centered ? 'center' : 'flex-start', mb: 2.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: justify, mb: 2.5 }}>
             <Rule width={36} />
           </Box>
         </AnimateOnScroll>

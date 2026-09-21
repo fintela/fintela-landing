@@ -101,8 +101,10 @@ export const theme = createTheme({
         // ground inverts every white highlight into a smear.
         html: { colorScheme: 'light' },
         body: {
-          background: soft.ground,
-          '@media print': { background: soft.white },
+          // The top-of-page brand wash (`gradients.pageGround`) is off for
+          // now — plain flat ground until colors are revisited.
+          backgroundColor: soft.ground,
+          '@media print': { backgroundColor: soft.white },
         },
       },
     },
@@ -260,7 +262,7 @@ export const theme = createTheme({
         // forced-colors gets a Highlight ring for free.
         root: {
           backgroundColor: soft.groundSunken,
-          borderRadius: radii.neuInner, // styleOverrides are raw CSS: 14 -> 14px
+          borderRadius: radii.neuInner, // styleOverrides are raw CSS: a number here means px
           boxShadow: shadows.neuInsetSm,
           transition: `box-shadow ${motion.fast}`,
           '& .MuiOutlinedInput-notchedOutline': { border: 0 },

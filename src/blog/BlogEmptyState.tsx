@@ -16,7 +16,7 @@ export const BlogEmptyState = ({ status }: { status: Exclude<BlogStatus, 'loadin
   const failed = status === 'error';
   return (
     <NeuPanel sx={{ maxWidth: 560, mx: 'auto', px: { xs: 3, md: 6 }, py: { xs: 5, md: 7 }, textAlign: 'center' }}>
-      <IconWell size={72} round sx={{ mx: 'auto', mb: 3 }}>
+      <IconWell size={72} sx={{ mx: 'auto', mb: 3 }}>
         {failed ? <WifiOff /> : <AutoStories />}
       </IconWell>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5, color: soft.text }}>

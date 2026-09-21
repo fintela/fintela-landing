@@ -4,7 +4,7 @@ import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import fintelaLargeLogo from '../../assets/logos/fintela_large_logo.png';
+import fintelaLargeLogo from '../../assets/logos/fintela_logo_2.png';
 import { gradients, shadows, soft } from '../../theme/tokens';
 import { neuIconButtonSx, quietLinkSx } from '../../theme/neu';
 import { Groove } from '../primitives/Groove';
@@ -47,14 +47,14 @@ const columns: FooterColumn[] = [
       {
         id: 'platform',
         labelKey: 'footer:columns.product.links.platform',
-        href: '/#platform',
+        href: '/#hero',
         type: 'scroll',
       },
       {
         id: 'fintelagent',
         labelKey: 'footer:columns.product.links.fintelagent',
-        href: '/#fintelligent',
-        type: 'scroll',
+        href: '/product/agentic-ai',
+        type: 'route',
       },
       {
         id: 'capabilities',
@@ -189,7 +189,7 @@ export const Footer = () => {
           }}
         >
           <Box>
-            <Box sx={{ height: 36, mb: 2.5 }}>
+            <Box sx={{ height: 22, mb: 2.5 }}>
               <img
                 src={fintelaLargeLogo}
                 alt="Fintela"

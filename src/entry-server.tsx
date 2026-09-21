@@ -16,6 +16,10 @@ import { BlogPostPage } from './pages/BlogPostPage';
 import { ContactPage } from './pages/ContactPage';
 import { PricingPage } from './pages/PricingPage';
 import { SolutionPage } from './pages/SolutionPage';
+import { AgenticAiPage } from './pages/AgenticAiPage';
+import { SamplersPage } from './pages/SamplersPage';
+import { InDepthAnalysisPage } from './pages/InDepthAnalysisPage';
+import { FintelaApiPage } from './pages/FintelaApiPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { RiskDisclosuresPage } from './pages/RiskDisclosuresPage';
@@ -61,6 +65,10 @@ const eagerPages: Pages = {
   ContactPage,
   PricingPage,
   SolutionPage,
+  AgenticAiPage,
+  SamplersPage,
+  InDepthAnalysisPage,
+  FintelaApiPage,
   TermsPage,
   PrivacyPage,
   RiskDisclosuresPage,
