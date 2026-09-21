@@ -67,8 +67,7 @@ function preferredLanguage(): SupportedLng {
 /**
  * Drop the prerendered head tags before a client-only render: React would add
  * its own beside them, and the browser shows the FIRST <title>, which would be
- * the English one. `<Seo>` owns these tags (index.html carries none), and the
- * hero's image preload is React-rendered too (HeroVideoBackdrop); the font
+ * the English one. `<Seo>` owns these tags (index.html carries none); the font
  * preloads come from the prerender script and stay.
  */
 function stripPrerenderedHead(): void {

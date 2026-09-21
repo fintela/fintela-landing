@@ -1,15 +1,17 @@
 import { Box, Container } from '@mui/material';
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
-import { gradients, soft } from '../../theme/tokens';
+import { soft } from '../../theme/tokens';
 
 interface SectionProps {
   id?: string;
   children: ReactNode;
   /**
-   * 'soft' (default) is the one continuous ground. 'hero' is gradients.groundFade
-   * for the FIRST band of a page only, and never behind a shadowed surface — a
-   * paired shadow on a graded ground desynchronizes from its background.
+   * Both tones are transparent, letting the body's `gradients.pageGround`
+   * brand wash show through every section. 'hero' is kept as a distinct
+   * value for the FIRST band of a page, in case it needs its own treatment
+   * later; never put a background behind a shadowed surface — a paired
+   * shadow on a graded ground desynchronizes from its background.
    */
   tone?: 'soft' | 'hero';
   /** Top/bottom padding density. */
@@ -32,8 +34,10 @@ const paddingY = {
 } as const;
 
 const backgrounds = {
-  soft: soft.ground,
-  hero: gradients.groundFade,
+  // Transparent so the body's `gradients.pageGround` brand wash shows
+  // through every section instead of being painted over.
+  soft: 'transparent',
+  hero: 'transparent',
 } as const;
 
 export const Section = ({

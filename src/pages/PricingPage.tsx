@@ -129,8 +129,16 @@ const PlanCard = ({
         mx: { xs: 'auto', md: 0 },
         width: '100%',
         // The featured card is the same white as its neighbours; a deeper
-        // shadow and a gold ring are what single it out.
-        ...(featured && { borderColor: soft.ring }),
+        // shadow and a gradient ring are what single it out. Two-layer
+        // background: an opaque white padding-box layer on top of the brand
+        // gradient painted to the border-box, so only the 1.5px ring reads
+        // the gradient and the card face stays white.
+        ...(featured && {
+          border: '1.5px solid transparent',
+          backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+          backgroundOrigin: 'border-box',
+          backgroundClip: 'padding-box, border-box',
+        }),
         boxShadow: {
           xs: shadows.neuRaisedMd,
           md: featured ? shadows.neuRaisedLg : shadows.neuRaised,
@@ -369,7 +377,7 @@ const ComparisonTable = () => {
                 sx={{
                   ...cellBase,
                   ...(tier.featured && {
-                    bgcolor: soft.wash,
+                    background: gradients.brandFaint,
                     borderRadius: `${radii.neuInner}px ${radii.neuInner}px 0 0`,
                   }),
                 }}
@@ -429,7 +437,7 @@ const ComparisonTable = () => {
                       gap: 0.75,
                       borderRadius: { xs: `${radii.neuWell}px`, md: 0 },
                       ...(tier.featured && {
-                        bgcolor: soft.wash,
+                        background: gradients.brandFaint,
                         ...(last && {
                           borderRadius: {
                             xs: `${radii.neuWell}px`,
@@ -456,14 +464,25 @@ const ComparisonTable = () => {
                     {row.kind === 'check' ? (
                       isIncluded ? (
                         <>
-                          <CheckWell size={24} sx={{ bgcolor: palette.success, color: soft.white }} />
+                          <CheckWell
+                            size={24}
+                            sx={{
+                              borderRadius: `${radii.pill}px`,
+                              bgcolor: palette.success,
+                              '& svg': { fill: soft.white },
+                            }}
+                          />
                           <Box component="span" sx={srOnly}>
                             {t('pricing.compare.included')}
                           </Box>
                         </>
                       ) : (
                         <>
-                          <CheckWell size={24} icon={<RemoveRoundedIcon />} sx={{ color: soft.textSecondary }} />
+                          <CheckWell
+                            size={24}
+                            icon={<RemoveRoundedIcon />}
+                            sx={{ '& svg': { fill: soft.textSecondary } }}
+                          />
                           <Box component="span" sx={srOnly}>
                             {t('pricing.compare.notIncluded')}
                           </Box>

@@ -101,7 +101,7 @@ export const DocPage = () => {
 
       {(status === 'notFound' || status === 'error') && (
         <Box sx={{ textAlign: 'center', py: { xs: 8, md: 12 } }}>
-          <IconWell size={72} round sx={{ mx: 'auto', mb: 3 }}>
+          <IconWell size={72} sx={{ mx: 'auto', mb: 3 }}>
             <SearchOff />
           </IconWell>
           {/* h4 for the size; h1 because it is the only title this state has. */}

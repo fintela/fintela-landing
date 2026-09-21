@@ -42,7 +42,7 @@ export const ComparisonPanel = ({ audience }: SeatProps) => {
             gap: 1,
           }}
         >
-          <CheckWell size={20} icon={<CloseRoundedIcon />} sx={{ color: soft.textSecondary }} />{' '}
+          <CheckWell size={20} icon={<CloseRoundedIcon />} sx={{ '& svg': { fill: soft.textSecondary } }} />{' '}
           {t('common.why.legacyHeader')}
         </Box>
         <Box

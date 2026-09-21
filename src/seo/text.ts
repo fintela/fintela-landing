@@ -4,7 +4,7 @@
  * (which is what keeps it hot-reloadable).
  */
 
-/** `{Page} | Fintela` — or `{Page} | Fintela Docs`, `{Page} | Fintela Blog`. */
+/** `{Page} | Fintela` — or `{Page} | Fintela Docs`, `{Page} | Research Blog`. */
 export const pageTitle = (name: string, suffix = 'Fintela'): string => `${name} | ${suffix}`;
 
 /**

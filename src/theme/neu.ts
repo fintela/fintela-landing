@@ -432,32 +432,61 @@ export const neuLinkCardSx = {
  * className="is-active". Geometry (padding, font size) is the caller's.
  */
 export const navPillSx = {
+  position: 'relative',
   borderRadius: `${radii.neuWell}px`,
+  backgroundColor: 'transparent',
   color: soft.textSecondary,
   fontWeight: 500,
   textDecoration: 'none',
-  transition: `box-shadow ${motion.fast}, background-color ${motion.fast}, color ${motion.fast}`,
+  transition: `color ${motion.fast}`,
   '@media (hover: hover)': {
     '&:hover': { color: soft.text, backgroundColor: 'transparent' },
+    '&:hover::after': { opacity: 0.5, transform: 'scaleX(0.7)' },
   },
   '&:focus-visible': { outline: `2px solid ${soft.accent}`, outlineOffset: 2 },
   // MUI's MenuItem/ListItemButton paint a gray action.focus fill under the
   // ring; the ring alone marks focus here.
   '&.Mui-focusVisible': { backgroundColor: 'transparent' },
+  // The current/selected mark: a thin rule in the brand's tri-color gradient
+  // that grows in under the label, rather than a pressed-well background —
+  // reads as a tech underline indicator, not a neumorphic button state.
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    left: '20%',
+    right: '20%',
+    bottom: 4,
+    height: 2,
+    borderRadius: `${radii.xs}px`,
+    background: gradients.gold,
+    opacity: 0,
+    transform: 'scaleX(0.4)',
+    transformOrigin: 'center',
+    transition: `opacity ${motion.fast}, transform ${motion.fast}`,
+  },
   '&[aria-current="page"], &[aria-current="page"]:hover, &.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible, &.is-active, &.is-active:hover':
     {
-      backgroundColor: soft.groundSunken,
-      boxShadow: shadows.neuInsetSm,
+      backgroundColor: 'transparent',
       color: soft.accent,
       fontWeight: 600,
+      '&::after': { opacity: 1, transform: 'scaleX(1)' },
     },
   '@media (forced-colors: active)': {
+    '&::after': { display: 'none' },
     '&[aria-current="page"], &.Mui-selected, &.is-active': {
-      boxShadow: 'none',
       border: '2px solid Highlight',
     },
     '&:focus-visible': { outline: '3px solid Highlight', outlineOffset: 2 },
   },
+} as const;
+
+/**
+ * Merge after `navPillSx` for a full-width row (the mobile drawer's
+ * ListItemButtons): the label sits left, so the accent rule anchors under its
+ * start instead of centering under the whole row's width.
+ */
+export const navPillMobileSx = {
+  '&::after': { left: 16, right: 'auto', width: 28 },
 } as const;
 
 /**
@@ -502,6 +531,23 @@ export const clippedGradientSx = (gradient: string) =>
     '@media (forced-colors: active)': { WebkitTextFillColor: 'CanvasText', background: 'none' },
     '@media print': { WebkitTextFillColor: soft.text, background: 'none' },
   }) as const;
+
+/** `<linearGradient id={ICON_GRADIENT_ID}>`, mounted once by `IconGradientDefs`. */
+export const ICON_GRADIENT_ID = 'fintelaIconGradient';
+
+/**
+ * Paints an icon glyph with the brand gradient instead of a solid fill — no
+ * well, no shadow. `background-clip: text` (see `clippedGradientSx`) only
+ * clips text nodes, so an SVG icon needs its `fill` pointed at the gradient
+ * defined in `IconGradientDefs` instead.
+ */
+export const gradientIconSx = {
+  '& svg': { fill: `url(#${ICON_GRADIENT_ID})` },
+  // The gradient is invisible to forced-colors (it isn't a recognised system
+  // color), so fall back to plain ink/CanvasText the same way text does.
+  '@media (forced-colors: active)': { '& svg': { fill: 'CanvasText' } },
+  '@media print': { '& svg': { fill: soft.text } },
+} as const;
 
 /** Eyebrow / tagline (PricingPage PlanCard tagline). */
 export const eyebrowSx = {
@@ -603,7 +649,7 @@ export const mediaWellSx = (
       pointerEvents: 'none',
       boxShadow: flush ? 'none' : tier === 'md' ? shadows.neuInset : shadows.neuInsetSm,
       ...(tone === 'duotone'
-        ? { background: 'rgba(22,50,92,0.06)', mixBlendMode: 'multiply' }
+        ? { background: 'rgba(0,0,0,0.06)', mixBlendMode: 'multiply' }
         : {}),
     },
     '@media (forced-colors: active)': {

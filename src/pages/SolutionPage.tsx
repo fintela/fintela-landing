@@ -1,36 +1,24 @@
 import { Box, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { ScrollTop } from '../components/common/ScrollTop';
 import { AnimateOnScroll } from '../components/common/AnimateOnScroll';
 import { Section } from '../components/primitives/Section';
 import { SectionHeader } from '../components/primitives/SectionHeader';
-import { NeuButton } from '../components/primitives/NeuButton';
-import { TierBadge } from '../components/primitives/TierBadge';
-import { MediaPlate } from '../components/primitives/MediaPlate';
-import { MediaWell } from '../components/primitives/MediaWell';
-import { StatTile } from '../components/primitives/StatTile';
-import { StickyAside } from '../components/primitives/StickyAside';
 import { GroundTexture } from '../components/primitives/GroundTexture';
 import { ComparisonPanel, SeatPanel } from '../components/solutions/AdvantagePanels';
 import { SolutionChapters } from '../components/solutions/SolutionChapters';
-import { OnboardingTimeline } from '../components/solutions/OnboardingTimeline';
-import { SeatCrossLinks } from '../components/solutions/SeatCrossLinks';
-import { FAQList } from '../components/sections/FAQList';
-import { ClosingSection } from '../components/sections/ClosingSection';
+import { MediaWell } from '../components/primitives/MediaWell';
 import { NotFoundPage } from './NotFoundPage';
-import { bandClipSx } from '../theme/neu';
-import { shadows, soft } from '../theme/tokens';
-import { scrollToSection } from '../lib/scrollToSection';
+import { bandClipSx, clippedGradientSx } from '../theme/neu';
+import { gradients, soft } from '../theme/tokens';
+import { STILLS } from '../media/registry';
 import { SOLUTIONS, SOLUTION_PATHS, audienceFromSlug } from '../solutions/registry';
 import { Seo } from '../seo/Seo';
-import { breadcrumbList, faqPage, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
+import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
-
-const WALKTHROUGH = '/contact';
 
 /**
  * `/solutions/:slug` — one template for the three seats. What differs is in
@@ -44,17 +32,15 @@ export const SolutionPage = () => {
 
   if (!audience) return <NotFoundPage />;
   const config = SOLUTIONS[audience];
-  const primary = config.primaryCta === 'walkthrough' ? { label: t(`solutions:${audience}.ctaPrimary`), to: WALKTHROUGH } : { label: t(`solutions:${audience}.ctaPrimary`) };
-
-  const faqItems = [
-    ...config.faq.map((key) => ({ key, q: t(`home:faq.items.${key}.q`), a: t(`home:faq.items.${key}.a`) })),
-    ...config.extraFaq.map((key) => ({ key: `x-${key}`, q: t(`solutions:${audience}.faq.${key}.q`), a: t(`solutions:${audience}.faq.${key}.a`) })),
-  ];
 
   const seoTitle = t(`solutions:${audience}.seo.title`);
   const seoDescription = t(`solutions:${audience}.seo.description`);
   // JPEG, not PNG: the three cards sit on photo backgrounds (see scripts/og/render.mjs).
   const ogImage = `/og/solutions-${config.slug}.jpg`;
+
+  const badge = t(`solutions:${audience}.badge`);
+  const badgeAccent = t(`solutions:${audience}.badgeAccent`);
+  const badgeLead = badgeAccent && badge.endsWith(badgeAccent) ? badge.slice(0, -badgeAccent.length) : badge;
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -73,81 +59,59 @@ export const SolutionPage = () => {
           }),
           // Two levels: `/solutions` itself redirects, so it cannot be a crumb.
           breadcrumbList([homeCrumb(), { name: t(`solutions:${audience}.badge`) }]),
-          faqPage(faqItems.map(({ q, a }) => ({ q, a }))),
         ]}
       />
       <Header />
 
       <Box component="main" id="content">
-        {/* Hero: 5/7, the still on a plate that bleeds right, a stat crossing its edge. */}
+        {/* Hero: badge and lead, plus a right-hand plate — one photo per seat. */}
         <Section tone="soft" size="lg" sx={[bandClipSx, { pt: { xs: 5, md: 8 }, pb: { xs: 8, md: 11 } }]}>
           <Box
             sx={{
-              position: 'relative',
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 6fr) minmax(0, 6fr)', lg: 'minmax(0, 5fr) minmax(0, 7fr)' },
-              gap: { xs: 5, md: 4 },
+              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
+              gap: { xs: 4, md: 5 },
               alignItems: 'center',
             }}
           >
-            <GroundTexture side="left" sx={{ display: { xs: 'none', md: 'block' } }} />
-            <Box sx={{ position: 'relative' }}>
+            <Box sx={{ position: 'relative', maxWidth: 640 }}>
+              <GroundTexture side="left" sx={{ display: { xs: 'none', md: 'block' } }} />
               <AnimateOnScroll delay={40}>
-                <Box sx={{ mb: 2.5 }}>
-                  <TierBadge featured>{t(`solutions:${audience}.badge`)}</TierBadge>
-                </Box>
+                <Typography
+                  component="h1"
+                  sx={{
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3.25rem' },
+                    fontWeight: 800,
+                    lineHeight: 1.15,
+                    letterSpacing: '-0.02em',
+                    color: soft.text,
+                    textWrap: 'balance',
+                    mb: 2.5,
+                  }}
+                >
+                  {badgeLead}
+                  {badgeAccent && (
+                    <Box component="span" sx={clippedGradientSx(gradients.goldText)}>
+                      {badgeAccent}
+                    </Box>
+                  )}
+                </Typography>
               </AnimateOnScroll>
-              <SectionHeader
-                level="h1"
-                align="left"
-                title={t(`solutions:${audience}.title`)}
-                titleAccent={t(`solutions:${audience}.titleAccent`)}
-              />
               <AnimateOnScroll delay={160}>
-                <Typography sx={{ color: soft.textSecondary, fontSize: { xs: '1.1rem', md: '1.2rem' }, lineHeight: 1.6, maxWidth: 480, mt: 2.5, mb: 4 }}>
+                <Typography sx={{ color: soft.textSecondary, fontSize: { xs: '1.1rem', md: '1.2rem' }, lineHeight: 1.6 }}>
                   {t(`solutions:${audience}.lead`)}
                 </Typography>
               </AnimateOnScroll>
-              <AnimateOnScroll delay={240}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.75, '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } } }}>
-                  <NeuButton tone="accent" {...(primary.to ? { to: primary.to } : {})}>
-                    {primary.label}
-                  </NeuButton>
-                  <NeuButton tone="raised" onClick={() => scrollToSection('chapters')} startIcon={<PlayArrowRoundedIcon />}>
-                    {t('solutions:common.watch')}
-                  </NeuButton>
-                </Box>
-              </AnimateOnScroll>
             </Box>
-
-            <AnimateOnScroll delay={200} direction="right">
-              <Box sx={{ position: 'relative' }}>
-                <MediaPlate bleed="right" caption={t(`solutions:${audience}.heroCaption`)}>
-                  <MediaWell
-                    ratio="16/10"
-                    src={config.hero.still}
-                    alt={t(`solutions:${audience}.heroAlt`)}
-                    priority
-                    sizes="(min-width: 1200px) 60vw, (min-width: 900px) 50vw, 100vw"
-                  />
-                </MediaPlate>
-                <StatTile
-                  variant="float"
-                  eyebrow={t(`solutions:${audience}.stat.eyebrow`)}
-                  value={t(`solutions:${audience}.stat.value`)}
-                  unit={t(`solutions:${audience}.stat.unit`)}
-                  sub={t(`solutions:${audience}.stat.sub`)}
-                  sx={{
-                    position: { xs: 'static', md: 'absolute' },
-                    left: { md: -24, lg: -48 },
-                    bottom: { md: 44 },
-                    width: { xs: '100%', sm: 260, md: 236 },
-                    mt: { xs: 3, md: 0 },
-                    boxShadow: { xs: shadows.neuRaisedSm, md: shadows.neuFloat },
-                    zIndex: 2,
-                  }}
-                />
-              </Box>
+            <AnimateOnScroll delay={100} direction="right">
+              <MediaWell
+                ratio="4/5"
+                src={STILLS.heroPlate[audience]}
+                alt={t(`solutions:${audience}.heroImageAlt`)}
+                sizes="(min-width: 900px) 420px, (min-width: 600px) 420px, 80vw"
+                priority
+                sx={{ maxWidth: 420, mx: { xs: 'auto', md: 0 } }}
+              />
             </AnimateOnScroll>
           </Box>
         </Section>
@@ -172,37 +136,6 @@ export const SolutionPage = () => {
         </Section>
 
         <SolutionChapters chapters={config.chapters} audience={audience} />
-
-        <OnboardingTimeline />
-
-        {/* FAQ subset in the home page's 4/8 split. */}
-        <Section id="faq" size="lg">
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 4fr) minmax(0, 8fr)' }, gap: 4, alignItems: 'start' }}>
-            <StickyAside>
-              <SectionHeader
-                align="left"
-                gutter={false}
-                eyebrow={t('home:faq.eyebrow')}
-                title={t('home:faq.title')}
-                titleAccent={t('home:faq.titleAccent')}
-                description={t(`solutions:${audience}.faqIntro`)}
-              />
-            </StickyAside>
-            <FAQList items={faqItems} />
-          </Box>
-        </Section>
-
-        <SeatCrossLinks audience={audience} />
-
-        <ClosingSection
-          eyebrow={t('solutions:common.closing.eyebrow')}
-          title={t(`solutions:${audience}.closing.title`)}
-          titleAccent={t(`solutions:${audience}.closing.titleAccent`)}
-          body={t(`solutions:${audience}.closing.body`)}
-          primary={primary}
-          secondary={{ label: t('solutions:common.closing.ctaSecondary'), to: '/pricing' }}
-          strip={t('home:closing.strip')}
-        />
       </Box>
 
       <Footer />

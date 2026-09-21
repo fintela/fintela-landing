@@ -3,23 +3,24 @@ import type { DocSummary } from './types';
 /**
  * Documentation-specific presentation helpers.
  *
- * The section accents lean slate where the blog's card accents
- * (`src/blog/format.ts`) lean cobalt: the two card grids share typography,
- * spacing and code theme, and the badge colour is what tells a reader at a
- * glance whether they are looking at a section of the docs or a blog tag.
- * Every step clears 4.5:1 on white, since the colour is painted as chip text.
+ * The section accents lean mid-gray where the blog's card accents
+ * (`src/blog/format.ts`) lean the brand trio: the two card grids share
+ * typography, spacing and code theme, and the badge colour is what tells a
+ * reader at a glance whether they are looking at a section of the docs or a
+ * blog tag. Every step clears 4.5:1 on white, since the colour is painted as
+ * chip text.
  *
  * A section keeps its colour everywhere it appears — index badge, page eyebrow,
  * sidebar — because the colour is derived from the section name rather than
  * assigned per card.
  */
 const SECTION_ACCENTS = [
-  '#4a5b78', // slate 700
-  '#0b1a33', // cobalt 900
-  '#4a5b78', // slate 600
-  '#10264d', // slate 800
-  '#16325c', // cobalt 700
-  '#0b1a33', // slate 900
+  '#525252', // graphite 700
+  '#000000', // graphite 900
+  '#525252', // graphite 600
+  '#262626', // graphite 800
+  '#1a1a1a', // graphite 750
+  '#000000', // graphite 900b
 ] as const;
 
 export function sectionAccent(section: string): string {

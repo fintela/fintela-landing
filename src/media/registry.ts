@@ -28,8 +28,6 @@
 import { LNG_LABELS, SUPPORTED_LNGS } from '../i18n/config';
 import { registerPicture } from './picture';
 import type { Picture, PictureFraming } from './picture';
-import heroPlatformHome from '../assets/media/hero/platform-home-poster.jpg?w=768;1280&format=avif;webp;jpeg&as=picture';
-import heroBackdropPoster from '../assets/media/hero/backdrop-poster.jpg?w=828;1280;1920&format=avif;webp;jpeg&as=picture';
 import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
@@ -38,6 +36,9 @@ import audienceFunds from '../assets/media/audiences/funds.jpg?w=560;1120&format
 import audienceTeams from '../assets/media/audiences/teams.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceIndependents from '../assets/media/audiences/independents.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import solutionFunds from '../assets/media/solutions/funds-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
+import fundsHeroMeeting from '../assets/media/solutions/funds-hero-meeting.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
+import teamsHeroCollab from '../assets/media/solutions/teams-hero-collab.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
+import independentsHeroDesk from '../assets/media/solutions/independents-hero-desk.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
 import solutionTeams from '../assets/media/solutions/teams-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import solutionIndependents from '../assets/media/solutions/independents-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import fundsResearch from '../assets/media/solutions/chapters/funds-research.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
@@ -155,34 +156,6 @@ export const captionTracks = (video: VideoAsset) => {
   return SUPPORTED_LNGS.map((lang) => ({ lang, label: LNG_LABELS[lang], src: captions[lang] }));
 };
 
-/** The platform plate's poster is a frame of the ambient loop, already 16/10. */
-export const HERO_POSTER = still(heroPlatformHome);
-
-/** One width of the hero loop; HeroVideoBackdrop takes the first rung the viewport meets. */
-export interface HeroBackdropRung {
-  /** CSS px; matched with `(min-width: …)` when the video attaches. */
-  minWidth: number;
-  src: string;
-}
-
-/**
- * The full-bleed loop behind the hero copy (36 s, silent). The source promo
- * carries burnt-in captions in its bottom 200 px, so the master is cropped to
- * 1920×880; the hero's own fade covers what remains. That master is never
- * served: the loop sits blurred behind copy, so a 1280 rung for desktops and
- * a 960 rung for tablets are all the pixels anyone can see, and below 600 px
- * the poster stands in (scripts/encode-media.sh, audit IMG-01). The poster is
- * the LCP image of the home page — the `Picture` itself, not its URL, because
- * HeroVideoBackdrop also preloads its AVIF rungs.
- */
-export const HERO_BACKDROP = {
-  poster: heroBackdropPoster,
-  rungs: [
-    { minWidth: 1024, src: mediaUrl('hero-backdrop-1280.mp4') },
-    { minWidth: 600, src: mediaUrl('hero-backdrop-960.mp4') },
-  ] as readonly HeroBackdropRung[],
-} as const;
-
 export const STILLS = {
   liveOps: still(liveOps),
   /**
@@ -202,6 +175,12 @@ export const STILLS = {
     funds: still(solutionFunds),
     teams: still(solutionTeams),
     independents: still(solutionIndependents),
+  },
+  /** Each solution hero's right-hand plate, 4/5 — one photo per seat. */
+  heroPlate: {
+    funds: still(fundsHeroMeeting),
+    teams: still(teamsHeroCollab),
+    independents: still(independentsHeroDesk),
   },
   /** Product frames for the solution chapters, one per chapter. */
   chapters: {

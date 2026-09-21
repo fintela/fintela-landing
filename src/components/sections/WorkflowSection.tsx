@@ -5,23 +5,218 @@ import { useTranslation } from 'react-i18next';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { gradients, palette, shadows, soft } from '../../theme/tokens';
-import { clippedGradientSx } from '../../theme/neu';
+import { fonts, gradients, palette, shadows, soft } from '../../theme/tokens';
+import { inkSurfaceSx } from '../../theme/neu';
 import { NeuPanel } from '../primitives/NeuPanel';
+import { CheckWell } from '../primitives/CheckWell';
 import { Groove } from '../primitives/Groove';
-import { PlatformShowcase } from './PlatformShowcase';
+import fintelaMark from '../../assets/logos/fintela_logo_1.jpg';
+
+/**
+ * Google's favicon service: unlike a marketing-enrichment API (Clearbit and
+ * similar), this domain isn't on ad-block/privacy lists, so it actually loads
+ * for every visitor instead of silently failing for most of them.
+ */
+const favicon = (domain: string) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+
+/**
+ * A handful of instruments across the markets an asset group can mix —
+ * equities (some of which also trade as options on the same ticker) and
+ * crypto — shown as a small looping logo strip under the Asset Groups node.
+ */
+const ASSET_LOGOS = [
+  { symbol: 'AAPL', alt: 'Apple', src: favicon('apple.com') },
+  { symbol: 'MSFT', alt: 'Microsoft', src: favicon('microsoft.com') },
+  { symbol: 'NVDA', alt: 'NVIDIA', src: favicon('nvidia.com') },
+  { symbol: 'AMZN', alt: 'Amazon', src: favicon('amazon.com') },
+  { symbol: 'TSLA', alt: 'Tesla', src: favicon('tesla.com') },
+  { symbol: 'GOOGL', alt: 'Alphabet', src: favicon('google.com') },
+  { symbol: 'META', alt: 'Meta Platforms', src: favicon('meta.com') },
+  {
+    symbol: 'BTC',
+    alt: 'Bitcoin',
+    src: 'https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/btc.png',
+  },
+  {
+    symbol: 'ETH',
+    alt: 'Ethereum',
+    src: 'https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/eth.png',
+  },
+  {
+    symbol: 'SOL',
+    alt: 'Solana',
+    src: 'https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/sol.png',
+  },
+] as const;
+
+/** Duplicated once so the marquee can loop by translating exactly -50%. */
+const MARQUEE_LOGOS = [...ASSET_LOGOS, ...ASSET_LOGOS];
+
+/** The mini logo carousel under the Asset Groups node's description. */
+const AssetLogoMarquee = () => (
+  <Box
+    aria-hidden
+    sx={{
+      mt: 1,
+      overflow: 'hidden',
+      maskImage: 'linear-gradient(90deg, transparent, black 6%, black 94%, transparent)',
+      WebkitMaskImage: 'linear-gradient(90deg, transparent, black 6%, black 94%, transparent)',
+    }}
+  >
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 1.25,
+        width: 'max-content',
+        mx: 'auto',
+        animation: 'assetLogoMarquee 22s linear infinite',
+        '@keyframes assetLogoMarquee': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+      }}
+    >
+      {MARQUEE_LOGOS.map((asset, i) => (
+        <Box
+          key={`${asset.symbol}-${i}`}
+          title={asset.symbol}
+          sx={{
+            width: 36,
+            height: 36,
+            flexShrink: 0,
+            borderRadius: '50%',
+            bgcolor: soft.surfaceRaised,
+            border: `1px solid ${palette.border}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 0.75,
+          }}
+        >
+          <Box
+            component="img"
+            src={asset.src}
+            alt={asset.alt}
+            width={20}
+            height={20}
+            loading="lazy"
+            sx={{ width: 20, height: 20, objectFit: 'contain' }}
+          />
+        </Box>
+      ))}
+    </Box>
+  </Box>
+);
+
+/** A short, illustrative strategy — not real trading logic — under the Strategies node. */
+const CODE_LINES = [
+  { indent: 0, tokens: [{ t: 'def', kw: true }, { t: ' strategy(data):' }] },
+  { indent: 1, tokens: [{ t: 'fast = sma(data.close, 10)' }] },
+  { indent: 1, tokens: [{ t: 'slow = sma(data.close, 50)' }] },
+  { indent: 1, tokens: [{ t: 'if', kw: true }, { t: ' fast > slow:' }] },
+  { indent: 2, tokens: [{ t: 'return', kw: true }, { t: ' Signal.LONG' }] },
+  { indent: 1, tokens: [{ t: 'return', kw: true }, { t: ' Signal.FLAT' }] },
+] as const;
+
+/** The mini "code simulation" under the Strategies node's description. */
+const StrategyCodeSample = () => (
+  <Box
+    aria-hidden
+    sx={{
+      ...inkSurfaceSx,
+      p: 1.75,
+      fontFamily: fonts.mono,
+      fontSize: '0.76rem',
+      lineHeight: 1.75,
+    }}
+  >
+    {CODE_LINES.map((line, i) => (
+      <Box key={i} sx={{ pl: line.indent * 2, whiteSpace: 'pre' }}>
+        {line.tokens.map((token, j) => (
+          <Box
+            key={j}
+            component="span"
+            sx={{ color: 'kw' in token && token.kw ? palette.yellow : soft.onInk }}
+          >
+            {token.t}
+          </Box>
+        ))}
+      </Box>
+    ))}
+  </Box>
+);
+
+/** A steady upward curve under the Portfolios node — a bullish equity curve. */
+const BULLISH_POINTS = [8, 14, 11, 18, 16, 24, 21, 30, 27, 36, 33, 42, 40, 50, 47, 58] as const;
+
+const BullishChart = () => {
+  const w = 260;
+  const h = 64;
+  const max = Math.max(...BULLISH_POINTS);
+  const min = Math.min(...BULLISH_POINTS);
+  const points = BULLISH_POINTS.map((v, i) => {
+    const x = (i / (BULLISH_POINTS.length - 1)) * w;
+    const y = h - 6 - ((v - min) / (max - min)) * (h - 12);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const line = points.join(' ');
+  const area = `0,${h} ${line} ${w},${h}`;
+  return (
+    <Box aria-hidden component="svg" viewBox={`0 0 ${w} ${h}`} sx={{ width: '100%', height: 'auto', display: 'block' }}>
+      <defs>
+        <linearGradient id="bullishFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={palette.success} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={palette.success} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={area} fill="url(#bullishFill)" />
+      <polyline points={line} fill="none" stroke={palette.success} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Box>
+  );
+};
+
+/** The three brokerages under the Connect Broker node — logos only, no scroll needed for three. */
+const BROKER_LOGOS = [
+  { name: 'Webull', src: favicon('webull.com') },
+  { name: 'TradeStation', src: favicon('tradestation.com') },
+  { name: 'Alpaca', src: favicon('alpaca.markets') },
+] as const;
+
+const BrokerLogos = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.25, flexWrap: 'wrap', mt: -1 }}>
+    {BROKER_LOGOS.map((b) => (
+      <Box
+        key={b.name}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          px: 1.25,
+          py: 0.75,
+          borderRadius: '999px',
+          bgcolor: soft.surfaceRaised,
+          border: `1px solid ${palette.border}`,
+        }}
+      >
+        <Box component="img" src={b.src} alt="" width={18} height={18} loading="lazy" sx={{ width: 18, height: 18, objectFit: 'contain' }} />
+        <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: soft.text }}>{b.name}</Typography>
+      </Box>
+    ))}
+  </Box>
+);
 
 const nodes = [
   { cx: 330, cy: 100, num: 1, key: 'dataClusters', lx: 330, ly: 48, la: 'middle' as const },
   { cx: 469, cy: 180, num: 2, key: 'strategies', lx: 516, ly: 174, la: 'start' as const },
-  { cx: 469, cy: 340, num: 3, key: 'fitness', lx: 516, ly: 334, la: 'start' as const },
-  { cx: 330, cy: 420, num: 4, key: 'studies', lx: 330, ly: 468, la: 'middle' as const },
-  { cx: 191, cy: 340, num: 5, key: 'portfolios', lx: 144, ly: 334, la: 'end' as const },
-  { cx: 191, cy: 180, num: 6, key: 'riskManagers', lx: 144, ly: 174, la: 'end' as const },
+  { cx: 469, cy: 340, num: 3, key: 'studies', lx: 516, ly: 334, la: 'start' as const },
+  { cx: 330, cy: 420, num: 4, key: 'portfolios', lx: 330, ly: 468, la: 'middle' as const },
+  { cx: 191, cy: 340, num: 5, key: 'riskManagers', lx: 144, ly: 334, la: 'end' as const },
+  { cx: 191, cy: 180, num: 6, key: 'connectBroker', lx: 144, ly: 174, la: 'end' as const },
 ] as const;
 
 const hexPoints = nodes.map((n) => `${n.cx},${n.cy}`).join(' ');
-const statKeys = ['conceptToLive', 'experiments', 'faster'] as const;
 
 /** Autoplay tick and how long a manual pick holds the carousel before it resumes. */
 const AUTOPLAY_MS = 4200;
@@ -64,8 +259,7 @@ function useAutoplayAllowed(target: RefObject<HTMLElement | null>): boolean {
 }
 
 /**
- * Band 3. Opens with the product plate and client logos (PlatformShowcase).
- * The hexagon (left) is the map of the six objects the platform is
+ * Band 3. The hexagon (left) is the map of the six objects the platform is
  * built from; the panel (right) is a carousel that cycles through each one's
  * summary, in step with the highlighted node. Hovering a node or picking a
  * dot jumps the carousel there and pauses autoplay for a while.
@@ -99,17 +293,61 @@ export const WorkflowSection = () => {
   };
 
   const activeNode = nodes[active];
+  const nodeExtra =
+    activeNode.key === 'dataClusters' ? (
+      <AssetLogoMarquee />
+    ) : activeNode.key === 'strategies' ? (
+      <StrategyCodeSample />
+    ) : activeNode.key === 'portfolios' ? (
+      <BullishChart />
+    ) : activeNode.key === 'connectBroker' ? (
+      <BrokerLogos />
+    ) : null;
 
   return (
-    <Section id="platform" size="lg">
+    <Section
+      id="platform"
+      size="lg"
+      background={
+        <Box
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            right: { xs: -160, md: -220 },
+            width: { xs: 420, md: 620 },
+            height: { xs: 420, md: 620 },
+            background:
+              'radial-gradient(circle, rgba(232,185,35,0.28) 0%, rgba(241,53,60,0.18) 45%, rgba(26,26,26,0) 72%)',
+            filter: 'blur(40px)',
+            pointerEvents: 'none',
+            zIndex: 0,
+          }}
+        />
+      }
+    >
       <SectionHeader
+        align="left"
         eyebrow={t('workflow.eyebrow')}
         title={t('workflow.title')}
         titleAccent={t('workflow.titleAccent')}
         description={t('workflow.description')}
       />
 
-      <PlatformShowcase />
+      <AnimateOnScroll delay={190}>
+        <Box
+          component="ul"
+          role="list"
+          sx={{ m: 0, p: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', columnGap: 3.5, rowGap: 1.5, mb: { xs: 5, md: 6 } }}
+        >
+          {(t('workflow.pipelineHighlights', { returnObjects: true }) as string[]).map((step) => (
+            <Box component="li" key={step} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckWell size={18} />
+              <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: soft.text }}>{step}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </AnimateOnScroll>
 
       <AnimateOnScroll delay={150}>
         <Box
@@ -163,13 +401,18 @@ export const WorkflowSection = () => {
                 strokeLinejoin="round"
               />
 
-              <circle cx="330" cy="260" r="52" fill={soft.wash} stroke={soft.ring} strokeWidth="1.5" />
-              <text x="330" y="255" textAnchor="middle" fontSize="11" fontWeight="800" fill={palette.navy} fontFamily="Inter, sans-serif" letterSpacing="1.8">
-                {t('workflow.centerName')}
-              </text>
-              <text x="330" y="271" textAnchor="middle" fontSize="8" fill={palette.textSubtle} fontFamily="Inter, sans-serif" letterSpacing="0.5">
-                {t('workflow.centerSub')}
-              </text>
+              <clipPath id="centerMarkClip">
+                <circle cx="330" cy="260" r="36" />
+              </clipPath>
+              <image
+                href={fintelaMark}
+                x="298"
+                y="228"
+                width="64"
+                height="64"
+                clipPath="url(#centerMarkClip)"
+                preserveAspectRatio="xMidYMid meet"
+              />
 
               {nodes.map((node, idx) => {
                 const isActive = active === idx;
@@ -247,6 +490,8 @@ export const WorkflowSection = () => {
               sx={{
                 flexGrow: 1,
                 minHeight: { xs: 236, sm: 160, md: 0 },
+                display: 'flex',
+                flexDirection: 'column',
                 animation: 'workflowFade 0.35s ease',
                 '@keyframes workflowFade': {
                   from: { opacity: 0, transform: 'translateY(6px)' },
@@ -289,6 +534,7 @@ export const WorkflowSection = () => {
               <Typography sx={{ fontSize: '0.92rem', color: soft.textSecondary, lineHeight: 1.7 }}>
                 {t(`workflow.nodes.${activeNode.key}.desc`)}
               </Typography>
+              {nodeExtra && <Box sx={{ mt: 4 }}>{nodeExtra}</Box>}
             </Box>
 
             <Groove sx={{ my: 3 }} />
@@ -318,37 +564,6 @@ export const WorkflowSection = () => {
                     transition: 'width 0.25s ease, background 0.25s ease',
                   }}
                 />
-              ))}
-            </Box>
-
-            <Groove sx={{ my: 3 }} />
-
-            <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'space-between' }, gap: 2, flexWrap: 'wrap' }}>
-              {statKeys.map((key) => (
-                <Box key={key} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                  <Typography
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: { xs: '1.2rem', md: '1.4rem' },
-                      ...clippedGradientSx(gradients.goldText),
-                      lineHeight: 1,
-                    }}
-                  >
-                    {t(`workflow.stats.${key}.num`)}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '0.68rem',
-                      color: palette.textSubtle,
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.08em',
-                      mt: 0.5,
-                    }}
-                  >
-                    {t(`workflow.stats.${key}.label`)}
-                  </Typography>
-                </Box>
               ))}
             </Box>
           </NeuPanel>

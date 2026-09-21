@@ -88,8 +88,8 @@
         },
         "institutional": {
           "name": "Institutional",
-          "price": "Personalizado",
-          "period": "",
+          "price": "$599",
+          "period": "/mês",
           "badge": "",
           "description": "Feito para equipes. Com a sua marca.",
           "features": [
@@ -101,7 +101,7 @@
             "Marca personalizada",
             "Possibilidade de white-label",
             "Acompanhamento prático de fluxo de trabalho e estratégia",
-            "SSO e gestão de usuários"
+            "2 usuários incluídos, +$299.50/usuário/mês"
           ],
           "overageRate": "$0.0125/token",
           "support": "CSM dedicado + SLA",
@@ -122,7 +122,7 @@
           "label": "Preço",
           "trader": "$79/mês ($787/ano)",
           "quant": "$159/mês ($1,589/ano)",
-          "institutional": "Personalizado — a negociar"
+          "institutional": "$599/mês (2 usuários incluídos)"
         },
         "tokenPool": {
           "label": "Reserva de tokens",
@@ -197,7 +197,7 @@
           "label": "Acompanhamento prático de fluxo de trabalho e estratégia"
         },
         "ssoSeatManagement": {
-          "label": "SSO e gestão de usuários"
+          "label": "Usuários incluídos (+$299.50/usuário/mês a partir do terceiro)"
         }
       }
     },
@@ -210,8 +210,8 @@
   },
   "blog": {
     "hero": {
-      "chip": "Análises e tutoriais",
-      "title": "Blog da Fintela",
+      "chip": "Pesquisa",
+      "title": "Fintela Research",
       "subtitle": "Análises, tutoriais e melhores práticas para finanças quantitativas e trading algorítmico."
     },
     "readMore": "Leia mais",
@@ -302,6 +302,1196 @@
       "docs": "Documentação"
     }
   },
+  "productTrain": {
+    "title": "Train",
+    "body": "Esta página estará disponível em breve.",
+    "home": "Voltar ao início"
+  },
+  "samplers": {
+    "seo": {
+      "title": "Motor de Otimização | Fintela",
+      "description": "Sete algoritmos de busca, como escolher o certo, e o motor que os executa em paralelo, se recupera de falhas e troca seu sampler por uma grade quando o espaço é finito."
+    },
+    "eyebrow": "Como os estudos buscam",
+    "title": "Sete formas de explorar",
+    "titleAccent": "um espaço de parâmetros.",
+    "description": "O sampler é o algoritmo que decide qual combinação de parâmetros o próximo trial de um estudo testa. Cinco algoritmos clássicos, mais dois experimentais que rodam em um computador quântico simulado, todos coordenados pelo mesmo motor de otimização que escala, se recupera de falhas e mantém seu estudo rodando.",
+    "algorithms": {
+      "eyebrow": "Os sete samplers",
+      "title": "O mesmo campo, sete formas de buscar nele"
+    },
+    "items": {
+      "tpe": {
+        "title": "TPE",
+        "desc": "Aprende com os trials já executados: modela os resultados \"bons\" e \"ruins\" como duas densidades separadas, e propõe pontos mais prováveis sob a boa. O padrão da Fintela, e a escolha certa para a maioria das buscas, especialmente com orçamentos modestos, porque extrai sinal útil de relativamente poucos trials.",
+        "bullets": [
+          {
+            "label": "Nome completo",
+            "desc": "Tree-structured Parzen Estimator."
+          },
+          {
+            "label": "Ideal para",
+            "desc": "Uso geral, com tipos de parâmetros mistos."
+          },
+          {
+            "label": "Paralelismo",
+            "desc": "Roda em múltiplos workers; se ajusta sozinho para que não proponham combinações quase idênticas ao mesmo tempo."
+          },
+          {
+            "label": "Orçamento recomendado",
+            "desc": "100 a 1.000 trials."
+          }
+        ]
+      },
+      "cmaEs": {
+        "title": "CMA-ES",
+        "desc": "Evolui uma população de candidatos, adaptando a média e a covariância de uma Gaussiana multivariada em direção às regiões com melhor desempenho a cada geração. Funciona melhor com parâmetros contínuos e um orçamento de trials grande.",
+        "bullets": [
+          {
+            "label": "Nome completo",
+            "desc": "Covariance Matrix Adaptation Evolution Strategy."
+          },
+          {
+            "label": "Ideal para",
+            "desc": "Alta paralelização, com parâmetros contínuos."
+          },
+          {
+            "label": "Paralelismo",
+            "desc": "Roda em múltiplos workers em paralelo."
+          },
+          {
+            "label": "Orçamento recomendado",
+            "desc": "1.000 a 10.000 trials."
+          }
+        ]
+      },
+      "nsga2": {
+        "title": "NSGA-II",
+        "desc": "Um algoritmo genético populacional: em vez de propor uma combinação por vez, avalia um lote inteiro junto, o que o torna naturalmente adequado para rodar muitos trials em paralelo. A Fintela sempre o roda contra um único objetivo, mesmo que algoritmos assim sejam frequentemente usados para otimização multiobjetivo em outros contextos.",
+        "bullets": [
+          {
+            "label": "Nome completo",
+            "desc": "Non-dominated Sorting Genetic Algorithm II."
+          },
+          {
+            "label": "Ideal para",
+            "desc": "Orçamentos grandes, com muitos parâmetros categóricos ou discretos."
+          },
+          {
+            "label": "Paralelismo",
+            "desc": "Roda em múltiplos workers; o tamanho do lote se ajusta automaticamente."
+          },
+          {
+            "label": "Orçamento recomendado",
+            "desc": "100 a 10.000 trials."
+          }
+        ]
+      },
+      "qmc": {
+        "title": "QMC",
+        "desc": "Usa uma sequência de baixa discrepância em vez de pura aleatoriedade, distribuindo os trials de forma mais uniforme pelo espaço de busca. Útil para varreduras de sensibilidade, ou uma primeira passada antes de comprometer um orçamento maior a um sampler mais inteligente.",
+        "bullets": [
+          {
+            "label": "Nome completo",
+            "desc": "Quasi-Monte Carlo."
+          },
+          {
+            "label": "Ideal para",
+            "desc": "Cobertura sistemática, ou como uma linha de base melhorada."
+          },
+          {
+            "label": "Paralelismo",
+            "desc": "Roda em múltiplos workers, sem coordenação necessária."
+          },
+          {
+            "label": "Orçamento recomendado",
+            "desc": "Sem limite."
+          }
+        ]
+      },
+      "random": {
+        "title": "Random",
+        "desc": "Amostragem aleatória uniforme, sem memória de trials anteriores. Escala para qualquer número de workers em paralelo sem coordenação alguma: a linha de base honesta que qualquer sampler mais inteligente deveria superar.",
+        "bullets": [
+          {
+            "label": "Nome completo",
+            "desc": "Busca aleatória (Random Search)."
+          },
+          {
+            "label": "Ideal para",
+            "desc": "Uma linha de base de controle, ou espaços de busca muito grandes."
+          },
+          {
+            "label": "Paralelismo",
+            "desc": "Roda em múltiplos workers, sem coordenação necessária."
+          },
+          {
+            "label": "Orçamento recomendado",
+            "desc": "Sem limite."
+          }
+        ]
+      },
+      "qaoa": {
+        "title": "QAOA",
+        "desc": "Experimental: propõe cada combinação com um circuito quântico simulado em vez de estatística clássica. Emulado em software: não há hardware quântico real envolvido, nem vantagem de velocidade atual sobre os samplers clássicos. Começa com trials aleatórios enquanto aquece, e volta para amostragem aleatória se algo falhar ou o espaço for grande demais.",
+        "bullets": [
+          {
+            "label": "Nome completo",
+            "desc": "Quantum Approximate Optimization Algorithm (emulado)."
+          },
+          {
+            "label": "Ideal para",
+            "desc": "Experimentar busca inspirada em computação quântica."
+          },
+          {
+            "label": "Paralelismo",
+            "desc": "Roda em um único worker, porque mantém um modelo interno que não pode ser dividido."
+          },
+          {
+            "label": "Orçamento recomendado",
+            "desc": "50 a 500 trials."
+          }
+        ]
+      },
+      "qKernel": {
+        "title": "Q-Kernel",
+        "desc": "Também experimental: otimização bayesiana no espírito do TPE, mas seu modelo de similaridade é calculado com um mapa de características quântico simulado em vez de um kernel clássico. Compartilha o mesmo aquecimento aleatório e fallback automático do QAOA.",
+        "bullets": [
+          {
+            "label": "Nome completo",
+            "desc": "Quantum Kernel Bayesian Optimization (emulado)."
+          },
+          {
+            "label": "Ideal para",
+            "desc": "Experimentar um kernel de similaridade quântico simulado."
+          },
+          {
+            "label": "Paralelismo",
+            "desc": "Roda em um único worker."
+          },
+          {
+            "label": "Orçamento recomendado",
+            "desc": "30 a 300 trials."
+          }
+        ]
+      }
+    },
+    "picking": {
+      "eyebrow": "Como escolher",
+      "title": "Um guia rápido para a sua situação",
+      "facts": {
+        "unsure": {
+          "label": "Não tem certeza?",
+          "value": "Comece com TPE: o padrão, e a escolha certa para a maioria das buscas."
+        },
+        "continuous": {
+          "label": "Tudo contínuo, orçamento grande, muitos workers",
+          "value": "CMA-ES."
+        },
+        "categorical": {
+          "label": "Muitos parâmetros categóricos, orçamento grande",
+          "value": "NSGA-II."
+        },
+        "coverage": {
+          "label": "Cobertura uniforme, ou uma varredura de sensibilidade",
+          "value": "QMC."
+        },
+        "baseline": {
+          "label": "Uma linha de base de controle a superar",
+          "value": "Random."
+        },
+        "quantum": {
+          "label": "Quer experimentar busca quântica",
+          "value": "QAOA ou Q-Kernel."
+        }
+      }
+    },
+    "engine": {
+      "eyebrow": "O motor por trás da busca",
+      "title": "O que realmente acontece quando você lança um estudo",
+      "description": "O sampler decide o que testar; o motor de otimização decide como rodar isso: quantos workers, em que ordem, e o que fazer quando algo dá errado.",
+      "items": {
+        "automaticScaling": {
+          "title": "Escalonamento automático de workers",
+          "desc": "A Fintela decide quantos workers seu estudo precisa, sem que você precise configurar nada.",
+          "bullets": [
+            {
+              "label": "Orçamento maior, mais workers",
+              "desc": "um estudo de 20 trials não recebe o mesmo poder de computação que um de 2.000."
+            },
+            {
+              "label": "Estratégias e fitness externos",
+              "desc": "colapsam o estudo para um único worker, respeitando o limite de concorrência que você declarou."
+            },
+            {
+              "label": "Nova tentativa automática",
+              "desc": "se um worker fica sem memória, a Fintela tenta novamente com uma alocação maior, até três vezes, sem cobrar de novo pelo que já rodou."
+            }
+          ]
+        },
+        "batchPipeline": {
+          "title": "Lotes em pipeline, não trial por trial",
+          "desc": "Os trials se movem em lotes, e enquanto um está sendo salvo, o próximo já está sendo simulado.",
+          "bullets": [
+            {
+              "label": "Dados processados uma vez por lote",
+              "desc": "não uma vez por trial, para não repetir trabalho."
+            },
+            {
+              "label": "Salvamento imediato",
+              "desc": "cada lote concluído é salvo na hora; você nunca vê um estudo pela metade."
+            },
+            {
+              "label": "Isolamento",
+              "desc": "se um trial falha, só ele falha; o resto do lote e do estudo continuam."
+            }
+          ]
+        },
+        "finiteGrid": {
+          "title": "Grades finitas substituem seu sampler",
+          "desc": "Se o seu espaço de busca é pequeno o suficiente para ser enumerado por completo, a Fintela detecta isso antes de lançar o estudo.",
+          "bullets": [
+            {
+              "label": "Até 1.000.000 de combinações",
+              "desc": "a Fintela muda automaticamente para uma busca em grade: cada combinação testada exatamente uma vez."
+            },
+            {
+              "label": "Seu sampler simplesmente não se aplica nesse caso",
+              "desc": "exceto QAOA e Q-Kernel, que são isentos e mantêm seu comportamento normal."
+            },
+            {
+              "label": "O construtor avisa você",
+              "desc": "com o tamanho exato do espaço, antes de você gastar tokens."
+            }
+          ]
+        },
+        "failureRecovery": {
+          "title": "Recuperação automática de falhas",
+          "desc": "Um estudo não cai por causa de um único trial, um único worker, ou um pico de memória.",
+          "bullets": [
+            {
+              "label": "Isolamento por trial",
+              "desc": "um erro em um trial não afeta o resto do lote nem do estudo."
+            },
+            {
+              "label": "Auto-stop antecipado",
+              "desc": "se muitos trials falham, o estudo para sozinho antes de continuar gastando seu orçamento."
+            },
+            {
+              "label": "Tudo o que já foi concluído permanece",
+              "desc": "retomar ou relançar um estudo parcial só calcula o que falta, não do zero."
+            },
+            {
+              "label": "Reembolso automático",
+              "desc": "a Fintela compara o que foi cobrado no lançamento contra o custo real e reembolsa a diferença."
+            }
+          ]
+        },
+        "liveProgress": {
+          "title": "Progresso e saúde ao vivo",
+          "desc": "Nada é empurrado para você trial por trial: o app se mantém atualizado verificando o estudo por você.",
+          "bullets": [
+            {
+              "label": "A cada ~5 segundos",
+              "desc": "enquanto o estudo está ativo, os indicadores de status, progresso e saúde se atualizam."
+            },
+            {
+              "label": "Progress e Health",
+              "desc": "que fração do seu orçamento foi resolvida, e que fração do que foi resolvido teve sucesso."
+            },
+            {
+              "label": "Nunca um snapshot antigo",
+              "desc": "o progresso que você vê sempre reflete o número ao vivo, não uma foto de um minuto atrás."
+            }
+          ]
+        },
+        "sameEngine": {
+          "title": "O mesmo motor, do sandbox ao estudo completo",
+          "desc": "O motor de simulação por trás de um único backtest no sandbox é exatamente o mesmo que roda cada trial dentro de um estudo completo.",
+          "bullets": [
+            {
+              "label": "Sem surpresas",
+              "desc": "uma estratégia que se comporta de certa forma em um teste rápido se comporta da mesma forma dentro de um estudo; a única diferença é quantas combinações são testadas."
+            },
+            {
+              "label": "Risk managers avaliados por dia simulado",
+              "desc": "dentro de cada trial, não uma vez por trial."
+            },
+            {
+              "label": "Código externo, mesmas regras",
+              "desc": "a Fintela tenta novamente automaticamente em falhas de conexão, nunca em um endpoint simplesmente lento."
+            }
+          ]
+        }
+      }
+    },
+    "limits": {
+      "eyebrow": "O que não faz",
+      "title": "Os limites, sem letras miúdas",
+      "facts": {
+        "noMultiObjective": {
+          "label": "Sem multiobjetivo",
+          "value": "Cada estudo otimiza um único objetivo. Para equilibrar duas metas, construa isso em uma única fitness function personalizada."
+        },
+        "noSeed": {
+          "label": "Sem seed",
+          "value": "Não há configuração de reprodutibilidade: TPE, CMA-ES, Random, QMC e NSGA-II exploram uma sequência diferente de trials a cada execução."
+        },
+        "samplerLocked": {
+          "label": "O sampler trava ao lançar",
+          "value": "Você só pode mudá-lo enquanto o estudo ainda é um rascunho; duplique o estudo para testar outro."
+        },
+        "noWorkerControl": {
+          "label": "Sem controle manual de workers",
+          "value": "Quantos workers rodam seu estudo é decidido automaticamente pela Fintela, com base no seu tipo de execução, sampler e orçamento de trials."
+        }
+      }
+    },
+    "note": "Estas são descrições gerais de cada família de algoritmos, como orientação, não uma especificação exata da implementação da Fintela.",
+    "docsLinks": {
+      "samplerSelection": {
+        "label": "Leia o guia completo de samplers",
+        "href": "/docs/sampler-selection"
+      },
+      "optimizerArchitecture": {
+        "label": "Leia como funciona o motor de otimização",
+        "href": "/docs/optimizer-architecture"
+      }
+    }
+  },
+  "inDepthAnalysis": {
+    "seo": {
+      "title": "Análise em Profundidade | Data Explorer da Fintela",
+      "description": "Explore cada dataset que alimenta a plataforma e consulte um relatório completo de robustez, clustering e otimização para qualquer busca de estratégias."
+    },
+    "hero": {
+      "moduleTag": "Data Explorer",
+      "eyebrow": "Produtos",
+      "title": "Análise em",
+      "titleAccent": "Profundidade.",
+      "description": "Explore cada dataset que alimenta a plataforma: cobertura ao vivo, atualidade e registros brutos. Data Library: cada dataset que alimenta a plataforma, em um só lugar. Escolha um dataset para inspecionar sua cobertura por ticker, sua distribuição temporal e seus registros brutos, com contagens de linhas e atualidade ao vivo abaixo."
+    },
+    "library": {
+      "meta": {
+        "rows": "Linhas",
+        "window": "Janela",
+        "updated": "Atualizado"
+      },
+      "freshness": {
+        "today": "Hoje",
+        "daysAgo": "há {{count}}d",
+        "none": "—"
+      },
+      "categories": {
+        "market": {
+          "title": "Dados de Mercado"
+        },
+        "fundamentals": {
+          "title": "Fundamentos"
+        },
+        "corporateActions": {
+          "title": "Ações Corporativas"
+        },
+        "eventsCalendar": {
+          "title": "Calendário de Eventos"
+        },
+        "alternativeData": {
+          "title": "Dados Alternativos"
+        },
+        "macroRates": {
+          "title": "Macro e Taxas"
+        },
+        "reference": {
+          "title": "Referência"
+        }
+      },
+      "datasets": {
+        "priceData": {
+          "name": "Dados de Preços",
+          "desc": "Dados diários OHLCV para todos os tickers rastreados."
+        },
+        "technicalIndicators": {
+          "name": "Indicadores Técnicos",
+          "desc": "Indicadores móveis calculados e armazenados na tabela de indicadores."
+        },
+        "marketCapHistory": {
+          "name": "Histórico de Capitalização de Mercado",
+          "tag": "universo S&P 500",
+          "desc": "Capitalização de mercado histórica diária por ticker."
+        },
+        "usEquityFundamentals": {
+          "name": "Fundamentos de Ações dos EUA",
+          "desc": "Instantâneas fundamentalistas de ações listadas nos EUA."
+        },
+        "cryptoFundamentals": {
+          "name": "Fundamentos de Cripto",
+          "desc": "Instantâneas on-chain de ativos cripto."
+        },
+        "analystTrends": {
+          "name": "Tendências de Analistas",
+          "tag": "universo S&P 500",
+          "desc": "Estimativas prospectivas de analistas por ticker (consenso de EPS/receita, revisões de 30 dias)."
+        },
+        "fundFundamentals": {
+          "name": "Fundamentos de Fundos",
+          "desc": "Instantâneas de ETF/fundos mútuos (AUM, taxa de administração, yield, número de holdings)."
+        },
+        "dividends": {
+          "name": "Dividendos",
+          "desc": "Histórico de dividendos por ticker (datas ex/registro/pagamento, valores por ação ajustados/reportados)."
+        },
+        "splits": {
+          "name": "Splits",
+          "desc": "Eventos de desdobramento por ticker (data do split, razão numerador/denominador)."
+        },
+        "earningsCalendar": {
+          "name": "Calendário de Resultados",
+          "desc": "Calendário prospectivo de resultados (datas de divulgação, horário BMO/AMC, EPS estimado vs. real)."
+        },
+        "ipoCalendar": {
+          "name": "Calendário de IPOs",
+          "desc": "IPOs próximos e recentes (datas de oferta, faixas de preço, ações, tipo de operação)."
+        },
+        "newsSentiment": {
+          "name": "Sentimento de Notícias",
+          "tag": "universo S&P 500",
+          "desc": "Score de sentimento de notícias agregado diário e contagem de artigos por ticker."
+        },
+        "insiderTransactions": {
+          "name": "Transações de Insiders",
+          "tag": "universo S&P 500",
+          "desc": "Transações de insiders do Formulário 4 da SEC (proprietário, cargo, compra/venda, ações, preço)."
+        },
+        "interestRates": {
+          "name": "Taxas de Juros",
+          "desc": "Curva de juros do Tesouro dos EUA (observações diárias por prazo 1M–30A)."
+        },
+        "macroIndicators": {
+          "name": "Indicadores Macro",
+          "desc": "Indicadores macroeconômicos por país (PIB, inflação, desemprego, trimestral/anual)."
+        },
+        "indexConstituents": {
+          "name": "Constituintes de Índices",
+          "desc": "Composição histórica de constituintes de índices (fonte de verdade para o namespace 'index' de groupings)."
+        },
+        "tickerMetadata": {
+          "name": "Metadados de Tickers",
+          "desc": "Descritores estáticos por ticker (setor, indústria, identificadores para o injectable meta)."
+        },
+        "dataSources": {
+          "name": "Fontes de Dados",
+          "desc": "Cada fonte injectable (preços, fundamentos, groupings, clusters padrão) com código de uso e amostra ao vivo."
+        },
+        "hierarchicalGroupings": {
+          "name": "Agrupamentos Hierárquicos",
+          "desc": "Composição de universos por data (índices, ETFs setoriais/de país, coleções de clusters padrão)."
+        },
+        "symbolChanges": {
+          "name": "Mudanças de Símbolo",
+          "desc": "Histórico de renomeações de símbolos nos EUA (ex.: FB → META)."
+        }
+      }
+    },
+    "datasets": {
+      "eyebrow": "Explore cada dataset",
+      "title": "Tudo o que alimenta a plataforma, antes de construir qualquer coisa",
+      "description": "O Data Explorer é a biblioteca de dados da Fintela: veja a cobertura, o frescor e os registros brutos de cada fonte antes de injetá-la em uma estratégia, uma fitness function ou um risk manager.",
+      "items": {
+        "marketData": {
+          "title": "Dados de mercado",
+          "desc": "Preços, indicadores técnicos e histórico de capitalização: a base sobre a qual qualquer estratégia é construída.",
+          "bullets": [
+            {
+              "label": "Price Data",
+              "desc": "Open, High, Low, Close, fechamento ajustado e volume, por ticker, com cobertura diária."
+            },
+            {
+              "label": "Technical Indicators",
+              "desc": "Os mesmos indicadores disponíveis em Markets, prontos para inspecionar antes de usá-los em código."
+            },
+            {
+              "label": "Market Cap History",
+              "desc": "A capitalização de mercado ao longo do tempo, ticker por ticker."
+            }
+          ]
+        },
+        "fundamentals": {
+          "title": "Fundamentos",
+          "desc": "As demonstrações financeiras e métricas de avaliação de empresas e fundos, prontas para injetar no seu código.",
+          "bullets": [
+            {
+              "label": "US Equity Fundamentals",
+              "desc": "15 métricas plotáveis: P/E, ROE, ROA, margens, PEG e mais."
+            },
+            {
+              "label": "Crypto Fundamentals",
+              "desc": "Capitalização, oferta circulante e total, dominância, máximas e mínimas históricas."
+            },
+            {
+              "label": "Fund Fundamentals",
+              "desc": "Ativos líquidos, expense ratio, yield e número de holdings."
+            },
+            {
+              "label": "Analyst Trends",
+              "desc": "Estimativas e revisões de analistas, apenas em tabela."
+            }
+          ]
+        },
+        "corporateActions": {
+          "title": "Ações corporativas",
+          "desc": "Dividendos e splits, por ticker, para que sua estratégia nunca confunda um split com uma queda real de preço.",
+          "bullets": [
+            {
+              "label": "Dividends",
+              "desc": "Valor pago e valor não ajustado, plotável como barras."
+            },
+            {
+              "label": "Splits",
+              "desc": "O histórico completo de desdobramentos de ações, apenas em tabela."
+            }
+          ]
+        },
+        "eventsCalendar": {
+          "title": "Calendário de eventos",
+          "desc": "O que está por vir e o que já aconteceu, agrupado por dia.",
+          "bullets": [
+            {
+              "label": "Earnings Calendar",
+              "desc": "Os próximos 30 dias ou os últimos 30, com o estimado, o resultado real e a surpresa."
+            },
+            {
+              "label": "IPO Calendar",
+              "desc": "Os próximos 60 dias ou os últimos 30: faixa de preço esperada, preço de oferta, ações emitidas e tipo de operação."
+            }
+          ]
+        },
+        "alternativeData": {
+          "title": "Dados alternativos",
+          "desc": "Sinais que não vêm do preço: sentimento de notícias e atividade de insiders.",
+          "bullets": [
+            {
+              "label": "News Sentiment",
+              "desc": "Pontuação de sentimento e contagem de artigos, por ticker e por dia."
+            },
+            {
+              "label": "Insider Transactions",
+              "desc": "Cada transação reportada por insiders (Form 4 da SEC), apenas em tabela."
+            }
+          ]
+        },
+        "macroRates": {
+          "title": "Macro e taxas",
+          "desc": "O panorama macroeconômico completo: a curva de juros e indicadores por país.",
+          "bullets": [
+            {
+              "label": "Interest Rates",
+              "desc": "A curva de juros do Tesouro dos EUA (3 meses a 30 anos) e o spread 2s10s, um sinal de recessão muito observado."
+            },
+            {
+              "label": "Macro Indicators",
+              "desc": "Indicadores macroeconômicos por país, com suas leituras mais recentes lado a lado."
+            }
+          ]
+        },
+        "reference": {
+          "title": "Referência",
+          "desc": "O mapa de tudo o mais: o que é cada ticker, como ele se agrupa, e o que você pode conectar ao seu próprio código.",
+          "bullets": [
+            {
+              "label": "Ticker Metadata",
+              "desc": "18 campos por ticker (setor, indústria, país, ISIN…), com quais você pode usar em uma estratégia."
+            },
+            {
+              "label": "Hierarchical Groupings",
+              "desc": "Universos prontos (setores, índices) para usar, com aviso quando sua composição pode introduzir viés de sobrevivência."
+            },
+            {
+              "label": "Index Constituents e Symbol Changes",
+              "desc": "Quem pertence a cada índice, e cada mudança de símbolo entre exchanges."
+            },
+            {
+              "label": "Data Sources",
+              "desc": "O catálogo completo de fontes que você pode injetar em uma estratégia, com uma prévia ao vivo de dados reais."
+            }
+          ]
+        }
+      }
+    },
+    "workflow": {
+      "eyebrow": "Do ranking à decisão",
+      "title": "Tudo o que você pode fazer com o resultado de um estudo",
+      "description": "Além do exemplo acima: o fluxo completo do Optimization Dashboard, de milhares de trials a um candidato pronto para operar.",
+      "items": {
+        "rankingComparison": {
+          "title": "Ranking e comparação de candidatos",
+          "desc": "Cada trial de um estudo, ordenado pela métrica e período que você escolher, com suas curvas sobrepostas.",
+          "bullets": [
+            {
+              "label": "Ranking por qualquer métrica",
+              "desc": "do seu estudo ou de todos de uma vez, em qualquer etapa ou janela móvel."
+            },
+            {
+              "label": "Curva de equity sobreposta",
+              "desc": "compare visualmente cada candidato selecionado, sem sair do ranking."
+            },
+            {
+              "label": "Tabelas de comparação",
+              "desc": "métricas lado a lado, uma tabela pivô, e comparação de parâmetros e risk managers."
+            }
+          ]
+        },
+        "robustnessVerdict": {
+          "title": "Veredito de robustez",
+          "desc": "O melhor resultado é habilidade real, ou o mais sortudo entre muitos backtests?",
+          "bullets": [
+            {
+              "label": "PBO",
+              "desc": "a probabilidade de que seu melhor trial seja overfitting, não uma vantagem real."
+            },
+            {
+              "label": "Sharpe deflacionado",
+              "desc": "o Sharpe ajustado por quantos trials você rodou: quanto mais, mais exigente o limite."
+            },
+            {
+              "label": "Degradação train → validação → OOS",
+              "desc": "se o resultado se sustenta fora da amostra."
+            },
+            {
+              "label": "Veredito final",
+              "desc": "Well Trained · Borderline · Overfit Risk · Uncertain, calculado automaticamente ao final do estudo."
+            }
+          ]
+        },
+        "behavioralFamilies": {
+          "title": "Famílias de estratégias",
+          "desc": "Quantas buscas genuinamente distintas seu estudo realmente fez, e quais são variações da mesma descoberta.",
+          "bullets": [
+            {
+              "label": "Mapa de comportamento",
+              "desc": "cada trial posicionado conforme o quão parecidos seus retornos são dos demais."
+            },
+            {
+              "label": "Aviso de concentração",
+              "desc": "quando seus melhores candidatos colapsam em poucas famílias, um sinal real de overfitting."
+            },
+            {
+              "label": "Representante por família",
+              "desc": "o trial mais típico, o de maior fitness, o de maior Sharpe fora da amostra, ou o de menor drawdown."
+            }
+          ]
+        },
+        "parameterImportance": {
+          "title": "Importância dos parâmetros",
+          "desc": "Quais parâmetros realmente moveram o resultado, e quais só ajudaram no treinamento.",
+          "bullets": [
+            {
+              "label": "Dois métodos",
+              "desc": "fANOVA e MDI, intercambiáveis instantaneamente."
+            },
+            {
+              "label": "Divergência de overfitting",
+              "desc": "marca qualquer parâmetro cujo efeito se inverte entre treinamento e validação."
+            },
+            {
+              "label": "Faixa de confiança",
+              "desc": "e um aviso quando há poucos trials para confiar no ranking."
+            }
+          ]
+        },
+        "parameterExploration": {
+          "title": "Exploração visual de parâmetros",
+          "desc": "Cinco visões para ver como sua busca realmente se comportou, além de uma tabela de números.",
+          "bullets": [
+            {
+              "label": "Trajetória de otimização",
+              "desc": "como o objetivo evoluiu, trial a trial."
+            },
+            {
+              "label": "Impacto por parâmetro",
+              "desc": "um gráfico de dispersão para cada parâmetro contra o objetivo."
+            },
+            {
+              "label": "Explorador 3D",
+              "desc": "qualquer par de parâmetros e o objetivo, em três dimensões."
+            },
+            {
+              "label": "Padrões",
+              "desc": "coordenadas paralelas conectando cada combinação de parâmetros ao seu resultado."
+            }
+          ]
+        },
+        "promotion": {
+          "title": "De candidato a portfólio gerenciado",
+          "desc": "Promova o trial vencedor para um portfólio que a Fintela atualiza todo dia, pronto para um portfolio group.",
+          "bullets": [
+            {
+              "label": "Instantâneo completo",
+              "desc": "código, parâmetros, universo, fitness e risk manager, congelados no momento da promoção."
+            },
+            {
+              "label": "Promoção em lote",
+              "desc": "até 50 candidatos de uma vez, tudo ou nada, com suas vagas verificadas antes de aplicar."
+            },
+            {
+              "label": "Repromover é seguro",
+              "desc": "um trial já promovido simplesmente confirma o portfólio existente, sem duplicar nada."
+            }
+          ]
+        }
+      }
+    },
+    "metrics": {
+      "eyebrow": "Um único catálogo de métricas",
+      "title": "35 métricas, a mesma definição em todo lugar",
+      "facts": {
+        "portfolioMetrics": {
+          "label": "26 métricas de portfólio",
+          "value": "Retorno, CAGR, volatilidade, drawdowns, Sharpe, Sortino, Calmar, VaR/CVaR, win rate e mais."
+        },
+        "benchmarkMetrics": {
+          "label": "9 métricas de benchmark",
+          "value": "Alpha, beta, information ratio, Treynor, up/down capture, tracking error, R²."
+        },
+        "everywhere": {
+          "label": "A mesma lista, em todo lugar",
+          "value": "O seletor de métricas, as tabelas de comparação, o screener de Markets e a API leem do mesmo catálogo."
+        },
+        "customMetrics": {
+          "label": "Métricas próprias",
+          "value": "Qualquer fitness function pode ser promovida a métrica da organização e aparecer junto às padrão."
+        },
+        "objectives": {
+          "label": "27 objetivos prontos para otimizar",
+          "value": "Escolha diretamente para qual otimizar sua busca, sem escrever código."
+        }
+      }
+    },
+    "closingLine": "Cada número que você vê, no ranking, no veredito de robustez ou em um gráfico de dispersão, vem do mesmo catálogo de dados e do mesmo catálogo de métricas: nada é calculado de forma diferente dependendo da tela em que você está.",
+    "docsLinks": {
+      "optimizationDashboard": {
+        "label": "Leia a documentação do Optimization Dashboard",
+        "href": "/docs/optimization-dashboard"
+      },
+      "metricsReference": {
+        "label": "Leia a referência completa de métricas",
+        "href": "/docs/metrics-reference"
+      }
+    }
+  },
+  "fintelaApi": {
+    "seo": {
+      "title": "API da Fintela | Fintela",
+      "description": "Uma API de desenvolvedor somente leitura, e o motor de simulação por trás de cada número: estudos, trials, carteiras e backtests, disponíveis nas suas próprias ferramentas."
+    },
+    "eyebrow": "Para desenvolvedores",
+    "title": "Construa sobre a",
+    "titleAccent": "API da Fintela.",
+    "description": "Um canal somente leitura para sua conta, e o motor de simulação que calcula tudo o que esse canal entrega. Extraia estudos, estratégias, trials e carteiras para seus próprios painéis e scripts, autenticado com uma chave de acesso pessoal.",
+    "resources": {
+      "eyebrow": "O que você pode ler",
+      "title": "Tudo o que a Fintela calcula, nas suas próprias ferramentas",
+      "items": {
+        "studies": {
+          "title": "Estudos",
+          "desc": "Tudo o que você precisa para acompanhar um estudo de fora do app.",
+          "bullets": [
+            {
+              "label": "Configuração completa",
+              "desc": "Estratégia, fitness, orçamento de trials, espaço de busca, janelas de datas, asset group."
+            },
+            {
+              "label": "Progresso e saúde",
+              "desc": "Trials concluídos sobre o total, e a taxa de sucesso contra falhas."
+            },
+            {
+              "label": "Status e erros",
+              "desc": "Queued / Running / Completed / Failed / Stopped, agrupados por causa quando falha."
+            },
+            {
+              "label": "Curvas e importância",
+              "desc": "A curva de otimização, a curva combinada train + validação, e quais parâmetros moveram o resultado."
+            },
+            {
+              "label": "Busca por nome",
+              "desc": "Localize um estudo pelo nome e obtenha seus melhores trials."
+            }
+          ]
+        },
+        "trialsPortfolios": {
+          "title": "Trials e portfólios gerenciados",
+          "desc": "O detalhe de cada trial e dos portfólios que você já promoveu para operação.",
+          "bullets": [
+            {
+              "label": "Lista de trials",
+              "desc": "Todos os trials dos seus estudos, filtráveis por estudo."
+            },
+            {
+              "label": "Um trial em detalhe",
+              "desc": "Métricas por período, curva de capital dia a dia, holdings diários e parâmetros exatos."
+            },
+            {
+              "label": "Trial por estudo e número",
+              "desc": "Localize o Trial 42 de um estudo sem conhecer seu id."
+            },
+            {
+              "label": "Portfólios gerenciados",
+              "desc": "Curva completa do backtest original até hoje, holdings atuais, log de ordens."
+            },
+            {
+              "label": "Vínculo de promoção",
+              "desc": "Qual trial deu origem a cada portfólio em operação."
+            },
+            {
+              "label": "Você escolhe o detalhe",
+              "desc": "Só métricas, ou também curva, holdings e parâmetros: você paga em tamanho só quando precisa."
+            }
+          ]
+        },
+        "portfolioGroups": {
+          "title": "Portfolio groups (baskets)",
+          "desc": "Todo o rastro de uma carteira em operação, da configuração à reconciliação diária.",
+          "bullets": [
+            {
+              "label": "Configuração",
+              "desc": "Membros, pesos, método de alocação, cadência de rebalanceamento, benchmark."
+            },
+            {
+              "label": "Frescor e track record",
+              "desc": "Se os dados estão atuais o suficiente, e a curva combinada com seu histórico de configurações."
+            },
+            {
+              "label": "Operações",
+              "desc": "Cada conexão de broker em que o grupo opera: capital, status e drift."
+            },
+            {
+              "label": "Histórico de alocações e ordens",
+              "desc": "Cada snapshot de pesos registrado em cada rebalanceamento, e cada ordem enviada ao broker."
+            },
+            {
+              "label": "Rastreabilidade",
+              "desc": "Cada mudança de status e evento do sistema sobre uma operação."
+            },
+            {
+              "label": "Relatórios de fim de dia",
+              "desc": "A reconciliação diária entre os registros da Fintela e o broker."
+            }
+          ]
+        },
+        "buildingBlocks": {
+          "title": "Estratégias, fitness e asset groups",
+          "desc": "Os blocos que montam cada estudo, com seu histórico completo de versões.",
+          "bullets": [
+            {
+              "label": "Estratégias",
+              "desc": "Descrição, modo de execução, parâmetros declarados e os estudos que a usam; as internas retornam o código Python, as externas o endpoint e sua configuração."
+            },
+            {
+              "label": "Histórico de versões",
+              "desc": "Cada revisão salva, para saber exatamente com qual código um estudo rodou mesmo que você tenha continuado a melhorá-la."
+            },
+            {
+              "label": "Funções de fitness",
+              "desc": "Lista, detalhe, configuração e seu histórico de versões."
+            },
+            {
+              "label": "Asset groups",
+              "desc": "Nome, descrição e tamanho do universo de cada grupo que você definiu."
+            }
+          ]
+        }
+      }
+    },
+    "useCases": {
+      "eyebrow": "Para que nossos clientes usam",
+      "title": "De um endpoint a um fluxo de trabalho real",
+      "items": {
+        "dashboards": {
+          "title": "Painéis próprios",
+          "desc": "Power BI, Tableau, Grafana ou uma planilha, alimentados com métricas e curvas de capital reais."
+        },
+        "reporting": {
+          "title": "Relatórios para comitês",
+          "desc": "Gerados a partir dos seus próprios modelos, com os números da Fintela."
+        },
+        "monitoring": {
+          "title": "Monitoramento de estudos",
+          "desc": "Um job agendado que verifica progresso e saúde, e avisa quando termina ou falha."
+        },
+        "liveTracking": {
+          "title": "Acompanhamento ao vivo",
+          "desc": "Ordens, alocações e reconciliação diária dentro do seu próprio controle de risco."
+        },
+        "versionControl": {
+          "title": "Controle de versões",
+          "desc": "De estratégias e fitness, no seu próprio repositório."
+        },
+        "backup": {
+          "title": "Cópia de backup",
+          "desc": "Dos seus resultados, fora da plataforma."
+        }
+      }
+    },
+    "connect": {
+      "eyebrow": "Como se conecta",
+      "title": "Uma chave, um cliente HTTP, sem configuração",
+      "facts": {
+        "key": {
+          "label": "Chave pessoal",
+          "value": "Cada membro da equipe tem a sua própria, visível na conta e na documentação, com botão de copiar. Sem login nem sessões que expiram."
+        },
+        "bearer": {
+          "label": "Bearer padrão",
+          "value": "Funciona com qualquer cliente HTTP, linguagem de script ou ferramenta no-code, sem bibliotecas especiais."
+        },
+        "openapi": {
+          "label": "Referência sempre atual",
+          "value": "Uma especificação OpenAPI completa, gerada a partir da API viva, para gerar código cliente na sua linguagem."
+        },
+        "responses": {
+          "label": "Respostas consistentes",
+          "value": "Mesmo envelope em toda resposta; erros com uma etiqueta avaliável e um id rastreável pelo suporte."
+        },
+        "health": {
+          "label": "Verificação de serviço",
+          "value": "Um endpoint para confirmar que a conexão está ativa, útil ao configurar um script ou depurar um job agendado."
+        }
+      }
+    },
+    "security": {
+      "eyebrow": "Segurança e limites",
+      "title": "Somente leitura, só o seu",
+      "facts": {
+        "readOnly": {
+          "label": "Somente leitura por design",
+          "value": "Qualquer tentativa de criar, editar ou apagar é recusada de forma definitiva; nunca é aplicada parcialmente."
+        },
+        "scoped": {
+          "label": "Só o seu",
+          "value": "A chave lê exatamente o que sua organização vê no app. Um recurso de outra organização responde como um inexistente."
+        },
+        "rateLimit": {
+          "label": "Um limite generoso",
+          "value": "Cerca de 20 requisições por segundo sustentadas por organização, com picos de até 40. Se ultrapassar, a resposta diz quanto tempo esperar."
+        },
+        "noPush": {
+          "label": "Sem push",
+          "value": "Sem webhooks ou streams: consulte no intervalo que fizer sentido. A maioria das listas vem com o mais recente primeiro."
+        },
+        "plan": {
+          "label": "Um recurso do plano",
+          "value": "A Developer API é ativada na sua organização como qualquer outra capacidade premium."
+        }
+      }
+    },
+    "engine": {
+      "eyebrow": "O motor por trás de cada número",
+      "title": "O mesmo motor de simulação, em cada resultado",
+      "description": "Um sandbox rápido, os milhares de trials de um estudo, a extensão diária de um portfólio promovido e um what-if no Trading Lab saem todos do mesmo motor, com as mesmas regras: o motor que a API expõe.",
+      "items": {
+        "oneEngine": {
+          "title": "Um único motor para tudo",
+          "desc": "O sandbox, cada trial de um estudo e a extensão diária de um portfólio em operação são calculados com a mesma lógica.",
+          "bullets": [
+            {
+              "label": "O mesmo motor em todo lugar",
+              "desc": "o que você vê em um teste rápido é exatamente o que verá dentro de um estudo."
+            },
+            {
+              "label": "Um backtest é um registro",
+              "desc": "cada estudo fica congelado com a versão do motor, a taxa de custos e o benchmark com que foi lançado."
+            },
+            {
+              "label": "Multi-ativo",
+              "desc": "ações dos EUA, ETFs, índices, cripto, forex e mercados globais, no mesmo motor e no mesmo universo."
+            }
+          ]
+        },
+        "howItSimulates": {
+          "title": "Como simula",
+          "desc": "Um rebalanceamento diário, com os dados que a estratégia pede e guardrails avaliados dentro do loop.",
+          "bullets": [
+            {
+              "label": "Rebalanceamento diário",
+              "desc": "a estratégia entrega o sinal e o motor o executa a preços de fechamento ajustados."
+            },
+            {
+              "label": "Dados entregues pelo motor",
+              "desc": "preços sempre, e volume, fundamentos, indicadores ou setor quando a estratégia os solicita."
+            },
+            {
+              "label": "Gestores de risco dentro do loop",
+              "desc": "avaliados a cada dia simulado, antes do rebalanceamento: um guardrail real, não um filtro posterior."
+            },
+            {
+              "label": "Portfólio de portfólios",
+              "desc": "seus próprios portfolio groups podem entrar no universo como mais um ativo."
+            },
+            {
+              "label": "Isolamento",
+              "desc": "se um trial falha, só ele falha; o restante do lote continua."
+            }
+          ]
+        },
+        "transactionCosts": {
+          "title": "Custos de transação realistas",
+          "desc": "Cada operação paga, então o otimizador aprende a vencer de verdade, não a operar de graça.",
+          "bullets": [
+            {
+              "label": "Cada operação paga",
+              "desc": "10 pb em renda variável dos EUA, 30 pb em cripto, 5 pb em FX; um universo misto paga a taxa mais alta."
+            },
+            {
+              "label": "Sem custos, se você pedir",
+              "desc": "rode um estudo sem fricção para medir quanto do resultado é o modelo de custos."
+            },
+            {
+              "label": "As duas versões, lado a lado",
+              "desc": "um portfólio ou portfolio group pode ser lido sob o outro regime: uma simulação gêmea completa."
+            }
+          ]
+        },
+        "antiOverfitting": {
+          "title": "Projetado contra overfitting",
+          "desc": "Três períodos separados e um veredito estatístico automático, para que o resultado fora da amostra seja julgado uma única vez.",
+          "bullets": [
+            {
+              "label": "Três períodos separados",
+              "desc": "o otimizador só vê train; validação nunca influencia a busca; o out-of-sample é derivado depois."
+            },
+            {
+              "label": "Real-life performance",
+              "desc": "um quarto período que só marca o tempo: o que o portfólio faz já promovido."
+            },
+            {
+              "label": "Veredito automático",
+              "desc": "Well Trained · Borderline · Overfit Risk · Insufficient Data, com Probabilistic e Deflated Sharpe, PBO e degradação."
+            },
+            {
+              "label": "Habilidade vs. sorte",
+              "desc": "o Sharpe que o melhor trial alcançaria por pura sorte; seu resultado precisa superá-lo."
+            },
+            {
+              "label": "Famílias de estratégias",
+              "desc": "agrupa os trials pela curva de capital e diz quantas são de fato distintas."
+            }
+          ]
+        },
+        "backtestOutput": {
+          "title": "O que cada backtest produz",
+          "desc": "Uma curva de capital, 35 métricas e o detalhe completo por trás de cada número.",
+          "bullets": [
+            {
+              "label": "Curva de capital",
+              "desc": "dia a dia, em todos os períodos, com e sem benchmark."
+            },
+            {
+              "label": "35 métricas",
+              "desc": "26 de portfólio (Sharpe, Sortino, Calmar, drawdowns, VaR/CVaR…) e 9 relativas a benchmark (alpha, beta, information ratio…)."
+            },
+            {
+              "label": "Por período e por janela",
+              "desc": "cada métrica em train / validação / OOS / real-life, e em 9 janelas móveis."
+            },
+            {
+              "label": "Holdings, operações e risco",
+              "desc": "o que se tinha a cada dia, cada trade fechado, drawdowns e o log do risk manager."
+            },
+            {
+              "label": "Seed baixável",
+              "desc": "o sinal exato que a estratégia produziu a cada dia, em JSON ou CSV."
+            }
+          ]
+        },
+        "askAgain": {
+          "title": "Pergunte de novo ao motor",
+          "desc": "Sandbox, what-if e Trading Lab: o mesmo motor, sem gastar um novo estudo.",
+          "bullets": [
+            {
+              "label": "Sandbox",
+              "desc": "teste uma estratégia, fitness ou risk manager em um único backtest, antes de gastar um estudo."
+            },
+            {
+              "label": "What-if instantâneo",
+              "desc": "inverta o sinal, encurte a janela, exclua nomes; o motor re-simula e mostra o delta exato. Nunca é salvo."
+            },
+            {
+              "label": "Trading Lab e Ideias",
+              "desc": "teste com um clique outra cadência, outro método de alocação ou a exclusão do pior detrator."
+            },
+            {
+              "label": "Track record de grupo",
+              "desc": "a curva combinada de um portfolio group já inclui o custo de rebalancear entre membros."
+            }
+          ]
+        },
+        "scale": {
+          "title": "Escala sem você precisar configurar",
+          "desc": "Paralelismo automático, recuperação de falhas e sete algoritmos de busca.",
+          "bullets": [
+            {
+              "label": "Paralelismo automático",
+              "desc": "um estudo é dividido entre workers, com vários trials rodando ao mesmo tempo; nada a configurar."
+            },
+            {
+              "label": "Resultados à medida que chegam",
+              "desc": "cada lote concluído é salvo no seu estudo na hora, completo ou não é salvo: você nunca vê um estudo pela metade."
+            },
+            {
+              "label": "Recuperação automática",
+              "desc": "um trial sem memória é retentado, um lote interrompido roda de novo, um worker que cai não perde o que já foi salvo."
+            },
+            {
+              "label": "Sete algoritmos",
+              "desc": "TPE (padrão), CMA-ES, NSGA-II (multiobjetivo), QMC, Random e dois samplers de pesquisa com emulação quântica (QAOA e Q-Kernel)."
+            },
+            {
+              "label": "Autostop, pausa e retomada",
+              "desc": "pare um estudo quando quiser e retome depois com mais trials, sem perder o que já foi feito."
+            }
+          ]
+        },
+        "yourCode": {
+          "title": "Seu código, dentro ou fora",
+          "desc": "Python no editor da Fintela, ou no seu próprio servidor: o motor chama a lógica da mesma forma.",
+          "bullets": [
+            {
+              "label": "Internal",
+              "desc": "você escreve a estratégia, o fitness ou o risk manager em Python (ou o Fintelligent redige) e o motor os executa."
+            },
+            {
+              "label": "External",
+              "desc": "a lógica vive no seu servidor; a Fintela nunca vê nem armazena seu código, com retentativas automáticas e um limite de concorrência que você define."
+            },
+            {
+              "label": "Validado antes de salvar",
+              "desc": "todo código interno é compilado e testado contra dados reais antes de poder ser salvo; os erros aparecem em segundos."
+            }
+          ]
+        },
+        "toLive": {
+          "title": "Do backtest à operação, sem trocar de motor",
+          "desc": "Um trial promovido continua se estendendo todo dia com o mesmo motor e os mesmos custos.",
+          "bullets": [
+            {
+              "label": "Promoção",
+              "desc": "um trial se torna um portfólio gerenciado, que deixa de se mover com o estudo e se estende todo dia com novos dados de mercado."
+            },
+            {
+              "label": "Operação ao vivo",
+              "desc": "um portfolio group agrupa portfólios gerenciados e opera em um broker, paper ou real."
+            },
+            {
+              "label": "Reconciliação diária",
+              "desc": "entre o que a Fintela calcula e o que o broker reporta."
+            }
+          ]
+        }
+      }
+    },
+    "closingLine": "Um backtest da Fintela não é uma curva bonita: é uma simulação diária com custos reais, guardrails dentro do loop e um veredito estatístico sobre se o resultado é sorte ou habilidade: disponível nas suas próprias ferramentas com uma chave e um cliente HTTP.",
+    "note": "Somente leitura: nada enviado por este canal pode criar, modificar ou excluir nada. Cada resposta segue o mesmo formato padrão, autenticado com uma chave de acesso pessoal.",
+    "docsLink": "Leia a referência completa da API"
+  },
   "notFound": {
     "code": "Erro 404",
     "title": "Esta página não existe",
@@ -326,12 +1516,16 @@
       "description": "Trinta minutos sobre as suas próprias estratégias com a equipe que construiu a plataforma. Conte sobre a sua mesa e confirmamos um horário em um dia útil."
     },
     "blog": {
-      "title": "Blog da Fintela | Pesquisa quant e novidades",
+      "title": "Blog de Pesquisa | Pesquisa quant e novidades",
       "description": "Insights, tutoriais e guias práticos de finanças quantitativas e trading algorítmico, escritos pela equipe que constrói a plataforma Fintela."
     },
     "docs": {
       "title": "Documentação | Fintela Docs",
       "description": "Guias, conceitos e referência da API da plataforma Fintela: do seu primeiro estudo de otimização até o trading ao vivo pela sua corretora conectada."
+    },
+    "agenticAi": {
+      "title": "IA Agêntica | Fintela",
+      "description": "O Fintelligent está conectado às suas fontes de dados e às ações da plataforma: ele redige estratégias, prepara estudos, anexa gestores de risco e explica o que fez em linguagem simples."
     },
     "terms": {
       "title": "Termos e condições | Fintela",

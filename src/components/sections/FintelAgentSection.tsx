@@ -242,7 +242,7 @@ const UserBubble = ({ text }: { text: string }) => (
         bgcolor: soft.accent,
         color: soft.white,
         boxShadow: shadows.neuAccent,
-        borderRadius: '14px 14px 4px 14px',
+        borderRadius: '8px 8px 2px 8px',
         fontSize: '0.85rem',
         lineHeight: 1.5,
         '@media (forced-colors: active)': { boxShadow: 'none', border: '2px solid Highlight' },
@@ -294,7 +294,7 @@ const AgentMessage = ({
         variant="tile"
         sx={{
           p: 1.5,
-          borderRadius: '4px 14px 14px 14px',
+          borderRadius: '2px 8px 8px 8px',
           fontSize: '0.85rem',
           color: soft.text,
           lineHeight: 1.55,

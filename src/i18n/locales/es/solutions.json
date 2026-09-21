@@ -19,30 +19,6 @@
     "chapters": {
       "eyebrow": "Capacidades"
     },
-    "onboarding": {
-      "eyebrow": "Cómo se incorpora",
-      "title": "Cuatro pasos hasta una",
-      "titleAccent": "cartera en vivo.",
-      "description": "Sin entorno que construir ni pipeline de datos que cablear. La secuencia de abajo es el proyecto completo.",
-      "steps": {
-        "connect": {
-          "title": "Conecte datos y bróker",
-          "desc": "Defina grupos de activos sobre acciones, ETFs, forex y mercados globales, y vincule el bróker a través del cual ejecuta."
-        },
-        "bring": {
-          "title": "Traiga sus estrategias",
-          "desc": "Escriba Python en el Laboratorio, deje que Fintelligent la redacte, o invoque una estrategia y un fitness externos a través de la API."
-        },
-        "run": {
-          "title": "Ejecute estudios",
-          "desc": "Búsqueda bayesiana sobre miles de trials, evaluada por defecto en ventanas de train, validación y fuera de muestra."
-        },
-        "promote": {
-          "title": "Promueva a en vivo",
-          "desc": "Las carteras validadas se convierten en operaciones en vivo con registro de órdenes, P&L y pausa con un clic."
-        }
-      }
-    },
     "closing": {
       "eyebrow": "Listos cuando su mesa lo esté",
       "ctaSecondary": "Comparar planes"
@@ -54,12 +30,14 @@
       "description": "Investigación a escala de fondo sin infraestructura propia: estudios concurrentes, procedencia criptográfica y ejecución con tu bróker en un solo espacio."
     },
     "badge": "Para hedge funds y traders institucionales",
+    "badgeAccent": "traders institucionales",
     "title": "Investigación a escala de fondo,",
     "titleAccent": "sin la infraestructura.",
     "lead": "Estudios concurrentes, procedencia criptográfica y ejecución conectada al bróker, en un espacio de trabajo en la nube que su mesa no tiene que operar.",
     "ctaPrimary": "Reservar una demostración",
     "heroCaption": "Diseñado para instituciones · investigación, gobernanza y ejecución en un mismo espacio de trabajo",
     "heroAlt": "Dos torres de cristal vistas desde la calle, curvándose hacia un cielo nublado",
+    "heroImageAlt": "Un directivo reunido con colegas alrededor de una mesa de juntas, en blanco y negro",
     "stat": {
       "eyebrow": "Espera en cola",
       "value": "0",
@@ -189,12 +167,14 @@
       "description": "Una biblioteca, un espacio de trabajo, una sola fuente de verdad: registros compartidos, historial con hash e informes listos para comité para mesas quant."
     },
     "badge": "Para equipos de investigación quant",
+    "badgeAccent": "investigación quant",
     "title": "Una biblioteca, un espacio de trabajo,",
     "titleAccent": "una única fuente de verdad.",
     "lead": "Registros compartidos, historial con hash y reportes listos para el comité, para que una mesa de investigación deje de reconciliar notebooks y empiece a comparar resultados.",
     "ctaPrimary": "Reservar una demostración",
     "heroCaption": "Todas las piezas en juego · una biblioteca compartida de estrategias, grupos de activos y resultados",
     "heroAlt": "Una fila de peones de ajedrez sobre el tablero, uno enfocado delante del rey",
+    "heroImageAlt": "Dos investigadores comparando trabajo en portátiles sobre una mesa, una mano en pleno gesto, en blanco y negro",
     "stat": {
       "eyebrow": "Fuentes de verdad",
       "value": "1",
@@ -324,12 +304,14 @@
       "description": "Del notebook a producción sin un proyecto de devops: estrategias en Python, optimización bayesiana y ejecución conectada al bróker desde el navegador."
     },
     "badge": "Para quants independientes y traders sistemáticos",
+    "badgeAccent": "y traders sistemáticos",
     "title": "Del notebook al en vivo,",
     "titleAccent": "sin un proyecto de devops.",
     "lead": "Estrategias en Python, optimización bayesiana y ejecución conectada al bróker en el navegador, sin nada que instalar ni nada que mantener corriendo.",
     "ctaPrimary": "Empezar gratis",
     "heroCaption": "Una sola pieza, todo el tablero · del notebook al despliegue en vivo, sin un proyecto de devops",
     "heroAlt": "Un caballo negro solo sobre el tablero de ajedrez, con un peón y el rey desenfocados detrás",
+    "heroImageAlt": "Un trader solo frente a un escritorio con varios monitores, leyendo gráficos en vivo, en blanco y negro",
     "stat": {
       "eyebrow": "Instalaciones locales",
       "value": "0",

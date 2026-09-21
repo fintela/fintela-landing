@@ -56,7 +56,7 @@ export const NotFoundPage = () => {
               textAlign: 'center',
             }}
           >
-            <IconWell size={84} round sx={{ mx: 'auto', mb: 3.5 }}>
+            <IconWell size={84} sx={{ mx: 'auto', mb: 3.5 }}>
               <TravelExplore />
             </IconWell>
 

@@ -46,6 +46,8 @@ const PAGE_MODULES = [
   [/^\/contact$/, 'src/pages/ContactPage.tsx'],
   [/^\/blog$/, 'src/pages/BlogPage.tsx'],
   [/^\/blog\//, 'src/pages/BlogPostPage.tsx'],
+  [/^\/product\/agentic-ai$/, 'src/pages/AgenticAiPage.tsx'],
+  [/^\/product\/samplers$/, 'src/pages/SamplersPage.tsx'],
   [/^\/solutions\//, 'src/pages/SolutionPage.tsx'],
   [/^\/terms$/, 'src/pages/TermsPage.tsx'],
   [/^\/privacy$/, 'src/pages/PrivacyPage.tsx'],

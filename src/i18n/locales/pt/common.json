@@ -21,6 +21,10 @@
       "riskDisclosures": "Divulgações de risco"
     }
   },
+  "contactWidget": {
+    "close": "Fechar",
+    "fullForm": "Prefere o formulário completo?"
+  },
   "player": {
     "play": "Reproduzir",
     "pause": "Pausar",

@@ -8,11 +8,12 @@
     "ctaSecondary": "See how it works",
     "headline": "The Future of",
     "headlineAccent": "Intelligent Investing.",
-    "ctaPrimary": "See why it works for you",
+    "ctaPrimary": "Discover Your Edge",
     "ctaWatch": "Watch the platform",
     "plateCaption": "Platform home · asset exposure, deployed portfolios and the strategies in use",
     "liveBadge": "Live",
     "posterAlt": "The Fintela platform home: asset exposure, the strategies and asset groups in use, and the active portfolio group's performance",
+    "deviceAlt": "The Fintela platform's Data Explorer, open in a laptop browser",
     "stat": {
       "eyebrow": "Study #142 · Bayesian TPE",
       "value": "312",
@@ -24,10 +25,16 @@
     "title": "Teams building with Fintela"
   },
   "workflow": {
-    "eyebrow": "The Platform",
+    "eyebrow": "From idea to production",
     "title": "One pipeline.",
     "titleAccent": "Every step connected.",
-    "description": "No more file exports, local scripts, or stitched together tools. Every stage feeds the next, all in the browser, all reproducible.",
+    "description": "Every idea moves through the same pipeline, from asset groups and strategy code to live execution, each stage feeding the next inside the browser. No file exports, no local scripts, no stitching tools together, and every result reproducible.",
+    "pipelineHighlights": [
+      "Research ideas in parallel",
+      "Validate with statistical tests",
+      "Deploy to live trading",
+      "Monitor risk and market news"
+    ],
     "diagramLabel": "Fintela platform workflow: six connected steps",
     "centerName": "FINTELA",
     "centerSub": "PLATFORM",
@@ -61,6 +68,11 @@
         "label": "Risk Managers",
         "sub": "Your guardrails",
         "desc": "Attach guardrails that trim, close, or block a rebalance before it happens, built in stops and position caps, or your own custom logic, checked on every simulated trading day."
+      },
+      "connectBroker": {
+        "label": "Connect Broker",
+        "sub": "Go live",
+        "desc": "Link your brokerage account and promote any validated portfolio to live execution, with real time order logs and a one click pause."
       }
     },
     "stats": {
@@ -82,15 +94,15 @@
     "eyebrow": "Capabilities",
     "title": "Built for",
     "titleAccent": "serious quant work.",
-    "description": "Configurable infrastructure: strong defaults out of the box, full control when you need it.",
+    "description": "Fintela is the AI-native solution for quantitative statistical validation: agentic AI that runs the platform for you, robust statistical validation at every stage, and Bayesian optimization over thousands of trials, from idea to live capital, all in one workspace.",
     "items": {
       "ai": {
         "title": "AI that operates the platform",
-        "description": "Fintelligent generates strategy code, launches studies, builds reports, and explains results in plain English."
+        "description": "Fintelligent drafts strategies, launches studies, attaches risk managers, and explains results in plain English, wired directly into your data and the platform's own actions."
       },
-      "laboratory": {
-        "title": "One lab for your whole workflow",
-        "description": "Strategies, fitness functions, and risk managers in a single workbench. Prototype, compile, and publish to a cross org catalog."
+      "dataAnalysis": {
+        "title": "Every dataset behind your strategies",
+        "description": "Browse the full data library powering the platform, coverage, freshness, and raw records per ticker, plus a full robustness, clustering, and optimization report for any search."
       },
       "python": {
         "title": "Python first, no setup",
@@ -98,7 +110,7 @@
       },
       "bayesian": {
         "title": "Bayesian optimization",
-        "description": "Intelligent search over thousands of trials with train/validation/OOS by default."
+        "description": "Seven samplers, TPE by default, search thousands of trials and validate every result on train, validation, and out-of-sample splits automatically."
       },
       "strategyClustering": {
         "title": "See your distinct strategies",
@@ -184,6 +196,120 @@
         "docsLabel": "Drafts and runs docs"
       }
     },
+    "fullCapabilities": {
+      "heading": "Everything Fintelligent can do for you",
+      "subheading": "Ten ways it works inside Fintela, always under your control, and with your confirmation before anything that spends or can't be undone.",
+      "items": {
+        "strategyBuilder": {
+          "title": "Turns an idea into a strategy ready to test",
+          "desc": "Describe what you want in plain language and Fintelligent writes the code, picks the data, and validates the strategy before saving it.",
+          "bullets": [
+            "Writes the Python code and defines the parameters to optimize.",
+            "Picks the data sources it needs, without you having to know how they connect.",
+            "Validates against real data before saving, and fixes it if something fails, then re-validates.",
+            "Does the same for fitness functions, risk managers, asset groups, and studies."
+          ]
+        },
+        "researchMindset": {
+          "title": "Reasons like a quant researcher, not a code generator",
+          "desc": "When you bring an idea with a reason behind it, or an academic paper, it doesn't jump to the first code it can write: it sharpens the thesis with you first.",
+          "bullets": [
+            "Proposes alternative mechanisms and recommends one, keeping a record of what it ruled out.",
+            "Checks the data actually exists on the platform before writing a single line.",
+            "Pre-registers success criteria before launching the search, so the out-of-sample result is judged once, honestly.",
+            "Always distinguishes what it verified with data, what's its own judgment, and what it assumed."
+          ]
+        },
+        "evidenceAnalysis": {
+          "title": "Analyzes your studies and portfolios with evidence",
+          "desc": "Ask anything about your workspace in plain language and get answers backed by real numbers.",
+          "bullets": [
+            "Study status: progress, errors, and which ones are worth resuming with more trials.",
+            "Overfitting detection: overfitting probability, deflated Sharpe, validation-to-OOS degradation.",
+            "A portfolio's risk profile, plus what-if simulations like inverting signals or shortening the window.",
+            "Sees exactly what you see on screen, and answers about it without you having to describe it."
+          ]
+        },
+        "marketResearch": {
+          "title": "Researches the market",
+          "desc": "Conversational access to Fintela's entire market data universe.",
+          "bullets": [
+            "Market overview: indices, sectors, countries, rates, earnings calendar.",
+            "By ticker: prices and history, fundamentals, sentiment, insider activity, news.",
+            "Screener: filters the market by whatever you describe and turns the result into an asset group.",
+            "Summaries of current conditions, in a paragraph or a full report."
+          ]
+        },
+        "pdfReports": {
+          "title": "Generates PDF reports",
+          "desc": "With one message, Fintelligent writes and downloads a report with sections, tables, and charts.",
+          "bullets": [
+            "Study report: configuration, optimization history, parameter importance, overfitting diagnostics.",
+            "Portfolio report: per-stage metrics, parameters, holdings, and risk, ready for an investment committee.",
+            "Market report: overview, specific tickers, or the analysis you ask for.",
+            "Generated right in your browser: no document is ever stored anywhere else."
+          ]
+        },
+        "platformOperator": {
+          "title": "Operates the platform for you",
+          "desc": "Takes you to the right page, opens the editor you need, and fills in the forms.",
+          "bullets": [
+            "Chains actions: search for a resource, open it, edit fields, validate, request a save.",
+            "Asks you only when it genuinely needs to, leading with its own recommendation and reasonable defaults for the rest.",
+            "Links to resources by name so you can click straight through."
+          ]
+        },
+        "teaches": {
+          "title": "Teaches as it works",
+          "desc": "Speaks equally well to an experienced quant and to someone who's never built a strategy.",
+          "bullets": [
+            "Defines each concept the first time it comes up, then stops once you show fluency.",
+            "With a new user, asks about goals in human terms and translates the answers into platform configuration.",
+            "Guides the build of your first portfolio step by step: universe → strategy → objective → study → selection.",
+            "Explains results in plain language, with the precise metric in parentheses."
+          ]
+        },
+        "backgroundWork": {
+          "title": "Keeps working even when you're not watching",
+          "desc": "Keeps going if you switch pages, switch tabs, or close the browser.",
+          "bullets": [
+            "Validates, fixes, and saves on the server: not just on your screen.",
+            "Persistent drafts: unfinished work waits for you to review, edit, or discard when you come back.",
+            "An activity indicator and notifications bring you back when it's done or needs you.",
+            "Resumes from any device, including mobile."
+          ]
+        },
+        "safety": {
+          "title": "Full control and security",
+          "desc": "Nothing that spends money or can't be undone happens without your explicit confirmation.",
+          "bullets": [
+            "Never deletes anything: removing a resource is always your own action, from the interface.",
+            "Never trades live: strictly read-only on portfolios that are in operation.",
+            "Only sees what you see, within your own organization and permissions.",
+            "Every action is logged: who requested it, when, and exactly what changed."
+          ]
+        },
+        "oneClickIdeas": {
+          "title": "One-click ideas on your portfolio groups",
+          "desc": "In every portfolio group's Ideas tab, it proposes concrete improvements from each asset's real contribution to the result.",
+          "bullets": [
+            "Change the rebalance cadence, the allocation method, or exclude a name or a sector.",
+            "Every idea is tested with one click: the engine re-simulates the group and shows the exact delta on each metric.",
+            "The AI proposes; the engine always computes the numbers."
+          ]
+        }
+      },
+      "usage": {
+        "facts": {
+          "where": { "label": "Where", "value": "A floating panel from any page, or a full-page conversation. On mobile too." },
+          "history": { "label": "History", "value": "Every conversation is saved: search it, rename it, and pin up to 20." },
+          "language": { "label": "Language", "value": "Replies in whatever language you write to it." },
+          "suggestions": { "label": "Suggestions", "value": "Contextual shortcuts per page: review code, detect overfitting, build my portfolio…" },
+          "cost": { "label": "Cost", "value": "Billed in Fintela tokens. Every reply shows what it cost. 10 free messages a day." },
+          "who": { "label": "Who", "value": "Manager or Owner role accounts." }
+        }
+      }
+    },
     "chat": {
       "assistantName": "Fintelligent",
       "statusLine": "Connected · Sonnet 4.6 · 12.4k tokens",
@@ -196,6 +322,71 @@
       "launchedTitle": "Study #142 launched",
       "launchedBody": "312 / 500 trials complete. Live progress on the Studies page.",
       "inputPlaceholder": "Ask anything, like \"explain study 142 vs 138\""
+    }
+  },
+  "algoAgentBuilder": {
+    "eyebrow": "Try Fintelligent Builder",
+    "subtitle": "Ask Fintelligent to code your idea",
+    "tryIt": "Try it",
+    "deviceAlt": "A laptop showing the Fintelligent strategy builder, walking through a differential-equation momentum strategy",
+    "stepLabel": "Step {{num}}",
+    "back": "Back",
+    "continue": "Continue",
+    "runOptimization": "Run Optimization",
+    "followUpPlaceholder": "Ask a follow-up or adjust differential parameters...",
+    "steps": {
+      "model": {
+        "navLabel": "Step 1: ODE Model",
+        "header": "Define Differential Equation Dynamics",
+        "description": "Model the asset price deviation relative to a long-term moving average as a 2nd order differential equation to capture instantaneous price velocity (momentum) and acceleration.",
+        "chatRole": "user",
+        "chatText": "Build a quantitative long-only strategy modeling price deviation x(t) = P(t) - MovingAverage(100) using a 2nd order damped differential equation. Compute velocity dx/dt and acceleration d2x/dt2 using finite differences.",
+        "tags": ["Differential Equation", "2nd Order ODE", "Damped Oscillator", "Finite Differences", "MA Filter"],
+        "bullets": [
+          "Models velocity (1st derivative) and acceleration (2nd derivative) of price relative to trend.",
+          "Prevents lag inherent in traditional momentum indicators.",
+          "Filters out false breakouts before critical damping occurs."
+        ]
+      },
+      "score": {
+        "navLabel": "Step 2: Score Rules",
+        "header": "Formulate Composite Alpha Score",
+        "description": "Combine positive differential acceleration with sustained relative volume (RVOL) to rank candidate assets while ensuring price trades above the long-term trend filter.",
+        "chatRole": "user",
+        "chatText": "Filter for assets where P(t) > MA(100). Calculate a composite score rewarding positive acceleration d2x/dt2 accompanied by elevated multi-period RVOL, ignoring single-day volume spikes.",
+        "tags": ["Alpha Score", "Price Acceleration", "Sustained RVOL", "Trend Filter P > MA"],
+        "bullets": [
+          "Requires P(t) > MA(100) to ensure long-only alignment.",
+          "Rewards continuous institutional volume expansion.",
+          "Eliminates reliance on single-day outlier spikes."
+        ]
+      },
+      "allocation": {
+        "navLabel": "Step 3: Allocation",
+        "header": "Select Top-N Assets & Allocate",
+        "description": "Rank the entire investment universe by composite score, select the top n_top assets, and apply equal-weight portfolio allocation with periodic rebalancing.",
+        "chatRole": "user",
+        "chatText": "Rank all universe assets by the differential score. Select n_top = 10 assets and assign equal weights (10% each). Auto-rotate out assets that fall below the top 10 on monthly rebalance.",
+        "tags": ["Equal-Weight (10%)", "Top 10 Selection", "Monthly Rebalance", "Auto-Rotation"],
+        "bullets": [
+          "Strict n_top position capping for risk control.",
+          "Automatic exit rule when an asset drops out of top ranking.",
+          "Configurable warmup period for differential window calculations."
+        ]
+      },
+      "backtest": {
+        "navLabel": "Step 4: Backtest",
+        "header": "Optimize Parameters & Validate",
+        "description": "Configure differential equation damping coefficients, moving average windows, and target position counts for multi-universe parameter optimization.",
+        "chatRole": "system",
+        "chatText": "Strategy 'diff_eq_momentum_v1' compiled successfully. 7 optimizable parameters registered (MA_window, dt_step, zeta_damping, omega_freq, RVOL_short, RVOL_med, n_top). Ready for S&P 500 optimization.",
+        "tags": ["7 Parameters", "Sharpe Optimization", "Drawdown Control", "Zero Benchmark Dependency"],
+        "bullets": [
+          "Maximizes Alpha and Sharpe ratio while strictly capping Max Drawdown.",
+          "No reliance on SPY or external benchmark logic.",
+          "Fully validated execution pipeline ready for study launch."
+        ]
+      }
     }
   },
   "devExperience": {
@@ -305,8 +496,6 @@
         "title": "Independent quants & systematic traders",
         "description": "Configurable optimization, backtesting, and live deployment without building or maintaining a single line of infrastructure. From notebook to live deployment, without a devops project.",
         "outcomes": [
-          "No local environment, no devops",
-          "Bayesian optimization with train/validation/OOS built in",
           "Brokerage connected live deployment"
         ]
       },
@@ -380,16 +569,13 @@
     "description": "Managing capital, working solo, or leading a research desk: the same primitives and the same engine, built for every seat on the desk.",
     "items": {
       "funds": {
-        "cta": "See why it works for your fund",
         "pricingLink": "See Institutional pricing",
         "imageAlt": "The corner of a marble-columned office tower against a white sky"
       },
       "independents": {
-        "cta": "See why it works for you",
         "imageAlt": "Over the shoulder of a quant at a desk with a laptop and two monitors, code on the nearest screen"
       },
       "teams": {
-        "cta": "See why it works for your desk",
         "imageAlt": "Seen from behind, an analyst working at a monitor in a dim room"
       }
     },
@@ -445,36 +631,7 @@
     }
   },
   "fintelligent": {
-    "exit": "Meet Fintelligent",
-    "playerLabel": "Multi-agent conversation",
-    "transcriptLabel": "Conversation transcript",
-    "posterAlt": "A dense lattice of threads and nodes, lit from behind",
-    "agentsCount": "{{count}} agents",
-    "turns": "{{current}} of {{total}} turns",
-    "agents": {
-      "orchestrator": {
-        "name": "Orchestrator",
-        "role": "plans"
-      },
-      "strategist": {
-        "name": "Strategist",
-        "role": "writes"
-      },
-      "risk": {
-        "name": "Risk",
-        "role": "guards"
-      }
-    },
-    "cues": {
-      "brief": "Momentum on the S&P 500 asset group, weekly rebalance. Strategist, draft it; Risk, set the drawdown guard.",
-      "draft": "Drafted MomentumV3: lookback 20 to 120 days, 12-week rebalance, typed parameter ranges. Ready in the Laboratory.",
-      "guard": "Attached a 12% max-drawdown stop and volatility targeting at 10% annualised.",
-      "stage": "Study staged: Sharpe fitness, 500 trials, 70/15/15 train/validation/OOS. This one needs your confirmation.",
-      "confirm": "Confirmed. Launch it.",
-      "launch": "Study #142 is running: 312 of 500 trials complete, best validation Sharpe 1.84 so far.",
-      "review": "Out-of-sample drawdown stays under the guard on the top ten trials. No single parameter is doing more than 40% of the work.",
-      "report": "Building the committee report from trial 37: equity curves, parameter importance and the trade log."
-    }
+    "exit": "Meet Fintelligent"
   },
   "capabilities": {
     "exit": "Watch the walkthrough",
@@ -488,7 +645,10 @@
       "samplerSelection": "Sampler selection docs",
       "portfolioGroups": "Portfolio groups docs",
       "market": "Market data docs",
-      "liveTrading": "Live trading docs"
+      "liveTrading": "Live trading docs",
+      "agenticAi": "Explore Agentic AI",
+      "samplers": "Explore the optimization engine",
+      "inDepthAnalysis": "Explore In-Depth Analysis"
     },
     "chapters": {
       "pulse": "Pulse",
@@ -520,14 +680,5 @@
     "count_other": "{{count}} posts",
     "newest": "newest {{date}}",
     "coverAlt": "Cover image for {{title}}"
-  },
-  "closing": {
-    "eyebrow": "Ready when your desk is",
-    "title": "See why it works",
-    "titleAccent": "for your fund.",
-    "body": "A 30-minute walkthrough on your own strategies, or start on the free tier and bring a study to the call.",
-    "ctaPrimary": "Book a walkthrough",
-    "ctaSecondary": "Compare plans",
-    "strip": "No infrastructure · No local install · Broker-connected · Cryptographic provenance"
   }
 }

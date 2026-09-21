@@ -21,6 +21,10 @@
       "riskDisclosures": "Risk Disclosures"
     }
   },
+  "contactWidget": {
+    "close": "Close",
+    "fullForm": "Prefer the full form?"
+  },
   "player": {
     "play": "Play",
     "pause": "Pause",

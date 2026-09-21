@@ -41,6 +41,15 @@ export interface ContactRequest {
 
 export type ContactFailure = 'unconfigured' | 'rate_limited' | 'rejected' | 'unavailable';
 
+/** Which `pages:contact.alert.*` key a failed submission shows. `error` is the catch-all. */
+export function contactFailureKey(err: unknown): string {
+  if (err instanceof ContactApiError) {
+    if (err.reason === 'rate_limited') return 'contact.alert.tooMany';
+    if (err.reason === 'rejected') return 'contact.alert.rejected';
+  }
+  return 'contact.alert.error';
+}
+
 export class ContactApiError extends Error {
   readonly reason: ContactFailure;
   readonly status: number | undefined;

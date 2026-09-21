@@ -201,7 +201,7 @@ async function main() {
   const { chromium } = await import(pathToFileURL(PLAYWRIGHT_MODULE).href);
   const [tokens, cards] = await Promise.all([loadTokens(), loadCards()]);
   const assets = {
-    wordmark: await dataUri('src/assets/logos/fintela_large_logo.png', 'image/png'),
+    wordmark: await dataUri('src/assets/logos/fintela_logo_2.png', 'image/png'),
     mark: await dataUri('src/assets/logos/fintela_logo.png', 'image/png'),
     stills: {},
   };

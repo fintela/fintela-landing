@@ -122,6 +122,7 @@ export const BlogPage = () => {
         <Section tone="hero" size="sm" sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 8 } }}>
           <SectionHeader
             level="h1"
+            eyebrow={t('blog.hero.chip')}
             title={t('blog.hero.title')}
             description={t('blog.hero.subtitle')}
           />
