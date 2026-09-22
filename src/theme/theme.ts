@@ -1,5 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import { fonts, motion, palette, radii, shadows, soft } from './tokens';
+import { lightShadowResetSx, lightTextResetSx } from './neu';
 
 /**
  * The theme carries only what cannot be expressed per element: the ground,
@@ -21,6 +22,13 @@ export const theme = createTheme({
       contrastText: '#ffffff',
     },
     text: {
+      // Raw hex, not soft.text's CSS var: MUI's own color math (alpha(),
+      // contrast calculations in its component style overrides) parses
+      // theme.palette.text.* as an actual color and throws on a `var()`
+      // string. Every Typography in this codebase sets its color explicitly
+      // via `soft.text`/`soft.textSecondary` anyway (which DOES react to a
+      // `Section tone="ink"` band); this is only the fallback for a
+      // genuinely unstyled MUI component, which stays light.
       primary: palette.text,
       secondary: palette.textMuted,
       disabled: palette.textSubtle,
@@ -184,6 +192,8 @@ export const theme = createTheme({
     MuiMenu: {
       styleOverrides: {
         paper: {
+          ...lightTextResetSx,
+          ...lightShadowResetSx,
           backgroundColor: soft.surfaceRaised,
           backgroundImage: 'none',
           border: '1px solid transparent',
@@ -240,6 +250,8 @@ export const theme = createTheme({
       styleOverrides: {
         // A raised tile; the severity colour lives on the icon only.
         root: {
+          ...lightTextResetSx,
+          ...lightShadowResetSx,
           backgroundColor: soft.surfaceRaised,
           color: soft.text,
           border: '1px solid transparent',

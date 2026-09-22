@@ -84,7 +84,7 @@
           ],
           "overageRate": "$0.015/token",
           "support": "Suporte por email + chat",
-          "cta": "Fazer upgrade para Quant"
+          "cta": "Comece agora"
         },
         "institutional": {
           "name": "Institutional",
@@ -105,6 +105,27 @@
           ],
           "overageRate": "$0.0125/token",
           "support": "CSM dedicado + SLA",
+          "cta": "Comece agora"
+        },
+        "custom": {
+          "name": "Custom",
+          "price": "Personalizado",
+          "period": "",
+          "badge": "",
+          "description": "Cada limite construído em torno da sua equipe: tokens, armazenamento e usuários, sob medida.",
+          "features": [
+            "Reserva de tokens personalizada",
+            "Armazenamento personalizado",
+            "Acesso completo à IA com os modelos mais avançados",
+            "Tudo do Institutional, mais:",
+            "Espaço de trabalho organizacional",
+            "Marca personalizada",
+            "Possibilidade de white-label",
+            "Acompanhamento prático de fluxo de trabalho e estratégia",
+            "Usuários e preço personalizados"
+          ],
+          "overageRate": "Personalizado",
+          "support": "CSM dedicado + SLA",
           "cta": "Fale conosco"
         }
       }
@@ -122,37 +143,43 @@
           "label": "Preço",
           "trader": "$79/mês ($787/ano)",
           "quant": "$159/mês ($1,589/ano)",
-          "institutional": "$599/mês (2 usuários incluídos)"
+          "institutional": "$599/mês (2 usuários incluídos)",
+          "custom": "Preço personalizado"
         },
         "tokenPool": {
           "label": "Reserva de tokens",
           "trader": "8,600/mês",
           "quant": "21,000/mês",
-          "institutional": "A partir de 60,000/mês"
+          "institutional": "A partir de 60,000/mês",
+          "custom": "Personalizado"
         },
         "storage": {
           "label": "Armazenamento",
           "trader": "20 GB",
           "quant": "80 GB",
-          "institutional": "Personalizado"
+          "institutional": "Personalizado",
+          "custom": "Personalizado"
         },
         "overageRate": {
           "label": "Taxa de excedente",
           "trader": "$0.018/token",
           "quant": "$0.015/token",
-          "institutional": "$0.0125/token"
+          "institutional": "$0.0125/token",
+          "custom": "Personalizado"
         },
         "aiAccess": {
           "label": "Acesso a IA",
           "trader": "Padrão",
           "quant": "Mais recursos, maior uso",
-          "institutional": "Acesso completo aos recursos"
+          "institutional": "Acesso completo aos recursos",
+          "custom": "Acesso completo aos recursos"
         },
         "support": {
           "label": "Suporte",
           "trader": "Email",
           "quant": "Email + chat",
-          "institutional": "CSM dedicado + SLA"
+          "institutional": "CSM dedicado + SLA",
+          "custom": "CSM dedicado + SLA"
         },
         "connectBroker": {
           "label": "Conecte qualquer broker"

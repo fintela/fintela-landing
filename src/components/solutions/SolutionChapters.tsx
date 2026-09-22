@@ -110,7 +110,7 @@ const ChapterBand = ({ chapter, audience, index }: { chapter: SolutionChapter; a
           <Box
             component={RouterLink}
             to={chapter.docs}
-            sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 2.5, fontSize: '0.9rem', fontWeight: 600, color: soft.accent }]}
+            sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 2.5, fontSize: '0.9rem', fontWeight: 600, color: soft.linkAccent }]}
           >
             {t(`${audience}.chapters.${chapter.key}.docsLabel`)}
             <ArrowForwardIcon sx={{ fontSize: 16 }} />
@@ -124,7 +124,7 @@ const ChapterBand = ({ chapter, audience, index }: { chapter: SolutionChapter; a
 export const SolutionChapters = ({ chapters, audience }: { chapters: SolutionChapter[]; audience: Audience }) => {
   const { t } = useTranslation('solutions');
   return (
-    <Section id="chapters" size="lg">
+    <Section id="chapters" size="lg" tone="ink">
       <SectionHeader
         eyebrow={t('common.chapters.eyebrow')}
         title={t(`${audience}.chaptersTitle`)}

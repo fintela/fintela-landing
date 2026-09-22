@@ -1,7 +1,8 @@
 import { Box } from '@mui/material';
 import type { BoxProps, SxProps, Theme } from '@mui/material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import { gradientIconSx } from '../../theme/neu';
+import { forcedColorsSurface } from '../../theme/neu';
+import { radii, shadows, soft } from '../../theme/tokens';
 
 export type CheckWellProps = Omit<BoxProps, 'children'> & {
   size?: number;
@@ -9,7 +10,7 @@ export type CheckWellProps = Omit<BoxProps, 'children'> & {
   icon?: React.ReactNode;
 };
 
-/** A bare check glyph, painted with the brand gradient — no pill, no shadow. */
+/** A debossed pill holding a check — the one "yes" glyph in this style. */
 export const CheckWell = ({ size = 20, icon, sx, ...rest }: CheckWellProps) => (
   <Box
     aria-hidden
@@ -19,14 +20,16 @@ export const CheckWell = ({ size = 20, icon, sx, ...rest }: CheckWellProps) => (
           width: size,
           height: size,
           flexShrink: 0,
+          borderRadius: `${radii.pill}px`,
+          bgcolor: soft.groundSunken,
+          boxShadow: shadows.neuInsetSm,
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
+          color: soft.accent,
           '& svg': { fontSize: Math.round(size * 0.65) },
+          ...forcedColorsSurface,
         },
-        // A separate array entry — see IconWell for why this must not be
-        // spread into the object above.
-        gradientIconSx,
         ...(Array.isArray(sx) ? sx : [sx]),
       ] as SxProps<Theme>
     }

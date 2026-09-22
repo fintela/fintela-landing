@@ -1,19 +1,26 @@
 import { Box, Container } from '@mui/material';
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
-import { soft } from '../../theme/tokens';
+import { gradients, soft } from '../../theme/tokens';
 
 interface SectionProps {
   id?: string;
   children: ReactNode;
   /**
-   * Both tones are transparent, letting the body's `gradients.pageGround`
-   * brand wash show through every section. 'hero' is kept as a distinct
-   * value for the FIRST band of a page, in case it needs its own treatment
-   * later; never put a background behind a shadowed surface — a paired
-   * shadow on a graded ground desynchronizes from its background.
+   * 'soft' (default) is the one continuous ground. 'hero' is gradients.groundFade
+   * for the FIRST band of a page only, and never behind a shadowed surface — a
+   * paired shadow on a graded ground desynchronizes from its background.
+   * 'ink' is the full-bleed black band used to alternate a page's sections:
+   * `data-tone="ink"` (set below) flips `soft.text`/`textSecondary`/
+   * `textSubtle` to their onInk values for everything painted straight on
+   * this section's ground (see the CSS custom properties declared in
+   * src/index.css); an "own background" surface — a white NeuPanel, a raised
+   * button — resets those three back to light on itself
+   * (`lightTextResetSx` in theme/neu.ts), so cards inside an ink band stay
+   * normal white cards with normal dark text. Never behind a shadowed
+   * surface, for the same reason 'hero' isn't.
    */
-  tone?: 'soft' | 'hero';
+  tone?: 'soft' | 'hero' | 'ink';
   /** Top/bottom padding density. */
   size?: 'sm' | 'md' | 'lg';
   /** Constrain content width — passed to <Container maxWidth>. */
@@ -34,10 +41,9 @@ const paddingY = {
 } as const;
 
 const backgrounds = {
-  // Transparent so the body's `gradients.pageGround` brand wash shows
-  // through every section instead of being painted over.
-  soft: 'transparent',
-  hero: 'transparent',
+  soft: soft.ground,
+  hero: gradients.groundFade,
+  ink: gradients.ink,
 } as const;
 
 export const Section = ({
@@ -49,10 +55,12 @@ export const Section = ({
   background,
   sx,
 }: SectionProps) => {
+  const ink = tone === 'ink';
   return (
     <Box
       component="section"
       id={id}
+      data-tone={ink ? 'ink' : undefined}
       // Merged as an array (never `...sx`): the prop is SxProps<Theme>, which
       // may be an array or a function. Callers' keys still win, in order.
       sx={
@@ -61,7 +69,8 @@ export const Section = ({
             py: paddingY[size],
             background: backgrounds[tone],
             position: 'relative',
-            '@media print': { background: soft.white },
+            ...(ink && { colorScheme: 'dark' }),
+            '@media print': { background: soft.white, colorScheme: 'light' },
           },
           ...(Array.isArray(sx) ? sx : [sx]),
         ] as SxProps<Theme>

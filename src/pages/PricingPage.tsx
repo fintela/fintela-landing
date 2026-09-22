@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import FlashOnOutlinedIcon from '@mui/icons-material/FlashOnOutlined';
 import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
@@ -29,13 +30,14 @@ const PRICING_OG_IMAGE = '/og/pricing.png';
 const TOKEN_DOCS = '/docs/tokens-and-billing';
 
 
-type TierKey = 'trader' | 'quant' | 'institutional';
+type TierKey = 'trader' | 'quant' | 'institutional' | 'custom';
 
 /** The three tiers, in display order. Institutional is arranged with the team. */
 const PLAN_TIERS: ReadonlyArray<{ key: TierKey; icon: ReactNode; featured: boolean }> = [
   { key: 'trader', icon: <FlashOnOutlinedIcon />, featured: false },
   { key: 'quant', icon: <BusinessCenterOutlinedIcon />, featured: true },
   { key: 'institutional', icon: <ApartmentOutlinedIcon />, featured: false },
+  { key: 'custom', icon: <TuneOutlinedIcon />, featured: false },
 ];
 
 type CompareRow =
@@ -54,21 +56,21 @@ const COMPARE_ROWS: readonly CompareRow[] = [
   { key: 'overageRate', kind: 'text' },
   { key: 'aiAccess', kind: 'text' },
   { key: 'support', kind: 'text' },
-  { key: 'connectBroker', kind: 'check', tiers: ['trader', 'quant', 'institutional'] },
-  { key: 'unlimitedStrategies', kind: 'check', tiers: ['trader', 'quant', 'institutional'] },
-  { key: 'builtIn', kind: 'check', tiers: ['trader', 'quant', 'institutional'] },
-  { key: 'advancedAllocation', kind: 'check', tiers: ['quant', 'institutional'] },
-  { key: 'customFitness', kind: 'check', tiers: ['quant', 'institutional'] },
-  { key: 'customRisk', kind: 'check', tiers: ['quant', 'institutional'] },
-  { key: 'moreOptimizer', kind: 'check', tiers: ['quant', 'institutional'] },
-  { key: 'advancedStats', kind: 'check', tiers: ['quant', 'institutional'] },
-  { key: 'unlimitedOptimizations', kind: 'check', tiers: ['quant', 'institutional'] },
-  { key: 'orgWorkspace', kind: 'check', tiers: ['institutional'] },
-  { key: 'customBranding', kind: 'check', tiers: ['institutional'] },
-  { key: 'whiteLabel', kind: 'check', tiers: ['institutional'] },
-  { key: 'advancedLlms', kind: 'check', tiers: ['institutional'] },
-  { key: 'handsOnEnablement', kind: 'check', tiers: ['institutional'] },
-  { key: 'ssoSeatManagement', kind: 'check', tiers: ['institutional'] },
+  { key: 'connectBroker', kind: 'check', tiers: ['trader', 'quant', 'institutional', 'custom'] },
+  { key: 'unlimitedStrategies', kind: 'check', tiers: ['trader', 'quant', 'institutional', 'custom'] },
+  { key: 'builtIn', kind: 'check', tiers: ['trader', 'quant', 'institutional', 'custom'] },
+  { key: 'advancedAllocation', kind: 'check', tiers: ['quant', 'institutional', 'custom'] },
+  { key: 'customFitness', kind: 'check', tiers: ['quant', 'institutional', 'custom'] },
+  { key: 'customRisk', kind: 'check', tiers: ['quant', 'institutional', 'custom'] },
+  { key: 'moreOptimizer', kind: 'check', tiers: ['quant', 'institutional', 'custom'] },
+  { key: 'advancedStats', kind: 'check', tiers: ['quant', 'institutional', 'custom'] },
+  { key: 'unlimitedOptimizations', kind: 'check', tiers: ['quant', 'institutional', 'custom'] },
+  { key: 'orgWorkspace', kind: 'check', tiers: ['institutional', 'custom'] },
+  { key: 'customBranding', kind: 'check', tiers: ['institutional', 'custom'] },
+  { key: 'whiteLabel', kind: 'check', tiers: ['institutional', 'custom'] },
+  { key: 'advancedLlms', kind: 'check', tiers: ['institutional', 'custom'] },
+  { key: 'handsOnEnablement', kind: 'check', tiers: ['institutional', 'custom'] },
+  { key: 'ssoSeatManagement', kind: 'check', tiers: ['institutional', 'custom'] },
 ];
 
 interface PlanCardProps {
@@ -76,7 +78,7 @@ interface PlanCardProps {
   icon: ReactNode;
   name: string;
   price: string;
-  /** e.g. "/mo"; empty for Institutional's "Custom". */
+  /** e.g. "/mo"; empty for the Custom tier's bare "Custom" price. */
   period: string;
   badge: string;
   description: string;
@@ -109,9 +111,10 @@ const PlanCard = ({
   ctaTo,
   featured = false,
 }: PlanCardProps) => {
-  // Geometry and type are identical on all three cards. Only the surface, the
-  // shadow depth, the badge fill and the CTA fill change — nothing dimensional,
-  // so the row never loses its shared baseline.
+  // Geometry and type are identical on all four cards. Only the shadow depth,
+  // the badge fill and the CTA fill are fixed by `featured`; the gold ring is
+  // not — it is a hover/focus invitation any card can earn, not a permanent
+  // badge of rank.
   return (
     <Box
       component="article"
@@ -119,7 +122,7 @@ const PlanCard = ({
       sx={{
         ...raisedPanelSx,
         position: 'relative',
-        // The featured card sits between the other two, so without this its
+        // The featured card sits between the others, so without this its
         // neighbours' 34px spreads paint over its deeper shadow and flatten it.
         ...(featured && { zIndex: 1 }),
         display: 'flex',
@@ -128,28 +131,36 @@ const PlanCard = ({
         maxWidth: { xs: 560, md: 'none' },
         mx: { xs: 'auto', md: 0 },
         width: '100%',
-        // The featured card is the same white as its neighbours; a deeper
-        // shadow and a gradient ring are what single it out. Two-layer
-        // background: an opaque white padding-box layer on top of the brand
-        // gradient painted to the border-box, so only the 1.5px ring reads
-        // the gradient and the card face stays white.
-        ...(featured && {
-          border: '1.5px solid transparent',
-          backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
-          backgroundOrigin: 'border-box',
-          backgroundClip: 'padding-box, border-box',
-        }),
+        // Every card carries the same 1.5px transparent border at rest — not
+        // just the featured one — so the ring below never shifts the card's
+        // size when it appears; `raisedPanelSx`'s own 1px border is overridden
+        // here to match.
+        border: '1.5px solid transparent',
         boxShadow: {
           xs: shadows.neuRaisedMd,
           md: featured ? shadows.neuRaisedLg : shadows.neuRaised,
         },
-        transition: `box-shadow ${motion.base}`,
-        // The card is not interactive — only its CTA is — so it gets no hover.
-        '&:focus-within': { boxShadow: shadows.neuRaisedXl },
+        transition: `box-shadow ${motion.base}, background-image ${motion.fast}`,
+        // On hover/focus (any card, not only the featured one): the same
+        // two-layer background as before — an opaque white padding-box layer
+        // on top of the brand gradient painted to the border-box, so only the
+        // 1.5px ring reads the gradient and the card face stays white.
+        '@media (hover: hover)': {
+          '&:hover': {
+            backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+            backgroundOrigin: 'border-box',
+            backgroundClip: 'padding-box, border-box',
+          },
+        },
+        '&:focus-within': {
+          backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+          backgroundOrigin: 'border-box',
+          backgroundClip: 'padding-box, border-box',
+          boxShadow: shadows.neuRaisedXl,
+        },
         '@media (forced-colors: active)': {
           boxShadow: 'none',
           borderColor: 'CanvasText',
-          ...(featured && { borderWidth: 3 }),
         },
       }}
     >
@@ -316,7 +327,7 @@ const ComparisonTable = () => {
     // Every row-label column shares this width so the tier columns stay equal.
     '&[scope="row"], &[scope="col"]:first-of-type': {
       textAlign: 'left',
-      width: { md: '28%' },
+      width: { md: '22%' },
     },
   } as const;
 
@@ -336,7 +347,7 @@ const ComparisonTable = () => {
           '& tbody': { display: { xs: 'block', md: 'table-row-group' } },
           '& tbody > tr': {
             display: { xs: 'grid', md: 'table-row' },
-            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+            gridTemplateColumns: `repeat(${PLAN_TIERS.length}, minmax(0, 1fr))`,
             columnGap: 1,
             px: { xs: 0.5, md: 0 },
             py: { xs: 1.25, md: 0 },
@@ -552,7 +563,7 @@ export const PricingPage = () => {
 
         {/* Plans. The h1 already names this section, so its own heading is for
             the outline only. */}
-        <Section id="plans" tone="soft" size="md" sx={{ pt: { xs: 2, md: 3 } }}>
+        <Section id="plans" tone="ink" size="md" sx={{ pt: { xs: 2, md: 3 } }}>
           <Typography component="h2" sx={srOnly}>
             {t('pricing.individual.title')}
           </Typography>
@@ -562,11 +573,11 @@ export const PricingPage = () => {
               display: 'grid',
               // minmax(0, 1fr), not 1fr: a bare 1fr is minmax(auto, 1fr), so one
               // long token in an es/pt string would widen its column silently.
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' },
               alignItems: 'stretch',
               // 32px at md is load-bearing: neuRaised spreads ~34px, and at a
               // tighter gutter adjacent cards' shadows collide into a gray seam.
-              gap: { xs: 3, md: 4 },
+              gap: { xs: 3, md: 3, lg: 4 },
             }}
           >
             {PLAN_TIERS.map((tier, idx) => (
@@ -590,7 +601,7 @@ export const PricingPage = () => {
                   tokenHelp={t('pricing.individual.tokenHelp')}
                   support={t(`pricing.individual.plans.${tier.key}.support`)}
                   cta={t(`pricing.individual.plans.${tier.key}.cta`)}
-                  ctaTo={tier.key === 'institutional' ? '/contact' : undefined}
+                  ctaTo={tier.key === 'custom' ? '/contact' : undefined}
                 />
               </AnimateOnScroll>
             ))}
@@ -611,7 +622,7 @@ export const PricingPage = () => {
         </Section>
 
         {/* Closing CTA */}
-        <Section tone="soft" size="md" sx={{ pt: 0, pb: { xs: 10, md: 14 } }}>
+        <Section tone="ink" size="md" sx={{ pt: 0, pb: { xs: 10, md: 14 } }}>
           <AnimateOnScroll>
             <Box
               sx={{

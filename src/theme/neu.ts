@@ -17,12 +17,53 @@
  * .tsx module that exports both components and objects.
  */
 import type { SxProps, Theme } from '@mui/material';
-import { gradients, motion, radii, shadows, soft } from './tokens';
+import { gradients, motion, palette, radii, shadows, soft } from './tokens';
 
 export const APP_URL = 'https://app.fintela.io';
 
 export type NeuTone = 'accent' | 'raised';
 export type NeuSize = 'sm' | 'md' | 'lg';
+
+/**
+ * Pins `soft.text`/`soft.textSecondary`/`soft.textSubtle` (CSS custom
+ * properties — see theme/tokens.ts) back to their light values, in literal
+ * hex so there is no circular reference back to the vars they reset. Spread
+ * into every recipe that paints its OWN opaque surface (a white panel, a
+ * raised button, a floating menu) — anything not painted straight on a
+ * `Section`'s ground never needs to react to that section's tone, ink or
+ * not, and without this reset it would invert into unreadable light-on-light
+ * text the moment it is used inside a `tone="ink"` band.
+ */
+export const lightTextResetSx = {
+  '--fi-text': palette.text,
+  '--fi-text-secondary': palette.textMuted,
+  '--fi-text-subtle': palette.textSubtle,
+  '--fi-link-accent': palette.navy,
+} as const;
+
+/**
+ * The raised-shadow counterpart, spread alongside `lightTextResetSx` into
+ * the same opaque-surface recipes. It CANNOT reuse that object's shape: a
+ * recipe like `raisedPanelSx` also reads `shadows.neuRaised` (the
+ * `--fi-shadow-raised` var) for its OWN box-shadow, and a custom property a
+ * rule declares on itself always wins over one it inherited — declaring the
+ * light value directly on the panel would make the panel's own shadow light
+ * too, never the ink pairing it is supposed to show against a `tone="ink"`
+ * band. Scoping the reset to `& *` (every descendant, not the panel itself)
+ * keeps the panel reading its inherited (possibly ink) shadow while
+ * resetting it for whatever is nested inside — a `NeuButton` or
+ * `ToggleButton` a few levels down, for instance.
+ */
+export const lightShadowResetSx = {
+  '& *': {
+    '--fi-shadow-raised-xs': '2px 2px 5px rgba(0,0,0,0.14), -2px -2px 4px rgba(255,255,255,0.95)',
+    '--fi-shadow-raised-sm': '4px 4px 10px rgba(0,0,0,0.12), -4px -4px 9px rgba(255,255,255,0.95)',
+    '--fi-shadow-raised-md': '7px 7px 16px rgba(0,0,0,0.14), -7px -7px 14px rgba(255,255,255,0.96)',
+    '--fi-shadow-raised': '10px 10px 24px rgba(0,0,0,0.12), -10px -10px 22px rgba(255,255,255,0.96)',
+    '--fi-shadow-raised-lg': '14px 14px 32px rgba(0,0,0,0.16), -12px -12px 26px rgba(255,255,255,0.97)',
+    '--fi-shadow-raised-xl': '18px 18px 40px rgba(0,0,0,0.18), -14px -14px 34px rgba(255,255,255,0.98)',
+  },
+} as const;
 export type WellTier = 'xs' | 'sm' | 'md';
 
 /* -------------------------------------------------------------------------- */
@@ -149,6 +190,8 @@ export const neuButtonSx = (tone: NeuTone, size: NeuSize = 'md'): SxProps<Theme>
         },
       }
     : {
+        ...lightTextResetSx,
+        ...lightShadowResetSx,
         backgroundColor: soft.surfaceRaised,
         color: soft.text,
         boxShadow: shadows.neuRaisedSm,
@@ -198,6 +241,8 @@ export const ctaRowSx = {
 
 /** The raised panel every non-card block sits in — verbatim from PricingPage. */
 export const raisedPanelSx = {
+  ...lightTextResetSx,
+  ...lightShadowResetSx,
   bgcolor: soft.surfaceRaised,
   // Invisible at rest; it is the hook forced-colors and print repaint,
   // so the geometry does not shift when they do.
@@ -229,6 +274,8 @@ export const raisedPanelFeaturedSx = {
 /** Small raised tile for tight stacks (rows, prev/next, alerts, logo tiles):
  *  neuRaisedSm at rest so 16-24px gaps are safe. */
 export const raisedTileSx = {
+  ...lightTextResetSx,
+  ...lightShadowResetSx,
   bgcolor: soft.surfaceRaised,
   border: '1px solid transparent',
   borderRadius: `${radii.neuInner}px`,
@@ -243,6 +290,7 @@ export const raisedTileSx = {
  */
 export const wellSx = (tier: WellTier = 'sm') =>
   ({
+    ...lightTextResetSx,
     bgcolor: soft.groundSunken,
     boxShadow:
       tier === 'md' ? shadows.neuInset : tier === 'sm' ? shadows.neuInsetSm : shadows.neuInsetXs,
@@ -280,6 +328,8 @@ export const inkSurfaceSx = {
 
 /** Popover paper over a scrim or unknown ground: white, unpaired shadow. */
 export const floatPaperSx = {
+  ...lightTextResetSx,
+  ...lightShadowResetSx,
   bgcolor: soft.surfaceRaised,
   colorScheme: 'light',
   border: '1px solid transparent',
@@ -327,6 +377,8 @@ export const inkGrooveSx = {
  * Geometry (size, radius, padding) is the caller's.
  */
 export const neuControlSx = {
+  ...lightTextResetSx,
+  ...lightShadowResetSx,
   bgcolor: soft.surfaceRaised,
   color: soft.text,
   border: '1px solid transparent',
@@ -432,48 +484,28 @@ export const neuLinkCardSx = {
  * className="is-active". Geometry (padding, font size) is the caller's.
  */
 export const navPillSx = {
-  position: 'relative',
   borderRadius: `${radii.neuWell}px`,
-  backgroundColor: 'transparent',
   color: soft.textSecondary,
   fontWeight: 500,
   textDecoration: 'none',
-  transition: `color ${motion.fast}`,
+  transition: `box-shadow ${motion.fast}, background-color ${motion.fast}, color ${motion.fast}`,
   '@media (hover: hover)': {
     '&:hover': { color: soft.text, backgroundColor: 'transparent' },
-    '&:hover::after': { opacity: 0.5, transform: 'scaleX(0.7)' },
   },
   '&:focus-visible': { outline: `2px solid ${soft.accent}`, outlineOffset: 2 },
   // MUI's MenuItem/ListItemButton paint a gray action.focus fill under the
   // ring; the ring alone marks focus here.
   '&.Mui-focusVisible': { backgroundColor: 'transparent' },
-  // The current/selected mark: a thin rule in the brand's tri-color gradient
-  // that grows in under the label, rather than a pressed-well background —
-  // reads as a tech underline indicator, not a neumorphic button state.
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    left: '20%',
-    right: '20%',
-    bottom: 4,
-    height: 2,
-    borderRadius: `${radii.xs}px`,
-    background: gradients.gold,
-    opacity: 0,
-    transform: 'scaleX(0.4)',
-    transformOrigin: 'center',
-    transition: `opacity ${motion.fast}, transform ${motion.fast}`,
-  },
   '&[aria-current="page"], &[aria-current="page"]:hover, &.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible, &.is-active, &.is-active:hover':
     {
-      backgroundColor: 'transparent',
+      backgroundColor: soft.groundSunken,
+      boxShadow: shadows.neuInsetSm,
       color: soft.accent,
       fontWeight: 600,
-      '&::after': { opacity: 1, transform: 'scaleX(1)' },
     },
   '@media (forced-colors: active)': {
-    '&::after': { display: 'none' },
     '&[aria-current="page"], &.Mui-selected, &.is-active': {
+      boxShadow: 'none',
       border: '2px solid Highlight',
     },
     '&:focus-visible': { outline: '3px solid Highlight', outlineOffset: 2 },
@@ -481,13 +513,11 @@ export const navPillSx = {
 } as const;
 
 /**
- * Merge after `navPillSx` for a full-width row (the mobile drawer's
- * ListItemButtons): the label sits left, so the accent rule anchors under its
- * start instead of centering under the whole row's width.
+ * Merged after `navPillSx` on the mobile drawer's full-width rows. The pressed
+ * well already reads at any width, so there is nothing to add — kept as an
+ * export so the Header's rows keep one shape whichever pill style is in force.
  */
-export const navPillMobileSx = {
-  '&::after': { left: 16, right: 'auto', width: 28 },
-} as const;
+export const navPillMobileSx = {} as const;
 
 /**
  * Sunken field for the three non-MUI inputs (DocsSearch input row, docs search
@@ -577,8 +607,12 @@ export const quietLinkSx = {
   textDecoration: 'none',
   borderRadius: `${radii.xs}px`,
   transition: `color ${motion.fast}`,
-  '@media (hover: hover)': { '&:hover': { color: soft.accent } },
-  '&:focus-visible': { outline: `2px solid ${soft.accent}`, outlineOffset: 2 },
+  // soft.linkAccent, not soft.accent: this is text/an outline painted
+  // straight on whatever ground the link sits on, so — unlike an icon well's
+  // fill, which always has its own light backing — it has to react when
+  // that ground is a `Section tone="ink"` band.
+  '@media (hover: hover)': { '&:hover': { color: soft.linkAccent } },
+  '&:focus-visible': { outline: `2px solid ${soft.linkAccent}`, outlineOffset: 2 },
 } as const;
 
 /* -------------------------------------------------------------------------- */

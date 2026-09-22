@@ -177,36 +177,6 @@ const BullishChart = () => {
   );
 };
 
-/** The three brokerages under the Connect Broker node — logos only, no scroll needed for three. */
-const BROKER_LOGOS = [
-  { name: 'Webull', src: favicon('webull.com') },
-  { name: 'TradeStation', src: favicon('tradestation.com') },
-  { name: 'Alpaca', src: favicon('alpaca.markets') },
-] as const;
-
-const BrokerLogos = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.25, flexWrap: 'wrap', mt: -1 }}>
-    {BROKER_LOGOS.map((b) => (
-      <Box
-        key={b.name}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.75,
-          px: 1.25,
-          py: 0.75,
-          borderRadius: '999px',
-          bgcolor: soft.surfaceRaised,
-          border: `1px solid ${palette.border}`,
-        }}
-      >
-        <Box component="img" src={b.src} alt="" width={18} height={18} loading="lazy" sx={{ width: 18, height: 18, objectFit: 'contain' }} />
-        <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: soft.text }}>{b.name}</Typography>
-      </Box>
-    ))}
-  </Box>
-);
-
 const nodes = [
   { cx: 330, cy: 100, num: 1, key: 'dataClusters', lx: 330, ly: 48, la: 'middle' as const },
   { cx: 469, cy: 180, num: 2, key: 'strategies', lx: 516, ly: 174, la: 'start' as const },
@@ -300,31 +270,12 @@ export const WorkflowSection = () => {
       <StrategyCodeSample />
     ) : activeNode.key === 'portfolios' ? (
       <BullishChart />
-    ) : activeNode.key === 'connectBroker' ? (
-      <BrokerLogos />
     ) : null;
 
   return (
     <Section
       id="platform"
       size="lg"
-      background={
-        <Box
-          aria-hidden
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            right: { xs: -160, md: -220 },
-            width: { xs: 420, md: 620 },
-            height: { xs: 420, md: 620 },
-            background:
-              'radial-gradient(circle, rgba(232,185,35,0.28) 0%, rgba(241,53,60,0.18) 45%, rgba(26,26,26,0) 72%)',
-            filter: 'blur(40px)',
-            pointerEvents: 'none',
-            zIndex: 0,
-          }}
-        />
-      }
     >
       <SectionHeader
         align="left"

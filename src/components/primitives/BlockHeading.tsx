@@ -18,7 +18,9 @@ export const BlockHeading = ({
   description?: string;
 }) => (
   <AnimateOnScroll>
-    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: soft.accent, mb: 1 }}>
+    {/* soft.linkAccent, not soft.accent: an eyebrow painted straight on the
+        block's ground, so it has to react to a `Section tone="ink"` band. */}
+    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: soft.linkAccent, mb: 1 }}>
       {eyebrow}
     </Typography>
     <Typography component="h2" sx={{ fontWeight: 800, fontSize: { xs: '1.5rem', md: '1.85rem' }, color: soft.text, mb: description ? 1 : 3, letterSpacing: '-0.01em' }}>

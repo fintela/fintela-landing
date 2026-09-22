@@ -28,6 +28,7 @@
 import { LNG_LABELS, SUPPORTED_LNGS } from '../i18n/config';
 import { registerPicture } from './picture';
 import type { Picture, PictureFraming } from './picture';
+import heroBackdropPoster from '../assets/media/hero/backdrop-poster.jpg?w=828;1280;1920&format=avif;webp;jpeg&as=picture';
 import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
@@ -155,6 +156,31 @@ export const captionTracks = (video: VideoAsset) => {
   if (!captions) return [];
   return SUPPORTED_LNGS.map((lang) => ({ lang, label: LNG_LABELS[lang], src: captions[lang] }));
 };
+
+/** One width of the hero loop; HeroVideoBackdrop takes the first rung the viewport meets. */
+export interface HeroBackdropRung {
+  /** CSS px; matched with `(min-width: …)` when the video attaches. */
+  minWidth: number;
+  src: string;
+}
+
+/**
+ * The full-bleed loop behind the hero copy (36 s, silent). The source promo
+ * carries burnt-in captions in its bottom 200 px, so the master is cropped to
+ * 1920×880; the hero's own fade covers what remains. That master is never
+ * served: the loop sits blurred behind copy, so a 1280 rung for desktops and
+ * a 960 rung for tablets are all the pixels anyone can see, and below 600 px
+ * the poster stands in (scripts/encode-media.sh, audit IMG-01). The poster is
+ * the LCP image of the home page — the `Picture` itself, not its URL, because
+ * HeroVideoBackdrop also preloads its AVIF rungs.
+ */
+export const HERO_BACKDROP = {
+  poster: heroBackdropPoster,
+  rungs: [
+    { minWidth: 1024, src: mediaUrl('hero-backdrop-1280.mp4') },
+    { minWidth: 600, src: mediaUrl('hero-backdrop-960.mp4') },
+  ] as readonly HeroBackdropRung[],
+} as const;
 
 export const STILLS = {
   liveOps: still(liveOps),

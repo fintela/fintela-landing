@@ -17,7 +17,7 @@ import { IconWell } from '../primitives/IconWell';
 import { MediaWell } from '../primitives/MediaWell';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { clippedGradientSx, neuGrid, quietLinkSx } from '../../theme/neu';
-import { gradients, soft } from '../../theme/tokens';
+import { gradients, motion, soft } from '../../theme/tokens';
 import type { Audience } from '../../lib/audience';
 import { STILLS } from '../../media/registry';
 import { USE_CASE_KEY } from '../../solutions/registry';
@@ -45,10 +45,8 @@ const AUTOPLAY_MS = 5200;
 const RESUME_DELAY_MS = 9000;
 
 /**
- * The band's header, in the ink palette (white on black) so it sits inside
- * `AudiencesInkBand` rather than on the page's own ground. Mirrors
- * `SectionHeader`'s centered layout (a gold rule flanking the eyebrow on
- * both sides) since this band was centered before it moved onto ink.
+ * The band's centered header on the soft ground. Mirrors `SectionHeader`'s
+ * centered layout (a gold rule flanking the eyebrow on both sides).
  */
 const AudiencesHeaderBand = ({
   eyebrow,
@@ -71,7 +69,7 @@ const AudiencesHeaderBand = ({
           {rule}
           <Typography
             component="span"
-            sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: soft.onInk }}
+            sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: soft.textSecondary }}
           >
             {eyebrow}
           </Typography>
@@ -85,7 +83,7 @@ const AudiencesHeaderBand = ({
             fontSize: { xs: '2rem', sm: '2.5rem', md: '3.25rem' },
             fontWeight: 800,
             letterSpacing: '-0.02em',
-            color: soft.white,
+            color: soft.text,
             mb: 2.5,
             textWrap: 'balance',
           }}
@@ -97,7 +95,7 @@ const AudiencesHeaderBand = ({
         </Typography>
       </AnimateOnScroll>
       <AnimateOnScroll delay={150}>
-        <Typography sx={{ fontSize: { xs: '1rem', md: '1.125rem' }, lineHeight: 1.65, color: soft.onInk, maxWidth: 640, mx: 'auto' }}>
+        <Typography sx={{ fontSize: { xs: '1rem', md: '1.125rem' }, lineHeight: 1.65, color: soft.textSecondary, maxWidth: 640, mx: 'auto' }}>
           {description}
         </Typography>
       </AnimateOnScroll>
@@ -106,28 +104,11 @@ const AudiencesHeaderBand = ({
 };
 
 /**
- * Full-bleed black strip (edge to edge with the viewport, ignoring the
- * Section's Container gutter), the same treatment as `CapabilitiesInkBand`:
- * spans the whole "Who it's for" band — header, carousel and advantages
- * tiles alike.
+ * The band's content column. The band sits on the page's own soft ground:
+ * neumorphic panels pair a white highlight with the ground's hue, so they
+ * never go on an ink surface.
  */
-const AudiencesInkBand = ({ children }: { children: ReactNode }) => (
-  <Box
-    sx={{
-      width: '100vw',
-      position: 'relative',
-      left: '50%',
-      right: '50%',
-      marginLeft: '-50vw',
-      marginRight: '-50vw',
-      background: gradients.ink,
-      py: { xs: 8, md: 12 },
-      colorScheme: 'dark',
-    }}
-  >
-    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 3, md: 4 } }}>{children}</Box>
-  </Box>
-);
+const AudiencesBand = ({ children }: { children: ReactNode }) => <Box>{children}</Box>;
 
 /**
  * Whether the carousel may tick: the panel is on screen, the tab is visible
@@ -197,8 +178,8 @@ export const InstitutionalSection = () => {
   };
 
   return (
-    <Section id="for-funds" size="lg" sx={{ py: 0 }}>
-      <AudiencesInkBand>
+    <Section id="for-funds" size="lg" tone="ink">
+      <AudiencesBand>
         <AudiencesHeaderBand
           eyebrow={t('audiences.eyebrow')}
           title={t('audiences.title')}
@@ -237,11 +218,33 @@ export const InstitutionalSection = () => {
                     height: '100%',
                     cursor: 'pointer',
                     transformOrigin: 'center',
-                    transition: 'transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease, filter 0.5s ease',
+                    transition: `transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease, filter 0.5s ease, background-image ${motion.fast}`,
                     transform: { md: active === idx ? 'scale(1.02)' : 'scale(0.98)' },
                     opacity: active === idx ? 1 : { xs: 1, md: 0.45 },
+                    // The active/inactive blur-and-fade treatment is unchanged —
+                    // the gold ring below is an independent hover/focus cue that
+                    // layers on top of it (a blurred card can still be hovered
+                    // to preview it before a click swaps it in).
                     filter: active === idx ? 'none' : { xs: 'none', md: 'blur(1.5px) saturate(0.7)' },
                     '@media (prefers-reduced-motion: reduce)': { transition: 'opacity 0.3s ease', transform: 'none', filter: 'none' },
+                    // Same two-layer background as PricingPage's plan cards: an
+                    // opaque white padding-box layer over the brand gradient
+                    // painted to the border-box, so only the 1.5px ring (set on
+                    // AudienceCard's NeuPanel, which this targets as its direct
+                    // child) reads the gradient. Card, not wrapper, so it never
+                    // squares off the rounded corners.
+                    '@media (hover: hover)': {
+                      '&:hover > article': {
+                        backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+                        backgroundOrigin: 'border-box',
+                        backgroundClip: 'padding-box, border-box',
+                      },
+                    },
+                    '&:focus-within > article': {
+                      backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+                      backgroundOrigin: 'border-box',
+                      backgroundClip: 'padding-box, border-box',
+                    },
                   }}
                 >
                   <AudienceCard audience={audience} />
@@ -271,6 +274,9 @@ export const InstitutionalSection = () => {
                   border: 'none',
                   borderRadius: 999,
                   cursor: 'pointer',
+                  // This band is permanently ink (tone="ink" above), not a
+                  // light ground, so the inactive dot is the onInk-muted
+                  // white rather than palette.borderStrong.
                   background: active === idx ? gradients.gold : soft.onInkMuted,
                   transition: 'width 0.25s ease, background 0.25s ease',
                 }}
@@ -306,7 +312,7 @@ export const InstitutionalSection = () => {
             </AnimateOnScroll>
           ))}
         </Box>
-      </AudiencesInkBand>
+      </AudiencesBand>
     </Section>
   );
 };
@@ -327,6 +333,10 @@ const AudienceCard = ({ audience }: { audience: Audience }) => {
         mx: { xs: 'auto', md: 0 },
         width: '100%',
         height: '100%',
+        // 1.5px transparent at rest (NeuPanel's own raisedPanelSx is 1px), so
+        // the hover/focus gold ring painted by the wrapping Box above never
+        // shifts the card's size when it appears.
+        border: '1.5px solid transparent',
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', p: CARD_PAD, pb: 0, flex: '0 0 auto' }}>

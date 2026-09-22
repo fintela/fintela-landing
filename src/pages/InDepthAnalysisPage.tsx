@@ -129,7 +129,7 @@ export const InDepthAnalysisPage = () => {
           </Box>
         </Section>
 
-        <Section size="lg">
+        <Section size="lg" tone="ink">
           {/* Del ranking a la decisión */}
           <BlockHeading
             eyebrow={t('inDepthAnalysis.workflow.eyebrow')}
@@ -156,7 +156,7 @@ export const InDepthAnalysisPage = () => {
                 key={key}
                 component={RouterLink}
                 to={t(`inDepthAnalysis.docsLinks.${key}.href`)}
-                sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.accent }]}
+                sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.linkAccent }]}
               >
                 {t(`inDepthAnalysis.docsLinks.${key}.label`)}
                 <ArrowForwardIcon sx={{ fontSize: 16 }} />

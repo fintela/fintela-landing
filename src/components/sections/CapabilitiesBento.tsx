@@ -65,8 +65,7 @@ const Rule = () => (
 );
 
 /**
- * The band's header, in the ink palette (white on black) so it sits inside
- * `CapabilitiesInkBand` rather than on the page's own ground.
+ * The band's header, right-aligned from md up, on the page's soft ground.
  */
 const CapabilitiesHeaderBand = ({
   eyebrow,
@@ -85,7 +84,7 @@ const CapabilitiesHeaderBand = ({
         <Box aria-hidden sx={{ width: 28, height: 3, borderRadius: '2px', background: gradients.gold, flexShrink: 0, display: { xs: 'block', md: 'none' } }} />
         <Typography
           component="span"
-          sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: soft.onInk }}
+          sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: soft.textSecondary }}
         >
           {eyebrow}
         </Typography>
@@ -99,7 +98,7 @@ const CapabilitiesHeaderBand = ({
           fontSize: { xs: '2rem', sm: '2.5rem', md: '3.25rem' },
           fontWeight: 800,
           letterSpacing: '-0.02em',
-          color: soft.white,
+          color: soft.text,
           mb: 2.5,
           textWrap: 'balance',
         }}
@@ -115,7 +114,7 @@ const CapabilitiesHeaderBand = ({
         sx={{
           fontSize: { xs: '1rem', md: '1.125rem' },
           lineHeight: 1.65,
-          color: soft.onInk,
+          color: soft.textSecondary,
           maxWidth: 640,
           ml: { xs: 0, md: 'auto' },
           mb: { xs: 5, md: 7 },
@@ -128,28 +127,11 @@ const CapabilitiesHeaderBand = ({
 );
 
 /**
- * Full-bleed black strip (edge to edge with the viewport, ignoring the
- * Section's Container gutter) spanning the whole Capabilities band — header
- * and bento grid alike — so the ink surface runs from right under the hero
- * down to where "The Platform" band picks back up.
+ * The band's content column. The band sits on the page's own soft ground:
+ * neumorphic panels pair a white highlight with the ground's hue, so they
+ * never go on an ink surface.
  */
-const CapabilitiesInkBand = ({ children }: { children: ReactNode }) => (
-  <Box
-    sx={{
-      width: '100vw',
-      position: 'relative',
-      left: '50%',
-      right: '50%',
-      marginLeft: '-50vw',
-      marginRight: '-50vw',
-      background: gradients.ink,
-      py: { xs: 8, md: 12 },
-      colorScheme: 'dark',
-    }}
-  >
-    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 3, md: 4 } }}>{children}</Box>
-  </Box>
-);
+const CapabilitiesBand = ({ children }: { children: ReactNode }) => <Box>{children}</Box>;
 
 const FeatureTile = ({
   title,
@@ -193,8 +175,8 @@ export const CapabilitiesBento = () => {
   const docsLabel = (key: string) => t(`capabilities.docsLabels.${key}`);
 
   return (
-    <Section id="capabilities" size="lg" sx={{ py: 0 }}>
-      <CapabilitiesInkBand>
+    <Section id="capabilities" size="lg">
+      <CapabilitiesBand>
         <CapabilitiesHeaderBand
           eyebrow={t('features.eyebrow')}
           title={t('features.title')}
@@ -302,7 +284,7 @@ export const CapabilitiesBento = () => {
         </BentoTile>
 
         </BentoGrid>
-      </CapabilitiesInkBand>
+      </CapabilitiesBand>
     </Section>
   );
 };

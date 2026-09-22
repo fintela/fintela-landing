@@ -443,8 +443,8 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                                 py: 1,
                                 fontSize: '0.92rem',
                                 minWidth: 200,
-                                justifyContent: 'center',
-                                textAlign: 'center',
+                                justifyContent: 'flex-start',
+                                textAlign: 'left',
                                 '&::after': { display: 'none' },
                               },
                             ]}
@@ -493,8 +493,8 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                                 py: 1,
                                 fontSize: '0.92rem',
                                 minWidth: 200,
-                                justifyContent: 'center',
-                                textAlign: 'center',
+                                justifyContent: 'flex-start',
+                                textAlign: 'left',
                                 '&::after': { display: 'none' },
                               },
                             ]}

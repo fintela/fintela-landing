@@ -143,7 +143,7 @@ export const SamplersPage = () => {
                 key={key}
                 component={RouterLink}
                 to={t(`samplers.docsLinks.${key}.href`)}
-                sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.accent }]}
+                sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.linkAccent }]}
               >
                 {t(`samplers.docsLinks.${key}.label`)}
                 <ArrowForwardIcon sx={{ fontSize: 16 }} />

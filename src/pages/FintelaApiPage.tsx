@@ -194,7 +194,7 @@ export const FintelaApiPage = () => {
             <Box
               component={RouterLink}
               to="/docs/api-overview"
-              sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.accent }]}
+              sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.linkAccent }]}
             >
               {t('fintelaApi.docsLink')}
               <ArrowForwardIcon sx={{ fontSize: 16 }} />

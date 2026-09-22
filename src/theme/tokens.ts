@@ -108,8 +108,26 @@ export const accents = [
  */
 export const soft = {
   white: '#ffffff',
-  text: palette.text,
-  textSecondary: palette.textMuted,
+  // CSS custom properties, not raw hex: a `Section tone="ink"` band (see
+  // Section.tsx) overrides these three on itself to the onInk values below,
+  // so every consumer that imports `text`/`textSecondary`/`textSubtle` from
+  // here — not a hardcoded hex — repaints automatically inside it. Their
+  // light-mode values live in src/index.css (`:root`); their dark-mode
+  // values are declared again just below, next to `onInk`, so the two never
+  // drift apart. An "own background" surface (a white NeuPanel, a raised
+  // button — anything opaque, not painted straight on the section's ground)
+  // resets the same three properties back to their light values on itself;
+  // see `lightTextResetSx` in theme/neu.ts, spread into every such recipe.
+  text: 'var(--fi-text)',
+  textSecondary: 'var(--fi-text-secondary)',
+  textSubtle: 'var(--fi-text-subtle)',
+  // A fourth CSS custom property, same mechanism: an accent-coloured LINK
+  // painted straight on a section's ground (`quietLinkSx`'s hover, and the
+  // handful of "docs link" call sites that set this as their rest colour
+  // outright). `soft.accent` itself stays a plain hex — it is what an
+  // opaque well or icon paints itself with, never text sitting bare on ink —
+  // this is the one accent role that needs to react to `tone="ink"` too.
+  linkAccent: 'var(--fi-link-accent)',
 
   ground: '#eeeeee',
   groundSunken: '#e2e2e2',
@@ -192,41 +210,49 @@ export const gradients = {
 } as const;
 
 export const radii = {
-  xs: 3,
-  sm: 6,
-  md: 4,
-  lg: 7,
-  xl: 9,
-  // Was a true 999px pill/circle; now a flat rounded-rect radius so pill
-  // chips, icon buttons and the FAB read as squared-off, not stadium/circular.
-  pill: 10,
+  xs: 4,
+  sm: 8,
+  md: 6,
+  lg: 10,
+  xl: 14,
+  pill: 999,
   // Soft-UI radii, named by role. Soft shadows need a generous arc to read as
   // a pillow rather than a drop shadow, so these sit above the scale above.
   // In `sx` these are px numbers, not spacing units — write `${radii.neuCard}px`.
-  neuCard: 12,
-  neuCardSm: 10,
-  neuInner: 8,
-  neuWell: 6,
+  neuCard: 24,
+  neuCardSm: 20,
+  neuInner: 14,
+  neuWell: 10,
 } as const;
 
 export const shadows = {
-  // Elevation shadows retired — every raised block (card, button, panel,
-  // menu, sticky bar) sits flush with no drop shadow. The sunken/pressed
-  // well shadows below stay: those signal an interactive well (an input, a
-  // pressed button, a groove divider), not a floating block.
-  xs: 'none',
-  sm: 'none',
-  md: 'none',
-  lg: 'none',
-  brand: 'none',
-  brandStrong: 'none',
+  xs: '0 1px 2px rgba(0,0,0, 0.04)',
+  sm: '0 1px 3px rgba(0,0,0, 0.05)',
+  md: '0 2px 8px rgba(0,0,0, 0.06)',
+  lg: '0 4px 16px rgba(0,0,0, 0.07)',
+  brand: '0 6px 16px rgba(0,0,0, 0.18)',
+  brandStrong: '0 8px 20px rgba(0,0,0, 0.26)',
 
-  neuRaisedXs: 'none',
-  neuRaisedSm: 'none',
-  neuRaisedMd: 'none',
-  neuRaised: 'none',
-  neuRaisedLg: 'none',
-  neuRaisedXl: 'none',
+  // Soft-UI pairs: a near-black shadow bottom-right and a highlight top-left,
+  // so the light source stays top-left at every nesting depth. CSS custom
+  // properties, not raw strings: their light-mode pairing (a white highlight)
+  // only reads as a highlight against `soft.ground`; against a `Section
+  // tone="ink"` band that same white would show up as a stray glow, so the
+  // ink override (src/index.css) recolours the highlight to a mid-gray lifted
+  // off the ink gradient instead. A card with its own opaque background (a
+  // white NeuPanel, a raised button, `MuiAlert`) resets these back to their
+  // light values for its descendants — `darkSurfaceResetSx` in this file,
+  // spread into every such recipe — so a control nested inside one (e.g. the
+  // ToggleButtonGroup inside ContactPage's form panel) keeps the light pair
+  // regardless of the section it is ultimately sitting in.
+  // tier <-> min sibling gap: Xs 8px, Sm 16px (24px if it lifts to Md on hover),
+  // Md 24px, Raised/Lg 32px, Xl focus-only.
+  neuRaisedXs: 'var(--fi-shadow-raised-xs)',
+  neuRaisedSm: 'var(--fi-shadow-raised-sm)',
+  neuRaisedMd: 'var(--fi-shadow-raised-md)',
+  neuRaised: 'var(--fi-shadow-raised)',
+  neuRaisedLg: 'var(--fi-shadow-raised-lg)',
+  neuRaisedXl: 'var(--fi-shadow-raised-xl)',
   // Inverted pairs: a permanently sunken well, and a raised control being
   // pressed. Kept apart so the two can diverge later.
   neuInset:
@@ -235,8 +261,10 @@ export const shadows = {
     'inset 3px 3px 6px rgba(0,0,0,0.14), inset -3px -3px 6px rgba(255,255,255,0.96)',
   neuPressed:
     'inset 5px 5px 10px rgba(0,0,0,0.17), inset -5px -5px 10px rgba(255,255,255,0.95)',
-  neuAccent: 'none',
-  neuAccentHover: 'none',
+  // The accent surface is the one thing not tinted like the ground, so it
+  // drops the pairing: a white highlight on black reads as an artifact.
+  neuAccent: '6px 6px 16px rgba(0,0,0,0.30)',
+  neuAccentHover: '8px 10px 22px rgba(0,0,0,0.38)',
   neuAccentPressed: 'inset 4px 4px 10px rgba(0,0,0,0.30)',
   // A groove instead of a 1px rule — soft UI has no hard borders.
   neuDivider:
@@ -249,16 +277,20 @@ export const shadows = {
   // Inline code and 16-18px wells: the Sm pair swallows a glyph box.
   neuInsetXs:
     'inset 1px 1px 2px rgba(0,0,0,0.12), inset -1px -1px 2px rgba(255,255,255,0.9)',
-  // Chrome that floats over arbitrary content (menus, dialogs, the FAB,
-  // drawers) — no drop shadow either now. The header keeps its own
-  // scroll-triggered shadow (neuBar): unlike a card, it needs to visibly
-  // separate from the content scrolling under it.
+  // Chrome that floats over arbitrary content has no ground to pair a white
+  // highlight against, so these are unpaired black drops.
+  // Sticky bars once content scrolls under them (bottom-only).
   neuBar: '0 6px 16px rgba(0,0,0,0.10)',
-  neuFloat: 'none',
-  neuFloatLeft: 'none',
-  neuFloatRight: 'none',
-  neuFloor: 'none',
-  neuInk: 'none',
+  // Menus, dialogs, the FAB.
+  neuFloat: '0 12px 36px rgba(0,0,0,0.22)',
+  // Drawers: the shadow falls away from the scrim edge.
+  neuFloatLeft: '-10px 0 28px rgba(0,0,0,0.22)',
+  neuFloatRight: '10px 0 28px rgba(0,0,0,0.22)',
+  // Footer step-down: the ground drops one level; only the top edge shows it.
+  neuFloor: 'inset 0 12px 20px -12px rgba(0,0,0,0.18)',
+  // The ink surface (code) is saturated like the accent button, so it drops
+  // the pairing too; lighter than neuAccent because the surface is large.
+  neuInk: '8px 8px 22px rgba(0,0,0,0.22)',
   neuPressedInk: 'inset 2px 2px 4px rgba(0,0,0,0.45)',
 } as const;
 

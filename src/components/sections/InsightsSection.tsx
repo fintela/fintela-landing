@@ -38,7 +38,7 @@ export const InsightsSection = () => {
   const counterCol = text.length === 0 ? '1 / 4' : text.length === 1 ? 'span 2' : 'auto';
 
   return (
-    <Section id="insights" size="lg">
+    <Section id="insights" size="lg" tone="ink">
       <BandHeader
         eyebrow={t('insights.eyebrow')}
         title={t('insights.title')}
@@ -52,7 +52,9 @@ export const InsightsSection = () => {
 
       {status === 'loading' && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress size={28} sx={{ color: soft.accent }} />
+          {/* This band is permanently ink (tone="ink" above): soft.accent
+              is near-black and would be invisible on it. */}
+          <CircularProgress size={28} sx={{ color: soft.onInk }} />
         </Box>
       )}
 

@@ -65,7 +65,7 @@ export const SolutionPage = () => {
 
       <Box component="main" id="content">
         {/* Hero: badge and lead, plus a right-hand plate — one photo per seat. */}
-        <Section tone="soft" size="lg" sx={[bandClipSx, { pt: { xs: 5, md: 8 }, pb: { xs: 8, md: 11 } }]}>
+        <Section tone="ink" size="lg" sx={[bandClipSx, { pt: { xs: 5, md: 8 }, pb: { xs: 8, md: 11 } }]}>
           <Box
             sx={{
               display: 'grid',

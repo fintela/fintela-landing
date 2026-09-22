@@ -129,7 +129,7 @@ export const BlogPage = () => {
         </Section>
 
         {/* Grid */}
-        <Section size="md" maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, minHeight: '40vh' }}>
+        <Section tone="ink" size="md" maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, minHeight: '40vh' }}>
           {status === 'loading' && (
             <Box role="status">
               <Box sx={srOnly}>{t('blog.loading')}</Box>

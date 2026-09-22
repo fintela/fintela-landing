@@ -147,7 +147,7 @@ export const ContactPage = () => {
         </Section>
 
         {/* Contact Form Section */}
-        <Section size="md" maxWidth="md" sx={{ pt: { xs: 2, md: 3 } }}>
+        <Section tone="ink" size="md" maxWidth="md" sx={{ pt: { xs: 2, md: 3 } }}>
           {submitted && (
             <Alert
               severity="success"
