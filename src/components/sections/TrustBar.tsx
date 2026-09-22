@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { radii } from '../../theme/tokens';
+import { motion, radii } from '../../theme/tokens';
 import { eyebrowSx } from '../../theme/neu';
 import { Section } from '../primitives/Section';
 import { NeuPanel } from '../primitives/NeuPanel';
@@ -48,17 +48,31 @@ export const TrustBar = () => {
                 px: 2.5,
                 py: 1.5,
                 borderRadius: `${radii.neuWell}px`,
+                // The tile already lifts (neuControlSx); without this the logo
+                // stayed dulled while it rose, so the pillow moved and the
+                // thing it holds did not. Paint only — no transform to cancel
+                // under reduce, where the 0.01ms clamp just makes it instant.
+                '@media (hover: hover)': {
+                  '&:hover .partner-logo': { opacity: 1, filter: 'grayscale(0)' },
+                },
+                '&:focus-visible .partner-logo': { opacity: 1, filter: 'grayscale(0)' },
               }}
             >
-              <img
+              <Box
+                component="img"
+                className="partner-logo"
                 src={p.logo}
                 alt={p.name}
-                style={{
+                sx={{
                   maxHeight: '100%',
                   maxWidth: 180,
                   objectFit: 'contain',
-                  opacity: 0.8,
+                  opacity: 0.85,
                   filter: 'grayscale(0.4)',
+                  transition: `opacity ${motion.base}, filter ${motion.base}`,
+                  // A filter is invisible to forced-colors' own repaint, so the
+                  // logo would stay desaturated in a high-contrast theme.
+                  '@media (forced-colors: active)': { opacity: 1, filter: 'none' },
                 }}
               />
             </NeuPanel>

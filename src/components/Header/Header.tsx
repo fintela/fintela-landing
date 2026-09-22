@@ -48,7 +48,13 @@ type NavItem = {
   labelKey: string;
   /** Where the anchor points: a home band (`/#platform`) or a route. */
   href: string;
-  type: 'scroll' | 'route';
+  /**
+   * 'route' and 'home' both render a plain router Link and share `isActive`'s
+   * exact-path check; 'home' additionally forces the scroll-to-top a same-page
+   * click needs (see `handleNavClick`) — the router replaces the history entry
+   * in place when the path does not change, so nothing else would scroll it.
+   */
+  type: 'scroll' | 'route' | 'home';
   /**
    * Marks the item current for every path under this prefix when that differs
    * from the link target (the docs link lands on the overview, but every
@@ -68,6 +74,13 @@ const PRODUCT_ITEMS: NavItem[] = [
   { id: 'inDepthAnalysis', labelKey: 'nav.inDepthAnalysis', href: '/product/in-depth-analysis', type: 'route' },
   { id: 'fintelaApi', labelKey: 'nav.fintelaApi', href: '/product/fintela-api', type: 'route' },
 ];
+
+/**
+ * The very first control in the bar — ahead of the Product/Solutions menu
+ * buttons, which are hardcoded JSX rather than entries in `navItems` and so
+ * need this pulled out separately to render before them.
+ */
+const HOME_ITEM: NavItem = { id: 'home', labelKey: 'nav.home', href: '/', type: 'home' };
 
 const navItems: NavItem[] = [
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
@@ -188,7 +201,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const onSolutions = location.pathname.startsWith('/solutions');
 
   const isActive = (item: NavItem) => {
-    if (item.type === 'route') {
+    if (item.type === 'route' || item.type === 'home') {
       const prefix = item.activePrefix ?? item.href;
       return location.pathname === prefix || location.pathname.startsWith(prefix + '/');
     }
@@ -226,6 +239,13 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
    */
   const handleNavClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     setMobileOpen(false);
+    if (item.type === 'home') {
+      // Same-page click: the router replaces the entry in place and nothing
+      // else scrolls, so this does — the logo's own home link carries the
+      // identical fix, for the identical reason.
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      return;
+    }
     if (item.type !== 'scroll') return;
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
       return;
@@ -311,7 +331,18 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
       >
         <Toolbar
           sx={{
-            justifyContent: 'space-between',
+            // xs: just the logo and the actions cluster (nav is display:none
+            // below md) — plain space-between, edge to edge, as before.
+            // md+: a 3-column grid. The two outer tracks are equal 1fr's, so
+            // the nav sits at the bar's true geometric center regardless of
+            // the logo and actions cluster being different widths — a flex
+            // `space-between` with 3 children only centers the middle one
+            // when its neighbours happen to match width, which logo/actions
+            // never do here.
+            display: { xs: 'flex', md: 'grid' },
+            justifyContent: { xs: 'space-between' },
+            gridTemplateColumns: { md: '1fr auto 1fr' },
+            alignItems: 'center',
             py: { xs: 1, md: 1.25 },
             px: { xs: 2, md: 4 },
             minHeight: { xs: 60, md: 72 },
@@ -334,6 +365,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
               alignItems: 'center',
               height: { xs: 17, md: 22 },
               borderRadius: `${radii.neuWell}px`,
+              justifySelf: 'start',
               ...focusRingSx,
             }}
           >
@@ -357,8 +389,19 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
               display: { xs: 'none', md: 'flex' },
               gap: 0.5,
               alignItems: 'center',
+              justifySelf: 'center',
             }}
           >
+            <Button
+              component={RouterLink}
+              to={HOME_ITEM.href}
+              onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, HOME_ITEM)}
+              disableRipple
+              aria-current={isActive(HOME_ITEM) ? 'page' : undefined}
+              sx={[navPillSx, navPillButtonSx]}
+            >
+              {t(HOME_ITEM.labelKey)}
+            </Button>
             <Button
               id="product-menu-button"
               ref={setProductButton}
@@ -511,7 +554,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
           </Box>
 
           {/* Actions */}
-          <Box sx={{ display: 'flex', gap: { xs: 1, md: 1.5 }, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: { xs: 1, md: 1.5 }, alignItems: 'center', justifySelf: 'end' }}>
             <IconButton
               aria-label={t('aria.search')}
               aria-keyshortcuts="Meta+K Control+K"
@@ -575,6 +618,23 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
 
         <Box component="nav" aria-label={t('aria.primaryNav')}>
           <List disablePadding sx={{ pt: 1 }}>
+            <ListItem disablePadding>
+              <ListItemButton
+                component={RouterLink}
+                to={HOME_ITEM.href}
+                onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, HOME_ITEM)}
+                selected={isActive(HOME_ITEM)}
+                aria-current={isActive(HOME_ITEM) ? 'page' : undefined}
+                sx={[navPillSx, navPillMobileSx, { mx: 1.5, my: 0.25, px: 2, py: 1.25 }]}
+              >
+                <ListItemText
+                  primary={t(HOME_ITEM.labelKey)}
+                  slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '1rem' } } }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <Groove sx={{ my: 1, mx: 3 }} />
+
             <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 1, pb: 1 }}>
               {t('nav.product')}
             </ListSubheader>

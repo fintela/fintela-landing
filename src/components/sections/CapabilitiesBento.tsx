@@ -10,7 +10,7 @@ import { ChapterRail } from '../primitives/ChapterRail';
 import { BentoGrid, BentoTile } from '../primitives/BentoGrid';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { clippedGradientSx, quietLinkSx, wellSx } from '../../theme/neu';
-import { gradients, palette, radii, soft } from '../../theme/tokens';
+import { gradients, motion, palette, radii, soft } from '../../theme/tokens';
 import { useVideoChapters } from '../../media/chapters';
 import { VIDEOS, captionTracks } from '../../media/registry';
 
@@ -59,6 +59,27 @@ const FitnessSparkline = ({ from, to }: { from: string; to: string }) => {
     </Box>
   );
 };
+
+/**
+ * A tile's exit link, merged after `quietLinkSx`. The arrow nudges 3px toward
+ * its destination on hover; only the icon moves, so the label's baseline stays
+ * put and the tile's own geometry never shifts. The reduce block is not
+ * redundant: index.css clamps the transition to 0.01ms, which makes the slide
+ * instant rather than absent, and a transform can only be cancelled by pinning
+ * it (the same reason `noMotionPress` exists).
+ */
+const docsLinkSx = {
+  mt: 'auto',
+  fontSize: '0.82rem',
+  fontWeight: 600,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 0.5,
+  alignSelf: 'flex-start',
+  '& svg': { transition: `transform ${motion.fast}` },
+  '@media (hover: hover)': { '&:hover svg': { transform: 'translateX(3px)' } },
+  '@media (prefers-reduced-motion: reduce)': { '& svg': { transform: 'none !important' } },
+} as const;
 
 const Rule = () => (
   <Box aria-hidden sx={{ width: 28, height: 3, borderRadius: '2px', background: gradients.gold, mb: 2, flexShrink: 0 }} />
@@ -149,11 +170,7 @@ const FeatureTile = ({
     {/* A sub-topic of the band, so a heading — the size is the tile's own. */}
     <Typography component="h3" sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>{title}</Typography>
     <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6, mb: 2 }}>{description}</Typography>
-    <Box
-      component={RouterLink}
-      to={docs}
-      sx={[quietLinkSx, { mt: 'auto', fontSize: '0.82rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 0.5, alignSelf: 'flex-start' }]}
-    >
+    <Box component={RouterLink} to={docs} sx={[quietLinkSx, docsLinkSx]}>
       {docsLabel}
       <ArrowForwardIcon sx={{ fontSize: 14 }} />
     </Box>
@@ -258,11 +275,7 @@ export const CapabilitiesBento = () => {
                 <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6, mb: 2 }}>
                   {t('features.items.bayesian.description')}
                 </Typography>
-                <Box
-                  component={RouterLink}
-                  to="/product/samplers"
-                  sx={[quietLinkSx, { mt: 'auto', fontSize: '0.82rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 0.5, alignSelf: 'flex-start' }]}
-                >
+                <Box component={RouterLink} to="/product/samplers" sx={[quietLinkSx, docsLinkSx]}>
                   {docsLabel('samplers')}
                   <ArrowForwardIcon sx={{ fontSize: 14 }} />
                 </Box>

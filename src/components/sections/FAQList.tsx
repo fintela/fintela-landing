@@ -45,7 +45,19 @@ export const FAQList = ({ items }: { items: FAQItem[] }) => (
                   color: soft.text,
                   transition: `box-shadow ${motion.fast}, background-color ${motion.fast}, color ${motion.fast}`,
                   '& .MuiAccordionSummary-content': { my: 1.25 },
-                  '@media (hover: hover)': { '&:hover': { color: soft.accent } },
+                  // A closed row only changed ink on hover, so nothing
+                  // hinted at the well it is about to become. neuInsetXs is
+                  // the lightest tier in the ramp (a 1px pair) — enough to
+                  // pre-figure the pressed state without pretending to be it.
+                  // `:not(.Mui-expanded)` rather than source order: an open
+                  // row keeps its own deeper Sm well under the pointer.
+                  '@media (hover: hover)': {
+                    '&:hover': { color: soft.accent },
+                    '&:hover:not(.Mui-expanded)': {
+                      bgcolor: soft.groundSunken,
+                      boxShadow: shadows.neuInsetXs,
+                    },
+                  },
                   '&.Mui-expanded': {
                     minHeight: 56,
                     bgcolor: soft.groundSunken,

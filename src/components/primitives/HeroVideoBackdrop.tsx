@@ -105,7 +105,18 @@ export const HeroVideoBackdrop = () => {
     const video = videoRef.current;
     if (!frame || !video) return;
     video.load();
-    video.play().catch(() => {});
+
+    // Autoplay is occasionally rejected outside the usual policy checks (iOS
+    // Low Power Mode is the common case): retry once on the visitor's first
+    // interaction rather than leaving the loop stuck on its poster frame.
+    const retryOnInteraction = () => {
+      video.play().catch(() => {});
+    };
+    video.play().catch(() => {
+      document.addEventListener('pointerdown', retryOnInteraction, { once: true });
+      document.addEventListener('keydown', retryOnInteraction, { once: true });
+    });
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) video.play().catch(() => {});
@@ -114,7 +125,11 @@ export const HeroVideoBackdrop = () => {
       { threshold: 0.1 }
     );
     observer.observe(frame);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('pointerdown', retryOnInteraction);
+      document.removeEventListener('keydown', retryOnInteraction);
+    };
   }, [src]);
 
   const cover = {

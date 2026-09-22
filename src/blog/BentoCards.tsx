@@ -5,8 +5,8 @@ import { NeuPanel } from '../components/primitives/NeuPanel';
 import { TierBadge } from '../components/primitives/TierBadge';
 import { MediaWell } from '../components/primitives/MediaWell';
 import { formatContentDate, truncate } from '../content/format';
-import { clippedGradientSx } from '../theme/neu';
-import { gradients, soft } from '../theme/tokens';
+import { clippedGradientSx, noMotionPress } from '../theme/neu';
+import { gradients, motion, soft } from '../theme/tokens';
 import { accentFor } from './format';
 import { blogAssetUrl } from './api';
 import type { BlogPostSummary } from './types';
@@ -23,12 +23,51 @@ interface CardProps {
   titleAs?: CardTitleLevel;
 }
 
+/**
+ * The card's exit line. It rests a touch under full strength and settles to it
+ * while the card is hovered, so the arrow acknowledges the pointer that the
+ * panel's lift has already answered. `readMoreHoverSx` below is the other half
+ * of the pair — every panel that renders a ReadMore must carry it — and the
+ * `.read-more` hook is the one BlogCard.tsx already uses on /blog.
+ */
 const ReadMore = ({ label, accent }: { label: string; accent: string }) => (
-  <Box className="read-more" sx={{ mt: 'auto', display: 'flex', alignItems: 'center', gap: 0.75, color: accent, fontWeight: 600, fontSize: '0.88rem' }}>
+  <Box
+    className="read-more"
+    sx={{
+      mt: 'auto',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 0.75,
+      color: accent,
+      fontWeight: 600,
+      fontSize: '0.88rem',
+      // 0.85, not BlogCard's 0.7: this line also renders white on the blurred
+      // cover of a CompactPostCard, where a third off full strength is too
+      // little contrast to read against a photograph.
+      opacity: 0.85,
+      transition: `opacity ${motion.fast}, transform ${motion.fast}`,
+      // The global reduce rule (index.css) makes the slide instant, not
+      // absent; only the pinned transform actually cancels it.
+      ...noMotionPress,
+    }}
+  >
     {label}
     <ArrowForward sx={{ fontSize: 16 }} />
   </Box>
 );
+
+/**
+ * Merged into the sx of every panel that wraps a ReadMore. Passed as an ARRAY
+ * entry, never spread: NeuPanel's interactive recipe already carries a
+ * `@media (hover: hover)` block for the panel's own lift, and two spreads of
+ * that one key overwrite each other instead of merging (see theme/neu.ts).
+ */
+const readMoreHoverSx = {
+  '@media (hover: hover)': {
+    '&:hover .read-more': { opacity: 1, transform: 'translateX(4px)' },
+  },
+  '&:focus-visible .read-more': { opacity: 1 },
+} as const;
 
 const MetaRow = ({
   post,
@@ -67,7 +106,7 @@ export const FeaturedPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
     <NeuPanel
       to={`/blog/${post.slug}`}
       component="article"
-      sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+      sx={[{ height: '100%', display: 'flex', flexDirection: 'column' }, readMoreHoverSx]}
     >
       {post.cover ? (
         <MediaWell
@@ -130,7 +169,7 @@ export const VerticalPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
     <NeuPanel
       to={`/blog/${post.slug}`}
       component="article"
-      sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+      sx={[{ height: '100%', display: 'flex', flexDirection: 'column' }, readMoreHoverSx]}
     >
       {post.cover ? (
         <MediaWell
@@ -200,7 +239,10 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
       <NeuPanel
         to={`/blog/${post.slug}`}
         component="article"
-        sx={{ height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 1 }}
+        sx={[
+          { height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 1 },
+          readMoreHoverSx,
+        ]}
       >
         <MetaRow post={post} tag={post.tags[0]} />
         <Typography component={titleAs} sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
@@ -216,15 +258,18 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
     <NeuPanel
       to={`/blog/${post.slug}`}
       component="article"
-      sx={{
-        position: 'relative',
-        height: '100%',
-        minHeight: 220,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        p: { xs: 2.5, md: 3 },
-      }}
+      sx={[
+        {
+          position: 'relative',
+          height: '100%',
+          minHeight: 220,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          p: { xs: 2.5, md: 3 },
+        },
+        readMoreHoverSx,
+      ]}
     >
       <Box
         component="img"
@@ -273,7 +318,13 @@ export const TextPostCard = ({ post, titleAs = 'h3' }: CardProps) => (
 export const PostCountCard = ({ count, newest }: { count: number; newest: string }) => {
   const { t, i18n } = useTranslation('home');
   return (
-    <NeuPanel to="/blog" sx={{ height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 3 }}>
+    <NeuPanel
+      to="/blog"
+      sx={[
+        { height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 3 },
+        readMoreHoverSx,
+      ]}
+    >
       <Box>
         <Typography
           component="span"

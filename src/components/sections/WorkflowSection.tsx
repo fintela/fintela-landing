@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { fonts, gradients, palette, shadows, soft } from '../../theme/tokens';
-import { inkSurfaceSx } from '../../theme/neu';
+import { fonts, gradients, motion, palette, shadows, soft } from '../../theme/tokens';
+import { focusRingSx, forcedColorsFocus, inkSurfaceSx } from '../../theme/neu';
 import { NeuPanel } from '../primitives/NeuPanel';
 import { CheckWell } from '../primitives/CheckWell';
 import { Groove } from '../primitives/Groove';
@@ -305,7 +305,7 @@ export const WorkflowSection = () => {
           ref={carouselRef}
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 5fr) minmax(0, 7fr)' },
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 5fr) minmax(0, 7fr)' },
             gap: { xs: 3, md: 4 },
             alignItems: 'stretch',
           }}
@@ -512,7 +512,26 @@ export const WorkflowSection = () => {
                     borderRadius: 999,
                     cursor: 'pointer',
                     background: active === idx ? gradients.gold : soft.groundSunken,
-                    transition: 'width 0.25s ease, background 0.25s ease',
+                    transition: `width ${motion.base}, background ${motion.base}, box-shadow ${motion.fast}`,
+                    ...focusRingSx,
+                    // An inactive dot carried no state of its own — no hover,
+                    // and no focus ring at all, so tabbing the tablist gave a
+                    // keyboard visitor nothing back. Hover takes it halfway to
+                    // the active pill's width and lifts it off the panel, so
+                    // it reads as pressable before it is pressed.
+                    '@media (hover: hover)':
+                      active === idx
+                        ? {}
+                        : { '&:hover': { width: 12, boxShadow: shadows.neuRaisedXs } },
+                    // Width is layout, not paint: the 0.01ms clamp in index.css
+                    // would still reflow the row under a passing pointer. The
+                    // ring and the lift are static cues, so they stay.
+                    '@media (prefers-reduced-motion: reduce)': {
+                      '&:hover': { width: active === idx ? 22 : 8 },
+                    },
+                    // box-shadow is dropped in forced colors, and the ring's
+                    // accent is not a system color; Highlight is.
+                    '@media (forced-colors: active)': { ...forcedColorsFocus },
                   }}
                 />
               ))}

@@ -18,6 +18,7 @@ import { IconWell } from '../components/primitives/IconWell';
 import { Groove } from '../components/primitives/Groove';
 import { AnimateOnScroll } from '../components/common/AnimateOnScroll';
 import { cellGrooveSx, clippedGradientSx, quietLinkSx, raisedPanelSx, srOnly } from '../theme/neu';
+import type { NeuTone } from '../theme/neu';
 import { gradients, motion, palette, radii, shadows, soft } from '../theme/tokens';
 import { Seo } from '../seo/Seo';
 import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
@@ -32,12 +33,24 @@ const TOKEN_DOCS = '/docs/tokens-and-billing';
 
 type TierKey = 'trader' | 'quant' | 'institutional' | 'custom';
 
-/** The three tiers, in display order. Institutional is arranged with the team. */
-const PLAN_TIERS: ReadonlyArray<{ key: TierKey; icon: ReactNode; featured: boolean }> = [
-  { key: 'trader', icon: <FlashOnOutlinedIcon />, featured: false },
-  { key: 'quant', icon: <BusinessCenterOutlinedIcon />, featured: true },
-  { key: 'institutional', icon: <ApartmentOutlinedIcon />, featured: false },
-  { key: 'custom', icon: <TuneOutlinedIcon />, featured: false },
+/**
+ * The three tiers, in display order. Institutional is arranged with the team.
+ *
+ * `ctaTone` is set per tier rather than derived from `featured`: the dark
+ * (accent) fill now marks the Custom tier's "Contact us" — the one CTA that
+ * goes to a person instead of to signup — while every self-serve tier,
+ * Quant included, takes the white raised button.
+ */
+const PLAN_TIERS: ReadonlyArray<{
+  key: TierKey;
+  icon: ReactNode;
+  featured: boolean;
+  ctaTone: NeuTone;
+}> = [
+  { key: 'trader', icon: <FlashOnOutlinedIcon />, featured: false, ctaTone: 'raised' },
+  { key: 'quant', icon: <BusinessCenterOutlinedIcon />, featured: true, ctaTone: 'raised' },
+  { key: 'institutional', icon: <ApartmentOutlinedIcon />, featured: false, ctaTone: 'raised' },
+  { key: 'custom', icon: <TuneOutlinedIcon />, featured: false, ctaTone: 'accent' },
 ];
 
 type CompareRow =
@@ -91,6 +104,8 @@ interface PlanCardProps {
   cta: string;
   /** Internal route for the CTA; without it the CTA points at the app. */
   ctaTo?: string;
+  /** CTA fill: 'accent' is the dark button, 'raised' the white one. */
+  ctaTone?: NeuTone;
   featured?: boolean;
 }
 
@@ -109,6 +124,7 @@ const PlanCard = ({
   support,
   cta,
   ctaTo,
+  ctaTone = 'raised',
   featured = false,
 }: PlanCardProps) => {
   // Geometry and type are identical on all four cards. Only the shadow depth,
@@ -127,7 +143,11 @@ const PlanCard = ({
         ...(featured && { zIndex: 1 }),
         display: 'flex',
         flexDirection: 'column',
-        p: { xs: 3, md: 4 },
+        // Vertical rhythm runs at 0.7x the horizontal: the cards were reading
+        // far taller than their content needed. px keeps the original gutter
+        // so the type measure is unchanged.
+        px: { xs: 3, md: 4 },
+        py: { xs: 2.1, md: 2.8 },
         maxWidth: { xs: 560, md: 'none' },
         mx: { xs: 'auto', md: 0 },
         width: '100%',
@@ -164,12 +184,18 @@ const PlanCard = ({
         },
       }}
     >
-      {/* Fixed height, not minHeight, so the row holds even on an empty badge. */}
-      <Box sx={{ height: 24, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
-        {badge && <TierBadge featured={featured}>{badge}</TierBadge>}
-      </Box>
+      {/* Every tier's badge string is empty now that "Most popular" is gone, so
+          this row collapses on all four cards at once and they stay aligned.
+          Restore the old fixed 24px reserve (rendered unconditionally) if a
+          badge ever comes back on ONE tier — otherwise that card alone would
+          stand 40px taller than its neighbours. */}
+      {badge && (
+        <Box sx={{ height: 24, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 1.4 }}>
+          <TierBadge featured={featured}>{badge}</TierBadge>
+        </Box>
+      )}
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, minHeight: 48, mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, minHeight: 48, mb: 1.4 }}>
         <IconWell>{icon}</IconWell>
         {/* The plan name is the card's heading: an h3 under the sr-only "Plans" h2. */}
         <Typography
@@ -189,7 +215,7 @@ const PlanCard = ({
 
       {/* The reference's "≥19px-bold numerals on white" case — the one place
           on this card the gold display ramp is allowed on text. */}
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 1 }}>
         <Typography
           component="span"
           sx={{
@@ -220,13 +246,13 @@ const PlanCard = ({
           lineHeight: 1.65,
           color: soft.textSecondary,
           minHeight: { xs: 'auto', md: 48 },
-          mb: 2.5,
+          mb: 1.75,
         }}
       >
         {description}
       </Typography>
 
-      <Groove sx={{ mb: 2.5 }} />
+      <Groove sx={{ mb: 1.75 }} />
 
       {/* role="list" is required — Safari + VoiceOver drop list semantics when
           list-style is none. flexGrow here is what absorbs uneven list lengths. */}
@@ -239,7 +265,7 @@ const PlanCard = ({
           listStyle: 'none',
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.25,
+          gap: 0.875,
           flexGrow: 1,
         }}
       >
@@ -280,9 +306,9 @@ const PlanCard = ({
         })}
       </Box>
 
-      <Groove sx={{ my: 2.5 }} />
+      <Groove sx={{ my: 1.75 }} />
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.7, mb: 2.1 }}>
         <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1 }}>
           <Typography sx={{ fontSize: '0.8rem', color: soft.textSecondary }}>{overageRateLabel}</Typography>
           <Typography sx={{ fontSize: '0.875rem', fontWeight: 700, color: soft.text }}>
@@ -299,7 +325,7 @@ const PlanCard = ({
         <Typography sx={{ fontSize: '0.8rem', color: soft.textSecondary }}>{support}</Typography>
       </Box>
 
-      <NeuButton tone={featured ? 'accent' : 'raised'} to={ctaTo} fullWidth>
+      <NeuButton tone={ctaTone} to={ctaTo} fullWidth>
         {cta}
       </NeuButton>
     </Box>
@@ -407,9 +433,13 @@ const ComparisonTable = () => {
                   >
                     {tierName(tier.key)}
                   </Typography>
-                  {/* Fixed-height slot on every tier so the names share a baseline. */}
+                  {/* Fixed-height slot on every tier so the names share a baseline. Gated
+                      on the badge STRING, not `tier.featured` alone — Quant is still the
+                      featured tier (deeper shadow, gold header tint) even with no badge
+                      text, and `tier.featured` alone rendered an empty pill: zero content
+                      plus the pill's own padding still paints a small rounded gold blob. */}
                   <Box sx={{ height: 24, display: 'flex', alignItems: 'center' }}>
-                    {tier.featured && (
+                    {tier.featured && t(`pricing.individual.plans.${tier.key}.badge`) && (
                       <TierBadge featured>{t(`pricing.individual.plans.${tier.key}.badge`)}</TierBadge>
                     )}
                   </Box>
@@ -552,7 +582,7 @@ export const PricingPage = () => {
       <Box component="main" id="content">
         {/* Hero. Short on purpose: the cards are the content, so they start
             inside the first viewport instead of below a second display heading. */}
-        <Section tone="hero" size="sm" sx={{ pt: { xs: 7, md: 11 }, pb: { xs: 5, md: 7 } }}>
+        <Section tone="ink" size="sm" sx={{ pt: { xs: 7, md: 11 }, pb: { xs: 5, md: 7 } }}>
           <SectionHeader
             level="h1"
             title={t('pricing.hero.title')}
@@ -563,7 +593,7 @@ export const PricingPage = () => {
 
         {/* Plans. The h1 already names this section, so its own heading is for
             the outline only. */}
-        <Section id="plans" tone="ink" size="md" sx={{ pt: { xs: 2, md: 3 } }}>
+        <Section id="plans" tone="soft" size="md" sx={{ pt: { xs: 2, md: 3 } }}>
           <Typography component="h2" sx={srOnly}>
             {t('pricing.individual.title')}
           </Typography>
@@ -602,6 +632,7 @@ export const PricingPage = () => {
                   support={t(`pricing.individual.plans.${tier.key}.support`)}
                   cta={t(`pricing.individual.plans.${tier.key}.cta`)}
                   ctaTo={tier.key === 'custom' ? '/contact' : undefined}
+                  ctaTone={tier.ctaTone}
                 />
               </AnimateOnScroll>
             ))}
