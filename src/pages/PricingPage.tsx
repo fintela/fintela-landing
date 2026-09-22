@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Switch, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import FlashOnOutlinedIcon from '@mui/icons-material/FlashOnOutlined';
@@ -30,6 +31,25 @@ const PRICING_OG_IMAGE = '/og/pricing.png';
 /** Where "What is a token?" lands: the doc that defines the unit every plan is priced in. */
 const TOKEN_DOCS = '/docs/tokens-and-billing';
 
+/**
+ * Yearly Stripe Prices in USD cents, mirroring `fintela/infra/scripts/setup-stripe-plan.mjs`
+ * (fintela_trader_yearly, fintela_quant_yearly). Tiers without an entry have no
+ * public yearly Price and keep their monthly figure under either toggle.
+ */
+const YEARLY_CENTS: Partial<Record<TierKey, number>> = {
+  trader: 78700,
+  quant: 158900,
+};
+
+const usd = (cents: number, fractionDigits: number) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(cents / 100);
+
+type Billing = 'monthly' | 'yearly';
 
 type TierKey = 'trader' | 'quant' | 'institutional' | 'custom';
 
@@ -93,6 +113,8 @@ interface PlanCardProps {
   price: string;
   /** e.g. "/mo"; empty for the Custom tier's bare "Custom" price. */
   period: string;
+  /** Small line under the price, e.g. the yearly total; empty hides it. */
+  priceNote?: string;
   badge: string;
   description: string;
   features: string[];
@@ -115,6 +137,7 @@ const PlanCard = ({
   name,
   price,
   period,
+  priceNote,
   badge,
   description,
   features,
@@ -215,7 +238,7 @@ const PlanCard = ({
 
       {/* The reference's "≥19px-bold numerals on white" case — the one place
           on this card the gold display ramp is allowed on text. */}
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: priceNote ? 0.5 : 1 }}>
         <Typography
           component="span"
           sx={{
@@ -237,6 +260,9 @@ const PlanCard = ({
           </Typography>
         )}
       </Box>
+      {priceNote && (
+        <Typography sx={{ fontSize: '0.8rem', color: soft.textSecondary, mb: 1 }}>{priceNote}</Typography>
+      )}
 
       {/* The md reserve is two lines, so the groove and the feature lists
           share a y-axis across cards whose one-line pitch wraps in es/pt. */}
@@ -554,6 +580,27 @@ const ComparisonTable = () => {
  */
 export const PricingPage = () => {
   const { t } = useTranslation('pages');
+  // Yearly by default: the monthly equivalent leads, the yearly total sits beneath.
+  const [billing, setBilling] = useState<Billing>('yearly');
+
+  const priceFor = (key: TierKey) => {
+    const yearly = YEARLY_CENTS[key];
+    if (billing === 'yearly' && yearly !== undefined) {
+      return {
+        price: usd(yearly / 12, 2),
+        note: t('pricing.individual.billing.yearlyTotal', { total: usd(yearly, 0) }),
+      };
+    }
+    return { price: t(`pricing.individual.plans.${key}.price`), note: '' };
+  };
+
+  const toggleLabelSx = (active: boolean) => ({
+    fontSize: '0.875rem',
+    fontWeight: active ? 700 : 500,
+    color: active ? soft.text : soft.textSecondary,
+    cursor: 'pointer',
+    userSelect: 'none',
+  });
 
   return (
     // The ground and colorScheme come from the theme (MuiCssBaseline).
@@ -599,6 +646,37 @@ export const PricingPage = () => {
           </Typography>
 
           <Box
+            role="group"
+            aria-label={t('pricing.individual.billing.label')}
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: 1,
+              mb: { xs: 3, md: 4 },
+            }}
+          >
+            <Typography component="span" sx={toggleLabelSx(billing === 'monthly')} onClick={() => setBilling('monthly')}>
+              {t('pricing.individual.billing.monthly')}
+            </Typography>
+            <Switch
+              checked={billing === 'yearly'}
+              onChange={(e) => setBilling(e.target.checked ? 'yearly' : 'monthly')}
+              inputProps={{ 'aria-label': t('pricing.individual.billing.yearly') }}
+            />
+            <Typography component="span" sx={toggleLabelSx(billing === 'yearly')} onClick={() => setBilling('yearly')}>
+              {t('pricing.individual.billing.yearly')}
+            </Typography>
+            <Typography
+              component="span"
+              sx={{ fontSize: '0.75rem', fontWeight: 700, color: palette.success, ml: 0.5 }}
+            >
+              {t('pricing.individual.billing.save')}
+            </Typography>
+          </Box>
+
+          <Box
             sx={{
               display: 'grid',
               // minmax(0, 1fr), not 1fr: a bare 1fr is minmax(auto, 1fr), so one
@@ -617,7 +695,8 @@ export const PricingPage = () => {
                   icon={tier.icon}
                   featured={tier.featured}
                   name={t(`pricing.individual.plans.${tier.key}.name`)}
-                  price={t(`pricing.individual.plans.${tier.key}.price`)}
+                  price={priceFor(tier.key).price}
+                  priceNote={priceFor(tier.key).note}
                   period={t(`pricing.individual.plans.${tier.key}.period`)}
                   badge={t(`pricing.individual.plans.${tier.key}.badge`)}
                   description={t(`pricing.individual.plans.${tier.key}.description`)}

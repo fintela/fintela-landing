@@ -10,7 +10,7 @@
     "pricing": "Pricing",
     "documentation": "Docs",
     "blog": "Research",
-    "solutions": "Customers"
+    "solutions": "The Desk"
   },
   "actions": {
     "getStarted": "Get started"
@@ -24,8 +24,8 @@
     "search": "Search"
   },
   "solutions": {
-    "funds": "Hedge funds",
-    "teams": "Quant teams",
-    "independents": "Independent quants"
+    "funds": "Institutions",
+    "teams": "Quants",
+    "independents": "Traders"
   }
 }

@@ -45,6 +45,13 @@
       "title": "Planos",
       "overageRateLabel": "Taxa de excedente",
       "tokenHelp": "O que é um token?",
+      "billing": {
+        "label": "Período de cobrança",
+        "monthly": "Mensal",
+        "yearly": "Anual",
+        "save": "Economize até 17%",
+        "yearlyTotal": "{{total}} cobrados por ano"
+      },
       "plans": {
         "trader": {
           "name": "Trader",
@@ -482,11 +489,11 @@
       },
       "qKernel": {
         "title": "Q-Kernel",
-        "desc": "Também experimental: otimização bayesiana no espírito do TPE, mas seu modelo de similaridade é calculado com um mapa de características quântico simulado em vez de um kernel clássico. Compartilha o mesmo aquecimento aleatório e fallback automático do QAOA.",
+        "desc": "Também experimental: otimização inteligente no espírito do TPE, mas seu modelo de similaridade é calculado com um mapa de características quântico simulado em vez de um kernel clássico. Compartilha o mesmo aquecimento aleatório e fallback automático do QAOA.",
         "bullets": [
           {
             "label": "Nome completo",
-            "desc": "Quantum Kernel Bayesian Optimization (emulado)."
+            "desc": "Quantum Kernel Intelligent Optimization (emulado)."
           },
           {
             "label": "Ideal para",
@@ -1229,7 +1236,7 @@
       }
     },
     "useCases": {
-      "eyebrow": "Para que nossos clientes usam",
+      "eyebrow": "Para que A Mesa usa",
       "title": "De um endpoint a um fluxo de trabalho real",
       "items": {
         "dashboards": {
@@ -1532,7 +1539,7 @@
   "seo": {
     "home": {
       "title": "Fintela | Plataforma quant com IA para estratégias",
-      "description": "Crie, teste, otimize e implante estratégias de trading quantitativo em uma única plataforma na nuvem. Otimização bayesiana e execução pela sua corretora."
+      "description": "Crie, teste, otimize e implante estratégias de trading quantitativo em uma única plataforma na nuvem. Otimização inteligente e execução pela sua corretora."
     },
     "pricing": {
       "title": "Preços e planos | Fintela",

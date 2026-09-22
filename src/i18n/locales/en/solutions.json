@@ -300,14 +300,14 @@
   },
   "independents": {
     "seo": {
-      "title": "Fintela for Independent Quants & Systematic Traders",
-      "description": "From notebook to live without a devops project: Python strategies, Bayesian optimization and broker-connected execution in the browser."
+      "title": "Fintela for Independent Quants & Traders",
+      "description": "From notebook to live without a devops project: Python strategies, intelligent optimization and broker-connected execution in the browser."
     },
-    "badge": "For independent quants & systematic traders",
-    "badgeAccent": "& systematic traders",
+    "badge": "For independent quants & traders",
+    "badgeAccent": "& traders",
     "title": "From notebook to live,",
     "titleAccent": "without a devops project.",
-    "lead": "Python strategies, Bayesian optimization and broker-connected execution in the browser, with nothing to install and nothing to keep running.",
+    "lead": "Python strategies, intelligent optimization and broker-connected execution in the browser, with nothing to install and nothing to keep running.",
     "ctaPrimary": "Start free",
     "heroCaption": "One seat, the whole board · from notebook to live deployment, without a devops project",
     "heroAlt": "A black knight standing alone on a chessboard, a pawn and the king out of focus behind it",
@@ -330,7 +330,7 @@
         },
         {
           "without": "Optimization loops written from scratch",
-          "with": "Bayesian optimization built in"
+          "with": "intelligent optimization built in"
         },
         {
           "without": "Validation windows set up by hand for every study",
@@ -352,7 +352,7 @@
         "after": "a single line of infrastructure.",
         "points": [
           "No local environment, no devops",
-          "Bayesian optimization with train / validation / OOS built in",
+          "intelligent optimization with train / validation / OOS built in",
           "Brokerage-connected live deployment"
         ]
       }
@@ -404,7 +404,7 @@
         ]
       }
     },
-    "faqIntro": "The questions systematic traders ask first: Python, optimization, speed and going live.",
+    "faqIntro": "The questions traders ask first: Python, optimization, speed and going live.",
     "research": {
       "label": "The backtest you didn't run is still costing you"
     },

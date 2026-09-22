@@ -45,6 +45,13 @@
       "title": "Plans",
       "overageRateLabel": "Overage rate",
       "tokenHelp": "What is a token?",
+      "billing": {
+        "label": "Billing period",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "save": "Save up to 17%",
+        "yearlyTotal": "{{total}} billed yearly"
+      },
       "plans": {
         "trader": {
           "name": "Trader",
@@ -482,11 +489,11 @@
       },
       "qKernel": {
         "title": "Q-Kernel",
-        "desc": "Also experimental: Bayesian optimization in the spirit of TPE, but its similarity model is computed with a simulated quantum feature map instead of a classical kernel. Shares QAOA's random warmup and automatic fallback.",
+        "desc": "Also experimental: intelligent optimization in the spirit of TPE, but its similarity model is computed with a simulated quantum feature map instead of a classical kernel. Shares QAOA's random warmup and automatic fallback.",
         "bullets": [
           {
             "label": "Full name",
-            "desc": "Quantum Kernel Bayesian Optimization (emulated)."
+            "desc": "Quantum Kernel Intelligent Optimization (emulated)."
           },
           {
             "label": "Best for",
@@ -1229,7 +1236,7 @@
       }
     },
     "useCases": {
-      "eyebrow": "What our customers use it for",
+      "eyebrow": "What The Desk uses it for",
       "title": "From one endpoint to a real workflow",
       "items": {
         "dashboards": {
@@ -1532,7 +1539,7 @@
   "seo": {
     "home": {
       "title": "Fintela | AI-Native Quant Platform for Trading Strategies",
-      "description": "Build, backtest, optimize and deploy quantitative trading strategies in one cloud platform. Bayesian optimization and broker-connected execution."
+      "description": "Build, backtest, optimize and deploy quantitative trading strategies in one cloud platform. intelligent optimization and broker-connected execution."
     },
     "pricing": {
       "title": "Pricing & Plans | Fintela",

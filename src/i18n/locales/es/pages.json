@@ -45,6 +45,13 @@
       "title": "Planes",
       "overageRateLabel": "Tarifa por excedente",
       "tokenHelp": "¿Qué es un token?",
+      "billing": {
+        "label": "Periodo de facturación",
+        "monthly": "Mensual",
+        "yearly": "Anual",
+        "save": "Ahorra hasta un 17%",
+        "yearlyTotal": "{{total}} facturados al año"
+      },
       "plans": {
         "trader": {
           "name": "Trader",
@@ -482,11 +489,11 @@
       },
       "qKernel": {
         "title": "Q-Kernel",
-        "desc": "También experimental: optimización bayesiana en el espíritu de TPE, pero su modelo de similitud se calcula con un mapa de características cuántico simulado en lugar de un kernel clásico. Comparte el mismo calentamiento aleatorio y respaldo automático de QAOA.",
+        "desc": "También experimental: optimización inteligente en el espíritu de TPE, pero su modelo de similitud se calcula con un mapa de características cuántico simulado en lugar de un kernel clásico. Comparte el mismo calentamiento aleatorio y respaldo automático de QAOA.",
         "bullets": [
           {
             "label": "Nombre completo",
-            "desc": "Quantum Kernel Bayesian Optimization (emulado)."
+            "desc": "Quantum Kernel Intelligent Optimization (emulado)."
           },
           {
             "label": "Ideal para",
@@ -1229,7 +1236,7 @@
       }
     },
     "useCases": {
-      "eyebrow": "Para qué la usan nuestros clientes",
+      "eyebrow": "Para qué la usa La Mesa",
       "title": "De un endpoint a tu flujo de trabajo real",
       "items": {
         "dashboards": {
@@ -1532,7 +1539,7 @@
   "seo": {
     "home": {
       "title": "Fintela | Plataforma cuantitativa con IA para estrategias",
-      "description": "Crea, prueba, optimiza y despliega estrategias de trading cuantitativo en una sola plataforma en la nube. Optimización bayesiana y ejecución con tu bróker."
+      "description": "Crea, prueba, optimiza y despliega estrategias de trading cuantitativo en una sola plataforma en la nube. Optimización inteligente y ejecución con tu bróker."
     },
     "pricing": {
       "title": "Precios y planes | Fintela",

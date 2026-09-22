@@ -10,7 +10,7 @@
     "pricing": "Preços",
     "documentation": "Documentação",
     "blog": "Pesquisa",
-    "solutions": "Clientes"
+    "solutions": "A Mesa"
   },
   "actions": {
     "getStarted": "Começar"
@@ -24,8 +24,8 @@
     "search": "Pesquisar"
   },
   "solutions": {
-    "funds": "Hedge funds",
-    "teams": "Equipes quant",
-    "independents": "Quants independentes"
+    "funds": "Instituições",
+    "teams": "Quants",
+    "independents": "Traders"
   }
 }

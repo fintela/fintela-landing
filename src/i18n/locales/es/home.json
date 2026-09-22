@@ -57,7 +57,7 @@
       "studies": {
         "label": "Estudios",
         "sub": "Búsqueda bayesiana",
-        "desc": "Lanza miles de trials en paralelo. La optimización bayesiana enfoca la búsqueda en las regiones prometedoras; los resultados se validan en ventanas de train, val y out of sample."
+        "desc": "Lanza miles de trials en paralelo. La optimización inteligente enfoca la búsqueda en las regiones prometedoras; los resultados se validan en ventanas de train, val y out of sample."
       },
       "portfolios": {
         "label": "Portafolios",
@@ -94,7 +94,7 @@
     "eyebrow": "Capacidades",
     "title": "Hecho para",
     "titleAccent": "trabajo quant serio.",
-    "description": "Fintela es la solución de IA nativa para la validación estadística cuantitativa: una IA agente que opera la plataforma por ti, validación estadística robusta en cada etapa, y optimización bayesiana sobre miles de pruebas, de la idea al capital en vivo, todo en un mismo espacio de trabajo.",
+    "description": "Fintela es la solución de IA nativa para la validación estadística cuantitativa: una IA agente que opera la plataforma por ti, validación estadística robusta en cada etapa, y optimización inteligente sobre miles de pruebas, de la idea al capital en vivo, todo en un mismo espacio de trabajo.",
     "items": {
       "crossMarket": {
         "title": "Multimercado por diseño",
@@ -117,7 +117,7 @@
         "description": "Fintelligent redacta estrategias, lanza estudios, adjunta gestores de riesgo y explica los resultados en lenguaje sencillo, conectada directamente a tus datos y a las acciones de la plataforma."
       },
       "bayesian": {
-        "title": "Optimización bayesiana",
+        "title": "Optimización inteligente",
         "description": "Siete samplers, con TPE por defecto, buscan entre miles de pruebas y validan cada resultado en splits de entrenamiento, validación y fuera de muestra de forma automática."
       },
       "strategyClustering": {
@@ -493,7 +493,7 @@
       },
       "independents": {
         "badge": "Para quants independientes",
-        "title": "Quants independientes y traders sistemáticos",
+        "title": "Quants independientes y traders",
         "description": "Optimización, backtesting y despliegue en vivo configurables sin construir ni mantener una sola línea de infraestructura. Del notebook al despliegue en vivo, sin un proyecto de devops.",
         "outcomes": [
           "Despliegue en vivo conectado a tu bróker"
@@ -523,7 +523,7 @@
       },
       "vsBacktesting": {
         "q": "¿En qué se diferencia Fintela de una librería de backtesting estándar?",
-        "a": "Fintela combina el backtesting con Asset Groups, código de estrategia, optimización bayesiana de parámetros, evaluación train/validación/OOS, analítica de portafolios y despliegue en vivo vía tu bróker conectado en un único pipeline. Sin exportaciones, sin scripts, sin código de pegamento entre herramientas."
+        "a": "Fintela combina el backtesting con Asset Groups, código de estrategia, optimización inteligente de parámetros, evaluación train/validación/OOS, analítica de portafolios y despliegue en vivo vía tu bróker conectado en un único pipeline. Sin exportaciones, sin scripts, sin código de pegamento entre herramientas."
       },
       "python": {
         "q": "¿Necesito saber Python?",
@@ -531,7 +531,7 @@
       },
       "optimization": {
         "q": "¿Cómo funciona la optimización?",
-        "a": "Fintela usa optimización bayesiana, que aprende de cada trial para enfocar la búsqueda en las regiones de parámetros más prometedoras. Cada estudio se evalúa en tres ventanas temporales: train (in sample), validación (held out) y out of sample, para que la robustez esté integrada en el flujo de trabajo."
+        "a": "Fintela usa optimización inteligente, que aprende de cada trial para enfocar la búsqueda en las regiones de parámetros más prometedoras. Cada estudio se evalúa en tres ventanas temporales: train (in sample), validación (held out) y out of sample, para que la robustez esté integrada en el flujo de trabajo."
       },
       "seedExport": {
         "q": "¿Puedo exportar la señal de mi estrategia?",

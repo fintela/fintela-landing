@@ -57,7 +57,7 @@
       "studies": {
         "label": "Estudos",
         "sub": "Busca bayesiana",
-        "desc": "Lance milhares de trials em paralelo. A otimização bayesiana foca a busca nas regiões promissoras; os resultados são validados em janelas de train, val e out of sample."
+        "desc": "Lance milhares de trials em paralelo. A otimização inteligente foca a busca nas regiões promissoras; os resultados são validados em janelas de train, val e out of sample."
       },
       "portfolios": {
         "label": "Portfólios",
@@ -94,7 +94,7 @@
     "eyebrow": "Capacidades",
     "title": "Feito para",
     "titleAccent": "trabalho quant sério.",
-    "description": "A Fintela é a solução de IA nativa para a validação estatística quantitativa: uma IA agente que opera a plataforma para você, validação estatística robusta em cada etapa, e otimização bayesiana sobre milhares de testes, da ideia ao capital ao vivo, tudo em um único espaço de trabalho.",
+    "description": "A Fintela é a solução de IA nativa para a validação estatística quantitativa: uma IA agente que opera a plataforma para você, validação estatística robusta em cada etapa, e otimização inteligente sobre milhares de testes, da ideia ao capital ao vivo, tudo em um único espaço de trabalho.",
     "items": {
       "crossMarket": {
         "title": "Multimercado por design",
@@ -117,7 +117,7 @@
         "description": "O Fintelligent redige estratégias, lança estudos, anexa gestores de risco e explica os resultados em linguagem simples, conectado diretamente aos seus dados e às ações da plataforma."
       },
       "bayesian": {
-        "title": "Otimização bayesiana",
+        "title": "Otimização inteligente",
         "description": "Sete samplers, com TPE por padrão, buscam entre milhares de testes e validam cada resultado em divisões de treino, validação e fora da amostra automaticamente."
       },
       "strategyClustering": {
@@ -493,7 +493,7 @@
       },
       "independents": {
         "badge": "Para quants independentes",
-        "title": "Quants independentes e traders sistemáticos",
+        "title": "Quants independentes e traders",
         "description": "Otimização, backtesting e implantação ao vivo configuráveis sem construir ou manter uma única linha de infraestrutura. Do notebook à implantação ao vivo, sem um projeto de devops.",
         "outcomes": [
           "Implantação ao vivo conectada à sua corretora"
@@ -523,7 +523,7 @@
       },
       "vsBacktesting": {
         "q": "Como a Fintela se diferencia de uma biblioteca de backtesting padrão?",
-        "a": "A Fintela combina o backtesting com Asset Groups, código de estratégia, otimização bayesiana de parâmetros, avaliação train/validação/OOS, analytics de portfólios e implantação ao vivo via sua corretora conectada num único pipeline. Sem exportações, sem scripts, sem código de cola entre ferramentas."
+        "a": "A Fintela combina o backtesting com Asset Groups, código de estratégia, otimização inteligente de parâmetros, avaliação train/validação/OOS, analytics de portfólios e implantação ao vivo via sua corretora conectada num único pipeline. Sem exportações, sem scripts, sem código de cola entre ferramentas."
       },
       "python": {
         "q": "Preciso saber Python?",
@@ -531,7 +531,7 @@
       },
       "optimization": {
         "q": "Como a otimização funciona?",
-        "a": "A Fintela usa otimização bayesiana, que aprende com cada trial para focar a busca nas regiões de parâmetros mais promissoras. Cada estudo é avaliado em três janelas temporais: train (in sample), validação (held out) e out of sample, para que a robustez esteja embutida no fluxo de trabalho."
+        "a": "A Fintela usa otimização inteligente, que aprende com cada trial para focar a busca nas regiões de parâmetros mais promissoras. Cada estudo é avaliado em três janelas temporais: train (in sample), validação (held out) e out of sample, para que a robustez esteja embutida no fluxo de trabalho."
       },
       "seedExport": {
         "q": "Posso exportar o sinal da minha estratégia?",

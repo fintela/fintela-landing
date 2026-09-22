@@ -131,7 +131,7 @@ const navPillButtonSx = {
 } as const;
 
 /**
- * Product and Customers open a dropdown rather than landing on a single page,
+ * Product and The Desk open a dropdown rather than landing on a single page,
  * so navPillSx's gradient underline (meant to mark the current page) has
  * nothing correct to point at here — it stays visible via aria-current
  * whenever a menu item is active, which reads as a stray line under the

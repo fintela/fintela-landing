@@ -300,14 +300,14 @@
   },
   "independents": {
     "seo": {
-      "title": "Fintela para quants independientes y traders sistemáticos",
-      "description": "Del notebook a producción sin un proyecto de devops: estrategias en Python, optimización bayesiana y ejecución conectada al bróker desde el navegador."
+      "title": "Fintela para quants independientes y traders",
+      "description": "Del notebook a producción sin un proyecto de devops: estrategias en Python, optimización inteligente y ejecución conectada al bróker desde el navegador."
     },
-    "badge": "Para quants independientes y traders sistemáticos",
-    "badgeAccent": "y traders sistemáticos",
+    "badge": "Para quants independientes y traders",
+    "badgeAccent": "y traders",
     "title": "Del notebook al en vivo,",
     "titleAccent": "sin un proyecto de devops.",
-    "lead": "Estrategias en Python, optimización bayesiana y ejecución conectada al bróker en el navegador, sin nada que instalar ni nada que mantener corriendo.",
+    "lead": "Estrategias en Python, optimización inteligente y ejecución conectada al bróker en el navegador, sin nada que instalar ni nada que mantener corriendo.",
     "ctaPrimary": "Empezar gratis",
     "heroCaption": "Una sola pieza, todo el tablero · del notebook al despliegue en vivo, sin un proyecto de devops",
     "heroAlt": "Un caballo negro solo sobre el tablero de ajedrez, con un peón y el rey desenfocados detrás",
@@ -330,7 +330,7 @@
         },
         {
           "without": "Bucles de optimización escritos desde cero",
-          "with": "Optimización bayesiana incorporada"
+          "with": "Optimización inteligente incorporada"
         },
         {
           "without": "Ventanas de validación configuradas a mano en cada estudio",
@@ -352,7 +352,7 @@
         "after": "una sola línea de infraestructura.",
         "points": [
           "Sin entorno local, sin devops",
-          "Optimización bayesiana con train / validación / OOS incorporados",
+          "Optimización inteligente con train / validación / OOS incorporados",
           "Despliegue en vivo conectado al bróker"
         ]
       }
@@ -404,7 +404,7 @@
         ]
       }
     },
-    "faqIntro": "Las preguntas que los traders sistemáticos hacen primero: Python, optimización, velocidad y salir en vivo.",
+    "faqIntro": "Las preguntas que los traders hacen primero: Python, optimización, velocidad y salir en vivo.",
     "research": {
       "label": "El backtest que no corriste te sigue costando"
     },

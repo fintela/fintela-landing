@@ -3,12 +3,12 @@
     "titleLine1": "The Future of",
     "titleAccent": "Intelligent Investing",
     "marketWords": ["US Stocks", "Forex", "Global Markets"],
-    "subtitlePrefix": "Create investment strategies across",
+    "subtitlePrefix": "Discover your edge across",
     "subtitleSuffix": "in a single AI native quantitative ecosystem.",
     "ctaSecondary": "See how it works",
     "headline": "The Future of",
     "headlineAccent": "Intelligent Investing.",
-    "ctaPrimary": "Discover Your Edge",
+    "ctaPrimary": "Find Your Edge",
     "ctaWatch": "Watch the platform",
     "plateCaption": "Platform home · asset exposure, deployed portfolios and the strategies in use",
     "liveBadge": "Live",
@@ -57,7 +57,7 @@
       "studies": {
         "label": "Studies",
         "sub": "Bayesian search",
-        "desc": "Launch thousands of trials in parallel. Bayesian optimization focuses search on promising regions; results validated on train, val, and out of sample windows."
+        "desc": "Launch thousands of trials in parallel. intelligent optimization focuses search on promising regions; results validated on train, val, and out of sample windows."
       },
       "portfolios": {
         "label": "Portfolios",
@@ -94,7 +94,7 @@
     "eyebrow": "Capabilities",
     "title": "Built for",
     "titleAccent": "serious quant work.",
-    "description": "Fintela is the AI-native solution for quantitative statistical validation: agentic AI that runs the platform for you, robust statistical validation at every stage, and Bayesian optimization over thousands of trials, from idea to live capital, all in one workspace.",
+    "description": "Fintela is the AI-native solution for quantitative statistical validation: agentic AI that runs the platform for you, robust statistical validation at every stage, and intelligent optimization over thousands of trials, from idea to live capital, all in one workspace.",
     "items": {
       "ai": {
         "title": "AI that operates the platform",
@@ -109,7 +109,7 @@
         "description": "Plain Python strategies in app with NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY. Named parameters, typed ranges, version history. Zero local install."
       },
       "bayesian": {
-        "title": "Bayesian optimization",
+        "title": "intelligent optimization",
         "description": "Seven samplers, TPE by default, search thousands of trials and validate every result on train, validation, and out-of-sample splits automatically."
       },
       "strategyClustering": {
@@ -493,7 +493,7 @@
       },
       "independents": {
         "badge": "For independent quants",
-        "title": "Independent quants & systematic traders",
+        "title": "Independent quants & traders",
         "description": "Configurable optimization, backtesting, and live deployment without building or maintaining a single line of infrastructure. From notebook to live deployment, without a devops project.",
         "outcomes": [
           "Brokerage connected live deployment"
@@ -531,7 +531,7 @@
       },
       "optimization": {
         "q": "How does optimization work?",
-        "a": "Fintela uses Bayesian optimization, which learns from each trial to focus search on the most promising parameter regions. Every study is evaluated across three time windows: train (in sample), validation (held out), and out of sample, so robustness is built into the workflow."
+        "a": "Fintela uses intelligent optimization, which learns from each trial to focus search on the most promising parameter regions. Every study is evaluated across three time windows: train (in sample), validation (held out), and out of sample, so robustness is built into the workflow."
       },
       "seedExport": {
         "q": "Can I export my strategy's signal?",
