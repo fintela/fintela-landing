@@ -423,5 +423,142 @@
       "titleAccent": "leave with a study.",
       "body": "Start on the free tier, run your first optimization today, and book a walkthrough when you want a second pair of eyes."
     }
+  },
+  "advisors": {
+    "seo": {
+      "title": "Fintela for Advisors & Wealth Managers",
+      "description": "Backtested, optimized strategies with client-ready reports and a full audit trail, built for advisory practices with nothing to install or maintain."
+    },
+    "badge": "For advisors & wealth managers",
+    "badgeAccent": "advisors & wealth managers",
+    "title": "Systematic strategies,",
+    "titleAccent": "without a research desk.",
+    "lead": "Backtested, optimized strategies with a full audit trail and client-ready reports, in one cloud workspace your practice doesn't have to install or maintain.",
+    "ctaPrimary": "Book a walkthrough",
+    "heroCaption": "Every client, one process · from a backtested idea to a report you can hand across the table",
+    "heroAlt": "A handshake across a polished conference table, a city skyline blurred through the window behind",
+    "heroImageAlt": "A financial advisor reviewing a portfolio report with a client across a desk, black and white",
+    "stat": {
+      "eyebrow": "Lines of code required",
+      "value": "0",
+      "unit": "to start",
+      "sub": "Fintelligent drafts the strategy from a plain-English description"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "Client portfolios built and rebalanced by hand or in spreadsheets",
+          "with": "Backtested, optimized strategies, versioned automatically"
+        },
+        {
+          "without": "A strategy idea that needs a developer to test it",
+          "with": "Fintelligent drafts the Python from a plain-English description"
+        },
+        {
+          "without": "One risk approach stretched across every client",
+          "with": "A risk manager matched to each client's mandate"
+        },
+        {
+          "without": "Performance summaries rebuilt by hand before every review",
+          "with": "Client-ready PDF reports on demand"
+        },
+        {
+          "without": "No paper trail for why a trade happened",
+          "with": "Every strategy hashed and time-stamped, backtest to live"
+        },
+        {
+          "without": "A devops project to go live",
+          "with": "Broker-connected execution, nothing to maintain"
+        }
+      ],
+      "panel": {
+        "eyebrow": "For an advisory practice",
+        "before": "Backtested strategies and client-ready reports,",
+        "highlight": "without building",
+        "after": "a research desk of your own.",
+        "points": [
+          "No infrastructure to build or maintain",
+          "Fintelligent drafts the strategy, you approve every step",
+          "A hashed, time-stamped record for every client file"
+        ]
+      }
+    },
+    "chaptersTitle": "What changes",
+    "chaptersTitleAccent": "for an advisory practice.",
+    "chapters": {
+      "research": {
+        "title": "Strategies without a research desk",
+        "docsLabel": "Quickstart guide",
+        "mediaAlt": "The platform home in the browser, greeting the user with the Fintelligent prompt; nothing installed",
+        "description": "Describe a mandate in plain English and Fintelligent drafts the Python, configures the parameters and stages it for your review. NumPy, pandas, SciPy and scikit-learn are already there, with nothing to install.",
+        "outcomes": [
+          "Strategies drafted from a plain-English description",
+          "Named parameters and version history from day one",
+          "Nothing to install or maintain"
+        ]
+      },
+      "validation": {
+        "title": "Validated before a client sees it",
+        "docsLabel": "Choosing a sampler",
+        "mediaAlt": "The metrics table of a study: Calmar, Sharpe, Sortino and trade statistics across train, validation and test",
+        "description": "Bayesian search over thousands of trials, with train, validation and out-of-sample windows by default, so an idea is pressure-tested before it becomes a recommendation.",
+        "outcomes": [
+          "Thousands of trials in parallel",
+          "Train / validation / OOS by default",
+          "Parameter importance flags overfitting early"
+        ]
+      },
+      "riskProfiles": {
+        "title": "One strategy, every client's mandate",
+        "docsLabel": "Live trading docs",
+        "mediaAlt": "Risk charts for the ranked portfolios: drawdown and volatility over the study window",
+        "description": "A risk manager attaches to any strategy independently of its trading logic, so a conservative mandate and a growth mandate can run the same strategy with different risk managers, identical in backtest and live.",
+        "outcomes": [
+          "A risk manager matched to each client's mandate",
+          "Identical logic in backtest and live",
+          "Real-time order logs, P&L and a one-click pause"
+        ]
+      },
+      "reporting": {
+        "title": "Reports a client or a regulator can read",
+        "docsLabel": "Portfolio detail docs",
+        "mediaAlt": "An investment report's performance section: growth of $100,000 against the benchmark, out-of-sample window marked",
+        "description": "Results-only dashboards and PDF reports show equity curves, drawdowns and the trade log while hiding code and parameters, ready for a client meeting or a compliance file.",
+        "outcomes": [
+          "PDF reports on demand, no code or parameters shown",
+          "Cryptographically hashed, time-stamped history for the file",
+          "The same figures in backtest and live"
+        ]
+      },
+      "security": {
+        "title": "An assistant a compliance team can trust",
+        "docsLabel": "Fintelligent drafts and runs docs",
+        "description": "Choose which provider powers Fintelligent, with Fintela-managed access and no API key to bring. Every tool call is visible in the conversation, and every irreversible action waits for your explicit confirmation.",
+        "outcomes": [
+          "Provider choice, Fintela-managed access",
+          "Every tool call visible in the conversation",
+          "Irreversible actions wait for confirmation"
+        ]
+      }
+    },
+    "faqIntro": "The questions advisors ask first: whether you need to code, how the AI is supervised, and what a client or a regulator gets to see.",
+    "research": {
+      "label": "Climate Risk against Agricultural Stocks"
+    },
+    "faq": {
+      "clientRisk": {
+        "q": "Can I run the same strategy with different risk settings for different clients?",
+        "a": "Yes. A risk manager attaches to any strategy independently of its trading logic, so a conservative mandate and a growth mandate can run the exact same strategy with different risk managers, identical in backtest and live."
+      },
+      "compliance": {
+        "q": "What can I show a client or a regulator?",
+        "a": "Results-only PDF reports and dashboards that show performance, drawdowns and the trade log while hiding code and parameters, plus a cryptographically hashed, time-stamped history of every strategy and configuration change for the file."
+      }
+    },
+    "closing": {
+      "title": "See it with your",
+      "titleAccent": "own clients in mind.",
+      "body": "Thirty minutes with the team that built the platform, on the mandates your practice actually manages."
+    }
   }
 }

@@ -81,6 +81,12 @@ const columns: FooterColumn[] = [
         type: 'route',
       },
       {
+        id: 'advisors',
+        labelKey: 'footer:columns.product.links.advisors',
+        href: SOLUTION_PATHS.advisors,
+        type: 'route',
+      },
+      {
         id: 'pricing',
         labelKey: 'footer:columns.product.links.pricing',
         href: '/pricing',

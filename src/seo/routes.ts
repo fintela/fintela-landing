@@ -21,6 +21,7 @@ export const STATIC_ROUTES = [
   '/solutions/hedge-funds',
   '/solutions/quant-teams',
   '/solutions/independent-quants',
+  '/solutions/financial-advisors',
   '/terms',
   '/privacy',
   '/risk-disclosures',

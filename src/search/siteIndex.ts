@@ -53,6 +53,13 @@ export const STATIC_PAGE_ENTRIES: StaticPageEntry[] = [
     url: SOLUTION_PATHS.independents,
   },
   {
+    id: 'solutions-advisors',
+    titleKey: 'pages:search.pages.solutionsAdvisors',
+    excerptKey: 'solutions:advisors.seo.description',
+    keywords: ['financial advisors', 'wealth managers', 'RIA'],
+    url: SOLUTION_PATHS.advisors,
+  },
+  {
     id: 'contact',
     titleKey: 'pages:search.pages.contact',
     // `/contact` is the walkthrough-booking page now (the generic "Get in

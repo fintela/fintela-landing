@@ -7,6 +7,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import GroupsIcon from '@mui/icons-material/Groups';
+import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
@@ -22,8 +23,8 @@ import type { Audience } from '../../lib/audience';
 import { STILLS } from '../../media/registry';
 import { USE_CASE_KEY } from '../../solutions/registry';
 
-/** Left to right: independent quants leads, then the fund and research seats. */
-const CARD_ORDER: readonly Audience[] = ['independents', 'funds', 'teams'];
+/** Left to right: independent quants leads, then the fund, research and advisory seats. */
+const CARD_ORDER: readonly Audience[] = ['independents', 'funds', 'teams', 'advisors'];
 
 const CARD_PAD = { xs: 3, md: 3.5 } as const;
 
@@ -31,6 +32,7 @@ const AUDIENCE_ICON: Record<Audience, ReactNode> = {
   funds: <BusinessIcon />,
   independents: <PersonOutlineIcon />,
   teams: <GroupsIcon />,
+  advisors: <HandshakeOutlinedIcon />,
 };
 
 const ADVANTAGES = [
@@ -196,7 +198,9 @@ export const InstitutionalSection = () => {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: neuGrid.columns(3) },
+              // 4 rich cards read as cramped at md (900-1199px); wait for lg
+              // to go full-width, 2-up on tablet in between.
+              gridTemplateColumns: { xs: '1fr', sm: neuGrid.columns(2), lg: neuGrid.columns(CARD_ORDER.length) },
               gap: neuGrid.gap,
               alignItems: 'stretch',
             }}

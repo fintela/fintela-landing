@@ -12,22 +12,25 @@ export const SOLUTION_SLUGS: Record<Audience, string> = {
   funds: 'hedge-funds',
   teams: 'quant-teams',
   independents: 'independent-quants',
+  advisors: 'financial-advisors',
 };
 
 export const SOLUTION_PATHS: Record<Audience, string> = {
   funds: `/solutions/${SOLUTION_SLUGS.funds}`,
   teams: `/solutions/${SOLUTION_SLUGS.teams}`,
   independents: `/solutions/${SOLUTION_SLUGS.independents}`,
+  advisors: `/solutions/${SOLUTION_SLUGS.advisors}`,
 };
 
 export const audienceFromSlug = (slug: string | undefined): Audience | undefined =>
   (Object.keys(SOLUTION_SLUGS) as Audience[]).find((a) => SOLUTION_SLUGS[a] === slug);
 
 /** The `home:useCases.audiences.*` key each seat's copy was written under. */
-export const USE_CASE_KEY: Record<Audience, 'institutions' | 'independents' | 'researchDesks'> = {
+export const USE_CASE_KEY: Record<Audience, 'institutions' | 'independents' | 'researchDesks' | 'advisors'> = {
   funds: 'institutions',
   independents: 'independents',
   teams: 'researchDesks',
+  advisors: 'advisors',
 };
 
 export type ChapterMedia =
@@ -109,5 +112,24 @@ export const SOLUTIONS: Record<Audience, SolutionConfig> = {
     extraFaq: ['cost', 'ownership'],
     primaryCta: 'app',
     research: 'deflated-sharpe',
+  },
+  advisors: {
+    slug: SOLUTION_SLUGS.advisors,
+    hero: { still: STILLS.solutions.advisors },
+    // Product frames reused from the seat each chapter is closest to in kind
+    // (no bespoke advisor screenshots exist yet): the Fintelligent-drafted
+    // strategy screen, the optimization metrics table, the risk/drawdown
+    // charts, and the results-only report.
+    chapters: [
+      { key: 'research', media: frame(STILLS.chapters.independents.noDevops), docs: '/docs/quickstart' },
+      { key: 'validation', media: frame(STILLS.chapters.independents.optimization), docs: '/docs/sampler-selection' },
+      { key: 'riskProfiles', media: frame(STILLS.chapters.funds.execution), docs: '/docs/live-trading' },
+      { key: 'reporting', media: frame(STILLS.chapters.teams.reports), docs: '/docs/portfolio-detail' },
+      { key: 'security', media: { kind: 'video', video: 'agents' }, docs: '/docs/fintelligent-drafts-and-runs' },
+    ],
+    faq: ['python', 'poweredBy', 'security', 'liveTrading'],
+    extraFaq: ['clientRisk', 'compliance'],
+    primaryCta: 'walkthrough',
+    research: 'climate-analysis',
   },
 };

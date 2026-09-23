@@ -508,6 +508,16 @@
           "Histórico de estratégias hasheado criptograficamente e com marca de tempo",
           "Relatórios em PDF para o comitê de investimento"
         ]
+      },
+      "advisors": {
+        "badge": "Para assessores",
+        "title": "Assessores e gestores de patrimônio",
+        "description": "Transforme o mandato de um cliente em uma estratégia otimizada e testada historicamente sem contratar um time quant. O Fintelligent redige o Python, um gestor de risco se ajusta ao mandato de cada cliente, e cada resultado vem com um relatório que você pode apresentar ao cliente.",
+        "outcomes": [
+          "Estratégias redigidas a partir de uma descrição em linguagem natural",
+          "Um gestor de risco para cada mandato de cliente",
+          "Relatórios em PDF prontos para o cliente, sem mostrar código"
+        ]
       }
     }
   },
@@ -577,6 +587,9 @@
       },
       "teams": {
         "imageAlt": "Visto de costas, um analista trabalhando diante de um monitor em uma sala à meia-luz"
+      },
+      "advisors": {
+        "imageAlt": "Um assessor financeiro e um cliente revisando juntos um relatório de carteira, em preto e branco"
       }
     },
     "advantages": {

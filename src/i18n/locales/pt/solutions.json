@@ -423,5 +423,142 @@
       "titleAccent": "saia com um estudo.",
       "body": "Comece no plano gratuito, rode a sua primeira otimização hoje e agende uma demonstração quando quiser uma segunda opinião."
     }
+  },
+  "advisors": {
+    "seo": {
+      "title": "Fintela para assessores e gestores de patrimônio",
+      "description": "Estratégias otimizadas e testadas historicamente, com relatórios prontos para o cliente e um histórico de auditoria completo, feitas para práticas de assessoria sem nada para instalar ou manter."
+    },
+    "badge": "Para assessores e gestores de patrimônio",
+    "badgeAccent": "gestores de patrimônio",
+    "title": "Estratégias sistemáticas,",
+    "titleAccent": "sem uma mesa de pesquisa.",
+    "lead": "Estratégias otimizadas e testadas historicamente, com um histórico de auditoria completo e relatórios prontos para o cliente, em um espaço de trabalho na nuvem que a sua prática não precisa instalar nem manter.",
+    "ctaPrimary": "Agendar uma demonstração",
+    "heroCaption": "Cada cliente, um mesmo processo · de uma ideia testada historicamente a um relatório para apresentar ao cliente",
+    "heroAlt": "Um aperto de mãos sobre uma mesa de reunião polida, com o horizonte de uma cidade desfocado ao fundo, atrás da janela",
+    "heroImageAlt": "Um assessor financeiro revisando um relatório de carteira com um cliente em uma mesa, em preto e branco",
+    "stat": {
+      "eyebrow": "Linhas de código necessárias",
+      "value": "0",
+      "unit": "para começar",
+      "sub": "O Fintelligent redige a estratégia a partir de uma descrição em linguagem natural"
+    },
+    "why": {
+      "rows": [
+        {
+          "without": "Carteiras de clientes construídas e rebalanceadas à mão ou em planilhas",
+          "with": "Estratégias otimizadas e testadas historicamente, versionadas automaticamente"
+        },
+        {
+          "without": "Uma ideia de estratégia que precisa de um desenvolvedor para testá-la",
+          "with": "O Fintelligent redige o Python a partir de uma descrição em linguagem natural"
+        },
+        {
+          "without": "Um mesmo enfoque de risco para todos os clientes",
+          "with": "Um gestor de risco ajustado ao mandato de cada cliente"
+        },
+        {
+          "without": "Resumos de desempenho refeitos à mão antes de cada reunião",
+          "with": "Relatórios PDF prontos para o cliente, sob demanda"
+        },
+        {
+          "without": "Nenhum rastro documentado do motivo de uma operação",
+          "with": "Cada estratégia com hash e carimbo de tempo, do backtest ao ao vivo"
+        },
+        {
+          "without": "Um projeto de devops para ir ao vivo",
+          "with": "Execução conectada à corretora, nada para manter"
+        }
+      ],
+      "panel": {
+        "eyebrow": "Para uma prática de assessoria",
+        "before": "Estratégias testadas historicamente e relatórios prontos para o cliente,",
+        "highlight": "sem construir",
+        "after": "uma mesa de pesquisa própria.",
+        "points": [
+          "Sem infraestrutura para construir ou manter",
+          "O Fintelligent redige a estratégia, você aprova cada etapa",
+          "Um registro com hash e carimbo de tempo para cada dossiê de cliente"
+        ]
+      }
+    },
+    "chaptersTitle": "O que muda",
+    "chaptersTitleAccent": "para uma prática de assessoria.",
+    "chapters": {
+      "research": {
+        "title": "Estratégias sem uma mesa de pesquisa",
+        "docsLabel": "Guia de início rápido",
+        "mediaAlt": "O início da plataforma no navegador, saudando o usuário com o prompt do Fintelligent; nada instalado",
+        "description": "Descreva um mandato em linguagem natural e o Fintelligent redige o Python, configura os parâmetros e prepara para a sua revisão. NumPy, pandas, SciPy e scikit-learn já estão disponíveis, sem nada para instalar.",
+        "outcomes": [
+          "Estratégias redigidas a partir de uma descrição em linguagem natural",
+          "Parâmetros nomeados e histórico de versões desde o primeiro dia",
+          "Nada para instalar ou manter"
+        ]
+      },
+      "validation": {
+        "title": "Validada antes de o cliente ver",
+        "docsLabel": "Como escolher um sampler",
+        "mediaAlt": "A tabela de métricas de um estudo: Calmar, Sharpe, Sortino e estatísticas de trades em treino, validação e teste",
+        "description": "Busca bayesiana sobre milhares de trials, com janelas de train, validação e fora da amostra por padrão, para que uma ideia seja testada antes de virar uma recomendação.",
+        "outcomes": [
+          "Milhares de trials em paralelo",
+          "Train / validação / OOS por padrão",
+          "A importância de parâmetros sinaliza overfitting cedo"
+        ]
+      },
+      "riskProfiles": {
+        "title": "Uma estratégia, o mandato de cada cliente",
+        "docsLabel": "Docs de trading ao vivo",
+        "mediaAlt": "Gráficos de risco das carteiras classificadas: drawdown e volatilidade ao longo da janela do estudo",
+        "description": "Um gestor de risco se acopla a qualquer estratégia independentemente da sua lógica de negociação, de modo que um mandato conservador e um de crescimento podem rodar a mesma estratégia com gestores de risco diferentes, idênticos em backtest e ao vivo.",
+        "outcomes": [
+          "Um gestor de risco ajustado ao mandato de cada cliente",
+          "A mesma lógica em backtest e ao vivo",
+          "Registro de ordens em tempo real, P&L e pausa com um clique"
+        ]
+      },
+      "reporting": {
+        "title": "Relatórios que um cliente ou um regulador conseguem ler",
+        "docsLabel": "Docs do detalhe de portfólio",
+        "mediaAlt": "A seção de desempenho de um relatório de investimento: crescimento de US$ 100.000 contra o benchmark, com a janela out-of-sample marcada",
+        "description": "Painéis somente de resultados e relatórios PDF mostram curvas de capital, drawdowns e o registro de operações enquanto ocultam código e parâmetros, prontos para uma reunião com o cliente ou um dossiê de compliance.",
+        "outcomes": [
+          "Relatórios PDF sob demanda, sem mostrar código nem parâmetros",
+          "Histórico com hash criptográfico e carimbo de tempo para o dossiê",
+          "Os mesmos números em backtest e ao vivo"
+        ]
+      },
+      "security": {
+        "title": "Um assistente em que um time de compliance pode confiar",
+        "docsLabel": "Docs de rascunhos e execuções do Fintelligent",
+        "description": "Escolha qual provedor alimenta o Fintelligent, com acesso gerido pela Fintela e sem chave de API para trazer. Cada chamada de ferramenta é visível na conversa, e cada ação irreversível aguarda a sua confirmação explícita.",
+        "outcomes": [
+          "Escolha de provedor, acesso gerido pela Fintela",
+          "Cada chamada de ferramenta visível na conversa",
+          "Ações irreversíveis aguardam confirmação"
+        ]
+      }
+    },
+    "faqIntro": "As perguntas que os assessores fazem primeiro: se precisam programar, como a IA é supervisionada, e o que um cliente ou um regulador podem ver.",
+    "research": {
+      "label": "Risco climático contra ações agrícolas"
+    },
+    "faq": {
+      "clientRisk": {
+        "q": "Posso aplicar ajustes de risco diferentes à mesma estratégia para clientes diferentes?",
+        "a": "Sim. Um gestor de risco se acopla a qualquer estratégia independentemente da sua lógica de negociação, de modo que um mandato conservador e um de crescimento podem rodar exatamente a mesma estratégia com gestores de risco diferentes, idênticos em backtest e ao vivo."
+      },
+      "compliance": {
+        "q": "O que posso mostrar a um cliente ou a um regulador?",
+        "a": "Relatórios e painéis somente de resultados que mostram o desempenho, os drawdowns e o registro de operações enquanto ocultam código e parâmetros, além de um histórico com hash criptográfico e carimbo de tempo de cada estratégia e mudança de configuração para o dossiê."
+      }
+    },
+    "closing": {
+      "title": "Veja pensando nos seus",
+      "titleAccent": "próprios clientes.",
+      "body": "Trinta minutos com a equipe que construiu a plataforma, sobre os mandatos que a sua prática realmente gerencia."
+    }
   }
 }

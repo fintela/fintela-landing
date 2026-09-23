@@ -19,6 +19,7 @@ const LEAD_BY_AUDIENCE: Record<Audience, FaqKey[]> = {
   funds: ['security', 'poweredBy', 'liveTrading', 'seedExport'],
   independents: ['python', 'optimization', 'speed', 'liveTrading'],
   teams: ['security', 'seedExport', 'vsBacktesting', 'poweredBy'],
+  advisors: ['python', 'poweredBy', 'security', 'liveTrading'],
 };
 
 export const orderFaq = (audience: Audience): FaqKey[] => {

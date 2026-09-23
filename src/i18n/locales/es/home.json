@@ -508,6 +508,16 @@
           "Historial de estrategias hasheado criptográficamente y con marca de tiempo",
           "Informes en PDF para el comité de inversión"
         ]
+      },
+      "advisors": {
+        "badge": "Para asesores",
+        "title": "Asesores y gestores de patrimonio",
+        "description": "Convierte el mandato de un cliente en una estrategia optimizada y probada históricamente sin contratar un equipo quant. Fintelligent redacta el Python, un gestor de riesgo se ajusta al mandato de cada cliente, y cada resultado llega con un informe que puedes presentar en la mesa.",
+        "outcomes": [
+          "Estrategias redactadas a partir de una descripción en lenguaje natural",
+          "Un gestor de riesgo para cada mandato de cliente",
+          "Informes en PDF listos para el cliente, sin mostrar código"
+        ]
       }
     }
   },
@@ -577,6 +587,9 @@
       },
       "teams": {
         "imageAlt": "Visto de espaldas, un analista trabajando frente a un monitor en una sala en penumbra"
+      },
+      "advisors": {
+        "imageAlt": "Un asesor financiero y un cliente revisando juntos un informe de cartera, en blanco y negro"
       }
     },
     "advantages": {

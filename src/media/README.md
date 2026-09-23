@@ -96,9 +96,12 @@ of their own (the Fintelligent poster, blog covers).
 | `solutions/funds-hero.jpg` | `/solutions/hedge-funds` hero, 16/10 | Unsplash, Xingchen Yan (`rGFNwdyCwHM`) |
 | `solutions/teams-hero.jpg` | `/solutions/quant-teams` hero, 16/10 | Unsplash, Hassan Pasha (`nEbMedmVwgw`) |
 | `solutions/independents-hero.jpg` | `/solutions/independent-quants` hero, 16/10 | Unsplash, Piotr Makowski (`27LH_0jXKYI`) |
+| `solutions/advisors-hero.jpg` | `/solutions/financial-advisors` OG card background, 16/10 | Fintela asset library (`assets-fintela-landing-page/finance_adv.jpg`) |
+| `solutions/advisors-hero-consult.jpg` | `/solutions/financial-advisors` hero plate, 4/5 | Fintela asset library (`assets-fintela-landing-page/finance_advisor.jpeg`), different crop from the audience dossier photo below |
 | `audiences/funds.jpg` | Home audience dossier, funds seat — file is 4/5, slot is now 16/9 (see Stills) | Unsplash, Sebastian Schuster (`pfnB1BMq_rY`) |
 | `audiences/teams.jpg` | Home audience dossier, teams seat — file is 4/5, slot is now 16/9 (see Stills) | Unsplash, trianglemz (`iKi_u-febwU`) |
 | `audiences/independents.jpg` | Home audience dossier, independents seat — file is 4/5, slot is now 16/9 (see Stills) | Unsplash, Tai Bui (`dw4WegQZEYc`) |
+| `audiences/advisors.jpg` | Home audience dossier, advisors seat — file is 4/5, slot is now 16/9 (see Stills) | Fintela asset library (`assets-fintela-landing-page/finance_advisor.jpeg`) |
 | `capabilities/live-ops.jpg` | Home capabilities bento, live-trading tile, 3/2 | Pixabay, harryloya (`3033135`) |
 | `fintelligent/agents-poster.jpg` | Fintelligent player poster until the recording exists, 16/9 | Unsplash, Alina Grubnyak (`ZiQkhI7417A`) |
 | `content/blog/covers/welcome-to-the-fintela-blog.jpg` | Blog cover | Unsplash, Lukas Blazek (`mcSDtbWXUZU`) |

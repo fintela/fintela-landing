@@ -508,6 +508,16 @@
           "Cryptographically hashed, timestamped strategy history",
           "PDF reports for investment committee"
         ]
+      },
+      "advisors": {
+        "badge": "For advisors",
+        "title": "Advisors & wealth managers",
+        "description": "Turn a client mandate into a backtested, optimized strategy without hiring a quant team. Fintelligent drafts the Python, a risk manager matches each client's mandate, and every result comes with a report you can hand across the table.",
+        "outcomes": [
+          "Strategies drafted from a plain-English description",
+          "A risk manager for every client mandate",
+          "Client-ready PDF reports, no code shown"
+        ]
       }
     }
   },
@@ -577,6 +587,9 @@
       },
       "teams": {
         "imageAlt": "Seen from behind, an analyst working at a monitor in a dim room"
+      },
+      "advisors": {
+        "imageAlt": "A financial advisor and a client reviewing a portfolio report together, black and white"
       }
     },
     "advantages": {

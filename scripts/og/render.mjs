@@ -115,6 +115,7 @@ async function loadCards() {
     solution('funds', 'hedge-funds', 'src/assets/media/solutions/funds-hero.jpg'),
     solution('teams', 'quant-teams', 'src/assets/media/solutions/teams-hero.jpg'),
     solution('independents', 'independent-quants', 'src/assets/media/solutions/independents-hero.jpg'),
+    solution('advisors', 'financial-advisors', 'src/assets/media/solutions/advisors-hero.jpg'),
   ];
 }
 

@@ -36,12 +36,15 @@ import liveOps from '../assets/media/capabilities/live-ops.jpg?w=260;520&format=
 import audienceFunds from '../assets/media/audiences/funds.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceTeams from '../assets/media/audiences/teams.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceIndependents from '../assets/media/audiences/independents.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
+import audienceAdvisors from '../assets/media/audiences/advisors.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import solutionFunds from '../assets/media/solutions/funds-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import fundsHeroMeeting from '../assets/media/solutions/funds-hero-meeting.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
 import teamsHeroCollab from '../assets/media/solutions/teams-hero-collab.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
 import independentsHeroDesk from '../assets/media/solutions/independents-hero-desk.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
+import advisorsHeroConsult from '../assets/media/solutions/advisors-hero-consult.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
 import solutionTeams from '../assets/media/solutions/teams-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import solutionIndependents from '../assets/media/solutions/independents-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
+import solutionAdvisors from '../assets/media/solutions/advisors-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import fundsResearch from '../assets/media/solutions/chapters/funds-research.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
 import fundsGovernance from '../assets/media/solutions/chapters/funds-governance.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
 import fundsExecution from '../assets/media/solutions/chapters/funds-execution.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
@@ -196,17 +199,20 @@ export const STILLS = {
     funds: still(audienceFunds, { objectPosition: 'center 30%' }),
     teams: still(audienceTeams, { objectPosition: 'center 28%' }),
     independents: still(audienceIndependents, { objectPosition: 'center 20%' }),
+    advisors: still(audienceAdvisors, { objectPosition: 'center 30%' }),
   },
   solutions: {
     funds: still(solutionFunds),
     teams: still(solutionTeams),
     independents: still(solutionIndependents),
+    advisors: still(solutionAdvisors),
   },
   /** Each solution hero's right-hand plate, 4/5 — one photo per seat. */
   heroPlate: {
     funds: still(fundsHeroMeeting),
     teams: still(teamsHeroCollab),
     independents: still(independentsHeroDesk),
+    advisors: still(advisorsHeroConsult),
   },
   /** Product frames for the solution chapters, one per chapter. */
   chapters: {
