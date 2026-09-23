@@ -426,10 +426,10 @@
   },
   "advisors": {
     "seo": {
-      "title": "Fintela for Advisors & Wealth Managers",
+      "title": "Fintela for Financial Advisors & Wealth Managers",
       "description": "Backtested, optimized strategies with client-ready reports and a full audit trail, built for advisory practices with nothing to install or maintain."
     },
-    "badge": "For advisors & wealth managers",
+    "badge": "For financial advisors & wealth managers",
     "badgeAccent": "advisors & wealth managers",
     "title": "Systematic strategies,",
     "titleAccent": "without a research desk.",

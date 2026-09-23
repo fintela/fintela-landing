@@ -510,8 +510,8 @@
         ]
       },
       "advisors": {
-        "badge": "Para asesores",
-        "title": "Asesores y gestores de patrimonio",
+        "badge": "Para asesores financieros",
+        "title": "Asesores financieros y gestores de patrimonio",
         "description": "Convierte el mandato de un cliente en una estrategia optimizada y probada históricamente sin contratar un equipo quant. Fintelligent redacta el Python, un gestor de riesgo se ajusta al mandato de cada cliente, y cada resultado llega con un informe que puedes presentar en la mesa.",
         "outcomes": [
           "Estrategias redactadas a partir de una descripción en lenguaje natural",

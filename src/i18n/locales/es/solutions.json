@@ -426,10 +426,10 @@
   },
   "advisors": {
     "seo": {
-      "title": "Fintela para asesores y gestores de patrimonio",
+      "title": "Fintela para asesores financieros y gestores de patrimonio",
       "description": "Estrategias optimizadas y probadas históricamente, con reportes listos para el cliente y un historial de auditoría completo, hechas para prácticas de asesoría sin nada que instalar ni mantener."
     },
-    "badge": "Para asesores y gestores de patrimonio",
+    "badge": "Para asesores financieros y gestores de patrimonio",
     "badgeAccent": "gestores de patrimonio",
     "title": "Estrategias sistemáticas,",
     "titleAccent": "sin una mesa de investigación.",

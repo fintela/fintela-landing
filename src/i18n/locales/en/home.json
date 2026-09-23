@@ -510,8 +510,8 @@
         ]
       },
       "advisors": {
-        "badge": "For advisors",
-        "title": "Advisors & wealth managers",
+        "badge": "For financial advisors",
+        "title": "Financial advisors & wealth managers",
         "description": "Turn a client mandate into a backtested, optimized strategy without hiring a quant team. Fintelligent drafts the Python, a risk manager matches each client's mandate, and every result comes with a report you can hand across the table.",
         "outcomes": [
           "Strategies drafted from a plain-English description",
