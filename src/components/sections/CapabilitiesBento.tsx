@@ -6,24 +6,11 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Section } from '../primitives/Section';
 import { NeuPanel } from '../primitives/NeuPanel';
 import { VideoPlate } from '../primitives/VideoPlate';
-import { ChapterRail } from '../primitives/ChapterRail';
 import { BentoGrid, BentoTile } from '../primitives/BentoGrid';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { clippedGradientSx, quietLinkSx, wellSx } from '../../theme/neu';
 import { gradients, motion, palette, radii, soft } from '../../theme/tokens';
-import { useVideoChapters } from '../../media/chapters';
-import { VIDEOS, captionTracks } from '../../media/registry';
-
-/**
- * Chapters of the markets recording (`feature-walkthrough.mp4`, 21 s); labels
- * under `capabilities.chapters.*`, starts cut to the recording's tab changes.
- */
-const WALKTHROUGH_CHAPTERS = [
-  { id: 'pulse', start: 0 },
-  { id: 'ticker', start: 1 },
-  { id: 'groups', start: 11.5 },
-  { id: 'screener', start: 14 },
-] as const;
+import { VIDEOS } from '../../media/registry';
 
 /**
  * Best-so-far fitness over 40 samples of a 500-trial study: the shape a TPE
@@ -179,14 +166,12 @@ const FeatureTile = ({
 
 /**
  * Band 5. Four tiles in a 4×2 bento: two equal feature cards top-left, the
- * walkthrough video as the 2×2 anchor top-right with a pill strip that seeks
- * to each capability's chapter, and the Bayesian tile running wide underneath
- * with a real sparkline. DOM order is reading order.
+ * walkthrough video as the 2×2 anchor top-right — an always-on ambient loop,
+ * no controls — and the Bayesian tile running wide underneath with a real
+ * sparkline. DOM order is reading order.
  */
 export const CapabilitiesBento = () => {
   const { t } = useTranslation('home');
-  const chapters = WALKTHROUGH_CHAPTERS.map((c) => ({ ...c, label: t(`capabilities.chapters.${c.id}`) }));
-  const { activeId, setActiveId, playerRef, seekTo } = useVideoChapters(chapters);
   // Each docs link is named for its destination: identical "Docs" anchors to
   // different pages would tell neither a link list nor a crawler apart.
   const docsLabel = (key: string) => t(`capabilities.docsLabels.${key}`);
@@ -228,28 +213,15 @@ export const CapabilitiesBento = () => {
           <AnimateOnScroll delay={120} direction="right" stretch>
             <NeuPanel sx={{ p: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: 'column', height: '100%' }}>
               <VideoPlate
-                ref={playerRef}
-                mode="player"
+                mode="ambient"
                 src={VIDEOS.walkthrough.src}
                 poster={VIDEOS.walkthrough.poster}
                 posterAlt={t('capabilities.posterAlt')}
-                captions={captionTracks(VIDEOS.walkthrough)}
-                silent={VIDEOS.walkthrough.silent}
                 ground={VIDEOS.walkthrough.ground}
-                chapters={chapters}
                 ratio="16/10"
                 label={t('capabilities.playerLabel')}
-                onChapterChange={setActiveId}
                 grow
                 flush
-              />
-              <ChapterRail
-                orientation="pills"
-                chapters={chapters}
-                activeId={activeId}
-                onSelect={seekTo}
-                label={t('capabilities.chaptersLabel')}
-                sx={{ mt: 1.75 }}
               />
             </NeuPanel>
           </AnimateOnScroll>
