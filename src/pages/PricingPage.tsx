@@ -32,13 +32,17 @@ const PRICING_OG_IMAGE = '/og/pricing.png';
 const TOKEN_DOCS = '/docs/tokens-and-billing';
 
 /**
- * Yearly Stripe Prices in USD cents, mirroring `fintela/infra/scripts/setup-stripe-plan.mjs`
- * (fintela_trader_yearly, fintela_quant_yearly). Tiers without an entry have no
- * public yearly Price and keep their monthly figure under either toggle.
+ * Yearly Stripe Prices in USD cents. Trader and Quant mirror
+ * `fintela/infra/scripts/setup-stripe-plan.mjs` (fintela_trader_yearly,
+ * fintela_quant_yearly); Institutional's `fintela_institutional_yearly` was
+ * minted directly in Stripe (that script's catalog still shows Institutional
+ * with no public Price). Tiers without an entry have no public yearly Price
+ * and keep their monthly figure under either toggle.
  */
 const YEARLY_CENTS: Partial<Record<TierKey, number>> = {
   trader: 78700,
   quant: 158900,
+  institutional: 599000,
 };
 
 const usd = (cents: number, fractionDigits: number) =>
@@ -56,10 +60,8 @@ type TierKey = 'trader' | 'quant' | 'institutional' | 'custom';
 /**
  * The three tiers, in display order. Institutional is arranged with the team.
  *
- * `ctaTone` is set per tier rather than derived from `featured`: the dark
- * (accent) fill now marks the Custom tier's "Contact us" — the one CTA that
- * goes to a person instead of to signup — while every self-serve tier,
- * Quant included, takes the white raised button.
+ * Every tier's CTA takes the dark (accent) fill now — "Get started" included,
+ * not just the Custom tier's "Contact us" — for a uniform black button row.
  */
 const PLAN_TIERS: ReadonlyArray<{
   key: TierKey;
@@ -67,9 +69,9 @@ const PLAN_TIERS: ReadonlyArray<{
   featured: boolean;
   ctaTone: NeuTone;
 }> = [
-  { key: 'trader', icon: <FlashOnOutlinedIcon />, featured: false, ctaTone: 'raised' },
-  { key: 'quant', icon: <BusinessCenterOutlinedIcon />, featured: true, ctaTone: 'raised' },
-  { key: 'institutional', icon: <ApartmentOutlinedIcon />, featured: false, ctaTone: 'raised' },
+  { key: 'trader', icon: <FlashOnOutlinedIcon />, featured: false, ctaTone: 'accent' },
+  { key: 'quant', icon: <BusinessCenterOutlinedIcon />, featured: true, ctaTone: 'accent' },
+  { key: 'institutional', icon: <ApartmentOutlinedIcon />, featured: false, ctaTone: 'accent' },
   { key: 'custom', icon: <TuneOutlinedIcon />, featured: false, ctaTone: 'accent' },
 ];
 

@@ -150,7 +150,7 @@
           "label": "Precio",
           "trader": "$79/mes ($787/año)",
           "quant": "$159/mes ($1,589/año)",
-          "institutional": "$599/mes (2 usuarios incluidos)",
+          "institutional": "$599/mes ($5,990/año, 2 usuarios incluidos)",
           "custom": "Precio personalizado"
         },
         "tokenPool": {

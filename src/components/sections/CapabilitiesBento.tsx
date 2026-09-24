@@ -208,19 +208,22 @@ export const CapabilitiesBento = () => {
           </AnimateOnScroll>
         </BentoTile>
 
-        {/* The anchor: explicit placement, top-right, two rows tall from lg. */}
+        {/* The anchor: explicit placement, top-right, up to two rows tall from
+            lg. No `grow`/`ground` and no forced panel height: now that the
+            chapter rail is gone the panel holds nothing but the video, so it
+            is sized to the clip itself (`feature-walkthrough.mp4`, a native
+            1600×870) instead of being stretched to match the stacked tiles
+            beside it and letterboxed to avoid cropping. */}
         <BentoTile col={{ sm: 'span 2', lg: '3 / 5' }} row={{ lg: '1 / 3' }}>
-          <AnimateOnScroll delay={120} direction="right" stretch>
-            <NeuPanel sx={{ p: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <AnimateOnScroll delay={120} direction="right">
+            <NeuPanel sx={{ p: { xs: 1.5, md: 2 } }}>
               <VideoPlate
                 mode="ambient"
                 src={VIDEOS.walkthrough.src}
                 poster={VIDEOS.walkthrough.poster}
                 posterAlt={t('capabilities.posterAlt')}
-                ground={VIDEOS.walkthrough.ground}
-                ratio="16/10"
+                ratio="1600/870"
                 label={t('capabilities.playerLabel')}
-                grow
                 flush
               />
             </NeuPanel>
