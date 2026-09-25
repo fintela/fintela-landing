@@ -119,6 +119,7 @@ export const HomePage = () => {
           <HeroDiorama onWatch={() => scrollToSection('platform')} />
           <CapabilitiesBento />
           <WorkflowSection />
+          {/* PlatformStackSection (the three-layer stack) is on hold; re-add it here, after the platform band. */}
           <InstitutionalSection />
           <TrustBar />
           <InsightsSection />

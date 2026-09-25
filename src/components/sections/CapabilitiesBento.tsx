@@ -1,16 +1,29 @@
 import { Box, Typography } from '@mui/material';
+import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Section } from '../primitives/Section';
 import { NeuPanel } from '../primitives/NeuPanel';
-import { VideoPlate } from '../primitives/VideoPlate';
 import { BentoGrid, BentoTile } from '../primitives/BentoGrid';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { clippedGradientSx, quietLinkSx, wellSx } from '../../theme/neu';
 import { gradients, motion, palette, radii, soft } from '../../theme/tokens';
-import { VIDEOS } from '../../media/registry';
+
+/**
+ * The Fintelligent demo is below the fold and all client-side motion, so it
+ * is its own chunk, fetched after hydration rather than riding in the entry;
+ * the server renders the placeholder, which holds the demo's size.
+ */
+const FintelligentDemo = lazy(() =>
+  import('../fintelligentDemo/FintelligentDemo').then((m) => ({ default: m.FintelligentDemo })),
+);
+
+/** The demo's footprint (its stage ratio per layout, plus the player bar) while the chunk loads. */
+const DemoPlaceholder = () => (
+  <Box aria-hidden sx={{ aspectRatio: { xs: '1 / 1.78', md: '1 / 0.7' }, mb: '52px' }} />
+);
 
 /**
  * Best-so-far fitness over 40 samples of a 500-trial study: the shape a TPE
@@ -165,10 +178,9 @@ const FeatureTile = ({
 );
 
 /**
- * Band 5. Four tiles in a 4×2 bento: two equal feature cards top-left, the
- * walkthrough video as the 2×2 anchor top-right — an always-on ambient loop,
- * no controls — and the Bayesian tile running wide underneath with a real
- * sparkline. DOM order is reading order.
+ * Band 5. Three feature cards side by side from lg — the AI, the data, and
+ * the Bayesian tile with its real sparkline — and the Fintelligent demo full
+ * width under them. DOM order is reading order.
  */
 export const CapabilitiesBento = () => {
   const { t } = useTranslation('home');
@@ -186,7 +198,7 @@ export const CapabilitiesBento = () => {
           description={t('features.description')}
         />
 
-        <BentoGrid columns={{ xs: 1, sm: 2, lg: 4 }} autoRows={{ lg: 'minmax(150px, auto)' }}>
+        <BentoGrid columns={{ xs: 1, sm: 2, lg: 3 }}>
         <BentoTile>
           <AnimateOnScroll delay={0} stretch>
             <FeatureTile
@@ -208,55 +220,33 @@ export const CapabilitiesBento = () => {
           </AnimateOnScroll>
         </BentoTile>
 
-        {/* The anchor: explicit placement, top-right, up to two rows tall from
-            lg. No `grow`/`ground` and no forced panel height: now that the
-            chapter rail is gone the panel holds nothing but the video, so it
-            is sized to the clip itself (`feature-walkthrough.mp4`, a native
-            1600×870) instead of being stretched to match the stacked tiles
-            beside it and letterboxed to avoid cropping. */}
-        <BentoTile col={{ sm: 'span 2', lg: '3 / 5' }} row={{ lg: '1 / 3' }}>
-          <AnimateOnScroll delay={120} direction="right">
-            <NeuPanel sx={{ p: { xs: 1.5, md: 2 } }}>
-              <VideoPlate
-                mode="ambient"
-                src={VIDEOS.walkthrough.src}
-                poster={VIDEOS.walkthrough.poster}
-                posterAlt={t('capabilities.posterAlt')}
-                ratio="1600/870"
-                label={t('capabilities.playerLabel')}
-                flush
-              />
-            </NeuPanel>
-          </AnimateOnScroll>
-        </BentoTile>
-
-        <BentoTile col={{ sm: 'span 2', lg: 'span 2' }}>
-          <AnimateOnScroll delay={180} stretch>
+        {/* Third in the row from lg, the chart under the text; at sm it takes
+            the row under the other two, text and chart side by side. */}
+        <BentoTile col={{ sm: 'span 2', lg: 'auto' }}>
+          <AnimateOnScroll delay={120} stretch>
             <NeuPanel
               sx={{
                 height: '100%',
                 p: 3,
                 display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 1fr) minmax(0, 1fr)' },
-                gap: 3,
-                alignItems: 'center',
+                gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) minmax(0, 1fr)', lg: 'minmax(0, 1fr)' },
+                gridTemplateAreas: { xs: '"text" "well" "link"', sm: '"text well" "link well"', lg: '"text" "well" "link"' },
+                gridTemplateRows: { lg: 'auto auto 1fr' },
+                columnGap: 3,
+                rowGap: 2,
               }}
             >
-              <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Box sx={{ gridArea: 'text' }}>
                 <Rule />
                 <Typography component="h3" sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>
                   {t('features.items.bayesian.title')}
                 </Typography>
-                <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6, mb: 2 }}>
+                <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6 }}>
                   {t('features.items.bayesian.description')}
                 </Typography>
-                <Box component={RouterLink} to="/product/samplers" sx={[quietLinkSx, docsLinkSx]}>
-                  {docsLabel('samplers')}
-                  <ArrowForwardIcon sx={{ fontSize: 14 }} />
-                </Box>
               </Box>
               {/* Instrument glass: the chart lives in a well, not on the card. */}
-              <Box sx={{ ...wellSx('sm'), borderRadius: `${radii.neuWell}px`, p: 1.75 }}>
+              <Box sx={{ gridArea: 'well', alignSelf: 'center', ...wellSx('sm'), borderRadius: `${radii.neuWell}px`, p: 1.75 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 1 }}>
                   <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: soft.textSecondary }}>
                     {t('capabilities.spark.label')}
@@ -267,6 +257,31 @@ export const CapabilitiesBento = () => {
                 </Box>
                 <FitnessSparkline from={t('capabilities.spark.from')} to={t('capabilities.spark.to')} />
               </Box>
+              <Box component={RouterLink} to="/product/samplers" sx={[quietLinkSx, docsLinkSx, { gridArea: 'link', alignSelf: 'end' }]}>
+                {docsLabel('samplers')}
+                <ArrowForwardIcon sx={{ fontSize: 14 }} />
+              </Box>
+            </NeuPanel>
+          </AnimateOnScroll>
+        </BentoTile>
+
+        {/* Full width, under everything: the Fintelligent demo needs the
+            band's whole measure for the app's text to stay legible. */}
+        <BentoTile col={{ sm: 'span 2', lg: '1 / -1' }}>
+          <AnimateOnScroll delay={120}>
+            <NeuPanel sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+              <Box sx={{ mb: { xs: 2, md: 3 }, maxWidth: 720 }}>
+                <Rule />
+                <Typography component="h3" sx={{ fontWeight: 700, fontSize: '1.02rem', color: soft.text, mb: 0.75, letterSpacing: '-0.01em' }}>
+                  {t('fintelligentDemo.title')}
+                </Typography>
+                <Typography sx={{ color: soft.textSecondary, fontSize: '0.9rem', lineHeight: 1.6 }}>
+                  {t('fintelligentDemo.description')}
+                </Typography>
+              </Box>
+              <Suspense fallback={<DemoPlaceholder />}>
+                <FintelligentDemo />
+              </Suspense>
             </NeuPanel>
           </AnimateOnScroll>
         </BentoTile>

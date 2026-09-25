@@ -32,18 +32,22 @@ const PRICING_OG_IMAGE = '/og/pricing.png';
 const TOKEN_DOCS = '/docs/tokens-and-billing';
 
 /**
- * Yearly Stripe Prices in USD cents. Trader and Quant mirror
- * `fintela/infra/scripts/setup-stripe-plan.mjs` (fintela_trader_yearly,
- * fintela_quant_yearly); Institutional's `fintela_institutional_yearly` was
- * minted directly in Stripe (that script's catalog still shows Institutional
- * with no public Price). Tiers without an entry have no public yearly Price
- * and keep their monthly figure under either toggle.
+ * Yearly Stripe Prices in USD cents, each 10× its monthly Price (two months
+ * free). They mirror `fintela/infra/scripts/setup-stripe-plan.mjs`:
+ * fintela_trader_yearly, fintela_quant_yearly, and for Institutional the
+ * per-seat figure (fintela_institutional_seat_addon_yearly; the base
+ * fintela_institutional_yearly is the 2-seat minimum, twice this). Tiers
+ * without an entry have no public yearly Price and keep their monthly figure
+ * under either toggle.
  */
 const YEARLY_CENTS: Partial<Record<TierKey, number>> = {
-  trader: 78700,
-  quant: 158900,
-  institutional: 599000,
+  trader: 129000,
+  quant: 249000,
+  institutional: 1199000,
 };
+
+/** Tiers priced per seat: their yearly note reads "…/seat billed yearly". */
+const PER_SEAT_TIERS: ReadonlySet<TierKey> = new Set(['institutional']);
 
 const usd = (cents: number, fractionDigits: number) =>
   new Intl.NumberFormat('en-US', {
@@ -590,7 +594,12 @@ export const PricingPage = () => {
     if (billing === 'yearly' && yearly !== undefined) {
       return {
         price: usd(yearly / 12, 2),
-        note: t('pricing.individual.billing.yearlyTotal', { total: usd(yearly, 0) }),
+        note: t(
+          PER_SEAT_TIERS.has(key)
+            ? 'pricing.individual.billing.yearlyTotalPerSeat'
+            : 'pricing.individual.billing.yearlyTotal',
+          { total: usd(yearly, 0) },
+        ),
       };
     }
     return { price: t(`pricing.individual.plans.${key}.price`), note: '' };

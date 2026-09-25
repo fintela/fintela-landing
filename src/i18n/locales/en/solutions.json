@@ -330,7 +330,7 @@
         },
         {
           "without": "Optimization loops written from scratch",
-          "with": "intelligent optimization built in"
+          "with": "Intelligent optimization built in"
         },
         {
           "without": "Validation windows set up by hand for every study",
@@ -352,7 +352,7 @@
         "after": "a single line of infrastructure.",
         "points": [
           "No local environment, no devops",
-          "intelligent optimization with train / validation / OOS built in",
+          "Intelligent optimization with train / validation / OOS built in",
           "Brokerage-connected live deployment"
         ]
       }

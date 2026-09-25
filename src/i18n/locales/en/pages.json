@@ -50,12 +50,13 @@
         "monthly": "Monthly",
         "yearly": "Yearly",
         "save": "Save up to 17%",
-        "yearlyTotal": "{{total}} billed yearly"
+        "yearlyTotal": "{{total}} billed yearly",
+        "yearlyTotalPerSeat": "{{total}}/seat billed yearly"
       },
       "plans": {
         "trader": {
           "name": "Trader",
-          "price": "$79",
+          "price": "$129",
           "period": "/mo",
           "badge": "",
           "description": "Everything you need to start trading smarter.",
@@ -73,7 +74,7 @@
         },
         "quant": {
           "name": "Quant",
-          "price": "$159",
+          "price": "$249",
           "period": "/mo",
           "badge": "",
           "description": "Go deeper. Optimize harder.",
@@ -95,8 +96,8 @@
         },
         "institutional": {
           "name": "Institutional",
-          "price": "$599",
-          "period": "/mo",
+          "price": "$1,199",
+          "period": "/seat/mo",
           "badge": "",
           "description": "Built for teams. Branded for you.",
           "features": [
@@ -108,7 +109,7 @@
             "Custom branding",
             "White-label possibility",
             "Hands-on workflow & strategy enablement",
-            "2 included seats, +$299.50/seat/mo"
+            "2-seat minimum, billed per seat"
           ],
           "overageRate": "$0.0125/token",
           "support": "Dedicated CSM + SLA",
@@ -148,9 +149,9 @@
       "rows": {
         "price": {
           "label": "Price",
-          "trader": "$79/mo ($787/yr)",
-          "quant": "$159/mo ($1,589/yr)",
-          "institutional": "$599/mo ($5,990/yr, 2 seats included)",
+          "trader": "$129/mo ($1,290/yr)",
+          "quant": "$249/mo ($2,490/yr)",
+          "institutional": "$1,199/seat/mo ($11,990/seat/yr), 2-seat minimum",
           "custom": "Custom pricing"
         },
         "tokenPool": {
@@ -231,7 +232,7 @@
           "label": "Hands-on workflow & strategy enablement"
         },
         "ssoSeatManagement": {
-          "label": "Included seats (+$299.50/seat/mo beyond 2)"
+          "label": "Team seats ($1,199/seat/mo, 2-seat minimum)"
         }
       }
     },
@@ -490,7 +491,7 @@
       },
       "qKernel": {
         "title": "Q-Kernel",
-        "desc": "Also experimental: intelligent optimization in the spirit of TPE, but its similarity model is computed with a simulated quantum feature map instead of a classical kernel. Shares QAOA's random warmup and automatic fallback.",
+        "desc": "Also experimental: Intelligent optimization in the spirit of TPE, but its similarity model is computed with a simulated quantum feature map instead of a classical kernel. Shares QAOA's random warmup and automatic fallback.",
         "bullets": [
           {
             "label": "Full name",
@@ -1540,7 +1541,7 @@
   "seo": {
     "home": {
       "title": "Fintela | AI-Native Quant Platform for Trading Strategies",
-      "description": "Build, backtest, optimize and deploy quantitative trading strategies in one cloud platform. intelligent optimization and broker-connected execution."
+      "description": "Build, backtest, optimize and deploy quantitative trading strategies in one cloud platform. Intelligent optimization and broker-connected execution."
     },
     "pricing": {
       "title": "Pricing & Plans | Fintela",

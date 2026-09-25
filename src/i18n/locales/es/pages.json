@@ -50,12 +50,13 @@
         "monthly": "Mensual",
         "yearly": "Anual",
         "save": "Ahorra hasta un 17%",
-        "yearlyTotal": "{{total}} facturados al año"
+        "yearlyTotal": "{{total}} facturados al año",
+        "yearlyTotalPerSeat": "{{total}}/usuario facturados al año"
       },
       "plans": {
         "trader": {
           "name": "Trader",
-          "price": "$79",
+          "price": "$129",
           "period": "/mes",
           "badge": "",
           "description": "Todo lo que necesitas para operar con más inteligencia.",
@@ -73,7 +74,7 @@
         },
         "quant": {
           "name": "Quant",
-          "price": "$159",
+          "price": "$249",
           "period": "/mes",
           "badge": "",
           "description": "Profundiza más. Optimiza al máximo.",
@@ -95,8 +96,8 @@
         },
         "institutional": {
           "name": "Institutional",
-          "price": "$599",
-          "period": "/mes",
+          "price": "$1,199",
+          "period": "/usuario/mes",
           "badge": "",
           "description": "Hecho para equipos. Con tu marca.",
           "features": [
@@ -108,7 +109,7 @@
             "Marca personalizada",
             "Posibilidad de white-label",
             "Acompañamiento práctico de flujo de trabajo y estrategia",
-            "2 usuarios incluidos, +$299.50/usuario/mes"
+            "Mínimo 2 usuarios, facturado por usuario"
           ],
           "overageRate": "$0.0125/token",
           "support": "CSM dedicado + SLA",
@@ -148,9 +149,9 @@
       "rows": {
         "price": {
           "label": "Precio",
-          "trader": "$79/mes ($787/año)",
-          "quant": "$159/mes ($1,589/año)",
-          "institutional": "$599/mes ($5,990/año, 2 usuarios incluidos)",
+          "trader": "$129/mes ($1,290/año)",
+          "quant": "$249/mes ($2,490/año)",
+          "institutional": "$1,199/usuario/mes ($11,990/usuario/año), mínimo 2 usuarios",
           "custom": "Precio personalizado"
         },
         "tokenPool": {
@@ -231,7 +232,7 @@
           "label": "Acompañamiento práctico de flujo de trabajo y estrategia"
         },
         "ssoSeatManagement": {
-          "label": "Usuarios incluidos (+$299.50/usuario/mes desde el tercero)"
+          "label": "Usuarios del equipo ($1,199/usuario/mes, mínimo 2)"
         }
       }
     },

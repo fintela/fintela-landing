@@ -35,7 +35,6 @@
       "Deploy to live trading",
       "Monitor risk and market news"
     ],
-    "diagramLabel": "Fintela platform workflow: six connected steps",
     "centerName": "FINTELA",
     "centerSub": "PLATFORM",
     "nodes": {
@@ -57,7 +56,7 @@
       "studies": {
         "label": "Studies",
         "sub": "Bayesian search",
-        "desc": "Launch thousands of trials in parallel. intelligent optimization focuses search on promising regions; results validated on train, val, and out of sample windows."
+        "desc": "Launch thousands of trials in parallel. Intelligent optimization focuses search on promising regions; results validated on train, val, and out of sample windows."
       },
       "portfolios": {
         "label": "Portfolios",
@@ -75,6 +74,48 @@
         "desc": "Link your brokerage account and promote any validated portfolio to live execution, with real time order logs and a one click pause."
       }
     },
+    "line": {
+      "label": "The Fintela pipeline: five connected steps, from asset groups to live trading",
+      "play": "Play the pipeline",
+      "pause": "Pause the pipeline",
+      "stepLabel": "Step {{n}}: {{name}}",
+      "tokens": {
+        "dataClusters": "11 ETFs",
+        "strategies": "sector_momentum",
+        "studies": "1,000 trials",
+        "portfolios": "Top portfolio",
+        "connectBroker": "Live"
+      },
+      "handoff": {
+        "dataClusters": "Hands on: Sector ETFs (US), 11 tickers, snapshotted",
+        "strategies": "Hands on: sector_momentum, with 2 parameters to search",
+        "studies": "Hands on: 1,000 trials, each validated out of sample",
+        "portfolios": "Hands on: the leading portfolio and its equity curve",
+        "connectBroker": "Live: orders routed to your brokerage, one click to pause"
+      },
+      "surface": {
+        "tickers": "{{n}} tickers",
+        "snapshot": "Snapshot · daily closes",
+        "validated": "Python · validated",
+        "codeComment": "equal weight across the leaders",
+        "integer": "integer",
+        "running": "Running",
+        "sampler": "Sampler",
+        "trials": "Trials",
+        "bestSharpe": "Best Sharpe",
+        "train": "Train",
+        "validation": "Validation",
+        "oos": "Out-of-sample",
+        "ranked": "Ranked portfolios",
+        "exportPdf": "Export PDF",
+        "connected": "Brokerage account · Connected",
+        "pause": "Pause",
+        "buy": "BUY",
+        "sell": "SELL",
+        "atMarket": "{{qty}} @ market",
+        "filled": "Filled"
+      }
+    },
     "stats": {
       "conceptToLive": {
         "num": "6",
@@ -87,6 +128,26 @@
       "faster": {
         "num": "1",
         "label": "Unified pipeline"
+      }
+    }
+  },
+  "stack": {
+    "title": "How Fintela is built: interface, engine and intelligence",
+    "listLabel": "The three layers of the Fintela platform",
+    "hintPointer": "Hover a layer to look inside · drag to turn the stack",
+    "hintTouch": "Tap a layer to look inside · swipe sideways to turn the stack",
+    "layers": {
+      "interface": {
+        "name": "Interface",
+        "desc": "The Fintela workspace: research, portfolios and Fintelligent on one screen."
+      },
+      "engine": {
+        "name": "Engine",
+        "desc": "Backtests, parallel optimization and live execution, orchestrated end to end."
+      },
+      "intelligence": {
+        "name": "Intelligence",
+        "desc": "AI models that reason over markets, strategies and risk."
       }
     }
   },
@@ -109,7 +170,7 @@
         "description": "Plain Python strategies in app with NumPy, pandas, SciPy, scikit-learn, statsmodels, ta, CVXPY. Named parameters, typed ranges, version history. Zero local install."
       },
       "bayesian": {
-        "title": "intelligent optimization",
+        "title": "Intelligent optimization",
         "description": "Seven samplers, TPE by default, search thousands of trials and validate every result on train, validation, and out-of-sample splits automatically."
       },
       "strategyClustering": {
@@ -681,6 +742,188 @@
       "description": "QAOA and quantum-kernel search over your parameter space, run on an emulated quantum circuit."
     },
     "liveThumbAlt": "A trader at a desk with two monitors of price charts and a laptop"
+  },
+  "fintelligentDemo": {
+    "title": "Fintelligent, start to finish",
+    "description": "One sentence becomes a validated momentum strategy and a 1,000-trial study, in the same screens you work in.",
+    "label": "Animated demo of the Fintela app: Fintelligent is asked for a momentum strategy on the sector ETFs, writes and validates it, asks for the objective, the optimizer and the trial budget (Sharpe ratio, TPE, 1,000 trials), and launches the study.",
+    "play": "Play demo",
+    "pause": "Pause demo",
+    "chapterJump": "Jump to {{chapter}}",
+    "chapters": {
+      "prompt": "Prompt",
+      "strategy": "Strategy",
+      "configure": "Configure",
+      "launch": "Launch"
+    },
+    "prompt": "Create a momentum strategy using the sector ETFs, then optimize it.",
+    "app": {
+      "nav": {
+        "home": "Home",
+        "library": "Library",
+        "studies": "Studies",
+        "portfolios": "Portfolios",
+        "markets": "Markets",
+        "dataExplorer": "Data Explorer",
+        "laboratory": "Laboratory"
+      },
+      "settings": "Settings",
+      "strategies": "Strategies",
+      "searchStrategies": "Search strategies…",
+      "name": "Name",
+      "parameters": "Parameters",
+      "launcher": "Fintelligent",
+      "placeholder": "I'm Fintelligent, how can I help you?",
+      "disclaimer": "Fintela is a research tool, not an investment adviser. Output is informational only and not investment advice.",
+      "stop": "Stop",
+      "beta": "Beta",
+      "betaMessage": "Fintelligent is in active development — you may occasionally see bugs or incomplete answers.",
+      "thinking": "Thinking…",
+      "thinkingTitle": "Thinking",
+      "toolCalls_one": "{{count}} tool call",
+      "toolCalls_other": "{{count}} tool calls",
+      "status": {
+        "analyzing": "Analyzing your request…",
+        "configuring": "Configuring…",
+        "exploring": "Exploring your data…",
+        "validating": "Validating…",
+        "writing": "Writing the code…",
+        "running": "Running…",
+        "waiting": "Waiting for your answer",
+        "finished": "Finished"
+      },
+      "tools": {
+        "listFitness": "Listing fitness functions",
+        "askUser": "Asking you a question",
+        "createStudy": "Creating study",
+        "listStudies": "Listing studies"
+      },
+      "question": {
+        "title": "Fintelligent needs {{n}} decisions from you",
+        "progress": "{{answered}} of {{total}} answered",
+        "skip": "Skip",
+        "answer": "Answer",
+        "other": "Other…",
+        "spend": "On confirm: {{summary}}",
+        "answered": "Answered: {{choice}}"
+      },
+      "budgetHint": "Recommended budget: {{n}} trials or more",
+      "study": {
+        "running": "Running",
+        "best": "Best",
+        "trials": "Trials",
+        "progress": "Progress",
+        "overfit": "Overfit",
+        "pending": "Pending",
+        "evolution": "Optimization Evolution · {{stage}}",
+        "left": "~{{duration}} left",
+        "stages": {
+          "queued": "Queued",
+          "provisioning": "Starting up",
+          "dataLoading": "Data loading",
+          "preflight": "Pre-flight",
+          "optimize": "Optimization",
+          "robustness": "Robustness"
+        }
+      }
+    },
+    "script": {
+      "narration": {
+        "catalog": "Checking what the Sector ETFs (US) collection carries: the eleven SPDR sector funds, daily prices.",
+        "draft": "Drafting a rotation that ranks the sectors by trailing return and holds the leaders.",
+        "validate": "Validating the code against sample data before saving it.",
+        "setup": "Strategy saved. Setting up a study for it on Sector ETFs (US).",
+        "resolve": "Resolving Sector ETFs (US) into an asset group of 11 tickers.",
+        "space": "Sizing the search space: lookback, sectors held, rebalance interval.",
+        "draftStudy": "Saving the study as a draft: 1,000 trials with TPE, scored on Sharpe ratio.",
+        "launch": "Launching the study."
+      },
+      "thoughts": {
+        "universe": "The user named the sector ETFs, so the universe is settled: collection:sector_etfs, eleven funds.",
+        "rules": "Rank on trailing return, hold the top three in equal weight, rebalance on a fixed interval. Three parameters to search.",
+        "decisions": "Objective, optimizer and trial budget are still open. One card, three tabs.",
+        "window": "Checking date coverage so the train, validation and out-of-sample windows all have data."
+      },
+      "strategyDone": "I created <1>sector_momentum</1>, a rotation across the eleven sector ETFs:",
+      "table": {
+        "head": {
+          "part": "Component",
+          "rule": "Rule"
+        },
+        "dataSources": {
+          "label": "Data Sources",
+          "value": "Sector ETFs (US) · 11 ETFs, daily closes"
+        },
+        "entryRules": {
+          "label": "Entry Rules",
+          "value": "Top 3 sectors by trailing return (lookback searched)"
+        },
+        "entryAllocation": {
+          "label": "Entry Allocation",
+          "value": "Equal weight across the holdings"
+        },
+        "exitRules": {
+          "label": "Exit Rules",
+          "value": "A sector leaves when it drops out of the top 3 at a rebalance"
+        }
+      },
+      "decisionsIntro": "Before I build the study, three choices are yours:",
+      "q": {
+        "objective": {
+          "tab": "Objective",
+          "question": "What should each trial maximize?",
+          "sharpe": {
+            "label": "Sharpe ratio",
+            "detail": "Return per unit of total volatility"
+          },
+          "sortino": {
+            "label": "Sortino ratio",
+            "detail": "Only downside volatility counts against it"
+          },
+          "calmar": {
+            "label": "Calmar ratio",
+            "detail": "Annual return over maximum drawdown"
+          }
+        },
+        "optimizer": {
+          "tab": "Optimizer",
+          "question": "Which optimizer should search the parameters?"
+        },
+        "trials": {
+          "tab": "Trials",
+          "question": "How many trials should it run?",
+          "t100": {
+            "label": "100 trials",
+            "detail": "Conservative · tight ranges around the defaults"
+          },
+          "t400": {
+            "label": "400 trials",
+            "detail": "Balanced · ranges ±50% of the defaults"
+          },
+          "t1000": {
+            "label": "1,000 trials",
+            "detail": "Aggressive · ranges from 0.25× to 3× the defaults"
+          }
+        }
+      },
+      "studySaved": "<1>Momentum · Sector ETFs (US)</1> is saved as a draft. Launching it spends tokens, so I need your go-ahead.",
+      "permission": {
+        "question": "Launch Momentum · Sector ETFs (US) now?",
+        "context": "1,000 trials · TPE · Sharpe ratio · train, validation and out-of-sample windows",
+        "spend": "launch 1,000 trials on 11 ETFs",
+        "confirm": {
+          "label": "Confirm",
+          "detail": "Launch the study now"
+        },
+        "cancel": {
+          "label": "Cancel",
+          "detail": "Keep it as a draft"
+        }
+      },
+      "final": "<1>Momentum · Sector ETFs (US)</1> is running: 1,000 trials with TPE, scored on Sharpe ratio. I'll flag the strongest candidates once validation finishes.",
+      "studyName": "Momentum · Sector ETFs (US)",
+      "studyMeta": "sector_momentum · Sector ETFs (US) · TPE · Sharpe ratio"
+    }
   },
   "insights": {
     "eyebrow": "Insights",
