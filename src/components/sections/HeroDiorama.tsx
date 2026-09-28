@@ -1,6 +1,5 @@
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { GradientText } from '../primitives/GradientText';
 import { RotatingWord } from '../primitives/RotatingWord';
@@ -11,18 +10,13 @@ import { bandClipSx } from '../../theme/neu';
 import { gradients, soft } from '../../theme/tokens';
 import { SOLUTION_PATHS } from '../../solutions/registry';
 
-interface HeroDioramaProps {
-  /** "Watch the platform": lands on the platform band and its ambient loop. */
-  onWatch: () => void;
-}
-
 /**
  * Band 1. Copy only, left-aligned over a full-bleed video loop that fades into the
  * ground along its bottom edge. The product plate, the study tile and the
  * client logos live in the platform band (PlatformShowcase) so this one stays
  * quiet.
  */
-export const HeroDiorama = ({ onWatch }: HeroDioramaProps) => {
+export const HeroDiorama = () => {
   const { t } = useTranslation('home');
   const marketWords = t('hero.marketWords', { returnObjects: true }) as string[];
 
@@ -110,9 +104,6 @@ export const HeroDiorama = ({ onWatch }: HeroDioramaProps) => {
           >
             <NeuButton tone="accent" to={SOLUTION_PATHS.funds}>
               {t('hero.ctaPrimary')}
-            </NeuButton>
-            <NeuButton tone="raised" onClick={onWatch} startIcon={<PlayArrowRoundedIcon />}>
-              {t('hero.ctaWatch')}
             </NeuButton>
           </Box>
         </AnimateOnScroll>

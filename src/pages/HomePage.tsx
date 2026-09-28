@@ -116,7 +116,7 @@ export const HomePage = () => {
         />
         <Header activeSection={activeSection} onNavigate={scrollToSection} />
         <Box component="main" id="content">
-          <HeroDiorama onWatch={() => scrollToSection('platform')} />
+          <HeroDiorama />
           <CapabilitiesBento />
           <WorkflowSection />
           {/* PlatformStackSection (the three-layer stack) is on hold; re-add it here, after the platform band. */}
