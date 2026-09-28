@@ -367,10 +367,13 @@ const PlanCard = ({
 /**
  * The tier matrix. A real <table> for its semantics — row and column headers
  * announce together for every cell — dressed in grooves instead of rules.
- * Below md each row folds into a block: the label on top, the three tiers as
- * a strip beneath it, so every column stays visible on a phone and the page
- * never scrolls sideways. The explicit ARIA roles are what keep the table
- * semantics alive once `display` stops being table-*.
+ * Below md each row folds into a block: the feature label on top, then the
+ * four tiers stacked full-width underneath it as "tier — value" lines
+ * (a fifth grid column would have made every value, Institutional's price
+ * especially, illegible in a quarter-width cell), so every value stays
+ * readable on a phone and the page never scrolls sideways. The explicit ARIA
+ * roles are what keep the table semantics alive once `display` stops being
+ * table-*.
  */
 const ComparisonTable = () => {
   const { t } = useTranslation('pages');
@@ -404,15 +407,17 @@ const ComparisonTable = () => {
           '& thead': { display: { xs: 'none', md: 'table-header-group' } },
           '& tbody': { display: { xs: 'block', md: 'table-row-group' } },
           '& tbody > tr': {
-            display: { xs: 'grid', md: 'table-row' },
-            gridTemplateColumns: `repeat(${PLAN_TIERS.length}, minmax(0, 1fr))`,
-            columnGap: 1,
+            // A fourth tier column (Custom) made the old grid one column too
+            // many for a phone; each feature's tiers now stack full-width
+            // instead, one "tier — value" line per tier.
+            display: { xs: 'flex', md: 'table-row' },
+            flexDirection: { xs: 'column' },
+            gap: { xs: 0.5 },
             px: { xs: 0.5, md: 0 },
             py: { xs: 1.25, md: 0 },
             '&:not(:first-of-type)': { xs: cellGrooveSx, md: {} },
           },
           '& tbody > tr > th': {
-            gridColumn: '1 / -1',
             pb: { xs: 0.5, md: 2.25 },
           },
           '& tbody > tr > *': { md: cellGrooveSx },
@@ -504,10 +509,16 @@ const ComparisonTable = () => {
                       ...cellBase,
                       color: soft.text,
                       display: { xs: 'flex', md: 'table-cell' },
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'flex-start',
-                      gap: 0.75,
+                      // Below md this cell is one full-width line — the tier
+                      // name left, its value right — not a quarter-width
+                      // column, so a long value (Institutional's price, or
+                      // any feature description) has room to read on one or
+                      // two lines instead of being crushed into a sliver.
+                      flexDirection: { xs: 'row', md: 'column' },
+                      alignItems: { xs: 'baseline', md: 'center' },
+                      justifyContent: { xs: 'space-between', md: 'flex-start' },
+                      textAlign: { xs: 'right', md: 'center' },
+                      gap: { xs: 1.5, md: 0.75 },
                       borderRadius: { xs: `${radii.neuWell}px`, md: 0 },
                       ...(tier.featured && {
                         background: gradients.brandFaint,
@@ -525,6 +536,7 @@ const ComparisonTable = () => {
                       component="span"
                       sx={{
                         display: { xs: 'block', md: 'none' },
+                        flexShrink: 0,
                         fontSize: '0.62rem',
                         fontWeight: 700,
                         letterSpacing: '0.1em',
@@ -562,7 +574,7 @@ const ComparisonTable = () => {
                         </>
                       )
                     ) : (
-                      <Box component="span" sx={{ overflowWrap: 'break-word' }}>
+                      <Box component="span" sx={{ flex: { xs: 1 }, minWidth: 0, overflowWrap: 'break-word' }}>
                         {t(`pricing.compare.rows.${row.key}.${tier.key}`)}
                       </Box>
                     )}

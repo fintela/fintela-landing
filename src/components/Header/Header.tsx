@@ -48,13 +48,8 @@ type NavItem = {
   labelKey: string;
   /** Where the anchor points: a home band (`/#platform`) or a route. */
   href: string;
-  /**
-   * 'route' and 'home' both render a plain router Link and share `isActive`'s
-   * exact-path check; 'home' additionally forces the scroll-to-top a same-page
-   * click needs (see `handleNavClick`) — the router replaces the history entry
-   * in place when the path does not change, so nothing else would scroll it.
-   */
-  type: 'scroll' | 'route' | 'home';
+  /** 'route' renders a plain router Link and uses `isActive`'s exact-path check. */
+  type: 'scroll' | 'route';
   /**
    * Marks the item current for every path under this prefix when that differs
    * from the link target (the docs link lands on the overview, but every
@@ -74,13 +69,6 @@ const PRODUCT_ITEMS: NavItem[] = [
   { id: 'inDepthAnalysis', labelKey: 'nav.inDepthAnalysis', href: '/product/in-depth-analysis', type: 'route' },
   { id: 'fintelaApi', labelKey: 'nav.fintelaApi', href: '/product/fintela-api', type: 'route' },
 ];
-
-/**
- * The very first control in the bar — ahead of the Product/Solutions menu
- * buttons, which are hardcoded JSX rather than entries in `navItems` and so
- * need this pulled out separately to render before them.
- */
-const HOME_ITEM: NavItem = { id: 'home', labelKey: 'nav.home', href: '/', type: 'home' };
 
 const navItems: NavItem[] = [
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
@@ -201,7 +189,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const onSolutions = location.pathname.startsWith('/solutions');
 
   const isActive = (item: NavItem) => {
-    if (item.type === 'route' || item.type === 'home') {
+    if (item.type === 'route') {
       const prefix = item.activePrefix ?? item.href;
       return location.pathname === prefix || location.pathname.startsWith(prefix + '/');
     }
@@ -239,13 +227,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
    */
   const handleNavClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     setMobileOpen(false);
-    if (item.type === 'home') {
-      // Same-page click: the router replaces the entry in place and nothing
-      // else scrolls, so this does — the logo's own home link carries the
-      // identical fix, for the identical reason.
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-      return;
-    }
     if (item.type !== 'scroll') return;
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
       return;
@@ -392,16 +373,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
               justifySelf: 'center',
             }}
           >
-            <Button
-              component={RouterLink}
-              to={HOME_ITEM.href}
-              onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, HOME_ITEM)}
-              disableRipple
-              aria-current={isActive(HOME_ITEM) ? 'page' : undefined}
-              sx={[navPillSx, navPillButtonSx]}
-            >
-              {t(HOME_ITEM.labelKey)}
-            </Button>
             <Button
               id="product-menu-button"
               ref={setProductButton}
@@ -618,23 +589,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
 
         <Box component="nav" aria-label={t('aria.primaryNav')}>
           <List disablePadding sx={{ pt: 1 }}>
-            <ListItem disablePadding>
-              <ListItemButton
-                component={RouterLink}
-                to={HOME_ITEM.href}
-                onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, HOME_ITEM)}
-                selected={isActive(HOME_ITEM)}
-                aria-current={isActive(HOME_ITEM) ? 'page' : undefined}
-                sx={[navPillSx, navPillMobileSx, { mx: 1.5, my: 0.25, px: 2, py: 1.25 }]}
-              >
-                <ListItemText
-                  primary={t(HOME_ITEM.labelKey)}
-                  slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '1rem' } } }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <Groove sx={{ my: 1, mx: 3 }} />
-
             <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 1, pb: 1 }}>
               {t('nav.product')}
             </ListSubheader>
