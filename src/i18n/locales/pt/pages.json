@@ -33,6 +33,12 @@
         "messagePlaceholder": "As estratégias que você opera, os mercados em que atua e o que gostaria de ver na conversa.",
         "submit": "Agendar a demonstração"
       }
+    },
+    "booking": {
+      "heading": "Escolha um horário para a sua demonstração",
+      "description": "Escolha um horário de 30 minutos e enviaremos um convite do Google Meet.",
+      "iframeTitle": "Calendário de agendamento da demonstração da Fintela",
+      "fallback": "Abrir a página de agendamento em uma nova aba"
     }
   },
   "pricing": {

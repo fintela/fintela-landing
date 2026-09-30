@@ -33,6 +33,12 @@
         "messagePlaceholder": "The strategies you run, the markets you trade, and what you would like to see on the call.",
         "submit": "Book the walkthrough"
       }
+    },
+    "booking": {
+      "heading": "Pick a time for your walkthrough",
+      "description": "Choose a 30-minute slot and we'll send a Google Meet invitation.",
+      "iframeTitle": "Fintela walkthrough booking calendar",
+      "fallback": "Open the booking page in a new tab"
     }
   },
   "pricing": {

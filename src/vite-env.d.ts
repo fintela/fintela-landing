@@ -27,6 +27,8 @@ interface ImportMetaEnv {
    * see src/seo/site.ts.
    */
   readonly VITE_SITE_URL?: string;
+  /** Public Calendly booking URL for the /contact walkthrough tab; unset hides the tab. See .env.example. */
+  readonly VITE_CALENDLY_URL?: string;
   /** Search Console HTML-tag token; vite.config.ts injects the meta when set. */
   readonly VITE_GOOGLE_SITE_VERIFICATION?: string;
   /** Repoint a content collection at another origin (a preview bucket, say). */
