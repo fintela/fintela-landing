@@ -105,6 +105,9 @@ export const HeroDiorama = () => {
             <NeuButton tone="accent" to={SOLUTION_PATHS.funds}>
               {t('hero.ctaPrimary')}
             </NeuButton>
+            <NeuButton tone="raised" to="/contact">
+              {t('hero.ctaContact')}
+            </NeuButton>
           </Box>
         </AnimateOnScroll>
       </Box>
