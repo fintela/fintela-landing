@@ -81,6 +81,9 @@ jobs:
         # fine — the tag is simply not emitted.
         env:
           VITE_GOOGLE_SITE_VERIFICATION: ${{ vars.VITE_GOOGLE_SITE_VERIFICATION }}
+          # Optional repository variable: the Calendly booking URL for /contact.
+          # Empty hides the booking tab.
+          VITE_CALENDLY_URL: ${{ vars.VITE_CALENDLY_URL }}
         # pipefail: the default `run` shell is `bash -e` only, and `tee` would
         # otherwise turn a failed build into a green step that syncs half a dist/.
         run: |

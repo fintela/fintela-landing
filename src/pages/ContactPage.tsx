@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { SxProps, Theme } from '@mui/material';
 import {
   Box,
   Typography,
@@ -28,11 +29,25 @@ import { TierBadge } from '../components/primitives/TierBadge';
 import { wellSx } from '../theme/neu';
 import { motion, radii, shadows, soft } from '../theme/tokens';
 import { contactFailureKey, submitContactRequest, type ContactKind } from '../contact/api';
+import { BookWalkthrough, CALENDLY_URL } from '../contact/BookWalkthrough';
 import { Seo } from '../seo/Seo';
 import { breadcrumbList, contactPage, homeCrumb, organization, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
 
 const CONTACT_OG_IMAGE = '/og/contact.png';
+
+const toggleSx: SxProps<Theme> = {
+  ...wellSx('md'), borderRadius: `${radii.neuInner}px`, p: 0.5, gap: 0.5,
+  '& .MuiToggleButtonGroup-grouped, & .MuiToggleButtonGroup-firstButton, & .MuiToggleButtonGroup-middleButton, & .MuiToggleButtonGroup-lastButton': { border: 0, ml: 0, borderRadius: `${radii.neuWell}px` },
+  '& .MuiToggleButton-root': {
+    border: 0, minHeight: 48, textTransform: 'none', fontWeight: 600, color: soft.textSecondary, bgcolor: 'transparent',
+    transition: `box-shadow ${motion.fast}, background-color ${motion.fast}, color ${motion.fast}`,
+    '@media (hover: hover)': { '&:hover': { bgcolor: 'transparent', color: soft.text } },
+    '&.Mui-selected, &.Mui-selected:hover': { bgcolor: soft.surfaceRaised, color: soft.text, boxShadow: shadows.neuRaisedSm },
+    '&:focus-visible, &.Mui-focusVisible': { outline: `2px solid ${soft.accent}`, outlineOffset: 2 },
+    '@media (forced-colors: active)': { border: '2px solid ButtonBorder', '&.Mui-selected': { boxShadow: 'none', border: '3px solid Highlight' } },
+  },
+};
 
 export const ContactPage = () => {
   const { t, i18n } = useTranslation('pages');
@@ -111,6 +126,8 @@ export const ContactPage = () => {
     }
   };
 
+  const showBooking = requestType === 'demo' && CALENDLY_URL !== '';
+
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Seo
@@ -182,18 +199,7 @@ export const ContactPage = () => {
                 exclusive
                 onChange={handleRequestTypeChange}
                 fullWidth
-                sx={{
-                  ...wellSx('md'), borderRadius: `${radii.neuInner}px`, p: 0.5, gap: 0.5,
-                  '& .MuiToggleButtonGroup-grouped, & .MuiToggleButtonGroup-firstButton, & .MuiToggleButtonGroup-middleButton, & .MuiToggleButtonGroup-lastButton': { border: 0, ml: 0, borderRadius: `${radii.neuWell}px` },
-                  '& .MuiToggleButton-root': {
-                    border: 0, minHeight: 48, textTransform: 'none', fontWeight: 600, color: soft.textSecondary, bgcolor: 'transparent',
-                    transition: `box-shadow ${motion.fast}, background-color ${motion.fast}, color ${motion.fast}`,
-                    '@media (hover: hover)': { '&:hover': { bgcolor: 'transparent', color: soft.text } },
-                    '&.Mui-selected, &.Mui-selected:hover': { bgcolor: soft.surfaceRaised, color: soft.text, boxShadow: shadows.neuRaisedSm },
-                    '&:focus-visible, &.Mui-focusVisible': { outline: `2px solid ${soft.accent}`, outlineOffset: 2 },
-                    '@media (forced-colors: active)': { border: '2px solid ButtonBorder', '&.Mui-selected': { boxShadow: 'none', border: '3px solid Highlight' } },
-                  },
-                }}
+                sx={toggleSx}
               >
                 <ToggleButton value="demo">
                   <PlayCircleOutline sx={{ mr: 1 }} />
@@ -206,7 +212,11 @@ export const ContactPage = () => {
               </ToggleButtonGroup>
             </Box>
 
+            {/* Walkthrough: the Calendly widget replaces the form when configured. */}
+            {showBooking && <BookWalkthrough />}
+
             {/* Form */}
+            {!showBooking && (
             <form onSubmit={handleSubmit}>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 {/* Name */}
@@ -318,6 +328,7 @@ export const ContactPage = () => {
                     : t('contact.submit.support')}
               </NeuButton>
             </form>
+            )}
           </NeuPanel>
         </Section>
       </Box>

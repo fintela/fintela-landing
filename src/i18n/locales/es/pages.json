@@ -33,6 +33,12 @@
         "messagePlaceholder": "Las estrategias que opera, los mercados en los que trabaja y qué le gustaría ver en la llamada.",
         "submit": "Reservar la demostración"
       }
+    },
+    "booking": {
+      "heading": "Elija un horario para su demostración",
+      "description": "Elija un espacio de 30 minutos y le enviaremos una invitación de Google Meet.",
+      "iframeTitle": "Calendario de reserva de la demostración de Fintela",
+      "fallback": "Abrir la página de reservas en una pestaña nueva"
     }
   },
   "pricing": {
