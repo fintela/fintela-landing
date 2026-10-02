@@ -548,14 +548,17 @@ const AssistantShell = ({ children }: { children: ReactNode }) => (
   </FadeIn>
 );
 
-/** The live bubble: a spinner and "Thinking…", then only the latest narration burst. */
-export const LiveRow = memo(({ narrationKey }: { narrationKey: string | undefined }) => {
+/**
+ * The live bubble: a spinner and "Thinking…", then only the latest narration
+ * burst. `scope` is where the storyboard keeps its copy.
+ */
+export const LiveRow = memo(({ narrationKey, scope = `${K}.script` }: { narrationKey: string | undefined; scope?: string }) => {
   const { t } = useTranslation('home');
   return (
     <AssistantShell>
       {narrationKey ? (
         <Box key={narrationKey} sx={{ animation: 'fdFade 0.25s ease both', color: APP.textSecondary }}>
-          {t(`${K}.script.${narrationKey}`)}
+          {t(`${scope}.${narrationKey}`)}
         </Box>
       ) : (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: APP.textSecondary, fontSize: 14 }}>
@@ -585,13 +588,13 @@ export const SettledRow = memo(
 );
 SettledRow.displayName = 'SettledRow';
 
-export const RichText = ({ i18nKey, linkTarget }: { i18nKey: string; linkTarget?: string }) => {
+export const RichText = ({ i18nKey, linkTarget, scope = `${K}.script` }: { i18nKey: string; linkTarget?: string; scope?: string }) => {
   const { t } = useTranslation('home');
   return (
     <Box component="p" sx={{ m: 0, mb: 1 }}>
       <Trans
         t={t}
-        i18nKey={`${K}.script.${i18nKey}`}
+        i18nKey={`${scope}.${i18nKey}`}
         components={{ 1: <Box component="span" data-demo={linkTarget} sx={linkSx} /> }}
       />
     </Box>
@@ -871,7 +874,8 @@ QuestionCard.displayName = 'QuestionCard';
 export const StatusLine = memo(({ status, clock }: { status: StatusKey | undefined; clock: string | null }) => {
   const { t } = useTranslation('home');
   if (!status) return <Box sx={{ height: 34 }} />;
-  const waiting = status === 'waiting';
+  // A question card and a Confirm card both park the turn on the user.
+  const waiting = status === 'waiting' || status === 'confirm';
   const finished = status === 'finished';
   return (
     <Box sx={{ height: 34, display: 'flex', alignItems: 'center', gap: 1, px: 2.5, fontSize: 12, color: waiting ? APP.warning : APP.textSecondary, fontWeight: waiting ? 600 : 500 }}>
@@ -895,8 +899,13 @@ export type FeedItem =
   | { kind: 'tool'; id: string; label: string; done: boolean; took: string }
   | { kind: 'thought'; id: string; text: string };
 
+/**
+ * The Thinking panel: header, working bar, then whatever the app pins above
+ * the feed (`pinned`: the run tracker and the creation previews), then the
+ * feed itself.
+ */
 export const ThinkingPanel = memo(
-  ({ items, running, summary }: { items: FeedItem[]; running: boolean; summary: string | null }) => {
+  ({ items, running, summary, pinned }: { items: FeedItem[]; running: boolean; summary: string | null; pinned?: ReactNode }) => {
     const { t } = useTranslation('home');
     return (
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderLeft: `1px solid ${APP.divider}`, background: APP.ground }}>
@@ -952,6 +961,7 @@ export const ThinkingPanel = memo(
             />
           )}
         </Box>
+        {pinned}
         <AutoScroll sx={{ flex: 1, px: 1.5, pt: 1 }}>
           {items.map((item) =>
             item.kind === 'tool' ? (

@@ -102,6 +102,7 @@ export type StatusKey =
   | 'writing'
   | 'running'
   | 'waiting'
+  | 'confirm'
   | 'finished';
 
 export interface Turn {
@@ -119,7 +120,7 @@ export interface Turn {
   summary: { seconds: string; calls: number };
 }
 
-const step = (tool: string, start: number, end: number, took: string, labelKey?: string): ToolStep => ({
+export const step = (tool: string, start: number, end: number, took: string, labelKey?: string): ToolStep => ({
   tool,
   start,
   end,

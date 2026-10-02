@@ -386,69 +386,7 @@
     }
   },
   "algoAgentBuilder": {
-    "eyebrow": "Experimente o Fintelligent Builder",
-    "subtitle": "Peça ao Fintelligent para programar sua ideia",
-    "tryIt": "Experimentar",
-    "deviceAlt": "Um laptop mostrando o construtor de estratégias Fintelligent, percorrendo uma estratégia de momentum baseada em equações diferenciais",
-    "stepLabel": "Passo {{num}}",
-    "back": "Voltar",
-    "continue": "Continuar",
-    "runOptimization": "Executar Otimização",
-    "followUpPlaceholder": "Faça uma pergunta ou ajuste os parâmetros diferenciais...",
-    "steps": {
-      "model": {
-        "navLabel": "Passo 1: Modelo EDO",
-        "header": "Definir a Dinâmica da Equação Diferencial",
-        "description": "Modele o desvio do preço do ativo em relação a uma média móvel de longo prazo como uma equação diferencial de 2ª ordem, para capturar a velocidade (momentum) e a aceleração instantâneas do preço.",
-        "chatRole": "user",
-        "chatText": "Construa uma estratégia quantitativa long-only que modele o desvio de preço x(t) = P(t) - MédiaMóvel(100) usando uma equação diferencial amortecida de 2ª ordem. Calcule a velocidade dx/dt e a aceleração d2x/dt2 usando diferenças finitas.",
-        "tags": ["Equação Diferencial", "EDO de 2ª Ordem", "Oscilador Amortecido", "Diferenças Finitas", "Filtro de MA"],
-        "bullets": [
-          "Modela a velocidade (1ª derivada) e a aceleração (2ª derivada) do preço em relação à tendência.",
-          "Evita o atraso inerente aos indicadores de momentum tradicionais.",
-          "Filtra falsos rompimentos antes que ocorra o amortecimento crítico."
-        ]
-      },
-      "score": {
-        "navLabel": "Passo 2: Regras de Pontuação",
-        "header": "Formular o Score Alpha Composto",
-        "description": "Combine a aceleração diferencial positiva com volume relativo sustentado (RVOL) para classificar ativos candidatos, exigindo que o preço opere acima do filtro de tendência de longo prazo.",
-        "chatRole": "user",
-        "chatText": "Filtre os ativos onde P(t) > MA(100). Calcule um score composto que premie a aceleração positiva d2x/dt2 acompanhada de RVOL elevado em vários períodos, ignorando picos de volume de um único dia.",
-        "tags": ["Score Alpha", "Aceleração de Preço", "RVOL Sustentado", "Filtro de Tendência P > MA"],
-        "bullets": [
-          "Exige P(t) > MA(100) para garantir alinhamento long-only.",
-          "Premia a expansão contínua de volume institucional.",
-          "Elimina a dependência de picos atípicos de um único dia."
-        ]
-      },
-      "allocation": {
-        "navLabel": "Passo 3: Alocação",
-        "header": "Selecionar os Top-N Ativos e Alocar",
-        "description": "Classifique todo o universo de investimento pelo score composto, selecione os n_top ativos principais e aplique uma alocação de portfólio de peso igual com rebalanceamento periódico.",
-        "chatRole": "user",
-        "chatText": "Classifique todos os ativos do universo pelo score diferencial. Selecione n_top = 10 ativos e atribua pesos iguais (10% cada). Rotacione automaticamente os ativos que saírem do top 10 no rebalanceamento mensal.",
-        "tags": ["Peso Igual (10%)", "Seleção Top 10", "Rebalanceamento Mensal", "Auto-Rotação"],
-        "bullets": [
-          "Limite estrito de posições n_top para controle de risco.",
-          "Regra de saída automática quando um ativo sai do ranking top.",
-          "Período de aquecimento configurável para os cálculos da janela diferencial."
-        ]
-      },
-      "backtest": {
-        "navLabel": "Passo 4: Backtest",
-        "header": "Otimizar Parâmetros e Validar",
-        "description": "Configure os coeficientes de amortecimento da equação diferencial, as janelas de média móvel e o número alvo de posições para a otimização de parâmetros em múltiplos universos.",
-        "chatRole": "system",
-        "chatText": "Estratégia 'diff_eq_momentum_v1' compilada com sucesso. 7 parâmetros otimizáveis registrados (MA_window, dt_step, zeta_damping, omega_freq, RVOL_short, RVOL_med, n_top). Pronta para otimização no S&P 500.",
-        "tags": ["7 Parâmetros", "Otimização de Sharpe", "Controle de Drawdown", "Zero Dependência de Benchmark"],
-        "bullets": [
-          "Maximiza o Alpha e o índice de Sharpe enquanto limita estritamente o Máximo Drawdown.",
-          "Sem dependência do SPY ou de lógica de benchmark externo.",
-          "Pipeline de execução totalmente validado, pronto para lançar o estudo."
-        ]
-      }
-    }
+    "tryIt": "Experimentar"
   },
   "devExperience": {
     "eyebrow": "Experiência do desenvolvedor",
@@ -790,13 +728,15 @@
         "writing": "Escrevendo o código…",
         "running": "Executando…",
         "waiting": "Aguardando sua resposta",
+        "confirm": "Aguardando você confirmar as alterações",
         "finished": "Concluído"
       },
       "tools": {
         "listFitness": "Listando funções de fitness",
         "askUser": "Perguntando a você",
         "createStudy": "Criando estudo",
-        "listStudies": "Listando estudos"
+        "listStudies": "Listando estudos",
+        "studyStatus": "Verificando o status do estudo"
       },
       "question": {
         "title": "O Fintelligent precisa de {{n}} decisões suas",
@@ -825,6 +765,92 @@
           "optimize": "Otimização",
           "robustness": "Robustez"
         }
+      },
+      "confirm": {
+        "title": "Confirme antes que o Fintelligent salve",
+        "subtitle_one": "O Fintelligent preparou {{count}} alteração. Nada é salvo até você confirmar.",
+        "subtitle_other": "O Fintelligent preparou {{count}} alterações. Nada é salvo até você confirmar.",
+        "row": "{{verb}} {{entity}} “{{name}}”",
+        "verb": {
+          "create": "Criar",
+          "saveAndLaunch": "Salvar e lançar"
+        },
+        "entity": {
+          "asset_group": "o grupo de ativos",
+          "strategy": "a estratégia",
+          "study": "o estudo"
+        },
+        "button": {
+          "create": "Confirmar e criar",
+          "saveAndLaunch": "Salvar e lançar"
+        },
+        "cancel": "Cancelar",
+        "showDetails": "Ver detalhes",
+        "spend": "Confirmar consome tokens.",
+        "confirmed": "Confirmado · {{summary}}",
+        "past": "{{verb}} {{entity}} {{name}}",
+        "pastVerb": {
+          "create": "criou-se",
+          "launch": "iniciou-se"
+        }
+      },
+      "preview": {
+        "kind": {
+          "asset_group": "Grupo de ativos",
+          "strategy": "Estratégia",
+          "study": "Estudo"
+        },
+        "steps": {
+          "coding": "Programando",
+          "validating": "Validando",
+          "validated": "Validada",
+          "failed": "A validação falhou",
+          "awaiting": "Aguardando sua confirmação",
+          "saving": "Salvando…",
+          "saved": "Salvo"
+        },
+        "attempt": "Tentativa {{n}}",
+        "noWarnings": "Sem avisos",
+        "failedAtLine": "Linha {{line}} — {{message}}",
+        "showCode": "Mostrar código",
+        "hideCode": "Ocultar código",
+        "tickers_one": "{{count}} ticker",
+        "tickers_other": "{{count}} tickers",
+        "view": {
+          "asset_group": "Ver grupo de ativos",
+          "strategy": "Ver estratégia",
+          "study": "Ver estudo"
+        }
+      },
+      "studyRun": {
+        "badge": {
+          "queued": "Na fila",
+          "running": "Em execução",
+          "completed": "Concluído"
+        },
+        "elapsed": "Decorrido {{time}}",
+        "steps": {
+          "queue": "Na fila",
+          "queueDetail": "Aguardando um worker livre",
+          "prepare": "Preparando",
+          "optimize": "Otimizando",
+          "analyze": "Analisando",
+          "finish": "Concluído"
+        },
+        "trials": "{{done}} / {{total}} trials",
+        "found_one": "{{count}} resultado encontrado",
+        "found_other": "{{count}} resultados encontrados",
+        "health": {
+          "waiting": "Aguardando um worker livre",
+          "heartbeat": "Saudável · último sinal há {{ago}}",
+          "healthy": "Saudável"
+        },
+        "best": {
+          "title": "Melhor trial",
+          "trial": "Trial #{{number}}"
+        },
+        "objective": "Índice de Sharpe",
+        "viewStudy": "Ver estudo"
       }
     },
     "script": {
@@ -923,6 +949,99 @@
       "final": "<1>Momentum · Sector ETFs (US)</1> está em execução: 1.000 trials com TPE, avaliados pelo índice de Sharpe. Vou destacar os melhores candidatos quando a validação terminar.",
       "studyName": "Momentum · Sector ETFs (US)",
       "studyMeta": "sector_momentum · Sector ETFs (US) · TPE · índice de Sharpe"
+    }
+  },
+  "agenticDemo": {
+    "label": "Demo animada do app da Fintela: pede-se ao Fintelligent um universo de qualidade, uma estratégia de momentum e um estudo. Ele filtra o S&P 500 em um grupo de ativos de 40 nomes, escreve a estratégia, detecta e corrige um look-ahead na validação, salva ambos quando você confirma, pré-registra os critérios de aprovação do estudo e o lança; em seguida, o painel de raciocínio transmite a execução de 500 trials até o melhor trial.",
+    "play": "Reproduzir demo",
+    "pause": "Pausar demo",
+    "chapterJump": "Ir para {{chapter}}",
+    "chapters": {
+      "prompt": "Pedido",
+      "build": "Construção",
+      "design": "Desenho",
+      "run": "Execução"
+    },
+    "prompt": "Filtre o S&P 500 por qualidade (ROE acima de 15%, dívida/patrimônio abaixo de 1) em um grupo de ativos, escreva sobre ele uma estratégia de momentum 12-1 com pesos por volatilidade inversa e uma meta de volatilidade, e rode um estudo de 500 trials sobre Sharpe.",
+    "script": {
+      "narration": {
+        "screen": "Filtrando o S&P 500 por fundamentos: primeiro retorno sobre o patrimônio, depois alavancagem.",
+        "draft": "40 nomes dentro. Escrevendo a estratégia: momentum 12-1, pesos por volatilidade inversa, uma meta de volatilidade.",
+        "validate": "Validando o código com dados de amostra antes de salvá-lo.",
+        "fix": "A validação detectou um look-ahead. Corrigindo e validando de novo.",
+        "stage": "Validada. Preparando o grupo de ativos e a estratégia para sua confirmação.",
+        "design": "Ambos salvos. Desenhando o estudo: objetivo, otimizador, janelas.",
+        "space": "Dimensionando o espaço de busca: lookback, skip, posições, meta de volatilidade.",
+        "cost": "Calculando o gasto antes de rodar qualquer coisa.",
+        "launch": "Lançado. Verificando se pegou um worker."
+      },
+      "thoughts": {
+        "screen": "ROE acima de 15% deixa passar 214 do S&P 500. Dívida/patrimônio abaixo de 1 deixa 131; ordenados por ROE, os 40 primeiros formam o grupo.",
+        "design": "Momentum 12-1: o retorno de 12 meses, pulando o último mês para evitar a reversão de curto prazo. Pesos por volatilidade inversa, escalados para que a carteira opere na sua meta de volatilidade.",
+        "leak": "A tentativa 1 falhou por data_leakage: a volatilidade era medida sobre a amostra inteira. Uma janela móvel de 63 dias a mantém causal.",
+        "batch": "As duas gravações são independentes, então compartilham um cartão de confirmação. O estudo precisa dos dois ids: próximo turno.",
+        "windows": "A cobertura vai de janeiro de 2012 até hoje: treino 2012–2020, validação 2021–2023, e de 2024 em diante fora da amostra, lido uma única vez.",
+        "sampler": "Quatro parâmetros, inteiros e contínuos, com um orçamento de 500 trials: TPE se encaixa.",
+        "criteria": "Pré-registrando antes da busca: Sharpe fora da amostra acima do 0,71 do universo equiponderado, PBO abaixo de 0,30, Sharpe deflacionado acima de 0,95."
+      },
+      "built": "Filtrei <1>sp500_quality_40</1> e escrevi <1>quality_momentum_vt</1> sobre ele:",
+      "table": {
+        "head": {
+          "part": "Componente",
+          "rule": "Regra"
+        },
+        "universe": {
+          "label": "Universo",
+          "value": "40 nomes do S&P 500 · ROE > 15%, dívida/patrimônio < 1, ordenados por ROE"
+        },
+        "signal": {
+          "label": "Sinal",
+          "value": "Momentum 12-1: retorno de 12 meses, pulando o último mês"
+        },
+        "allocation": {
+          "label": "Alocação",
+          "value": "Top N pelo sinal, pesos por volatilidade inversa"
+        },
+        "risk": {
+          "label": "Risco",
+          "value": "Escalada a uma meta de volatilidade com covariância de 63 dias; rebalanceamento mensal"
+        }
+      },
+      "frozen": "O grupo congela o filtro de hoje: ele não vai reaplicar os filtros depois.",
+      "leakMessage": "data_leakage: a volatilidade usava a amostra inteira",
+      "proposals": {
+        "group": "40 tickers · filtrados hoje",
+        "strategy": "Validada · 4 parâmetros",
+        "searchLabel": "Busca",
+        "search": "500 trials · TPE · índice de Sharpe",
+        "spend": "{{trials}} trials sobre {{tickers}} tickers"
+      },
+      "studyReady": "Ambos estão salvos. <1>Momentum de qualidade · S&P 500</1> está configurado, com os critérios de aprovação fixados antes da busca:",
+      "plan": {
+        "head": {
+          "part": "Ajuste",
+          "rule": "Valor"
+        },
+        "objective": {
+          "label": "Objetivo",
+          "value": "Índice de Sharpe · TPE · 500 trials"
+        },
+        "space": {
+          "label": "Espaço de busca",
+          "value": "lookback 126–378 · skip 0–42 · top_n 8–20 · vol_target 8–20%"
+        },
+        "windows": {
+          "label": "Janelas",
+          "value": "Treino 2012–2020 · validação 2021–2023 · fora da amostra desde 2024"
+        },
+        "criteria": {
+          "label": "Aprova se",
+          "value": "Sharpe OOS > 0,71 · PBO < 0,30 · Sharpe deflacionado > 0,95"
+        }
+      },
+      "launchAsk": "Lançá-lo consome tokens, então ele aguarda o seu aval.",
+      "final": "<1>Momentum de qualidade · S&P 500</1> está em execução: 500 trials com TPE, avaliados pelo índice de Sharpe. Acompanhe ao vivo no painel de raciocínio; vou ler o fora da amostra uma única vez, contra os critérios acima, quando terminar.",
+      "studyName": "Momentum de qualidade · S&P 500"
     }
   },
   "insights": {

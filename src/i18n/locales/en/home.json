@@ -386,69 +386,7 @@
     }
   },
   "algoAgentBuilder": {
-    "eyebrow": "Try Fintelligent Builder",
-    "subtitle": "Ask Fintelligent to code your idea",
-    "tryIt": "Try it",
-    "deviceAlt": "A laptop showing the Fintelligent strategy builder, walking through a differential-equation momentum strategy",
-    "stepLabel": "Step {{num}}",
-    "back": "Back",
-    "continue": "Continue",
-    "runOptimization": "Run Optimization",
-    "followUpPlaceholder": "Ask a follow-up or adjust differential parameters...",
-    "steps": {
-      "model": {
-        "navLabel": "Step 1: ODE Model",
-        "header": "Define Differential Equation Dynamics",
-        "description": "Model the asset price deviation relative to a long-term moving average as a 2nd order differential equation to capture instantaneous price velocity (momentum) and acceleration.",
-        "chatRole": "user",
-        "chatText": "Build a quantitative long-only strategy modeling price deviation x(t) = P(t) - MovingAverage(100) using a 2nd order damped differential equation. Compute velocity dx/dt and acceleration d2x/dt2 using finite differences.",
-        "tags": ["Differential Equation", "2nd Order ODE", "Damped Oscillator", "Finite Differences", "MA Filter"],
-        "bullets": [
-          "Models velocity (1st derivative) and acceleration (2nd derivative) of price relative to trend.",
-          "Prevents lag inherent in traditional momentum indicators.",
-          "Filters out false breakouts before critical damping occurs."
-        ]
-      },
-      "score": {
-        "navLabel": "Step 2: Score Rules",
-        "header": "Formulate Composite Alpha Score",
-        "description": "Combine positive differential acceleration with sustained relative volume (RVOL) to rank candidate assets while ensuring price trades above the long-term trend filter.",
-        "chatRole": "user",
-        "chatText": "Filter for assets where P(t) > MA(100). Calculate a composite score rewarding positive acceleration d2x/dt2 accompanied by elevated multi-period RVOL, ignoring single-day volume spikes.",
-        "tags": ["Alpha Score", "Price Acceleration", "Sustained RVOL", "Trend Filter P > MA"],
-        "bullets": [
-          "Requires P(t) > MA(100) to ensure long-only alignment.",
-          "Rewards continuous institutional volume expansion.",
-          "Eliminates reliance on single-day outlier spikes."
-        ]
-      },
-      "allocation": {
-        "navLabel": "Step 3: Allocation",
-        "header": "Select Top-N Assets & Allocate",
-        "description": "Rank the entire investment universe by composite score, select the top n_top assets, and apply equal-weight portfolio allocation with periodic rebalancing.",
-        "chatRole": "user",
-        "chatText": "Rank all universe assets by the differential score. Select n_top = 10 assets and assign equal weights (10% each). Auto-rotate out assets that fall below the top 10 on monthly rebalance.",
-        "tags": ["Equal-Weight (10%)", "Top 10 Selection", "Monthly Rebalance", "Auto-Rotation"],
-        "bullets": [
-          "Strict n_top position capping for risk control.",
-          "Automatic exit rule when an asset drops out of top ranking.",
-          "Configurable warmup period for differential window calculations."
-        ]
-      },
-      "backtest": {
-        "navLabel": "Step 4: Backtest",
-        "header": "Optimize Parameters & Validate",
-        "description": "Configure differential equation damping coefficients, moving average windows, and target position counts for multi-universe parameter optimization.",
-        "chatRole": "system",
-        "chatText": "Strategy 'diff_eq_momentum_v1' compiled successfully. 7 optimizable parameters registered (MA_window, dt_step, zeta_damping, omega_freq, RVOL_short, RVOL_med, n_top). Ready for S&P 500 optimization.",
-        "tags": ["7 Parameters", "Sharpe Optimization", "Drawdown Control", "Zero Benchmark Dependency"],
-        "bullets": [
-          "Maximizes Alpha and Sharpe ratio while strictly capping Max Drawdown.",
-          "No reliance on SPY or external benchmark logic.",
-          "Fully validated execution pipeline ready for study launch."
-        ]
-      }
-    }
+    "tryIt": "Try it"
   },
   "devExperience": {
     "eyebrow": "Developer Experience",
@@ -790,13 +728,15 @@
         "writing": "Writing the code…",
         "running": "Running…",
         "waiting": "Waiting for your answer",
+        "confirm": "Waiting for you to confirm the changes",
         "finished": "Finished"
       },
       "tools": {
         "listFitness": "Listing fitness functions",
         "askUser": "Asking you a question",
         "createStudy": "Creating study",
-        "listStudies": "Listing studies"
+        "listStudies": "Listing studies",
+        "studyStatus": "Checking study status"
       },
       "question": {
         "title": "Fintelligent needs {{n}} decisions from you",
@@ -825,6 +765,92 @@
           "optimize": "Optimization",
           "robustness": "Robustness"
         }
+      },
+      "confirm": {
+        "title": "Confirm before Fintelligent saves",
+        "subtitle_one": "Fintelligent prepared {{count}} change. Nothing is saved until you confirm.",
+        "subtitle_other": "Fintelligent prepared {{count}} changes. Nothing is saved until you confirm.",
+        "row": "{{verb}} {{entity}} “{{name}}”",
+        "verb": {
+          "create": "Create",
+          "saveAndLaunch": "Save & launch"
+        },
+        "entity": {
+          "asset_group": "asset group",
+          "strategy": "strategy",
+          "study": "study"
+        },
+        "button": {
+          "create": "Confirm & create",
+          "saveAndLaunch": "Save & Launch"
+        },
+        "cancel": "Cancel",
+        "showDetails": "Show details",
+        "spend": "Confirming spends tokens.",
+        "confirmed": "Confirmed · {{summary}}",
+        "past": "{{verb}} {{entity}} {{name}}",
+        "pastVerb": {
+          "create": "created",
+          "launch": "launched"
+        }
+      },
+      "preview": {
+        "kind": {
+          "asset_group": "Asset group",
+          "strategy": "Strategy",
+          "study": "Study"
+        },
+        "steps": {
+          "coding": "Coding",
+          "validating": "Validating",
+          "validated": "Validated",
+          "failed": "Validation failed",
+          "awaiting": "Awaiting your confirmation",
+          "saving": "Saving…",
+          "saved": "Saved"
+        },
+        "attempt": "Attempt {{n}}",
+        "noWarnings": "No warnings",
+        "failedAtLine": "Line {{line}} — {{message}}",
+        "showCode": "Show code",
+        "hideCode": "Hide code",
+        "tickers_one": "{{count}} ticker",
+        "tickers_other": "{{count}} tickers",
+        "view": {
+          "asset_group": "View asset group",
+          "strategy": "View strategy",
+          "study": "View study"
+        }
+      },
+      "studyRun": {
+        "badge": {
+          "queued": "Queued",
+          "running": "Running",
+          "completed": "Completed"
+        },
+        "elapsed": "Elapsed {{time}}",
+        "steps": {
+          "queue": "In queue",
+          "queueDetail": "Waiting for a worker slot",
+          "prepare": "Preparing",
+          "optimize": "Optimizing",
+          "analyze": "Analyzing",
+          "finish": "Finished"
+        },
+        "trials": "{{done}} / {{total}} trials",
+        "found_one": "{{count}} result found",
+        "found_other": "{{count}} results found",
+        "health": {
+          "waiting": "Waiting for a free worker",
+          "heartbeat": "Healthy · heartbeat {{ago}} ago",
+          "healthy": "Healthy"
+        },
+        "best": {
+          "title": "Best trial",
+          "trial": "Trial #{{number}}"
+        },
+        "objective": "Sharpe ratio",
+        "viewStudy": "View study"
       }
     },
     "script": {
@@ -923,6 +949,99 @@
       "final": "<1>Momentum · Sector ETFs (US)</1> is running: 1,000 trials with TPE, scored on Sharpe ratio. I'll flag the strongest candidates once validation finishes.",
       "studyName": "Momentum · Sector ETFs (US)",
       "studyMeta": "sector_momentum · Sector ETFs (US) · TPE · Sharpe ratio"
+    }
+  },
+  "agenticDemo": {
+    "label": "Animated demo of the Fintela app: Fintelligent is asked for a quality universe, a momentum strategy and a study. It screens the S&P 500 into a 40-name asset group, writes the strategy, catches and fixes a look-ahead in validation, saves both once you confirm, pre-registers the study's pass criteria and launches it; the Thinking panel then streams the 500-trial run to its best trial.",
+    "play": "Play demo",
+    "pause": "Pause demo",
+    "chapterJump": "Jump to {{chapter}}",
+    "chapters": {
+      "prompt": "Prompt",
+      "build": "Build",
+      "design": "Design",
+      "run": "Run"
+    },
+    "prompt": "Screen the S&P 500 for quality (ROE above 15%, debt-to-equity under 1) into an asset group, write a 12-1 momentum strategy on it with inverse-vol weights and a vol target, then run a 500-trial study on Sharpe.",
+    "script": {
+      "narration": {
+        "screen": "Screening the S&P 500 on fundamentals: return on equity first, then leverage.",
+        "draft": "40 names in. Writing the strategy: 12-1 momentum, inverse-volatility weights, a volatility target.",
+        "validate": "Validating the code against sample data before saving it.",
+        "fix": "Validation caught a look-ahead. Fixing it and validating again.",
+        "stage": "Validated. Staging the asset group and the strategy for your confirmation.",
+        "design": "Both saved. Designing the study: objective, optimizer, windows.",
+        "space": "Sizing the search space: lookback, skip, holdings, volatility target.",
+        "cost": "Quoting the spend before anything runs.",
+        "launch": "Launched. Checking it picked up a worker."
+      },
+      "thoughts": {
+        "screen": "ROE above 15% passes 214 of the S&P 500. Debt-to-equity under 1 leaves 131; ranked by ROE, the top 40 make the group.",
+        "design": "12-1 momentum: the 12-month return, skipping the latest month to sidestep short-term reversal. Inverse-vol weights, scaled so the book runs at its volatility target.",
+        "leak": "Attempt 1 failed on data_leakage: volatility was measured over the whole sample. A 63-day rolling window keeps it causal.",
+        "batch": "The two writes are independent, so they share one Confirm card. The study needs both ids: next turn.",
+        "windows": "Coverage runs from January 2012 to today: train 2012–2020, validate 2021–2023, and hold 2024 onward out of sample, read once.",
+        "sampler": "Four parameters, integer and continuous, on a 500-trial budget: TPE fits.",
+        "criteria": "Pre-registering before the search: out-of-sample Sharpe above the equal-weight universe's 0.71, PBO under 0.30, deflated Sharpe above 0.95."
+      },
+      "built": "I screened <1>sp500_quality_40</1> and wrote <1>quality_momentum_vt</1> on it:",
+      "table": {
+        "head": {
+          "part": "Component",
+          "rule": "Rule"
+        },
+        "universe": {
+          "label": "Universe",
+          "value": "40 S&P 500 names · ROE > 15%, debt/equity < 1, ranked by ROE"
+        },
+        "signal": {
+          "label": "Signal",
+          "value": "12-1 momentum: 12-month return, skipping the latest month"
+        },
+        "allocation": {
+          "label": "Allocation",
+          "value": "Top N by signal, inverse-volatility weights"
+        },
+        "risk": {
+          "label": "Risk",
+          "value": "Scaled to a volatility target on a 63-day covariance; monthly rebalance"
+        }
+      },
+      "frozen": "The group freezes today's screen: it won't re-run the filters later.",
+      "leakMessage": "data_leakage: volatility used the whole sample",
+      "proposals": {
+        "group": "40 tickers · screened today",
+        "strategy": "Validated · 4 parameters",
+        "searchLabel": "Search",
+        "search": "500 trials · TPE · Sharpe ratio",
+        "spend": "{{trials}} trials on {{tickers}} tickers"
+      },
+      "studyReady": "Both are saved. <1>Quality momentum · S&P 500</1> is configured, with its pass criteria set before the search:",
+      "plan": {
+        "head": {
+          "part": "Setting",
+          "rule": "Value"
+        },
+        "objective": {
+          "label": "Objective",
+          "value": "Sharpe ratio · TPE · 500 trials"
+        },
+        "space": {
+          "label": "Search space",
+          "value": "lookback 126–378 · skip 0–42 · top_n 8–20 · vol_target 8–20%"
+        },
+        "windows": {
+          "label": "Windows",
+          "value": "Train 2012–2020 · validation 2021–2023 · out of sample 2024 on"
+        },
+        "criteria": {
+          "label": "Pass if",
+          "value": "OOS Sharpe > 0.71 · PBO < 0.30 · deflated Sharpe > 0.95"
+        }
+      },
+      "launchAsk": "Launching spends tokens, so it waits for your go-ahead.",
+      "final": "<1>Quality momentum · S&P 500</1> is running: 500 trials with TPE, scored on Sharpe ratio. Follow it live in the Thinking panel; I'll read the out-of-sample once, against the criteria above, when it finishes.",
+      "studyName": "Quality momentum · S&P 500"
     }
   },
   "insights": {

@@ -115,3 +115,75 @@ export const PointerGlyph = () => (
     />
   </svg>
 );
+
+/** The Confirm card's shield-check. */
+export const ShieldCheckGlyph = ({ size = 18 }: { size?: number }) => (
+  <Stroke size={size}>
+    <path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6L12 3z" />
+    <path d="M8.8 12.2l2.2 2.2 4.2-4.4" />
+  </Stroke>
+);
+
+/** Entity glyphs for the creation previews and the Confirm card's rows. */
+export const EntityGlyph = ({ kind, size = 16 }: { kind: 'asset_group' | 'strategy' | 'study'; size?: number }) => (
+  <Stroke size={size}>
+    {kind === 'asset_group' && (
+      <>
+        <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+        <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+        <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+        <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+      </>
+    )}
+    {kind === 'strategy' && <path d="M8.5 7L3.5 12l5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15" />}
+    {kind === 'study' && <path d="M5 20V10M10 20V5M15 20v-7M20 20v-4" />}
+  </Stroke>
+);
+
+export const TokenGlyph = () => (
+  <Stroke size={15}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9 9.5h6M12 9.5V16" />
+  </Stroke>
+);
+
+/** The run tracker's health line. */
+export const PulseGlyph = () => (
+  <Stroke size={14}>
+    <path d="M3 12h4l2.5-6 4 12 2.5-6h5" />
+  </Stroke>
+);
+
+/** The optimize step's turning glyph. */
+export const RefreshGlyph = ({ size = 18 }: { size?: number }) => (
+  <Stroke size={size}>
+    <path d="M19.5 12a7.5 7.5 0 0 1-13 5.1M4.5 12a7.5 7.5 0 0 1 13-5.1" />
+    <path d="M17.5 3.5v3.4h-3.4M6.5 20.5v-3.4h3.4" />
+  </Stroke>
+);
+
+/** The best trial's mark. */
+export const PromotedGlyph = () => (
+  <Stroke size={14}>
+    <path d="M8 4h8v5a4 4 0 0 1-8 0V4zM12 13v4M8.5 20h7M16 6h3a3 3 0 0 1-3 3M8 6H5a3 3 0 0 0 3 3" />
+  </Stroke>
+);
+
+export const ChevronGlyph = ({ up = false }: { up?: boolean }) => (
+  <Stroke size={16}>
+    <path d={up ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
+  </Stroke>
+);
+
+export const CopyGlyph = () => (
+  <Stroke size={14}>
+    <rect x="8.5" y="8.5" width="12" height="12" rx="2" />
+    <path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3" />
+  </Stroke>
+);
+
+export const ArrowGlyph = () => (
+  <Stroke size={14}>
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </Stroke>
+);

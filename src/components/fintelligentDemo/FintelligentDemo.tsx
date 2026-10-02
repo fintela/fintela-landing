@@ -1,13 +1,8 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, RefObject } from 'react';
-import { Box, GlobalStyles } from '@mui/material';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { fonts, gradients, motion, palette, soft } from '../../theme/tokens';
-import { focusRingSx, forcedColorsFocus } from '../../theme/neu';
 import { APP } from './appTheme';
-import { PointerGlyph } from './glyphs';
 import {
   AnsweredChip,
   BetaNotice,
@@ -46,7 +41,9 @@ import {
   lerp,
   span,
 } from './script';
-import type { StatusKey, ToolStep } from './script';
+import type { StatusKey } from './script';
+import { Cursor, DemoKeyframes, Disclaimer, PlayerBar } from './stage';
+import { chipsFor, easeOutBack, usePointerFrame } from './stageMotion';
 import { useLoopClock } from '../../lib/useLoopClock';
 
 const K = 'fintelligentDemo';
@@ -109,12 +106,6 @@ const mixCamera = (a: Camera, b: Camera, k: number): Camera => ({
   zoom: lerp(a.zoom, b.zoom, k),
   explode: lerp(a.explode, b.explode, k),
 });
-
-/** The app's panel entrance: a spring that overshoots, then settles. */
-const easeOutBack = (x: number) => {
-  const c = 1.7;
-  return 1 + (c + 1) * (x - 1) ** 3 + c * (x - 1) ** 2;
-};
 
 /** A seeded, repeatable study: raw scores per sampled trial and the best so far. */
 const STUDY_SAMPLES = 120;
@@ -304,37 +295,6 @@ const Transcript = memo(
 );
 Transcript.displayName = 'Transcript';
 
-/** The settled answer's tool chips: the app collapses repeats into "×n". */
-const chipsFor = (steps: readonly ToolStep[], label: (key: string) => string) => {
-  const out: Array<[string, number]> = [];
-  for (const s of steps) {
-    const name = s.labelKey ? label(s.labelKey) : (s.label ?? s.tool);
-    const hit = out.find(([l]) => l === name);
-    if (hit) hit[1] += 1;
-    else out.push([name, 1]);
-  }
-  return out;
-};
-
-const KEYFRAMES = {
-  '@keyframes fdSpin': { to: { transform: 'rotate(360deg)' } },
-  '@keyframes fdFadeIn': { from: { opacity: 0, transform: 'translateY(6px)' }, to: { opacity: 1, transform: 'none' } },
-  '@keyframes fdFade': { from: { opacity: 0 }, to: { opacity: 1 } },
-  '@keyframes fdBlink': { '0%, 49%': { opacity: 1 }, '50%, 100%': { opacity: 0 } },
-  '@keyframes fdHop': {
-    '0%, 80%, 100%': { transform: 'translateY(0)', opacity: 0.35 },
-    '40%': { transform: 'translateY(-3px)', opacity: 1 },
-  },
-  '@keyframes fdSweep': { from: { left: '-40%' }, to: { left: '100%' } },
-  '@keyframes fdSheen': { '0%': { backgroundPosition: '100% 0' }, '100%': { backgroundPosition: '-100% 0' } },
-  '@keyframes fdPulse': { '0%, 100%': { opacity: 1, transform: 'scale(1)' }, '50%': { opacity: 0.35, transform: 'scale(0.7)' } },
-  '@keyframes fdMenu': { from: { opacity: 0, transform: 'scale(0.96) translateY(-4px)' }, to: { opacity: 1, transform: 'none' } },
-} as const;
-
-/** The demo's keyframes, injected once rather than re-serialized every frame. */
-const DemoKeyframes = memo(() => <GlobalStyles styles={KEYFRAMES} />);
-DemoKeyframes.displayName = 'DemoKeyframes';
-
 /** The window's slab edge — stacked copies beneath it — and its ground shadow. */
 const Slab = memo(({ groundZ, groundOpacity }: { groundZ: number; groundOpacity: number }) => (
   <>
@@ -411,138 +371,6 @@ const MessagesColumn = memo(
 );
 MessagesColumn.displayName = 'MessagesColumn';
 
-const Disclaimer = memo(({ narrow }: { narrow: boolean }) => {
-  const { t } = useTranslation('home');
-  return (
-    <Box
-      sx={{ position: 'absolute', left: narrow ? 0 : -60, right: narrow ? 0 : -60, top: '100%', mt: '7px', textAlign: 'center', fontSize: 10.5, lineHeight: 1.35, color: APP.textDisabled }}
-    >
-      {t(`${K}.app.disclaimer`)}
-    </Box>
-  );
-});
-Disclaimer.displayName = 'Disclaimer';
-
-/** The pointer (a touch dot on the compact window), positioned by the frame effect. */
-const Cursor = memo(
-  ({ narrow, cursorRef, rippleRef }: { narrow: boolean; cursorRef: RefObject<HTMLDivElement | null>; rippleRef: RefObject<HTMLDivElement | null> }) => (
-    <Box
-      ref={cursorRef}
-      aria-hidden
-      sx={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none', zIndex: 3, opacity: 0, transition: 'opacity 0.3s ease', willChange: 'transform' }}
-    >
-      <Box ref={rippleRef} sx={{ position: 'absolute', left: 0, top: 0, width: 34, height: 34, borderRadius: '50%', background: APP.navyLight, opacity: 0 }} />
-      {narrow ? (
-        <Box sx={{ width: 22, height: 22, ml: '-11px', mt: '-11px', borderRadius: '50%', background: 'rgba(11,26,51,0.28)', border: '2px solid rgba(255,255,255,0.9)' }} />
-      ) : (
-        <Box sx={{ ml: '-2px', mt: '-2px', filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.25))' }}>
-          <PointerGlyph />
-        </Box>
-      )}
-    </Box>
-  ),
-);
-Cursor.displayName = 'Cursor';
-
-const chapterEnd = (i: number) => (i + 1 < CHAPTERS.length ? CHAPTERS[i + 1].start : LOOP);
-
-/**
- * Play/pause and the four chapters as a segmented track. Static between
- * chapter changes; the fills are advanced through refs by the frame effect.
- */
-const PlayerBar = memo(
-  ({
-    playing,
-    active,
-    onToggle,
-    onSeek,
-    fillRefs,
-  }: {
-    playing: boolean;
-    active: number;
-    onToggle: () => void;
-    onSeek: (chapter: number) => void;
-    fillRefs: RefObject<Array<HTMLDivElement | null>>;
-  }) => {
-    const { t } = useTranslation('home');
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 2 }, mt: { xs: 1.5, md: 2 } }}>
-        <Box
-          component="button"
-          type="button"
-          onClick={onToggle}
-          aria-label={playing ? t(`${K}.pause`) : t(`${K}.play`)}
-          sx={{
-            all: 'unset',
-            flexShrink: 0,
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            color: soft.white,
-            background: palette.navy,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            ...focusRingSx,
-            '@media (forced-colors: active)': { border: '1px solid ButtonText', ...forcedColorsFocus },
-          }}
-        >
-          {playing ? <PauseIcon sx={{ fontSize: 20 }} /> : <PlayArrowIcon sx={{ fontSize: 20 }} />}
-        </Box>
-        <Box
-          sx={{
-            flex: 1,
-            display: 'grid',
-            gap: { xs: 0.75, md: 1.25 },
-            // minmax(0, …): a bare fr track will not shrink below its no-wrap label.
-            gridTemplateColumns: CHAPTERS.map((c, i) => `minmax(0, ${(chapterEnd(i) - c.start).toFixed(1)}fr)`).join(' '),
-          }}
-        >
-          {CHAPTERS.map((c, i) => (
-            <Box
-              key={c.key}
-              component="button"
-              type="button"
-              aria-label={t(`${K}.chapterJump`, { chapter: t(`${K}.chapters.${c.key}`) })}
-              aria-current={i === active ? 'step' : undefined}
-              onClick={() => onSeek(i)}
-              sx={{ all: 'unset', cursor: 'pointer', minWidth: 0, py: 0.75, ...focusRingSx, '@media (forced-colors: active)': { ...forcedColorsFocus } }}
-            >
-              <Box sx={{ height: 4, borderRadius: 999, background: 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-                <Box
-                  ref={(el: HTMLDivElement | null) => {
-                    fillRefs.current[i] = el;
-                  }}
-                  sx={{ width: 0, height: '100%', background: gradients.gold, borderRadius: 999 }}
-                />
-              </Box>
-              <Box
-                sx={{
-                  mt: 0.75,
-                  fontFamily: fonts.mono,
-                  fontSize: '0.68rem',
-                  letterSpacing: '0.04em',
-                  fontWeight: i === active ? 700 : 500,
-                  color: i === active ? soft.text : soft.textSecondary,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  transition: `color ${motion.fast}`,
-                }}
-              >
-                {`${String(i + 1).padStart(2, '0')} ${t(`${K}.chapters.${c.key}`)}`}
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      </Box>
-    );
-  },
-);
-PlayerBar.displayName = 'PlayerBar';
-
 /**
  * The Fintelligent demo: the app's own screens, played as a 30-second loop —
  * a request for a momentum strategy on the sector ETFs becomes a validated
@@ -560,7 +388,6 @@ export const FintelligentDemo = () => {
   const stageRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const rippleRef = useRef<HTMLDivElement>(null);
-  const lastCursor = useRef<[number, number]>([0, 0]);
   const fillRefs = useRef<Array<HTMLDivElement | null>>([]);
   const clock = useLoopClock(stageRef, LOOP, STILL);
   const now = clock.t;
@@ -668,45 +495,7 @@ export const FintelligentDemo = () => {
   // Playing, a chapter starts from its top; paused (or reduced motion), it lands on its telling frame.
   const onSeek = useCallback((i: number) => seek(playing ? CHAPTERS[i].start + 0.01 : CHAPTERS[i].still), [playing, seek]);
 
-  // Per frame, outside React: the pointer, eased between the elements the
-  // script points at (measured live, through the 3D transforms), and the
-  // chapter fills.
-  useLayoutEffect(() => {
-    CHAPTERS.forEach((c, i) => {
-      const fill = fillRefs.current[i];
-      if (fill) fill.style.width = `${(span(now, c.start, chapterEnd(i)) * 100).toFixed(1)}%`;
-    });
-    const stage = stageRef.current;
-    const cursor = cursorRef.current;
-    const ripple = rippleRef.current;
-    if (!stage || !cursor || !ripple) return;
-    const box = stage.getBoundingClientRect();
-    const at = (id: string): [number, number] | null => {
-      if (id === 'enter') return [box.width + 40, box.height * 0.8];
-      if (id === 'exit') return [box.width + 40, box.height * 0.92];
-      const el = stage.querySelector(`[data-demo="${id}"]`);
-      if (!el) return null;
-      const r = el.getBoundingClientRect();
-      return [r.left - box.left + Math.min(r.width / 2, 60), r.top - box.top + r.height / 2];
-    };
-    let i = CURSOR_PATH.findIndex(([time]) => time > now);
-    if (i === -1) i = CURSOR_PATH.length - 1;
-    const [ta, ida] = CURSOR_PATH[Math.max(0, i - 1)];
-    const [tb, idb] = CURSOR_PATH[i];
-    const a = at(ida) ?? lastCursor.current;
-    const b = at(idb) ?? a;
-    const kk = ta === tb ? 1 : ease(span(now, ta, tb));
-    const x = lerp(a[0], b[0], kk);
-    const y = lerp(a[1], b[1], kk);
-    lastCursor.current = [x, y];
-    const visible = now >= CURSOR_PATH[0][0] && now <= CURSOR_PATH[CURSOR_PATH.length - 1][0];
-    const click = CLICKS.find((c) => now >= c && now < c + 0.4);
-    const press = click === undefined ? 0 : 1 - span(now, click, click + 0.4);
-    cursor.style.opacity = visible ? '1' : '0';
-    cursor.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${(1 - press * 0.12).toFixed(3)})`;
-    ripple.style.opacity = click === undefined ? '0' : (0.5 * press).toFixed(3);
-    ripple.style.transform = `translate(-50%, -50%) scale(${(0.4 + (1 - press) * 1.2).toFixed(3)})`;
-  });
+  usePointerFrame({ now, stageRef, cursorRef, rippleRef, fillRefs, chapters: CHAPTERS, loop: LOOP, path: CURSOR_PATH, clicks: CLICKS });
 
   const r3 = (v: number) => Math.round(v * 1000) / 1000;
   const explode = r3(cam.explode);
@@ -848,7 +637,7 @@ export const FintelligentDemo = () => {
         <Cursor narrow={narrow} cursorRef={cursorRef} rippleRef={rippleRef} />
       </div>
 
-      <PlayerBar playing={playing} active={activeChapter} onToggle={onToggle} onSeek={onSeek} fillRefs={fillRefs} />
+      <PlayerBar prefix={K} chapters={CHAPTERS} loop={LOOP} playing={playing} active={activeChapter} onToggle={onToggle} onSeek={onSeek} fillRefs={fillRefs} />
     </div>
   );
 };
