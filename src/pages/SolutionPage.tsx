@@ -10,9 +10,11 @@ import { SectionHeader } from '../components/primitives/SectionHeader';
 import { GroundTexture } from '../components/primitives/GroundTexture';
 import { ComparisonPanel, SeatPanel } from '../components/solutions/AdvantagePanels';
 import { SolutionChapters } from '../components/solutions/SolutionChapters';
+import { ClosingSection } from '../components/sections/ClosingSection';
+import { NeuButton } from '../components/primitives/NeuButton';
 import { MediaWell } from '../components/primitives/MediaWell';
 import { NotFoundPage } from './NotFoundPage';
-import { bandClipSx, clippedGradientSx } from '../theme/neu';
+import { bandClipSx, clippedGradientSx, ctaRowSx } from '../theme/neu';
 import { gradients, soft } from '../theme/tokens';
 import { STILLS } from '../media/registry';
 import { SOLUTIONS, SOLUTION_PATHS, audienceFromSlug } from '../solutions/registry';
@@ -28,7 +30,7 @@ import { absoluteUrl } from '../seo/site';
 export const SolutionPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const audience = audienceFromSlug(slug);
-  const { t } = useTranslation(['solutions', 'home']);
+  const { t } = useTranslation(['solutions', 'home', 'common']);
 
   if (!audience) return <NotFoundPage />;
   const config = SOLUTIONS[audience];
@@ -40,6 +42,10 @@ export const SolutionPage = () => {
 
   const badge = t(`solutions:${audience}.badge`);
   const badgeAccent = t(`solutions:${audience}.badgeAccent`);
+  // Seats sold through a walkthrough lead with it; the self-serve seat signs up
+  // straight away. Either way the page ends at the app, not only at the docs.
+  const primaryToApp = audience === 'independents';
+  const primaryCta = primaryToApp ? {} : { to: '/contact' };
   const badgeLead = badgeAccent && badge.endsWith(badgeAccent) ? badge.slice(0, -badgeAccent.length) : badge;
 
   return (
@@ -102,6 +108,14 @@ export const SolutionPage = () => {
                   {t(`solutions:${audience}.lead`)}
                 </Typography>
               </AnimateOnScroll>
+              <AnimateOnScroll delay={220}>
+                <Box sx={[ctaRowSx, { mt: 3.5, justifyContent: 'flex-start' }]}>
+                  <NeuButton tone="accent" {...primaryCta}>
+                    {t(`solutions:${audience}.ctaPrimary`)}
+                  </NeuButton>
+                  {!primaryToApp && <NeuButton tone="raised">{t('common:actions.getStarted')}</NeuButton>}
+                </Box>
+              </AnimateOnScroll>
             </Box>
             <AnimateOnScroll delay={100} direction="right">
               <MediaWell
@@ -136,6 +150,15 @@ export const SolutionPage = () => {
         </Section>
 
         <SolutionChapters chapters={config.chapters} audience={audience} />
+
+        <ClosingSection
+          eyebrow={t('solutions:common.closing.eyebrow')}
+          title={t(`solutions:${audience}.closing.title`)}
+          titleAccent={t(`solutions:${audience}.closing.titleAccent`)}
+          body={t(`solutions:${audience}.closing.body`)}
+          primary={{ label: primaryToApp ? t('common:actions.getStarted') : t(`solutions:${audience}.ctaPrimary`), ...primaryCta }}
+          secondary={{ label: t('solutions:common.closing.ctaSecondary'), to: '/pricing' }}
+        />
       </Box>
 
       <Footer />

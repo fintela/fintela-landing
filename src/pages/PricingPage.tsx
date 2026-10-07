@@ -24,6 +24,7 @@ import { gradients, motion, palette, radii, shadows, soft } from '../theme/token
 import { Seo } from '../seo/Seo';
 import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
+import { APP_URL } from '../theme/neu';
 import { DOCS_HOME } from '../seo/routes';
 
 const PRICING_OG_IMAGE = '/og/pricing.png';
@@ -58,6 +59,18 @@ const usd = (cents: number, fractionDigits: number) =>
   }).format(cents / 100);
 
 type Billing = 'monthly' | 'yearly';
+
+/**
+ * Signup link that names the chosen plan and billing period, so the app can
+ * open on that plan instead of the bare homepage. Custom has no self-serve
+ * checkout and goes to /contact instead.
+ */
+const planSignupUrl = (key: TierKey, billing: Billing) => {
+  const url = new URL(APP_URL);
+  url.searchParams.set('plan', key);
+  url.searchParams.set('billing', billing);
+  return url.toString();
+};
 
 type TierKey = 'trader' | 'quant' | 'institutional' | 'custom';
 
@@ -132,6 +145,8 @@ interface PlanCardProps {
   cta: string;
   /** Internal route for the CTA; without it the CTA points at the app. */
   ctaTo?: string;
+  /** App signup URL carrying the chosen plan; used when there is no `ctaTo`. */
+  ctaHref?: string;
   /** CTA fill: 'accent' is the dark button, 'raised' the white one. */
   ctaTone?: NeuTone;
   featured?: boolean;
@@ -153,6 +168,7 @@ const PlanCard = ({
   support,
   cta,
   ctaTo,
+  ctaHref,
   ctaTone = 'raised',
   featured = false,
 }: PlanCardProps) => {
@@ -357,7 +373,7 @@ const PlanCard = ({
         <Typography sx={{ fontSize: '0.8rem', color: soft.textSecondary }}>{support}</Typography>
       </Box>
 
-      <NeuButton tone={ctaTone} to={ctaTo} fullWidth>
+      <NeuButton tone={ctaTone} fullWidth {...(ctaTo ? { to: ctaTo } : { href: ctaHref, rel: 'noopener' })}>
         {cta}
       </NeuButton>
     </Box>
@@ -375,7 +391,7 @@ const PlanCard = ({
  * roles are what keep the table semantics alive once `display` stops being
  * table-*.
  */
-const ComparisonTable = () => {
+const ComparisonTable = ({ billing }: { billing: Billing }) => {
   const { t } = useTranslation('pages');
 
   const cellBase = {
@@ -575,7 +591,17 @@ const ComparisonTable = () => {
                       )
                     ) : (
                       <Box component="span" sx={{ flex: { xs: 1 }, minWidth: 0, overflowWrap: 'break-word' }}>
-                        {t(`pricing.compare.rows.${row.key}.${tier.key}`)}
+                        {row.key === 'price' && billing === 'yearly' && YEARLY_CENTS[tier.key] !== undefined
+                          ? t(
+                              PER_SEAT_TIERS.has(tier.key)
+                                ? `pricing.compare.priceYearlyPerSeat.${tier.key}`
+                                : `pricing.compare.priceYearly.${tier.key}`,
+                              {
+                                monthly: usd(YEARLY_CENTS[tier.key]! / 12, 2),
+                                total: usd(YEARLY_CENTS[tier.key]!, 0),
+                              },
+                            )
+                          : t(`pricing.compare.rows.${row.key}.${tier.key}`)}
                       </Box>
                     )}
                   </Box>
@@ -734,6 +760,7 @@ export const PricingPage = () => {
                   support={t(`pricing.individual.plans.${tier.key}.support`)}
                   cta={t(`pricing.individual.plans.${tier.key}.cta`)}
                   ctaTo={tier.key === 'custom' ? '/contact' : undefined}
+                  ctaHref={tier.key === 'custom' ? undefined : planSignupUrl(tier.key, billing)}
                   ctaTone={tier.ctaTone}
                 />
               </AnimateOnScroll>
@@ -750,7 +777,7 @@ export const PricingPage = () => {
             description={t('pricing.compare.description')}
           />
           <AnimateOnScroll delay={60}>
-            <ComparisonTable />
+            <ComparisonTable billing={billing} />
           </AnimateOnScroll>
         </Section>
 

@@ -152,6 +152,13 @@
       "featureColumn": "O que está incluído",
       "included": "Incluído",
       "notIncluded": "Não incluído",
+      "priceYearly": {
+        "trader": "{{monthly}}/mês cobrados por ano ({{total}}/ano)",
+        "quant": "{{monthly}}/mês cobrados por ano ({{total}}/ano)"
+      },
+      "priceYearlyPerSeat": {
+        "institutional": "{{monthly}}/usuário/mês cobrados por ano ({{total}}/usuário/ano), mínimo de 2 usuários"
+      },
       "rows": {
         "price": {
           "label": "Preço",

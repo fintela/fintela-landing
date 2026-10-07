@@ -152,6 +152,13 @@
       "featureColumn": "What's included",
       "included": "Included",
       "notIncluded": "Not included",
+      "priceYearly": {
+        "trader": "{{monthly}}/mo billed yearly ({{total}}/yr)",
+        "quant": "{{monthly}}/mo billed yearly ({{total}}/yr)"
+      },
+      "priceYearlyPerSeat": {
+        "institutional": "{{monthly}}/seat/mo billed yearly ({{total}}/seat/yr), 2-seat minimum"
+      },
       "rows": {
         "price": {
           "label": "Price",
