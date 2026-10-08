@@ -766,6 +766,13 @@ export const PricingPage = () => {
               </AnimateOnScroll>
             ))}
           </Box>
+
+          {/* Said before signup, not after: the app reviews every new account
+              (AccessGate), and finding that out on the far side of the form
+              reads as a wall. */}
+          <Typography sx={{ mt: { xs: 3, md: 4 }, textAlign: 'center', fontSize: '0.875rem', color: soft.textSecondary, maxWidth: 560, mx: 'auto' }}>
+            {t('pricing.individual.accessReview')}
+          </Typography>
         </Section>
 
         {/* Compare */}

@@ -50,6 +50,7 @@
       "title": "Plans",
       "overageRateLabel": "Overage rate",
       "tokenHelp": "What is a token?",
+      "accessReview": "Every new account is reviewed before it is enabled. Requests are normally answered within one business day.",
       "billing": {
         "label": "Billing period",
         "monthly": "Monthly",

@@ -50,6 +50,7 @@
       "title": "Planes",
       "overageRateLabel": "Tarifa por excedente",
       "tokenHelp": "¿Qué es un token?",
+      "accessReview": "Toda cuenta nueva se revisa antes de habilitarse. Las solicitudes se responden normalmente en un día hábil.",
       "billing": {
         "label": "Periodo de facturación",
         "monthly": "Mensual",
