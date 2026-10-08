@@ -24,7 +24,7 @@ import { gradients, motion, palette, radii, shadows, soft } from '../theme/token
 import { Seo } from '../seo/Seo';
 import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
-import { APP_URL } from '../theme/neu';
+import { SIGNUP_URL } from '../theme/neu';
 import { DOCS_HOME } from '../seo/routes';
 
 const PRICING_OG_IMAGE = '/og/pricing.png';
@@ -66,7 +66,7 @@ type Billing = 'monthly' | 'yearly';
  * checkout and goes to /contact instead.
  */
 const planSignupUrl = (key: TierKey, billing: Billing) => {
-  const url = new URL(APP_URL);
+  const url = new URL(SIGNUP_URL);
   url.searchParams.set('plan', key);
   url.searchParams.set('billing', billing);
   return url.toString();

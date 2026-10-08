@@ -1,7 +1,7 @@
 import { Button } from '@mui/material';
 import type { ButtonProps, SxProps, Theme } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { APP_URL, neuButtonSx } from '../../theme/neu';
+import { SIGNUP_URL, neuButtonSx } from '../../theme/neu';
 import type { NeuSize, NeuTone } from '../../theme/neu';
 
 export type NeuButtonProps = Omit<ButtonProps, 'variant' | 'color' | 'size' | 'disableRipple'> & {
@@ -16,7 +16,7 @@ export type NeuButtonProps = Omit<ButtonProps, 'variant' | 'color' | 'size' | 'd
  * variant="text" is deliberate: it is the only MuiButton variant with no
  * styleOverrides in the theme, so nothing the theme paints can reach these
  * buttons. Without `to`, `href`, `onClick` or `type` the button links to the
- * app, exactly as the PricingPage original did.
+ * app's sign-up page: every such button on the site is a "Get started".
  */
 export const NeuButton = ({ tone, size = 'md', to, sx, ...rest }: NeuButtonProps) => {
   const merged = [neuButtonSx(tone, size), ...(Array.isArray(sx) ? sx : [sx])] as SxProps<Theme>;
@@ -29,7 +29,7 @@ export const NeuButton = ({ tone, size = 'md', to, sx, ...rest }: NeuButtonProps
       variant="text"
       disableRipple
       sx={merged}
-      {...(linksToApp ? { href: APP_URL, rel: 'noopener' } : {})}
+      {...(linksToApp ? { href: SIGNUP_URL, rel: 'noopener' } : {})}
       {...rest}
     />
   );

@@ -20,6 +20,12 @@ import type { SxProps, Theme } from '@mui/material';
 import { gradients, motion, palette, radii, shadows, soft } from './tokens';
 
 export const APP_URL = 'https://app.fintela.io';
+/**
+ * Where every sign-up CTA goes: the app's `/signup` route, which opens
+ * Keycloak's registration form directly. The app root opens the login form,
+ * so a new visitor sent there had to find "Register" on their own.
+ */
+export const SIGNUP_URL = `${APP_URL}/signup`;
 
 export type NeuTone = 'accent' | 'raised';
 export type NeuSize = 'sm' | 'md' | 'lg';
