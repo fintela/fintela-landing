@@ -25,7 +25,6 @@ const emptyForm = {
   name: '',
   company: '',
   email: '',
-  phone: '',
   message: '',
   // The honeypot (see src/contact/api.ts): off-screen, never filled by a person.
   website: '',
@@ -71,7 +70,6 @@ export const FloatingContactButton = () => {
         name: formData.name,
         company: formData.company,
         email: formData.email,
-        phone: formData.phone,
         message: formData.message,
         locale: i18n.resolvedLanguage ?? i18n.language,
         page_url: window.location.href,
@@ -192,16 +190,6 @@ export const FloatingContactButton = () => {
                           label={t('pages:contact.form.email')}
                           name="email"
                           value={formData.email}
-                          onChange={handleInputChange}
-                        />
-                        <TextField
-                          required
-                          fullWidth
-                          size="small"
-                          type="tel"
-                          label={t('pages:contact.form.phone')}
-                          name="phone"
-                          value={formData.phone}
                           onChange={handleInputChange}
                         />
                         <TextField

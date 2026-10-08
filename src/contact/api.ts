@@ -25,7 +25,6 @@ export interface ContactRequest {
   name: string;
   company: string;
   email: string;
-  phone: string;
   message: string;
   /** The visitor's UI language, so whoever answers writes back in it. */
   locale: string;

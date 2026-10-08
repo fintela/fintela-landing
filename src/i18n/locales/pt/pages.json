@@ -8,7 +8,6 @@
       "name": "Nome completo",
       "company": "Empresa",
       "email": "Endereço de email",
-      "phone": "Número de telefone",
       "messageLabelSupport": "Descreva seu problema ou dúvida",
       "messagePlaceholderSupport": "Por favor, forneça o máximo de detalhes possível sobre seu problema..."
     },

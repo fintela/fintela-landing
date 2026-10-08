@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import {
   Email,
-  Phone,
   Business,
   Person,
   Send,
@@ -56,7 +55,6 @@ export const ContactPage = () => {
     name: '',
     company: '',
     email: '',
-    phone: '',
     message: '',
     // The honeypot (see src/contact/api.ts). Rendered off-screen below; a
     // person never sees it, so it stays empty.
@@ -97,7 +95,6 @@ export const ContactPage = () => {
         name: formData.name,
         company: formData.company,
         email: formData.email,
-        phone: formData.phone,
         message: formData.message,
         locale: i18n.resolvedLanguage ?? i18n.language,
         page_url: window.location.href,
@@ -109,7 +106,6 @@ export const ContactPage = () => {
         name: '',
         company: '',
         email: '',
-        phone: '',
         message: '',
         website: '',
       });
@@ -245,7 +241,7 @@ export const ContactPage = () => {
                   }}
                 />
 
-                {/* Email */}
+                {/* Email: full row, so the two-column grid stays even */}
                 <TextField
                   required
                   fullWidth
@@ -257,20 +253,7 @@ export const ContactPage = () => {
                   InputProps={{
                     startAdornment: <Email sx={{ mr: 1 }} />,
                   }}
-                />
-
-                {/* Phone */}
-                <TextField
-                  required
-                  fullWidth
-                  type="tel"
-                  label={t('contact.form.phone')}
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    startAdornment: <Phone sx={{ mr: 1 }} />,
-                  }}
+                  sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}
                 />
 
                 {/* Message */}
