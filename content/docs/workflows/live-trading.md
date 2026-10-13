@@ -4,12 +4,12 @@ section: Workflows
 sectionOrder: 5
 order: 3
 published: true
-updated: 2026-09-09
+updated: 2026-10-13
 summary: Connect a brokerage account, deploy a portfolio group to trade it, and monitor and manage the operation that results.
 keywords: live trading, paper trading, broker, Broker, connect broker, deploy, operation, orders, reconciliation, monitoring, end of day
 ---
 
-Live trading is the last stretch of the workflow: you link a brokerage account to Fintela, point a [portfolio group](/docs/portfolio-groups) at it with a capital figure, and let the platform turn that group's daily target weights into real orders. The unit you deploy is called an **operation**: one portfolio group running against one broker connection, with its own capital, its own status, and its own rebalance clock. Everything on this page moves money, or decides whether money moves, so read the prerequisites before you connect anything.
+Live trading is the last stretch of the workflow: you link your brokerage account to Fintela, point a [portfolio group](/docs/portfolio-groups) at it with a capital figure, and start an operation that sends your account the orders that keep it on that group's daily target weights. The unit you deploy is called an **operation**: one portfolio group running against one broker connection, with its own capital, its own status, and its own rebalance clock. Everything on this page moves money, or decides whether money moves, so read the prerequisites before you connect anything.
 
 > [!CAUTION] This places real orders
 > An operation submits orders to your brokerage account through your own credentials. Fintela does not guarantee any trading outcome, and a backtest is not a forecast. Validate on a paper connection first: the workflow is identical to live.
@@ -32,30 +32,31 @@ Different actions in this flow require different permission grants, which is why
 
 ## Connect a brokerage account
 
-Broker connections live on the Account page, in a card titled **Broker connections**. Its own description explains the deal plainly: *"Connect your brokerage account so live operations can place orders on your behalf. Your credentials are encrypted and never stored in readable form."*
+Broker connections live on the **Integrations** page (left sidebar → **Integrations**), in the section titled **Broker connections**. Its own description explains the deal plainly: *"Connect your brokerage account so Fintela can transmit your live operations' orders to it, at your direction. Credentials are envelope-encrypted with AWS KMS."* Connecting asks for [two-step login](/docs/account-setup) first, like every other action that can move money.
 
 ### The connect dialog
 
-Click **Connect broker** to open the **Connect your brokerage** dialog. It has one shared header and two mutually exclusive ways to link your account.
+Click **Connect a broker** to open the **Connect a broker** dialog. It has one shared header and two mutually exclusive ways to link your account.
 
 | Field | Label | Notes |
 |---|---|---|
 | Name | **Connection name** | Required. Helper text: *"Used to identify this connection across operations."* Both connect buttons stay disabled until it's filled in, and leaving it empty is refused with a message asking for a name |
-| Environment | **Environment** | Two options: **Paper (recommended)** and **Live (pending approval)**. The live option is currently disabled |
+| Mode | **Trading mode** | **Paper trading** (*"Simulated money at the broker — no real money"*). **Real trading** (*"Real money on your live brokerage account"*) appears only once real-money trading is open to you |
+| Broker | **Broker** | The broker the connection is for |
 
 Then pick a path:
 
 | Path | Control | What happens |
 |---|---|---|
-| Connect with Broker (recommended) | *"Link your existing brokerage account securely: no API keys to copy or store."* | You're redirected to Broker's own login page, authorize Fintela to trade on your behalf there, and are brought straight back once you approve it. Your Broker username and password are never seen by Fintela |
-| Connect with API key (advanced) | Reveals **API Key ID** and **API Secret** fields, then **Connect with API key** | You paste in an API key pair generated from your own Broker account settings |
+| Connect with Broker (recommended) | *"Link your existing brokerage account securely — no API keys to copy or store."* | You're redirected to Broker's own login page, where you review the access Fintela asks for (transmitting to your account the orders you start in Fintela) and approve it; you're brought straight back once you do. Your Broker username and password are never seen by Fintela |
+| Connect with API key instead (advanced) | Reveals **API Key ID** and **API Secret** fields, then **Connect with API key** | You paste in an API key pair generated from your own Broker account settings |
 
-Either way, your credentials are checked directly against Broker **before** anything is saved. If Broker rejects them, you'll see a message telling you the credentials weren't accepted: double check what you copied, or that the key is still active on Broker's side. A successful API key connection toasts **Brokerage connection added and verified**; a successful Broker login returns you to the Account page with **Brokerage account connected and verified.**
+Either way, your credentials are checked directly against Broker **before** anything is saved. If Broker rejects them, you'll see a message telling you the credentials weren't accepted: double check what you copied, or that the key is still active on Broker's side. A successful API key connection toasts **Brokerage connection added and verified**; a successful Broker login returns you to the Integrations page with **Brokerage account connected and verified.**
 
 The dialog also shows Broker's required authorization disclosure and links to Fintela's Terms of Use and Privacy Policy. Fintela only ever asks for trading access on the connection: never for your market data subscriptions, since the research and analysis you do in Fintela already runs on Fintela's own market data.
 
 > [!WARNING] One connection per environment
-> You can have only one active connection per broker per environment: one paper connection today, and (once it opens) one live connection. Trying to add a second while one is already active is stopped before you even reach Broker's side, with a message telling you to disconnect the existing one first. A connection you've previously disconnected is the one exception: reconnecting the same account restores it in place and keeps its full history, rather than starting over.
+> You can have only one active connection per broker per environment: one paper connection, and one live connection once real-money trading is open to you. Trying to add a second while one is already active is stopped before you even reach Broker's side, with a message telling you to disconnect the existing one first. A connection you've previously disconnected is the one exception: reconnecting the same account restores it in place and keeps its full history, rather than starting over.
 
 ### How your credentials are protected
 
@@ -104,10 +105,10 @@ Paper versus live is a property of the **connection**, decided when you connect 
 
 Paper trading runs the entire pipeline (the same weights, the same order planning, the same reconciliation, the same reports) against Broker's paper account and its simulated capital, so it's a faithful rehearsal of live trading, not a simplified preview of it.
 
-> [!WARNING] Live connections aren't enabled yet
-> The Environment selector shows **Live (pending approval)** as a disabled option today, and any attempt to force it through is refused the same way. Real money live trading isn't enabled for any Fintela account yet: it's waiting on Broker's approval of Fintela's brokerage integration. Paper trading is fully available today and uses the exact workflow live trading will use once it opens.
+> [!WARNING] Real money opens gradually
+> Until real-money trading is open to you, **Trading mode** offers **Paper trading** only, and any attempt to force a live connection or a live operation through is refused the same way. Paper trading is fully available and uses the exact workflow live trading uses.
 
-A connection is unique per environment, and an operation is unique per group and connection pair: so once live trading opens, the same portfolio group will be able to run paper and live side by side, each on its own connection.
+A connection is unique per environment, and an operation is unique per group and connection pair: so once real-money trading is open to you, the same portfolio group can run paper and live side by side, each on its own connection.
 
 ## Deploy a portfolio group
 
@@ -132,7 +133,7 @@ With no active connection, the dialog shows a guided empty state titled **Connec
 Creating an operation does not trade. The dialog's own footer says so: *Next: review it, then **Launch** to place the first orders.* The confirm button reads **Create operation**.
 
 > [!CAUTION] Launch is the irreversible step
-> **Launch** flips the operation to Active, and the platform places the initial buy on its next check in. The confirmation dialog is titled **Launch operation** with the body *"Fintela will place the initial buy on its next cycle."* Nothing before this point sends an order.
+> **Launch** flips the operation to Active, and the initial buy you authorize goes to your broker on the next cycle. The confirmation dialog is titled **Launch operation** with the body *"The initial buy you are authorizing is sent to your broker on the next cycle."* Nothing before this point sends an order.
 
 More detail on these fields, and on what each deploy outcome means, is covered on the [Portfolio Groups](/docs/portfolio-groups) page.
 
