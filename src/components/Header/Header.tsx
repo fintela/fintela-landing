@@ -110,10 +110,13 @@ const prefetch = (id: string) => {
 const bandId = (item: NavItem) => item.href.replace(/^\/#/, '');
 
 const navPillButtonSx = {
-  px: 1.75,
+  // Tighter between md and lg: the longest translated labels ("Investigación
+  // y Noticias") would otherwise wrap and push the logo out of its column.
+  px: { md: 0.75, lg: 1.75 },
   py: 0.75,
   minHeight: 36,
-  fontSize: '0.92rem',
+  fontSize: { md: '0.86rem', lg: '0.92rem' },
+  whiteSpace: 'nowrap',
   borderRadius: `${radii.pill}px`,
   textTransform: 'none',
 } as const;
@@ -322,10 +325,10 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             // never do here.
             display: { xs: 'flex', md: 'grid' },
             justifyContent: { xs: 'space-between' },
-            gridTemplateColumns: { md: '1fr auto 1fr' },
+            gridTemplateColumns: { md: 'minmax(max-content, 1fr) auto minmax(max-content, 1fr)' },
             alignItems: 'center',
             py: { xs: 1, md: 1.25 },
-            px: { xs: 2, md: 4 },
+            px: { xs: 2, md: 2, lg: 4 },
             minHeight: { xs: 60, md: 72 },
             maxWidth: 1280,
             mx: 'auto',
@@ -368,7 +371,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             aria-label={t('aria.primaryNav')}
             sx={{
               display: { xs: 'none', md: 'flex' },
-              gap: 0.5,
+              gap: { md: 0.25, lg: 0.5 },
               alignItems: 'center',
               justifySelf: 'center',
             }}

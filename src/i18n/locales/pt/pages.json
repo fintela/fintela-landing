@@ -258,9 +258,9 @@
   },
   "blog": {
     "hero": {
-      "chip": "Pesquisa",
-      "title": "Fintela Research",
-      "subtitle": "Análises, tutoriais e melhores práticas para finanças quantitativas e trading algorítmico."
+      "chip": "Pesquisa e Notícias",
+      "title": "Fintela Research & News",
+      "subtitle": "Análises, tutoriais, melhores práticas e notícias da empresa para finanças quantitativas e trading algorítmico."
     },
     "readMore": "Leia mais",
     "readTime": "{{minutes}} min de leitura",
@@ -1565,7 +1565,7 @@
       "description": "Trinta minutos sobre as suas próprias estratégias com a equipe que construiu a plataforma. Conte sobre a sua mesa e confirmamos um horário em um dia útil."
     },
     "blog": {
-      "title": "Blog de Pesquisa | Pesquisa quant e novidades",
+      "title": "Pesquisa e Notícias | Pesquisa quant e notícias da Fintela",
       "description": "Insights, tutoriais e guias práticos de finanças quantitativas e trading algorítmico, escritos pela equipe que constrói a plataforma Fintela."
     },
     "docs": {
