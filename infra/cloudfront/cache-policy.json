@@ -1,6 +1,6 @@
 {
   "Name": "fintela-landing-origin-cache-control",
-  "Comment": "Origin-driven caching for fintela.io: TTL comes from the Cache-Control every object is uploaded with (scripts/sync-site.sh); nothing else in the cache key. Source: fintela-landing infra/cloudfront/cache-policy.json.",
+  "Comment": "fintela.io: TTL from each object's Cache-Control, nothing else in the key. Source: fintela-landing infra/cloudfront/",
   "MinTTL": 0,
   "DefaultTTL": 0,
   "MaxTTL": 31536000,

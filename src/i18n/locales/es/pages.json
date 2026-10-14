@@ -50,7 +50,7 @@
       "title": "Planes",
       "overageRateLabel": "Tarifa por excedente",
       "tokenHelp": "¿Qué es un token?",
-      "accessReview": "Toda cuenta nueva se revisa antes de habilitarse. Las solicitudes se responden normalmente en un día hábil.",
+      "emailVerification": "Tu cuenta se habilita en cuanto verificas tu correo electrónico.",
       "billing": {
         "label": "Periodo de facturación",
         "monthly": "Mensual",
@@ -258,9 +258,9 @@
   },
   "blog": {
     "hero": {
-      "chip": "Investigación",
-      "title": "Fintela Research",
-      "subtitle": "Análisis, tutoriales y mejores prácticas para las finanzas cuantitativas y el trading algorítmico."
+      "chip": "Investigación y Noticias",
+      "title": "Fintela Research & News",
+      "subtitle": "Análisis, tutoriales, mejores prácticas y noticias de la compañía para las finanzas cuantitativas y el trading algorítmico."
     },
     "readMore": "Leer más",
     "readTime": "{{minutes}} min de lectura",
@@ -1565,7 +1565,7 @@
       "description": "Treinta minutos sobre tus propias estrategias con el equipo que construyó la plataforma. Cuéntanos sobre tu mesa y confirmamos un horario en un día hábil."
     },
     "blog": {
-      "title": "Blog de Investigación | Investigación cuant y novedades",
+      "title": "Investigación y Noticias | Investigación cuant y noticias de Fintela",
       "description": "Ideas, tutoriales y guías prácticas de finanzas cuantitativas y trading algorítmico, escritas por el equipo que construye la plataforma Fintela."
     },
     "docs": {
