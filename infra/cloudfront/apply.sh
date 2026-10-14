@@ -25,6 +25,10 @@
 # CLOUDFRONT_DISTRIBUTION comes from the environment or ../../.env.local
 # (the same line deploy.sh reads). No identifier is hardcoded here.
 set -euo pipefail
+# Without this, a failing aws call inside $(upsert_policy …) is ignored and the
+# distribution gets updated with an empty policy id (bash 4.4+; macOS's 3.2
+# lacks it, which the id check before step 3 still catches).
+shopt -s inherit_errexit 2>/dev/null || true
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT=$(cd "$HERE/../.." && pwd)
@@ -64,6 +68,16 @@ FUNCTION_CONFIG=$(jq -nc '{
 }')
 HEADERS_POLICY_NAME=$(jq -r .Name "$HERE/security-headers-policy.json")
 CACHE_POLICY_NAME=$(jq -r .Name "$HERE/cache-policy.json")
+
+# CloudFront caps every Comment at 128 characters but says so only when the
+# write is attempted, by which point the function may already be published.
+# Check up front so a bad file fails the plan, not half an apply.
+for source in "function config:$FUNCTION_CONFIG" \
+              "security-headers-policy.json:$(cat "$HERE/security-headers-policy.json")" \
+              "cache-policy.json:$(cat "$HERE/cache-policy.json")"; do
+  len=$(jq -r '.Comment // "" | length' <<<"${source#*:}")
+  (( len <= 128 )) || { echo "apply.sh: ${source%%:*}: Comment is $len characters, CloudFront allows 128" >&2; exit 1; }
+done
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
@@ -178,6 +192,17 @@ CACHE_POLICY_ID=$(upsert_policy cache "$CACHE_POLICY_NAME" "$HERE/cache-policy.j
 
 # ── 3. The distribution ────────────────────────────────────────────────────
 step "Distribution $DIST"
+
+# A distribution update with an empty policy id is rejected by the API only
+# for some fields (MinTTL "required"); never send one.
+if (( APPLY )); then
+  for id in "$HEADERS_POLICY_ID" "$CACHE_POLICY_ID"; do
+    [[ $id =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || {
+      echo "apply.sh: policy id '$id' is not an id; a policy step failed above, the distribution was not touched" >&2
+      exit 1
+    }
+  done
+fi
 
 aws cloudfront get-distribution-config --id "$DIST" > "$WORK/dist.json"
 DIST_ETAG=$(jq -r .ETag "$WORK/dist.json")

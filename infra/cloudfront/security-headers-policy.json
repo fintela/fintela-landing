@@ -1,6 +1,6 @@
 {
   "Name": "fintela-landing-security-headers",
-  "Comment": "HSTS and baseline security headers for fintela.io. Source: fintela-landing infra/cloudfront/security-headers-policy.json, applied by apply.sh. No CSP yet, see README.",
+  "Comment": "fintela.io HSTS + baseline security headers, no CSP yet. Source: fintela-landing infra/cloudfront/",
   "SecurityHeadersConfig": {
     "StrictTransportSecurity": {
       "Override": true,
