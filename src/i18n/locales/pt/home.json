@@ -10,6 +10,7 @@
     "headline": "Pesquisa de estratégias em",
     "headlineAccent": "escala de fundo.",
     "ctaPrimary": "Descubra sua vantagem",
+    "awardAlt": "Vencedor: New Solution Product of the Year, Hedgeweek US Awards 2026",
     "plateCaption": "Início da plataforma · exposição por ativo, carteiras implantadas e estratégias em uso",
     "liveBadge": "Ao vivo",
     "posterAlt": "O início da plataforma Fintela: exposição por ativo, as estratégias e grupos de ativos em uso, e o desempenho do grupo de carteiras ativo",
@@ -1045,7 +1046,7 @@
     }
   },
   "insights": {
-    "eyebrow": "Insights",
+    "eyebrow": "Pesquisa e Notícias",
     "title": "Notas de pesquisa e",
     "titleAccent": "novidades da plataforma.",
     "exit": "Todos os posts",

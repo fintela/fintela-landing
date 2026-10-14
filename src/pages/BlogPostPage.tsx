@@ -24,7 +24,7 @@ import { blogCrumb, blogPosting, breadcrumbList, homeCrumb, organization, webSit
 import { absoluteUrl } from '../seo/site';
 
 const BLOG_OG_IMAGE = '/og/blog.png';
-const TITLE_SUFFIX = 'Research Blog';
+const TITLE_SUFFIX = 'Research & News';
 
 /** How many related posts sit under an article. */
 const MAX_RELATED = 3;

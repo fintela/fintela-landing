@@ -130,8 +130,9 @@ of a few practical reasons:
 
 There's one further case that isn't an authentication failure at all: a key is refused outright,
 with a message saying the account behind it isn't enabled to use Fintela, when the Fintela account
-that owns the key is suspended, disabled, or still awaiting approval. That's about the person, not
-the credential, so re issuing the key won't help: the account itself has to be reinstated. See
+that owns the key is suspended, disabled, or hasn't verified its email address yet. That's about the
+person, not the credential, so re issuing the key won't help: the account itself has to be
+verified or reinstated. See
 [API errors](/docs/api-errors) for how this differs from an ordinary "not found."
 
 See [API errors](/docs/api-errors) for the complete picture of what failures look like and how to

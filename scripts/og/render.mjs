@@ -93,7 +93,7 @@ async function loadCards() {
       title: 'The AI-native quant platform',
       subtitle: 'Build, backtest, optimize and live-trade quantitative portfolios in one workspace.',
     },
-    { name: 'blog', kind: 'light', title: 'Blog', subtitle: pages.blog.hero.subtitle },
+    { name: 'blog', kind: 'light', title: 'Research & News', subtitle: pages.blog.hero.subtitle },
     {
       name: 'docs',
       kind: 'light',
@@ -110,7 +110,7 @@ async function loadCards() {
       name: 'contact',
       kind: 'light',
       title: 'Contact',
-      subtitle: pages.contact.hero.subtitle,
+      subtitle: pages.seo.contactWalkthrough.description,
     },
     solution('funds', 'hedge-funds', 'src/assets/media/solutions/funds-hero.jpg'),
     solution('teams', 'quant-teams', 'src/assets/media/solutions/teams-hero.jpg'),

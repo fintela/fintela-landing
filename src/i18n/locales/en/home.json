@@ -10,6 +10,7 @@
     "headline": "The Future of",
     "headlineAccent": "Intelligent Investing.",
     "ctaPrimary": "Find Your Edge",
+    "awardAlt": "Winner: New Solution Product of the Year, Hedgeweek US Awards 2026",
     "plateCaption": "Platform home · asset exposure, deployed portfolios and the strategies in use",
     "liveBadge": "Live",
     "posterAlt": "The Fintela platform home: asset exposure, the strategies and asset groups in use, and the active portfolio group's performance",
@@ -1045,7 +1046,7 @@
     }
   },
   "insights": {
-    "eyebrow": "Insights",
+    "eyebrow": "Research & News",
     "title": "Research notes &",
     "titleAccent": "platform updates.",
     "exit": "All posts",

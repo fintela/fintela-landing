@@ -50,7 +50,7 @@
       "title": "Plans",
       "overageRateLabel": "Overage rate",
       "tokenHelp": "What is a token?",
-      "accessReview": "Every new account is reviewed before it is enabled. Requests are normally answered within one business day.",
+      "emailVerification": "Your account is enabled as soon as you verify your email address.",
       "billing": {
         "label": "Billing period",
         "monthly": "Monthly",
@@ -258,9 +258,9 @@
   },
   "blog": {
     "hero": {
-      "chip": "Research",
-      "title": "Fintela Research",
-      "subtitle": "Insights, tutorials, and practical guides for quantitative finance and algorithmic trading."
+      "chip": "Research & News",
+      "title": "Fintela Research & News",
+      "subtitle": "Research notes, tutorials, practical guides and company news for quantitative finance and algorithmic trading."
     },
     "readMore": "Read More",
     "readTime": "{{minutes}} min read",
@@ -1565,7 +1565,7 @@
       "description": "Thirty minutes on your own strategies with the team that built the platform. Tell us about your desk and we confirm a time within one business day."
     },
     "blog": {
-      "title": "Research Blog | Quant Research Notes & Platform Updates",
+      "title": "Research & News | Quant Research Notes & Fintela News",
       "description": "Insights, tutorials and practical guides for quantitative finance and algorithmic trading, from the team building the Fintela platform."
     },
     "docs": {
