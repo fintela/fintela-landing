@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 3
 published: true
-updated: 2026-09-04
+updated: 2026-10-13
 summary: The core vocabulary of the platform, asset groups, strategies, fitness functions, risk managers, studies, trials, and portfolios, explained in plain language.
 keywords: concepts, vocabulary, glossary, strategy, fitness, study, trial, portfolio, asset group, risk manager, promotion, portfolio group
 ---
@@ -248,15 +248,15 @@ rules; the operation holds the capital behind it, its status, and its own rebala
 |---|---|
 | What it holds | Which broker connection it's using, an optional name you give it, how much capital it's trading with, its current and target status, and when it last rebalanced |
 | Statuses | Draft, Active, Paused, or Stopped |
-| How you create one | Click **Deploy Portfolio Group** on a group to create and launch an operation in one step, or **Trade with your brokerage** to create it as a draft you launch yourself later. Creating an operation never places an order on its own; launching it does |
+| How you create one | Click **Deploy live** on a group to create and launch an operation in one step, or **Trade with your brokerage** to create it as a draft you launch yourself later. Creating an operation never sends an order on its own; launching it sends your first orders |
 | Where you manage it | The group's Operations tab |
-| How many you can run | One operation per group, per broker connection, so the same group can run side by side on more than one connection, for example across two separate paper trading accounts you want to compare (and, once live trading arrives, a live connection running alongside them) |
+| How many you can run | One operation per group, per broker connection, so the same group can run side by side on more than one connection: a paper connection and, once real-money trading is open to you, a live one |
 | Learn more | [Live trading](/docs/live-trading), [Portfolio Groups](/docs/portfolio-groups), [API: Baskets](/docs/api-baskets) |
 
-> [!NOTE] Paper trading today, live trading to come
-> Connecting a real, live money brokerage account is currently switched off platform wide, every
-> operation you create today trades on paper. The workflow is identical either way, so nothing changes
-> for you once live trading becomes available. See [Live trading](/docs/live-trading).
+> [!NOTE] Paper first, real money gradually
+> Real-money trading opens gradually. Until it's open to you, a live brokerage connection is
+> refused and every operation you create trades on paper. The workflow is identical either way, so
+> nothing changes for you once it opens. See [Live trading](/docs/live-trading).
 
 ## Also known as
 

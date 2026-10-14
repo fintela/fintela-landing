@@ -16,7 +16,9 @@
  *     `/documentation/*` paths, a trailing slash or upper-case letters (all 301 at
  *     the edge once the CloudFront router is applied — link straight to the page);
  *   - an internal link to a route that does not exist: not a static route in
- *     `src/seo/routes.ts`, not a published post, not a published doc page.
+ *     `src/seo/routes.ts`, not a published post, not a published doc page;
+ *   - prose that casts Fintela as the one trading ("Fintela places / sells …",
+ *     "trades on your behalf"): orders are the user's — see `order-voice.mjs`.
  *
  * Reads `dist/` rather than `content/`, so it validates exactly what was published
  * and never trips over a draft. Run after `npm run build`.
@@ -24,6 +26,7 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { findOrderVoice } from './order-voice.mjs';
 
 const DIST = 'dist';
 const ROUTES_SOURCE = 'src/seo/routes.ts';
@@ -154,6 +157,12 @@ async function main() {
       }
       for (const [, href] of line.matchAll(LINK)) checkLink(where, href.trim());
     }
+    for (const { line, phrase } of findOrderVoice(markdown)) {
+      problems.push(
+        `${where}: body line ${line}: "${phrase}" — orders are the user's: say the user ` +
+          `(or their operation) sends them, never that Fintela places, sells or trades`,
+      );
+    }
   };
 
   for (const post of blog.items) {
@@ -179,7 +188,8 @@ async function main() {
 
   console.log(
     `check-content: ${images} image(s) and ${links} internal link(s) across ` +
-      `${blog.items.length} post(s) and ${docs.items.length} doc page(s) are clean.`,
+      `${blog.items.length} post(s) and ${docs.items.length} doc page(s) are clean, ` +
+      `and no page casts Fintela as the one trading.`,
   );
 }
 
