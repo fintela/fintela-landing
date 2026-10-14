@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { Link as RouterLink } from 'react-router-dom';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { GradientText } from '../primitives/GradientText';
 import { RotatingWord } from '../primitives/RotatingWord';
@@ -9,6 +10,10 @@ import { HeroVideoBackdrop } from '../primitives/HeroVideoBackdrop';
 import { bandClipSx } from '../../theme/neu';
 import { gradients, soft } from '../../theme/tokens';
 import { SOLUTION_PATHS } from '../../solutions/registry';
+import hedgeweekWinnerBadge from '../../assets/awards/hedgeweek-2026-winner.png';
+
+/** The post that tells the award's story; the badge links to it. */
+const AWARD_POST = '/blog/fintela-wins-hedgeweek-us-awards-2026';
 
 /**
  * Band 1. Copy only, left-aligned over a full-bleed video loop that fades into the
@@ -108,6 +113,35 @@ export const HeroDiorama = () => {
             <NeuButton tone="raised" to="/contact">
               {t('hero.ctaContact')}
             </NeuButton>
+          </Box>
+        </AnimateOnScroll>
+
+        <AnimateOnScroll delay={320}>
+          {/* Hedgeweek's own artwork, unaltered: the organiser's winner badge
+              must not be recoloured or cropped. */}
+          <Box
+            component={RouterLink}
+            to={AWARD_POST}
+            sx={{
+              display: 'inline-block',
+              mt: { xs: 4, md: 5 },
+              borderRadius: '10px',
+              overflow: 'hidden',
+              lineHeight: 0,
+              boxShadow: '0 6px 24px rgba(0, 0, 0, 0.28)',
+              transition: 'transform 200ms ease',
+              '@media (hover: hover)': { '&:hover': { transform: 'translateY(-2px)' } },
+              '&:focus-visible': { outline: `2px solid ${soft.white}`, outlineOffset: 3 },
+            }}
+          >
+            <Box
+              component="img"
+              src={hedgeweekWinnerBadge}
+              alt={t('hero.awardAlt')}
+              width={640}
+              height={243}
+              sx={{ display: 'block', width: { xs: 200, md: 240 }, height: 'auto' }}
+            />
           </Box>
         </AnimateOnScroll>
       </Box>
