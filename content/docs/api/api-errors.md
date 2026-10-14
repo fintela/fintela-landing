@@ -177,8 +177,8 @@ filter reports as not acceptable, and a revoked key reports as an authentication
 
 There is exactly one case where Fintela does answer "forbidden," and it's about **your own
 account, not any particular record**: the Fintela account that owns the key is suspended, disabled,
-or hasn't been approved to use Fintela yet. The message says so directly. Every request from that
-key fails the same way until the account is reinstated, so treat it as a standing condition to
+or hasn't verified its email address yet. The message says so directly. Every request from that
+key fails the same way until the account is verified or reinstated, so treat it as a standing condition to
 escalate rather than something to retry: a new key won't fix it. See
 [Authentication & limits](/docs/api-authentication).
 

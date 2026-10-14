@@ -50,7 +50,7 @@
       "title": "Planos",
       "overageRateLabel": "Taxa de excedente",
       "tokenHelp": "O que é um token?",
-      "accessReview": "Toda conta nova é revisada antes de ser habilitada. As solicitações são normalmente respondidas em um dia útil.",
+      "emailVerification": "Sua conta é habilitada assim que você verifica o seu e-mail.",
       "billing": {
         "label": "Período de cobrança",
         "monthly": "Mensal",
