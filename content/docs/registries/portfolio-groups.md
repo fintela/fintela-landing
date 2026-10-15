@@ -584,10 +584,10 @@ An action that isn't valid for an operation's current state is refused and expla
 | **Launch** | Draft, connection healthy | Places the initial buy and starts trading (Draft → Active) |
 | **Pause** | Active, connection healthy | Stops rebalancing but keeps current positions (Active → Paused) |
 | **Resume** | Paused, connection healthy | Resumes rebalancing and re buys into the market (Paused → Active) |
-| **Stop** | Active or Paused, connection healthy | Liquidates all positions and stops the operation |
+| **Stop** | Active or Paused, connection healthy | Sells the operation's positions (nothing else in your account) and stops it |
 | **Force stop** | Active or Paused on a revoked/errored connection | Marks the operation Stopped locally so you can delete it: positions are **not** sold; close them directly at your broker |
 | **Re initiate** | Stopped | Resets it back to Draft so it can be launched again; history is kept |
-| **Rebalance** | Active or Paused, connection healthy | Recomputes member weights on the operation's next cycle |
+| **Rebalance** | Active or Paused, connection healthy; Paused on a real money account only while real money trading is open to you | Recomputes member weights on the operation's next cycle |
 
 > [!CAUTION]
 > Only actions that **add** exposure require paper trading access on your plan: creating an operation, launching one, and resuming to Active. Pausing, stopping, and resetting back to Draft are always available, on every plan: you're never locked into a position you can't get out of because of your plan tier.

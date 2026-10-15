@@ -149,9 +149,9 @@ The **Loss limit** step sets **Loss limit (% drawdown from peak)**, how far the 
 |---|---|
 | **Notify me (in-app)** | The default. Nothing changes at your broker; you get an in-app alert |
 | **Stop rebalancing (keep positions)** | The operation is paused: its positions are kept and no more orders are sent. Resuming asks you to acknowledge the breach first |
-| **Sell everything** | The operation is stopped and every position it holds is sold, without a further click. Choosing it asks for [two-step login](/docs/account-setup#two-step-login) |
+| **Sell everything** | The operation is stopped, and the orders that sell every position it holds (nothing else in your account) go out without a further click. The limit is judged after the close, so they fill as your broker's sessions allow. Choosing it asks for [two-step login](/docs/account-setup#two-step-login) |
 
-The limit is judged once per trading day, after the close, on the operation's capital plus its profit or loss, with what it holds valued at your broker's prices, and only on a day Fintela's records match your broker's. Once it's reached, you acknowledge it before the operation can resume or take a manual rebalance. You can change the limit, or acknowledge a breach, on the portfolio's **Status** tab.
+The limit is judged once a day, every calendar day (weekends included), after 23:00 UTC, on the operation's capital plus its profit or loss, with what it holds valued at your broker's prices, and only on a day Fintela's records match your broker's. Once it's reached, you acknowledge it before the operation can resume or take a manual rebalance. The portfolio's **Status** tab shows the limit, and that's where you acknowledge a breach.
 
 ### What the launch preflight checks
 
