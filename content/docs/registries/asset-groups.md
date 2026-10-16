@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 2
 published: true
-updated: 2026-09-04
+updated: 2026-10-13
 summary: Build and manage the saved lists of tickers and portfolios your studies trade against.
 keywords: asset group, universe, tickers, portfolio group, index membership, screener, market filters, registry
 ---
@@ -352,7 +352,7 @@ On the right side of the screen, you'll always see the group you're actually bui
 
 The Portfolio Groups dialog is where you add whole portfolios to an asset group, rather than individual tickers. Open it from the command bar.
 
-Each portfolio group you add contributes its combined equity curve, and Fintela scores and trades that curve exactly like it would a ticker's price series: which is what lets you build a strategy that allocates capital across portfolios you've already validated, instead of picking individual names.
+Each portfolio group you add contributes its combined equity curve, which a study treats exactly like a ticker's price series: that's what lets you build a strategy that allocates capital across portfolios you've already validated, instead of picking individual names.
 
 A couple of things worth knowing:
 

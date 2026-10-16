@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 1
 published: true
-updated: 2026-09-04
+updated: 2026-10-13
 summary: What Fintela is, what you can do with it, and where to go next.
 keywords: overview, introduction, what is fintela, trading, quant, backtesting, optimization, portfolios, documentation
 ---
@@ -169,8 +169,8 @@ actually do.
 | Limit | Where it is documented |
 |---|---|
 | **Market data is end of day.** Every figure on Markets comes from a scheduled update, and Fintela does not display intraday prices | [Market](/docs/market) |
-| **The Developer API is read only.** It can only pull data out. It can never place a trade, launch a study, or spend a token on your behalf, and it doesn't push updates to you, so your own integrations need to check back periodically. Anything that costs tokens has to be triggered inside the app itself | [API overview](/docs/api-overview) |
-| **Live broker connections are gated off by default.** Paper trading is what ships out of the box; real money connections stay declined until Fintela enables live trading for your organization | [Live trading](/docs/live-trading) |
+| **The Developer API is read only.** It can only pull data out. Nothing you do with it can send an order, launch a study, or spend a token, and it doesn't push updates to you, so your own integrations need to check back periodically. Anything that costs tokens has to be triggered inside the app itself | [API overview](/docs/api-overview) |
+| **Real money opens gradually.** Paper trading is what ships out of the box; a live (real money) connection is refused until real-money trading is open to you | [Live trading](/docs/live-trading) |
 | **Nothing in a registry is shareable.** There is no per row visibility setting and no cross organization catalogue in any registry. The [Laboratory](/docs/laboratory)'s public catalog is a separate surface | [Registries](/docs/registries) |
 | **Deletes are permanent.** No undelete and no archive anywhere in the registries | [Registries](/docs/registries) |
 | **Data Pipelines has been retired.** It's now folded into the Data Explorer; strategies, fitness functions and risk managers pick their data sources inside their own editors | [Data Explorer](/docs/data-explorer) |

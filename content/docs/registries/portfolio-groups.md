@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 7
 published: true
-updated: 2026-09-04
+updated: 2026-10-13
 summary: Combine your promoted portfolios into one book you can allocate, rebalance, and deploy to a broker as paper or live trading.
 keywords: portfolio group, allocation, rebalancing, weights, members, broker connection, paper trading, live trading, deploy, end-of-day report
 ---
@@ -175,7 +175,7 @@ Clicking a row (or a card) opens a menu titled with the group's name:
 | Action | What it does |
 |---|---|
 | **Edit structure** | Opens the group's structure page |
-| **Deploy Portfolio Group** | Opens the deploy dialog for this group. Disabled with the tooltip *"This group has no portfolios to allocate"* when it has zero members |
+| **Deploy live** | Opens the deploy dialog for this group. Disabled with the tooltip *"This group has no portfolios to allocate"* when it has zero members |
 | **View** | Opens the group's Portfolio Manager profile (works with open in new tab) |
 | **Duplicate** | Creates a copy: see below for exactly what carries over |
 | **Delete** | Opens a confirmation dialog |
@@ -512,7 +512,7 @@ A protective exit is an optional resting order armed for each long position righ
 
 ### Deploying a group: capital, account, paper vs. live
 
-The **Deploy Portfolio Group** action opens a dialog that collects the three things a group doesn't carry on its own, then creates the operation and starts it:
+The **Deploy live** action (a row action, or a bulk action with several groups selected) opens the **Deploy portfolio group** dialog, which collects the three things a group doesn't carry on its own, then creates the operation and starts it:
 
 | Input | Notes |
 |---|---|
@@ -520,7 +520,7 @@ The **Deploy Portfolio Group** action opens a dialog that collects the three thi
 | Capital | An amount per group; the dialog shows the run's total when more than one group is eligible |
 | Operation name | Optional label, e.g. "Paper $10k" |
 
-With no active broker connection at all, the dialog shows a guided empty state: **Connect your brokerage account**: *"You need to link your brokerage credentials before you can trade this portfolio group. Add a connection under Account settings → Broker connections, then come back here."*
+With no active broker connection at all, the dialog shows a guided empty state, **Connect your brokerage account**, asking you to link your brokerage account before you can trade this portfolio group: add the connection on **Integrations** → **Broker connections**, then come back.
 
 Before the run, each group is checked against its own freshness. Only a completely empty group is a hard block; stale members or members not on daily updates are shown as warnings you can still proceed past, since a member can catch up between the check and the actual launch.
 
@@ -554,7 +554,7 @@ Warnings appear here too if members are stale or unscheduled. The confirm button
 
 ### What an operation is
 
-An operation is one deployment of one group against one broker connection. The group holds the shared trading rules; the operation holds its own capital, status, and rebalance clock: as the panel itself puts it: *"Each trading session invests this portfolio group through one broker account. The portfolio group holds the shared trading rules; each session runs its own capital, status, and rebalances."*
+An operation is one deployment of one group against one broker connection. The group holds the shared trading rules; the operation holds its own capital, status, and rebalance clock: as the panel itself puts it: *"Each trading session sends this portfolio group's orders to one broker account you connected. The portfolio group holds the trading rules you set; each session runs its own capital, status, and rebalances."*
 
 You won't find the list of an operation's activity inside the Portfolio Groups screen itself: head to the group's entry in Portfolio Manager and open its **Operations** tab. This registry only *starts* an operation and *counts* it toward the Total AUM column.
 
@@ -584,10 +584,10 @@ An action that isn't valid for an operation's current state is refused and expla
 | **Launch** | Draft, connection healthy | Places the initial buy and starts trading (Draft → Active) |
 | **Pause** | Active, connection healthy | Stops rebalancing but keeps current positions (Active → Paused) |
 | **Resume** | Paused, connection healthy | Resumes rebalancing and re buys into the market (Paused → Active) |
-| **Stop** | Active or Paused, connection healthy | Liquidates all positions and stops the operation |
+| **Stop** | Active or Paused, connection healthy | Sells the operation's positions (nothing else in your account) and stops it |
 | **Force stop** | Active or Paused on a revoked/errored connection | Marks the operation Stopped locally so you can delete it: positions are **not** sold; close them directly at your broker |
 | **Re initiate** | Stopped | Resets it back to Draft so it can be launched again; history is kept |
-| **Rebalance** | Active or Paused, connection healthy | Recomputes member weights on the operation's next cycle |
+| **Rebalance** | Active or Paused, connection healthy; Paused on a real money account only while real money trading is open to you | Recomputes member weights on the operation's next cycle |
 
 > [!CAUTION]
 > Only actions that **add** exposure require paper trading access on your plan: creating an operation, launching one, and resuming to Active. Pausing, stopping, and resetting back to Draft are always available, on every plan: you're never locked into a position you can't get out of because of your plan tier.
@@ -596,7 +596,7 @@ If you try Force stop on a connection that's still working normally, Fintela sto
 
 **Manual rebalance** opens a dialog explaining what it will do: *"Recomputes the member weights via the allocation method (the portfolio group's portfolios stay the same)"*, with a warning that it places live buy/sell orders at your broker on the next cycle. You choose whether the rebalance schedule's counter keeps going from where it was, or restarts from today. Two safety limits apply: you can't request a rebalance more than once every 60 seconds, and a rebalance is held back if the operation already has 50 or more orders still settling: both cases tell you to try again shortly.
 
-**Position drift** blocks rebalancing outright. If your broker's reported positions diverge from Fintela's own records and that divergence hasn't been acknowledged, a warning explains it symbol by symbol (expected quantity, broker reported quantity, and the difference) flagged as either unexplained or a likely corporate action. Acknowledging it is treated as a real money, irreversible action, so you're asked to confirm explicitly before rebalancing can proceed.
+**Position drift** blocks rebalancing outright. If your broker's reported positions diverge from Fintela's own records and that divergence hasn't been acknowledged, a warning lists each affected symbol with the quantity Fintela's records expect, flagged as either unexplained or a likely corporate action. The quantity your account actually holds isn't shown, so compare against your brokerage account yourself. Acknowledging it is treated as a real money, irreversible action: you're asked to confirm explicitly, and to pass [two-step login](/docs/account-setup#two-step-login), before rebalancing can proceed.
 
 ### Messages you might see before a launch
 
@@ -617,7 +617,7 @@ Fintela checks a group thoroughly before it lets capital move, both when you cre
 | Capital exceeds the connection's per rebalance limit | Lower the amount, or ask to have the connection's limit raised |
 | Capital is zero or negative | Enter an amount greater than zero |
 | The group already has an operation on that connection | Pick a different connection, or use the existing operation |
-| The connection isn't active or isn't yours | Check Account settings → Broker connections |
+| The connection isn't active or isn't yours | Check **Integrations** → **Broker connections** |
 
 Changing membership on a group with a **live** operation has its own guards, so you can't accidentally disrupt something already trading:
 
@@ -636,16 +636,16 @@ Opening an operation reveals five read only tabs:
 | **Allocations** | Portfolio, Weight, Triggered by, When | No weight snapshots yet: they appear after the first rebalance |
 | **Orders** | When, Portfolio, Ticker, Class, Broker id, Action, Side, Qty, Type, Fill, Status | No orders yet: they appear after Launch places the initial buy |
 | **Activity** | When, Actor, Event, Detail | No activity yet |
-| **Reconciliation** | Day, Scope, Outcome, Fills matched, Discrepancies, Ran at | No reconciliation yet (runs end of day) |
-| **Positions** | Symbol, Side, Qty, Avg entry, Current, Market value, Unrealized P&L, Today, with Long / Short / Gross / Net / Unrealized P&L roll ups | No open positions on this brokerage account |
+| **Reconciliation** | Day, Outcome, Fills matched, Discrepancies, Ran at | No reconciliation yet (runs end of day) |
+| **Positions** | Symbol, Side, Qty, Last close, Value, Weight, under Long / Short / Net totals | This portfolio group doesn't hold anything yet |
 
 - **Allocations** records one weight snapshot per member every time the group rebalances, along with what triggered it (the schedule, or a manual rebalance) and when.
-- **Orders** records every order actually sent to your broker: ticker, buy or sell, quantity, order type, fill price, and status, plus the reason if your broker rejected it.
+- **Orders** records every order this operation planned or sent, including any a safety limit stopped before it reached your broker: ticker, buy or sell, quantity, order type, fill price, and status, plus a plain explanation if your broker rejected it.
 - **Activity** is a plain audit trail of what happened and when: for example, the exact moment an operation was launched. If Fintela can't record who started an operation, it doesn't start it, so this trail is always complete.
-- **Reconciliation** is Fintela's end of day check against your broker's own numbers. The **Scope** column tells you whether a row is specific to this operation or a connection wide summary for that day.
-- **Positions** is account wide, not per group (its own caption says so: *"Live positions on the entire brokerage account behind this connection) the whole account, not segmented by portfolio group."*
+- **Reconciliation** is Fintela's end of day check of this operation's orders against your broker's own record, one row per trading day. It covers this operation only: never the rest of your account's activity, or how many shares the account holds.
+- **Positions** shows only what your orders for this portfolio group bought, from Fintela's own records, valued at Fintela's closing prices. Its caption says so: *"Only the shares your orders for this portfolio group bought, valued at Fintela's closing prices. Shares you hold in the same account outside this group are not shown — unless you acknowledged a position drift, which adds the account's quantity to this group."*
 
-Allocations, Orders, Activity, and Reconciliation are also available read only through the [Developer API](/docs/api-baskets), so you can pull this history into your own systems or dashboards. Positions is the exception: it reflects your broker connection directly and isn't available through the API today; check this tab in the app instead.
+Allocations, Orders, Activity, and Reconciliation are also available read only through the [Developer API](/docs/api-baskets), so you can pull this history into your own systems or dashboards. Positions is the exception: it isn't available through the API today, so check this tab in the app instead.
 
 ### Who on your team can do what
 
@@ -695,6 +695,6 @@ There's one safeguard: before a launch or a resume, Fintela checks every active 
 
 You can pull your Portfolio Groups (their settings, freshness, deployments, and trading history) into your own systems or dashboards, using a personal access key from your account settings. See the [Developer API overview](/docs/api-overview) and [API authentication](/docs/api-authentication) to get started, and [the Portfolio Groups API reference](/docs/api-baskets) for the full set of what's available.
 
-This access is **read only**, by design: it lets you build your own reporting or monitoring without any risk of an accidental change to a live group. Every action that actually changes a group (creating, editing, deleting, deploying, launching, pausing, stopping, rebalancing, or refreshing members) has to happen inside Fintela itself, since several of those actions consume tokens or place real trades, and a personal access key is meant for safely pulling data out, not triggering billable or capital moving actions from outside the app.
+This access is **read only**, by design: it lets you build your own reporting or monitoring without any risk of an accidental change to a live group. Every action that actually changes a group (creating, editing, deleting, deploying, launching, pausing, stopping, rebalancing, or refreshing members) has to happen inside Fintela itself, since several of those actions consume tokens or send real orders, and a personal access key is meant for safely pulling data out, not triggering billable or capital moving actions from outside the app.
 
-One thing isn't available through this API today: your current broker positions, which come straight from your brokerage connection rather than from Fintela's own records, check the **Positions** tab in the app for those. Large result sets are automatically split into pages so they stay fast to load, and, same as everywhere else, a group outside your own organization simply isn't visible to your key.
+One thing isn't available through this API today: what an operation currently holds. Check its **Positions** tab in the app for that. Large result sets are automatically split into pages so they stay fast to load, and, same as everywhere else, a group outside your own organization simply isn't visible to your key.

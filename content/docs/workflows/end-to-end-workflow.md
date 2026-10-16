@@ -4,7 +4,7 @@ section: Workflows
 sectionOrder: 5
 order: 1
 published: true
-updated: 2026-09-09
+updated: 2026-10-13
 summary: The full workflow in order: build a universe, write a strategy, optimize it, pick a winner, and put it live.
 keywords: workflow, lifecycle, end to end, asset group, strategy, study, optimize, promote, deploy, paper trading, live trading
 ---
@@ -60,7 +60,7 @@ Nothing has to be set up before stage 1. Three things become relevant later, and
 |---|---|---|
 | Token balance | Stage 5: launching a study spends tokens | Launching a study reserves tokens up front for the number of trials it might run, and refunds whatever it doesn't use once it finishes. See [tokens and billing](/docs/tokens-and-billing) |
 | Free tier creation limits | Stages 1 to 5, 7 and 8 | Every registry limits how many *new* items you can create: viewing, editing, deleting or stopping something you already have is never limited. Strategies, Studies, Fitness Functions and Asset Groups show a used/limit counter right on screen; Risk Managers shows a headroom bar; Portfolio Groups and Promoted Portfolios enforce the same kind of limit even though they don't display a counter. See [registries](/docs/registries) |
-| A broker connection | Stage 9 only | Add one under **Account settings → Broker connections** whenever you're ready to trade: nothing before stage 9 needs it. See [account setup](/docs/account-setup) |
+| A broker connection | Stage 9 only | Add one on **Integrations → Broker connections** whenever you're ready to trade (connecting asks for [two-step login](/docs/account-setup#two-step-login)): nothing before stage 9 needs it. See [live trading](/docs/live-trading) |
 
 > [!WARNING] Choose Internal at stage 2 if you plan to trade this strategy
 > A strategy you host and run yourself (an **External** strategy) can be studied and analyzed like any other, but it can never be promoted: which means it can never join a portfolio group and can never reach a broker. If you want a strategy you can eventually trade live through Fintela, write it as an **Internal** strategy. External strategies are for research and comparison. See [execution modes](/docs/execution-modes).
@@ -251,18 +251,18 @@ Full reference: [Portfolio groups](/docs/portfolio-groups), [portfolio manager](
 
 ## 9. Send it to a broker: Operation
 
-**Registry → Portfolio Groups →** row action **Deploy Portfolio Group**, or **Analysis → Portfolio Manager → open a group → Operations → Trade with your brokerage**
+**Registry → Portfolio Groups →** row action **Deploy live**, or **Analysis → Portfolio Manager → open a group → Operations → Trade with your brokerage**
 
 An operation is one deployment of one portfolio group against one connected broker account. The portfolio group defines the trading rules; the operation holds the capital you're committing, its current status and its own rebalancing schedule. A group can have at most one operation per broker connection: which means the same group can run in paper trading and live trading at the same time, as long as they're on two separate connections.
 
 | Decision | What it affects |
 |---|---|
 | **Brokerage account** | Choose from your active broker connections: each one is labeled paper or live |
-| Paper or live | There's no separate paper/live switch when you deploy: it's determined entirely by which connection you pick. Paper trading is always available; live trading is enabled per account through your broker connection settings |
+| Paper or live | There's no separate paper/live switch when you deploy: it's determined entirely by which connection you pick. Paper trading is always available; real money opens gradually, and until it's open to you only a paper connection can be added |
 | **Capital to trade** | The dollar amount you're committing to this operation. If it's above what your connection allows per trade, the deployment is refused rather than silently adjusted |
 | Execution override | Optional: set a specific order type, time in force, or limit offset for this operation only. Leave it off to use the portfolio group's own trading setup |
 
-Creating an operation and launching it are two separate steps, and creating one doesn't place any trades. **Deploy Portfolio Group** does both at once: it creates the operation and launches it immediately. **Trade with your brokerage** creates it as a draft first, so you can review it before launching from its own row.
+Creating an operation and launching it are two separate steps, and creating one doesn't send any orders. **Deploy live** does both at once: it creates the operation and launches it immediately. **Trade with your brokerage** creates it as a draft first, so you can review it before launching from its own row.
 
 ```text
   Draft ──launch──► Active ⇄ Paused

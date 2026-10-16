@@ -4,17 +4,17 @@ section: API Reference
 sectionOrder: 10
 order: 6
 published: true
-updated: 2026-09-09
+updated: 2026-10-13
 summary: How to pull your Portfolio Groups (baskets), their combined track record, the broker connections they trade through, and their full trading history into your own tools through Fintela's read only API.
 keywords: baskets, portfolio groups, track record, backtest, trading costs, operations, allocations, orders, audit trail, end-of-day reports, data freshness, rebalancing, read-only API
 ---
 
-Baskets (called **Portfolio Groups** in the app) are Fintela's way of trading several managed
-portfolios together under one shared configuration. This page covers what you can pull about your
-baskets through Fintela's read only Developer API: their configuration, whether every member is
-current enough to trade on, the group's own combined track record, and the complete history of
-everything each broker connection they run on has done: weight changes, broker orders, status
-changes, and daily reconciliation against your broker.
+Baskets (called **Portfolio Groups** in the app) are how you trade several managed portfolios
+together under one shared configuration. This page covers what you can pull about your baskets
+through Fintela's read only Developer API: their configuration, whether every member is current
+enough to trade on, the group's own combined track record, and the complete history of each
+operation that runs them: weight changes, the orders it sent, status changes, and its daily
+reconciliation against your broker. Nothing about the rest of your brokerage account comes back.
 
 You build and trade baskets in the Fintela app itself. The Developer API only lets you read what's
 already there, so you can bring your basket and trading data into your own dashboards, spreadsheets,
@@ -70,8 +70,8 @@ four operation history views are paged, as described under
 
 You read basket data with a personal access key, generated from your account settings: see
 [Authentication & limits](/docs/api-authentication) for how to create one. The Developer API is
-strictly read only: nothing you do with it can change a basket, launch a trade, or move money, so a
-key can't act on your behalf even if it's misused.
+strictly read only: nothing you do with it can change a basket, send an order, or move money, so
+even a misused key can't touch your trading.
 
 > [!CAUTION] Read only is not the same as low risk
 > A key still reads everything your organization holds, including your strategy code and your live
@@ -288,7 +288,8 @@ One row for every weight snapshot, recorded each time the operation rebalanced.
 
 ### Order history
 
-Every broker order the operation has submitted.
+Every order the operation has logged, including any a safety limit stopped before it reached the
+broker.
 
 | Field | What it tells you |
 |---|---|
@@ -299,7 +300,7 @@ Every broker order the operation has submitted.
 | Status | Where the order stands: see below. |
 | Triggered by | Whether it came from the normal rebalance schedule or a manual action. |
 | Submitted / filled at, fill price | Timing and execution detail once the broker has acted on it. |
-| Error message | Why an order failed, when it did. |
+| Error message | Why an order failed, when it did, in the broker's words, minus any figure of your account the refusal named (what it holds or has available). |
 
 | Status | Meaning |
 |---|---|
@@ -328,9 +329,9 @@ happened.
 | Status changed | Any other status change. |
 | Force stopped | The operation was torn down locally **without** closing out broker positions: worth knowing, since positions stay open at the broker afterward. |
 | Status synced | The platform's records caught up with a status you requested. |
-| Drift detected / cleared | The platform found (or resolved) a mismatch between the broker's real positions and its own records. |
-| Drift auto reconciled | A mismatch was explained by a broker event and resolved automatically. |
-| Drift operator reconciled | A mismatch was resolved after someone on your team acted on it. |
+| Drift detected / cleared | The platform found (or resolved) a mismatch between the broker's real positions and its own records. The entry names each symbol and the quantity Fintela's records expect, never the quantity your account holds. |
+| Drift auto reconciled | A mismatch was explained by a broker event and resolved automatically. Like every drift entry, it leaves out your account's own quantities. |
+| Drift operator reconciled | A mismatch was resolved after someone on your team acted on it. Like every drift entry, it leaves out your account's own quantities. |
 | End of day reconciliation | A daily reconciliation run against the broker completed. |
 | Protective stops left open | During an emergency liquidation, some protective stop orders couldn't be cancelled, so those positions were left open: worth checking manually if you see this. |
 | Connection revoked, auto paused | The broker connection was revoked, so the platform automatically paused its operations. |
@@ -343,24 +344,23 @@ happened.
 
 ### End of day reports
 
-A daily reconciliation of Fintela's records against your broker's own activity for that operation,
-one row per trading day.
+A daily reconciliation of the operation's own orders against your broker's record of them, one row
+per trading day.
 
 | Field | What it tells you |
 |---|---|
 | Trading day | The date the report covers. |
 | Outcome | Clean, discrepancies found, or an error running the reconciliation. |
-| Fills matched | How many broker fills were successfully matched to Fintela's records. |
-| Fill / position discrepancies | Details of any mismatches found, when there are any. |
-| Other account activity | Dividends, fees, interest and similar activity that isn't tied to a single operation. |
+| Fills matched | How many broker fills were matched to the operation's own orders. |
+| Fill / position discrepancies | Details of any mismatches found, when there are any. A position discrepancy names the symbol, the quantity Fintela's records expect and the likely explanation, never the quantity your account holds. |
+| Other account activity | Always empty. Dividends, fees, interest and other activity on your account aren't part of an operation's report. |
 | Ran at | When the reconciliation ran. |
 
-> [!NOTE] Some rows cover the whole broker account, not one operation
-> Alongside the reconciliation for this specific operation, you'll also see rows that summarize
-> activity across the whole broker connection for that day: things like dividends or fees that
-> can't be attributed to any one operation. If you run more than one operation through the same
-> broker connection, you'll see those same account wide rows repeated under each one. Filter them
-> out if you only want this operation's own reconciliation.
+> [!NOTE] Every row is this operation's own
+> You only get this operation's reports: nothing that summarizes your whole brokerage account. A
+> sibling operation's fills, trades you made directly with your broker, dividends and fees aren't
+> reported here, so running several operations through the same broker connection never repeats a
+> row under each one.
 
 ## Staying within the limits
 

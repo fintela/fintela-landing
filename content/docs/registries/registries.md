@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 1
 published: true
-updated: 2026-09-04
+updated: 2026-10-13
 summary: The seven catalogues that hold every building block of a Fintela study (asset groups, strategies, fitness functions, risk managers, portfolio groups and promoted portfolios) and the conventions shared across all of them.
 keywords: registry, registries, building blocks, asset groups, strategies, studies, fitness functions, risk managers, portfolio groups, promoted portfolios, version history, execution modes
 ---
@@ -149,7 +149,7 @@ Right clicking a row opens the same menu as a context menu, on the five main reg
 | Studies | `Launch` · `View` · `Edit` · `Duplicate` · `Delete` |
 | Fitness Functions | `Run a backtest` · `View` · `Edit` · `Duplicate` · `Promote to metric` · `Delete` |
 | Risk Managers | `View` · `Edit` · `Duplicate` · `Attach` · `Version history` · `Delete` |
-| Portfolio Groups | `Edit structure` · `Deploy Portfolio Group` · `View` · `Duplicate` · `Delete` |
+| Portfolio Groups | `Edit structure` · `Deploy live` · `View` · `Duplicate` · `Delete` |
 | Promoted Portfolios | `View in Portfolio Analysis` · `Delete` |
 
 Where `View` and `Edit` take you:
