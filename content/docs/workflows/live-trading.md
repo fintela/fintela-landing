@@ -23,9 +23,17 @@ Four things have to be true before an operation can launch. Each one is checked 
 | At least one **promoted portfolio** | Promote a trial from the [Portfolios dashboard](/docs/portfolios-dashboard): see [promoted portfolios](/docs/promoted-portfolios) |
 | A **portfolio group** holding those portfolios | Build one in the [Portfolio Groups](/docs/portfolio-groups) registry |
 | **Daily update** switched on for the group, with every member actually scheduled and current | Set this on the group's structure page. A group with stale or unscheduled members can't launch |
-| **Live trading included on your plan**, plus broker permissions | See [tokens and billing](/docs/tokens-and-billing). If it isn't part of your plan, you'll see a message naming the locked feature |
+| **Live trading included on your plan**, plus a role that trades (below) | See [tokens and billing](/docs/tokens-and-billing). If it isn't part of your plan, you'll see a message naming the locked feature |
 
-Different actions in this flow require different permission grants, which is why one teammate might be able to edit a portfolio group freely but not connect a broker or launch it, while another can launch and manage live operations without being able to touch the underlying strategies. Your organization's admin controls who can do what.
+A brokerage connection belongs to your organization: it has at most one per broker for paper trading and one for real money, and your role in the organization decides what you can do with it:
+
+| Role | Connect and manage the connection | Trade on paper | Trade with real money |
+|---|---|---|---|
+| **Owner** | yes | yes | yes |
+| **Admin**, **Manager** | no | yes | no |
+| **Analyst** | no (sees it) | no | no |
+
+"Manage" covers connecting, replacing credentials, removing the connection, its per account limits and halting it. "Trade" is every action that sends orders, or can lead to them: deploying, launching, pausing, resuming, stopping, rebalancing, setting a loss limit and acknowledging drift. Editing a portfolio group that's already trading counts as trading on the accounts it trades on.
 
 > [!NOTE] Members must be built directly in Fintela
 > Every member of a group you want to trade live has to support Fintela's daily automatic updates, and for live trading, that means it has to be built with Fintela's own strategy editor. A portfolio built on an [external strategy](/docs/external-strategies) is rejected everywhere in this flow. External **risk managers** are different: they're consulted as part of the daily update inside a live operation, even though the editor doesn't currently let you save one; see [execution modes](/docs/execution-modes).
@@ -177,7 +185,7 @@ The split matters: a group can be edited between create and launch, so daily upd
 
 Three things deserve a closer look:
 
-- **Ownership.** Only you (within your organization) and the owner of the connected broker account can launch, pause, resume, stop, force stop, rebalance, or acknowledge drift on an operation. If you don't meet that bar, the operation simply won't be something you can act on: being able to see a portfolio group is not the same as being able to trade someone else's account.
+- **Roles.** Launching, pausing, resuming, stopping, force stopping, rebalancing or acknowledging drift on an operation takes a role that trades on its account: on a paper account the Owner, an Admin or a Manager; on a real money account the Owner alone. Being able to see a portfolio group or an operation is not the same as being able to trade it.
 - **Shorting.** Fintela periodically checks whether your brokerage account is approved for short selling. If that's confirmed disabled, launching a group that holds short equity is blocked. If it hasn't been checked yet, the launch isn't blocked on this basis alone: but an order that would open a disallowed short is still rejected the moment it's actually placed, so you're protected either way.
 - **Unencrypted risk manager endpoints.** If a member's external risk manager can only be reached over an unencrypted connection, the launch attempt itself surfaces a dialog titled **This endpoint is unencrypted**, with a checkbox reading **I understand, and I accept the risk for this operation** and an action labeled **Trade anyway**. You have to accept this every single time (it's never remembered) so an insecure setup can never quietly launch trades without your active consent.
 
@@ -373,7 +381,7 @@ On the same daily cadence, and checked separately so a reconciliation issue neve
 | Daily, weekly, monthly | On the day, and when a new week or calendar month opens |
 | Inception milestones | At one, two, three and four weeks old, then every month from month two onward. Only the highest milestone reached is sent, so an operation that's already months old on its first pass gets one notification, not the whole sequence |
 
-Notifications go to the **connection owner** (the person whose capital is actually at risk) not to whoever created the group, since a group is visible to your whole organization.
+Notifications go to the person who **connected the brokerage account**, not to whoever created the group, since a group is visible to your whole organization.
 
 > [!NOTE] The digest number is a modeled figure
 > The percentage is calculated from your operation's total value at the start and end of each period, using only days where every member has a value, so each member is weighted by whatever starting capital its source trial happened to have. The dollar figure is that percentage applied to the operation's capital. That's not the same basis as the group's allocation- and rebalance aware performance chart in [Portfolio Manager](/docs/portfolio-manager), and the two figures can disagree. Neither one is your brokerage account statement: for the actual realized figures, read the **Orders** and **Reconciliation** tabs.
