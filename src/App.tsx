@@ -66,6 +66,11 @@ const SolutionPage = lazy(() =>
   import('./pages/SolutionPage').then((m) => ({ default: m.SolutionPage })),
 );
 
+// TEMPORARY "[Home Demo]" sandbox copy of the home page (see HomeDemoPage.tsx).
+const HomeDemoPage = lazy(() =>
+  import('./pages/HomeDemoPage').then((m) => ({ default: m.HomeDemoPage })),
+);
+
 // Product menu's "Agentic AI" item — the Fintelligent band, split off the
 // home page's bundle now that it lives on its own route.
 const AgenticAiPage = lazy(() =>
@@ -257,6 +262,7 @@ const RouteFallback = () => (
  */
 export interface Pages {
   HomePage: ComponentType;
+  HomeDemoPage: ComponentType;
   BlogPage: ComponentType;
   BlogPostPage: ComponentType;
   ContactPage: ComponentType;
@@ -275,6 +281,7 @@ export interface Pages {
 
 const lazyPages: Pages = {
   HomePage,
+  HomeDemoPage,
   BlogPage,
   BlogPostPage,
   ContactPage,
@@ -312,6 +319,8 @@ export function AppRoutes({ pages }: { pages: Pages }) {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<pages.HomePage />} />
+          {/* TEMPORARY: not in STATIC_ROUTES, so never prerendered or in the sitemap. */}
+          <Route path="/home-demo" element={<pages.HomeDemoPage />} />
           <Route path="/blog" element={<pages.BlogPage />} />
           <Route path="/blog/:slug" element={<pages.BlogPostPage />} />
           <Route path="/contact" element={<pages.ContactPage />} />

@@ -11,6 +11,7 @@ import { theme } from './theme/theme';
 import { AppRoutes } from './App';
 import type { Pages } from './App';
 import { HomePage } from './pages/HomePage';
+import { HomeDemoPage } from './pages/HomeDemoPage';
 import { BlogPage } from './pages/BlogPage';
 import { BlogPostPage } from './pages/BlogPostPage';
 import { ContactPage } from './pages/ContactPage';
@@ -60,6 +61,7 @@ import { STATIC_ROUTES } from './seo/routes';
 // resolve inside `renderToString`.
 const eagerPages: Pages = {
   HomePage,
+  HomeDemoPage,
   BlogPage,
   BlogPostPage,
   ContactPage,

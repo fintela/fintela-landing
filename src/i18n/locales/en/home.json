@@ -1056,5 +1056,105 @@
     "count_other": "{{count}} posts",
     "newest": "newest {{date}}",
     "coverAlt": "Cover image for {{title}}"
+  },
+  "homeChat": {
+    "label": "Interactive demo of Fintelligent, the Fintela assistant. Pick a question to watch it build a strategy, create an asset group, launch a study or answer a question about a deployed portfolio.",
+    "hint": "Pick a question to see how it works",
+    "transcript": "Conversation",
+    "reset": "Start over",
+    "resetLabel": "Start the conversation over",
+    "note": "Illustrative demo with sample data. Fintela is a research tool, not an investment adviser.",
+    "announce": "Fintelligent finished: {{label}}",
+    "suggestions": {
+      "strategy": {
+        "label": "Build a strategy",
+        "prompt": "Write a 12-1 momentum strategy with inverse-volatility weights and a volatility target."
+      },
+      "group": {
+        "label": "Make an asset group",
+        "prompt": "Screen the S&P 500 for quality (ROE above 15%, debt-to-equity under 1) into an asset group."
+      },
+      "study": {
+        "label": "Send a study",
+        "prompt": "Run a 500-trial study of quality_momentum_vt on sp500_quality_40, scored on Sharpe."
+      },
+      "portfolio": {
+        "label": "Ask about a portfolio",
+        "prompt": "How is my deployed portfolio Quality Momentum doing this month?"
+      }
+    },
+    "narration": {
+      "strategy": {
+        "read": "Checking the strategy API and your data.",
+        "write": "Writing the strategy: 12-1 momentum, inverse-volatility weights, a volatility target.",
+        "validate": "Validating the code against sample data before saving it.",
+        "stage": "Validated. Staging the strategy for your confirmation."
+      },
+      "group": {
+        "screen": "Screening the S&P 500 on fundamentals: return on equity first, then leverage.",
+        "rank": "214 names pass on return on equity, 131 on leverage. Ranking them and keeping the top 40.",
+        "stage": "Staging the asset group for your confirmation."
+      },
+      "study": {
+        "design": "Designing the study: objective, optimizer, windows.",
+        "space": "Sizing the search space: lookback, skip, holdings, volatility target.",
+        "cost": "Quoting the spend before anything runs."
+      },
+      "portfolio": {
+        "find": "Finding your deployed portfolios.",
+        "read": "Reading this month's returns, risk and exposures."
+      }
+    },
+    "tools": {
+      "strategyApi": "Reading the strategy API",
+      "writeCode": "Writing strategy code",
+      "validate": "Validating strategy",
+      "screen": "Screening the S&P 500",
+      "rank": "Ranking by quality",
+      "design": "Designing the study",
+      "quote": "Quoting the spend",
+      "listPortfolios": "Listing portfolios",
+      "portfolioStats": "Reading portfolio performance"
+    },
+    "strategy": {
+      "built": "I wrote <1>quality_momentum_vt</1>:",
+      "saved": "Saved. <1>quality_momentum_vt</1> is in your Library, ready for a study."
+    },
+    "group": {
+      "built": "I screened the S&P 500 into <1>sp500_quality_40</1>: 40 names with ROE above 15% and debt-to-equity under 1, ranked by ROE.",
+      "saved": "Saved. The group freezes today's screen: it won't re-run the filters later."
+    },
+    "study": {
+      "ready": "<1>Quality momentum · S&P 500</1> is configured, with its pass criteria set before the search:",
+      "final": "Done. The best trial, #{{trial}}, scores a Sharpe ratio of {{value}} on validation. I'll read the out-of-sample once, against the criteria above."
+    },
+    "portfolio": {
+      "summary": "Quality Momentum is up 3.4% this month, 1.1 points ahead of the S&P 500, with no drawdown deeper than 4.1%.",
+      "head": {
+        "metric": "Metric",
+        "value": "Value"
+      },
+      "return": {
+        "label": "Return, month to date",
+        "value": "+3.4%"
+      },
+      "relative": {
+        "label": "vs S&P 500",
+        "value": "+1.1 pts"
+      },
+      "sharpe": {
+        "label": "Sharpe, 90 days",
+        "value": "1.38"
+      },
+      "drawdown": {
+        "label": "Max drawdown",
+        "value": "−4.1%"
+      },
+      "exposure": {
+        "label": "Net exposure",
+        "value": "96% · 12 holdings"
+      },
+      "outlook": "NVDA and MSFT contributed most of the gain. Exposure is 96%, so the book will track the market closely on a down day."
+    }
   }
 }

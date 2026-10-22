@@ -22,6 +22,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
+import fintelaSecondaryLogo from '../../assets/logos/fintela_secondary_logo.png';
 import { APP, gradientRingSx } from './appTheme';
 import {
   ClipGlyph,
@@ -65,20 +66,16 @@ const FadeIn = ({ children, sx }: { children: ReactNode; sx?: object }) => (
   <Box sx={{ animation: 'fdFadeIn 0.24s ease both', ...sx }}>{children}</Box>
 );
 
+/** The brand's secondary logo (wordmark + mark), trimmed to its ink and flat on the sidebar's white. */
 const Wordmark = () => (
-  <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: '1px', fontWeight: 700, fontSize: 15, letterSpacing: '0.08em', color: APP.text }}>
-    FINTEL
-    <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden style={{ marginBottom: 2 }}>
-      <defs>
-        <linearGradient id="fdCaret" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#EFC03C" />
-          <stop offset="0.55" stopColor="#E53540" />
-          <stop offset="1" stopColor="#2F6395" />
-        </linearGradient>
-      </defs>
-      <path d="M3 22 L12 3 L21 22" fill="none" stroke="url(#fdCaret)" strokeWidth="4.5" />
-    </svg>
-  </Box>
+  <img
+    src={fintelaSecondaryLogo}
+    alt=""
+    width={720}
+    height={124}
+    draggable={false}
+    style={{ display: 'block', height: 14, width: 'auto' }}
+  />
 );
 
 const Avatar = ({ user }: { user: boolean }) => (
@@ -541,7 +538,7 @@ export const AnsweredChip = ({ choice }: { choice: string }) => {
   );
 };
 
-const AssistantShell = ({ children }: { children: ReactNode }) => (
+export const AssistantShell = ({ children }: { children: ReactNode }) => (
   <FadeIn sx={{ display: 'flex', gap: 1.5, px: 2, py: 1.5, my: 0.5, borderRadius: '8px', background: APP.hover }}>
     <Avatar user={false} />
     <Box sx={{ minWidth: 0, flex: 1, pt: '3px', fontSize: 15, lineHeight: 1.55, color: APP.text }}>{children}</Box>

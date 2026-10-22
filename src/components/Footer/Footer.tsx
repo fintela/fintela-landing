@@ -167,7 +167,8 @@ export const Footer = () => {
       return;
     }
     e.preventDefault();
-    if (location.pathname === '/') {
+    // TEMPORARY: '/home-demo' (HomeDemoPage) counts as the home page.
+    if (location.pathname === '/' || location.pathname === '/home-demo') {
       scrollToSection(sectionId);
     } else {
       navigate('/', { state: { scrollTo: sectionId } });

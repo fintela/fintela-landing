@@ -1056,5 +1056,105 @@
     "count_other": "{{count}} entradas",
     "newest": "la más reciente {{date}}",
     "coverAlt": "Imagen de portada de {{title}}"
+  },
+  "homeChat": {
+    "label": "Demostración interactiva de Fintelligent, el asistente de Fintela. Elige una pregunta para verlo crear una estrategia, un grupo de activos, lanzar un estudio o responder sobre un portafolio desplegado.",
+    "hint": "Elige una pregunta para ver cómo funciona",
+    "transcript": "Conversación",
+    "reset": "Empezar de nuevo",
+    "resetLabel": "Empezar la conversación de nuevo",
+    "note": "Demostración ilustrativa con datos de muestra. Fintela es una herramienta de investigación, no un asesor de inversiones.",
+    "announce": "Fintelligent terminó: {{label}}",
+    "suggestions": {
+      "strategy": {
+        "label": "Crear una estrategia",
+        "prompt": "Escribe una estrategia de momentum 12-1 con pesos por volatilidad inversa y un objetivo de volatilidad."
+      },
+      "group": {
+        "label": "Crear un grupo de activos",
+        "prompt": "Filtra el S&P 500 por calidad (ROE superior al 15 %, deuda sobre capital inferior a 1) en un grupo de activos."
+      },
+      "study": {
+        "label": "Lanzar un estudio",
+        "prompt": "Ejecuta un estudio de 500 trials de quality_momentum_vt sobre sp500_quality_40, evaluado por Sharpe."
+      },
+      "portfolio": {
+        "label": "Preguntar por un portafolio",
+        "prompt": "¿Cómo va este mes mi portafolio desplegado Quality Momentum?"
+      }
+    },
+    "narration": {
+      "strategy": {
+        "read": "Revisando la API de estrategias y tus datos.",
+        "write": "Escribiendo la estrategia: momentum 12-1, pesos por volatilidad inversa, un objetivo de volatilidad.",
+        "validate": "Validando el código con datos de muestra antes de guardarlo.",
+        "stage": "Validada. Preparando la estrategia para tu confirmación."
+      },
+      "group": {
+        "screen": "Filtrando el S&P 500 por fundamentales: primero rentabilidad sobre el capital, luego apalancamiento.",
+        "rank": "214 nombres pasan en rentabilidad sobre el capital y 131 en apalancamiento. Ordenándolos y quedándome con los 40 primeros.",
+        "stage": "Preparando el grupo de activos para tu confirmación."
+      },
+      "study": {
+        "design": "Diseñando el estudio: objetivo, optimizador, ventanas.",
+        "space": "Dimensionando el espacio de búsqueda: lookback, skip, posiciones, objetivo de volatilidad.",
+        "cost": "Calculando el gasto antes de ejecutar nada."
+      },
+      "portfolio": {
+        "find": "Buscando tus portafolios desplegados.",
+        "read": "Leyendo los retornos, el riesgo y las exposiciones de este mes."
+      }
+    },
+    "tools": {
+      "strategyApi": "Leyendo la API de estrategias",
+      "writeCode": "Escribiendo el código de la estrategia",
+      "validate": "Validando la estrategia",
+      "screen": "Filtrando el S&P 500",
+      "rank": "Ordenando por calidad",
+      "design": "Diseñando el estudio",
+      "quote": "Calculando el gasto",
+      "listPortfolios": "Listando portafolios",
+      "portfolioStats": "Leyendo el desempeño del portafolio"
+    },
+    "strategy": {
+      "built": "Escribí <1>quality_momentum_vt</1>:",
+      "saved": "Guardada. <1>quality_momentum_vt</1> está en tu Biblioteca, lista para un estudio."
+    },
+    "group": {
+      "built": "Filtré el S&P 500 en <1>sp500_quality_40</1>: 40 nombres con ROE superior al 15 % y deuda sobre capital inferior a 1, ordenados por ROE.",
+      "saved": "Guardado. El grupo congela el filtro de hoy: no volverá a aplicar los filtros más adelante."
+    },
+    "study": {
+      "ready": "<1>Momentum de calidad · S&P 500</1> está configurado, con sus criterios de aprobación fijados antes de la búsqueda:",
+      "final": "Listo. El mejor trial, el n.º {{trial}}, logra un ratio de Sharpe de {{value}} en validación. Leeré el fuera de muestra una sola vez, contra los criterios de arriba."
+    },
+    "portfolio": {
+      "summary": "Quality Momentum sube un 3,4 % este mes, 1,1 puntos por encima del S&P 500, sin ninguna caída mayor al 4,1 %.",
+      "head": {
+        "metric": "Métrica",
+        "value": "Valor"
+      },
+      "return": {
+        "label": "Retorno en el mes",
+        "value": "+3,4 %"
+      },
+      "relative": {
+        "label": "vs S&P 500",
+        "value": "+1,1 pts"
+      },
+      "sharpe": {
+        "label": "Sharpe, 90 días",
+        "value": "1,38"
+      },
+      "drawdown": {
+        "label": "Caída máxima",
+        "value": "−4,1 %"
+      },
+      "exposure": {
+        "label": "Exposición neta",
+        "value": "96 % · 12 posiciones"
+      },
+      "outlook": "NVDA y MSFT aportaron la mayor parte de la ganancia. La exposición es del 96 %, así que la cartera seguirá de cerca al mercado en un día a la baja."
+    }
   }
 }
