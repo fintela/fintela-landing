@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 1
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: A map of the Fintela workspace: the sidebar, top bar, search, notifications, keyboard shortcuts, and how locked features and permissions work.
 keywords: navigation, sidebar, top bar, search, keyboard shortcuts, notifications, help menu, account menu, locked features, permissions, mobile navigation, product tours
 ---
@@ -470,9 +470,9 @@ moved, don't worry: Fintela takes you to the current version automatically.
 | FintelAI | **Fintelligent** |
 
 > [!CAUTION] Data Pipelines is retired, not renamed
-> An old Data Pipelines link now opens Data Explorer, but the feature itself no longer exists as
-> a separate destination: a strategy now selects its own data sources directly inside its
-> editor. Data Explorer is where you go to browse what each data source actually contains.
+> An old Data Pipelines link now opens Data Explorer's Data Sources catalog, but the feature itself
+> no longer exists as a separate destination: a strategy now selects its own data sources directly
+> inside its editor. Data Explorer is where you go to browse what each data source actually contains.
 
 A handful of old tab names on Portfolio Manager and portfolio pages: like "Overview," "Exposure"
 or "Transactions": have also been renamed; any old link using one of them opens its current

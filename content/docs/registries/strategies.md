@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 3
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: How to define the trading logic a study optimizes: write it directly in Fintela's Python editor, or connect a service you run yourself.
 keywords: strategy, signal, parameters, python editor, internal, external, backtest, lookback, versions, execution mode
 ---
@@ -210,7 +210,7 @@ A few more settings live in the collapsible panel alongside your code:
 
 #### Warmup period (lookback)
 
-Most strategies need some history before their first signal means anything: a 50-day moving average, for instance, needs 50 days of prices behind it before it's meaningful. The **lookback** tells Fintela how many extra trading days of history to load before your simulation's start date, so your indicators are already warmed up on day one.
+Most strategies need some history before their first signal means anything: a 50-day moving average, for instance, needs 50 days of prices behind it before it's meaningful. The **lookback** tells Fintela how much history to load before your simulation's start date: with a lookback of N, `data` starts N − 1 trading days earlier, so your code already has N days of prices on the start date, counting that day, and your indicators are warmed up on day one.
 
 You declare it as a small function of your own parameters:
 
@@ -223,11 +223,11 @@ Fintela can generate this for you automatically and keep it in sync as you add o
 
 What it affects:
 
-- Fintela loads that many extra days of price history before your start date. Instruments without enough history are left out of that run.
+- Fintela loads N − 1 trading days of price history before your start date. Instruments with fewer than N + 1 prices in that run (the study's [Min history](/docs/studies#optimization-advanced-options) + 1, when you set one) are left out of it.
 - It's recalculated for every trial in a study, using that trial's own parameter values.
 - When a study launches, Fintela also checks it at each parameter's maximum possible value, to confirm your chosen universe has enough history to support the widest case you might try.
 
-If your strategy uses a built in data source beyond plain prices, you'll need a separate lookback declaration for that source too: the editor prompts you to add one if it's missing. Skipping this means that data arrives without enough history behind it, which can quietly distort your strategy's early results.
+Only one built in data source takes a lookback declaration of its own: **platform default clusters**. If your strategy rolls a calculation over one, declare `required_lookback_default_clusters` too (it covers every cluster), or one per cluster such as `required_lookback_default_clusters__sector_etfs`: the editor prompts you to add it if it's missing. Skipping it means that data starts at your start date, so anything rolled over it begins on missing values, which can quietly distort your strategy's early results. No other source needs one: benchmarks, trading volume and the other dated sources follow the price calendar your `required_lookback` already warms up, and groupings have no dates before your start date. Declaring one for any other source doesn't help: `required_lookback_benchmark`, named after that source's key, is accepted and ignored, while `required_lookback_benchmarks`, named after its argument, is refused as an unknown source.
 
 > [!WARNING]
 > If your strategy chains several calculations that each need their own warmup, add the days together for calculations that happen one after another, and use the largest for calculations that happen side by side.
@@ -237,9 +237,9 @@ If your strategy uses a built in data source beyond plain prices, you'll need a 
 | Setting | What it controls |
 |---|---|
 | Ticker sample size | How many tickers Fintela checks your strategy against while you type: fewer is faster, more is more thorough. The maximum setting runs a full check instead of a sample. Unavailable once you've set a custom validation universe, since that already defines the exact list |
-| Validation universe | What Fintela tests your code against: the default sample universe, a specific asset group, or a list of tickers you name yourself: optionally limited to a date range |
+| Validation universe | What Fintela tests your code against: the default sample universe, a specific asset group, or a list of tickers you name yourself: optionally limited to a date range. For an internal strategy, an asset group or a ticker list is checked on synthetic prices, which proves your code runs on those tickers, not how it would perform, and a check limited to a date range can't authorize a save |
 
-Choosing an **asset group** as your universe is just a note for your own reference: Fintela remembers it and suggests it first when you build a study, but it doesn't restrict which universe a study can actually use.
+Fintela also remembers an **asset group** you choose as your universe: it suggests it first when you build a study, but it doesn't restrict which universe a study can actually use.
 
 Naming specific **tickers** is different: it declares that this strategy is written for those instruments. If a study later runs it over a universe missing some of them, you'll see a warning; missing all of them blocks the study as incompatible. Leave both empty and your strategy is treated as universe agnostic, with no such check at all.
 
@@ -307,7 +307,7 @@ def your_strategy(
     end_date,        # required — the simulation's end date
 
     # Any data sources you've turned on, matched by name
-    meta,            # sector / industry / instrument type
+    meta,            # today's sector / industry / instrument type (no history)
     fundamentals,    # PE, beta, market cap, and similar figures
     groupings,       # membership in named groups, by date
 
@@ -380,6 +380,8 @@ Fintela checks whatever you return against the same rules, no matter how it was 
 
 Anything you don't allocate on a given date is held as cash.
 
+Each date you return sets the whole portfolio: at that date's close it's reweighted to the allocations you list, and the new weights earn from the next trading session. A held ticker you leave out of that date is sold, and an empty date (`{}`) means all cash. Use trading sessions as your dates (in an internal strategy, the rows of `data.index`): any other date is ignored, and as your first date it can fail the run. Dates before `start_date` execute too, so the first date you return should be on or after it.
+
 ### Python libraries available in the editor
 
 Internal strategies can use a set of pre installed, curated Python packages: the same versions everywhere your code runs, so a strategy behaves identically whether you're validating it, previewing it, running a study, or trading live.
@@ -408,7 +410,7 @@ Two things to avoid:
 
 Before Fintela accepts your code (and every time you ask for a fresh check) it actually runs your strategy, not just reads it:
 
-- It runs your code against a realistic sample of instruments (by default, an S&P 500-style universe) over several years of history.
+- It runs your code against a realistic sample of instruments over several years of history: by default, S&P 500 stocks as listed when that sample was exported, priced 2017 to 2023. That list isn't point in time and holds no ETFs or SPY.
 - It runs the check **twice** (once over a shorter window, once over a longer one) and rejects the strategy if adding more recent data changes a signal on a date that's already happened. This protects you from unknowingly writing a strategy that only looks good because it's peeking at the future.
 - A check has a generous but limited amount of time to finish; if your code is unusually slow, simplify it or check with less history.
 - If a lot of validations are happening across the platform at once, yours may need to wait briefly and retry.

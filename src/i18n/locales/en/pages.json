@@ -1447,7 +1447,7 @@
             },
             {
               "label": "Downloadable seed",
-              "desc": "the exact signal the strategy produced each day, in JSON or CSV."
+              "desc": "the exact rebalancing signal the strategy produced, in JSON or CSV."
             }
           ]
         },

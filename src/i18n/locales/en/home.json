@@ -545,7 +545,7 @@
       },
       "seedExport": {
         "q": "Can I export my strategy's signal?",
-        "a": "Yes. Every trial, basket, and sandbox run exposes its seed: the daily rebalancing signal (date → ticker → position/allocation) the engine used to build the backtest. You can inspect it date by date and download it as JSON (the exact engine input) or CSV, straight from the app."
+        "a": "Yes. Every trial, basket, and sandbox run exposes its seed: the rebalancing signal (date → ticker → position/allocation) the engine used to build the backtest. You can inspect it date by date and download it as JSON (the exact engine input) or CSV, straight from the app."
       },
       "liveTrading": {
         "q": "How does live trading work?",

@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 3
 published: true
-updated: 2026-10-13
+updated: 2026-10-24
 summary: The core vocabulary of the platform, asset groups, strategies, fitness functions, risk managers, studies, trials, and portfolios, explained in plain language.
 keywords: concepts, vocabulary, glossary, strategy, fitness, study, trial, portfolio, asset group, risk manager, promotion, portfolio group
 ---
@@ -277,7 +277,7 @@ the wording in front of you doesn't match what you're used to in the app.
 
 | Term | What it actually is |
 |---|---|
-| **Seed** | Not a separate object, a field. It's the exact day by day trading signal your strategy produced, saved on every candidate and promoted portfolio, and downloadable if you want to inspect or reuse it. See [Portfolio Detail](/docs/portfolio-detail) |
+| **Seed** | Not a separate object, a field. It's the exact rebalancing signal your strategy produced (its target positions and weights on each date it rebalanced), saved on every candidate and promoted portfolio, and downloadable if you want to inspect or reuse it. See [Portfolio Detail](/docs/portfolio-detail) |
 | **Data pipeline** | Retired as a separate step. You now choose your data sources directly inside the strategy editor, and market data browsing lives in the [Data Explorer](/docs/data-explorer) |
 | **Basket** | Another name for a portfolio group, not a nested container inside one |
 | **Managed portfolio** | Another name for a promoted portfolio |

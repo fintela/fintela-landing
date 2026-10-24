@@ -545,7 +545,7 @@
       },
       "seedExport": {
         "q": "¿Puedo exportar la señal de mi estrategia?",
-        "a": "Sí. Cada trial, basket y ejecución de sandbox expone su seed: la señal diaria de rebalanceo (fecha → ticker → posición/asignación) que el engine usó para construir el backtest. Puedes inspeccionarla fecha por fecha y descargarla como JSON (la entrada exacta del engine) o CSV, directamente desde la app."
+        "a": "Sí. Cada trial, basket y ejecución de sandbox expone su seed: la señal de rebalanceo (fecha → ticker → posición/asignación) que el engine usó para construir el backtest. Puedes inspeccionarla fecha por fecha y descargarla como JSON (la entrada exacta del engine) o CSV, directamente desde la app."
       },
       "liveTrading": {
         "q": "¿Cómo funciona el trading en vivo?",

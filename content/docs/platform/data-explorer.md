@@ -4,7 +4,7 @@ section: Platform Overview
 sectionOrder: 2
 order: 4
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: Browse what every built in dataset actually contains before you build it into a strategy, fitness function or risk manager.
 keywords: data explorer, data library, market data, fundamentals, coverage, freshness, data sources, asset groups
 ---
@@ -397,7 +397,8 @@ the preview reflects real tickers you'd actually use.
 ## Looking for Data Pipelines?
 
 If you used the old Data Pipelines page, that page is gone: any old link to it now opens Data
-Explorer instead. The two things Data Pipelines used to do now live in two different places:
+Explorer on the [Data Sources catalog](#data-sources-catalog) instead. The two things Data Pipelines
+used to do now live in two different places:
 
 | What you wanted to do | Where it lives now |
 |---|---|
