@@ -4,7 +4,7 @@ section: Workflows
 sectionOrder: 5
 order: 1
 published: true
-updated: 2026-10-13
+updated: 2026-10-24
 summary: The full workflow in order: build a universe, write a strategy, optimize it, pick a winner, and put it live.
 keywords: workflow, lifecycle, end to end, asset group, strategy, study, optimize, promote, deploy, paper trading, live trading
 ---
@@ -93,7 +93,7 @@ A strategy answers one question on every rebalancing date: which instruments sho
 |---|---|
 | **Internal** vs **External** | Chosen once and locked in: you can't switch a strategy from one to the other later. Internal means Fintela runs your Python code for you; External means the logic lives on your own systems and Fintela calls out to it whenever it needs a decision. (Rule based, no code strategies aren't available yet.) |
 | Which **parameters** you declare | Only the parameters you declare here become tunable later: this is the search space the optimizer explores at stage 5. Each one is a number (whole or decimal) or a choice from a fixed list, and each needs a sensible **Test value** before it will save |
-| The **lookback** you declare | The longest lookback your strategy needs decides how much history a study has to load before its start date: and any instrument without enough history behind it is automatically excluded |
+| The **lookback** you declare | The longest lookback your strategy needs decides how much history a study has to load before its start date: and any instrument without enough prices to warm your strategy up, counting the ones inside the study window, is automatically excluded |
 | Whether to test it first | **Run a backtest** from the row menu tries your strategy once, at fixed values, over a universe and window you choose. It costs a single token, making it the cheapest way to confirm the logic works before committing to a full parameter sweep |
 
 Saving is more than storing text: Fintela runs your code against a real slice of data first, so a strategy with a bug never makes it into the registry. The name you choose becomes this strategy's identity everywhere else in the product, so pick something you'll still recognize later.

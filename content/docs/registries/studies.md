@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 4
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: Set up an optimization run that tests one strategy against a chosen universe and objective across many parameter combinations, then review, rank and promote the trials it produces.
 keywords: study, optimization, trials, sampler, trial budget, backtesting, walk-forward, progress, health, status, autostop, risk managers
 ---
@@ -319,7 +319,7 @@ A read only panel under the date fields checks your strategy, any risk managers,
 | Compatibility level | **Total** (everything works), **Partial**, **Partial (window)**, **Partial (mixed)**, or **Incompatible**. |
 | Coverage | How many of your group's tickers are actually runnable. |
 | Common window | The date range every included ticker actually has data for. |
-| Excluded tickers | Which tickers are being left out, and why: reasons include no data, zero trading volume, a shorter data window than the rest, a listing too late to build up the strategy's required history, or being delisted inside your window. |
+| Excluded tickers | Which tickers are being left out, and why: reasons include no data, zero trading volume, a shorter data window than the rest, or a listing too late to build up the strategy's required history. |
 | Additional needs | Any extra data requirements your risk managers or fitness function have, and which instruments your strategy explicitly names. |
 
 ### Block 2: Strategy
@@ -419,15 +419,16 @@ See [Sampler selection](/docs/sampler-selection) for guidance on which to pick a
 
 **4: Eligibility rules**
 
-These rules decide which tickers are allowed to trade in your study, shown as preset options (**Runnable subset**, **Full cluster**, **Strict**, or **Custom** if your own combination matches none of those) plus individual toggles:
+These rules decide which tickers are allowed to trade in your study, shown as preset options (**Runnable subset**, **Full cluster**, **Strict**, or **Custom** if your own combination matches none of those) plus four rules: the first two are always on, and the other two are toggles:
 
 | Rule | Default | What it does |
 |---|---|---|
 | No price data in window | Always on | A hard requirement: the strategy needs price data to run at all. |
-| Insufficient warmup history | On | Excludes tickers that don't have enough history before your start date. Turning it off keeps late listing tickers in, but they only contribute once they've built up enough history. |
+| Insufficient warmup history | Always on | Excludes tickers that can't build up enough history to warm up your strategy. Its **Min history** field sets the threshold: a ticker enters the study once it has more daily prices than that number, counting every price inside the study window and up to one less than your declared warmup before the start. Leave it empty (or 0) to use your strategy's declared warmup. The launch doesn't check an external strategy's declared warmup, so for one, empty (or 0) means no minimum, and with a number set, prices before the start count only up to one less than that number. |
 | Listed after the study start | Off | Excludes tickers that started trading after your study's start date. |
-| Delisted, or data ends before the window end | Off | Excludes tickers that stopped trading during your window. Keeping them in avoids survivorship bias. |
 | Below minimum coverage | Off | Excludes tickers present for less than a minimum share of the window's trading days: turning this on reveals a minimum coverage percentage field, defaulting to 90%. |
+
+No rule drops a ticker because its data ends before the window end (a delisted name): dropping those would leave only the survivors, which is survivorship bias.
 
 Each rule shows you its live impact: how many tickers it removes, or would remove if you turned it on. One more switch, **Require every ticker eligible**, blocks the launch entirely if any active rule would exclude even one ticker.
 
