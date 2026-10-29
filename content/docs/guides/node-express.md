@@ -4,7 +4,7 @@ section: Integration Guides
 sectionOrder: 9
 order: 2
 published: true
-updated: 2026-09-04
+updated: 2026-10-28
 summary: Build your external strategy or fitness service in Node.js and Express, and connect it to Fintela.
 keywords: express, node, javascript, guide, external strategy, external fitness, own logic, going live checklist
 ---
@@ -150,14 +150,17 @@ like a stand in placeholder instead of the deliberate "not scoreable" signal Fin
 
 ## Keeping your address private
 
-Fintela never sends any credentials to your service: no API key, no login header, no signed
-request, nothing. Every call arrives as a plain, unauthenticated request, which keeps the setup
-simple, but also means your service has to be willing to answer anything that reaches it; if your
-service demands its own authentication and turns away unauthenticated calls, every trial will
-fail.
+A strategy service can require a credential. Give the strategy one in the app and Fintela sends
+it on every call, as `Authorization: Bearer <token>` or under one header you pick, so your service
+can turn away anything without it: in Express, check it in a middleware that covers both
+`/simulate` and `/health` (see
+[Authentication and secrets](/docs/external-strategies#authentication-and-secrets)).
 
-The one thing standing between the open internet and your service is the address itself, so give
-it a long, hard to guess path rather than a short, memorable one. That same address is used for
+A fitness service can't carry a credential yet. Fintela calls it with a plain, unauthenticated
+request, so it has to answer anything that reaches it; if it demands its own authentication and
+turns away unauthenticated calls, every trial will fail. For a fitness service, the one thing
+standing between the open internet and your service is the address itself, so give it a long,
+hard to guess path rather than a short, memorable one. That same address is used for
 every call Fintela makes, from the very first validation check through a live portfolio's daily
 update, so making it hard to stumble onto is the real protection here: not a login screen. If
 you want an extra layer on top, an IP allowlist at your own network's edge sits comfortably

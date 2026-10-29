@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 1
 published: true
-updated: 2026-09-04
+updated: 2026-10-28
 summary: How to choose between running your strategies, fitness functions and risk managers inside Fintela or on your own infrastructure, and what that choice means for validation, timing and live trading.
 keywords: internal, external, self-hosted, endpoint, strategies, fitness functions, risk managers, live trading, validation
 ---
@@ -256,9 +256,12 @@ you're doing:
 > trials in parallel for a single study. Leaving Max Concurrency blank or at zero is treated as
 > unlimited.
 
-Fintela never sends any credentials, API keys or signing headers to your endpoint. If you need to
-control who's allowed to call your service, that's on you to enforce: with your own API key
-scheme, IP restrictions, or whatever authentication fits your setup.
+An external strategy can carry a credential: Fintela sends it on every call, as a Bearer token
+or under one header you pick, and only to your endpoint (see
+[Authentication and secrets](/docs/external-strategies#authentication-and-secrets)). A fitness
+function or risk manager can't carry one yet, so for those, controlling who's allowed to call
+your service is on you to enforce: with your own API key scheme, IP restrictions, or whatever
+authentication fits your setup.
 
 ## Changing a record's mode after creation
 

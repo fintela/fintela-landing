@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 1
 published: true
-updated: 2026-10-13
+updated: 2026-10-28
 summary: The seven catalogues that hold every building block of a Fintela study (asset groups, strategies, fitness functions, risk managers, portfolio groups and promoted portfolios) and the conventions shared across all of them.
 keywords: registry, registries, building blocks, asset groups, strategies, studies, fitness functions, risk managers, portfolio groups, promoted portfolios, version history, execution modes
 ---
@@ -267,7 +267,7 @@ If you're pointing a Strategy, Fitness Function or Risk Manager at your own exte
 - It can't point at `localhost` or your own machine: it has to be an address Fintela can actually reach.
 - If you give it a raw IP address, that address has to be publicly routable, not an internal or private one.
 
-Plain `http://` addresses are accepted, there's no requirement to use `https://`, and no restriction on which port you use. Fintela never sends any credentials of its own to your endpoint, and never follows a redirect, so if your endpoint needs to authenticate the caller, you're responsible for building that into the URL you register: for example, an access token in the query string.
+Plain `http://` addresses are accepted, there's no requirement to use `https://`, and no restriction on which port you use. Fintela never follows a redirect. An external Strategy can carry a credential that Fintela sends to its endpoint on every call (see [Authentication and secrets](/docs/external-strategies#authentication-and-secrets)). A Fitness Function or Risk Manager can't carry one yet, so if one of those endpoints needs to authenticate the caller, you're responsible for building that into the URL you register: for example, an access token in the query string.
 
 ## Free tier quotas
 
