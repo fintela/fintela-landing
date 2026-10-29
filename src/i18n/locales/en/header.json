@@ -9,7 +9,8 @@
     "pricing": "Pricing",
     "documentation": "Docs",
     "blog": "Research & News",
-    "solutions": "The Desk"
+    "solutions": "The Desk",
+    "mcp": "Connect your agent (MCP)"
   },
   "actions": {
     "getStarted": "Get started"

@@ -1056,5 +1056,26 @@
     "count_other": "{{count}} posts",
     "newest": "newest {{date}}",
     "coverAlt": "Cover image for {{title}}"
+  },
+  "yourAgent": {
+    "eyebrow": "New · Fintela MCP",
+    "title": "Bring your own agent.",
+    "titleAccent": "Keep your edge.",
+    "description": "Your team already builds with AI. Connect your agent to Fintela through MCP, the open standard for AI tools, and it reads overfitting verdicts, validates your strategy server and proposes studies, while your strategy stays on your servers and a person approves every token.",
+    "exit": "Explore Fintela MCP",
+    "tiles": {
+      "verdict": {
+        "title": "Read the verdict",
+        "desc": "Real or overfit, straight into your agent."
+      },
+      "validate": {
+        "title": "Validate for free",
+        "desc": "Your agent iterates until your server passes."
+      },
+      "confirm": {
+        "title": "You confirm",
+        "desc": "Nothing runs or costs a token without a person."
+      }
+    }
   }
 }

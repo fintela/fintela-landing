@@ -1056,5 +1056,26 @@
     "count_other": "{{count}} posts",
     "newest": "mais recente {{date}}",
     "coverAlt": "Imagem de capa de {{title}}"
+  },
+  "yourAgent": {
+    "eyebrow": "Novo · Fintela MCP",
+    "title": "Traga seu próprio agente.",
+    "titleAccent": "Mantenha sua vantagem.",
+    "description": "Sua equipe já constrói com IA. Conecte seu agente à Fintela por MCP, o padrão aberto para ferramentas de IA, e ele poderá ler vereditos de sobreajuste, validar o servidor da sua estratégia e propor estudos, enquanto sua estratégia fica nos seus servidores e uma pessoa aprova cada token.",
+    "exit": "Conheça o Fintela MCP",
+    "tiles": {
+      "verdict": {
+        "title": "Leia o veredito",
+        "desc": "Real ou sobreajustado, direto no seu agente."
+      },
+      "validate": {
+        "title": "Valide de graça",
+        "desc": "Seu agente itera até seu servidor passar."
+      },
+      "confirm": {
+        "title": "Você confirma",
+        "desc": "Nada roda nem custa um token sem uma pessoa."
+      }
+    }
   }
 }

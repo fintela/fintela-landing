@@ -1592,5 +1592,210 @@
       "title": "Página não encontrada | Fintela",
       "description": "O link pode estar desatualizado ou o endereço pode ter um erro de digitação. Volte ao início ou explore a documentação para encontrar o que procurava."
     }
+  },
+  "mcp": {
+    "seo": {
+      "title": "Fintela MCP: conecte seu agente de IA | Fintela",
+      "description": "Conecte o Claude Code ou o claude.ai à Fintela. Seu agente lê vereditos de sobreajuste, valida de graça o servidor da sua estratégia e propõe estudos, enquanto sua estratégia fica nos seus servidores e uma pessoa aprova cada token."
+    },
+    "eyebrow": "Fintela MCP · Novo",
+    "title": "A Fintela fala MCP.",
+    "titleAccent": "Seu agente também.",
+    "description": "O Fintela MCP é o nosso servidor do Model Context Protocol (MCP), o padrão aberto com que agentes de IA se conectam a outras ferramentas. Por meio dele, o agente com que sua equipe já trabalha lê vereditos de sobreajuste, testa o servidor da sua estratégia contra o nosso contrato e propõe estudos. Sua estratégia nunca sai dos seus servidores, e nada roda nem custa um token até que uma pessoa da sua equipe confirme.",
+    "ctaPrimary": "Solicite acesso ao piloto",
+    "ctaSecondary": "Leia o guia de conexão",
+    "pilotNote": "Já em piloto com um primeiro grupo de fundos, ativado organização por organização.",
+    "steps": {
+      "eyebrow": "Como funciona",
+      "title": "Três passos. O último é sempre seu.",
+      "items": {
+        "propose": {
+          "title": "Seu agente propõe",
+          "desc": "Ele lê seus estudos, verifica o servidor da sua estratégia e registra uma proposta: uma nova estratégia ou um estudo, com o custo cotado desde o início."
+        },
+        "validate": {
+          "title": "A Fintela valida",
+          "desc": "Seu servidor é testado contra o contrato da Fintela, de graça, e seu agente recebe exatamente o que corrigir."
+        },
+        "confirm": {
+          "title": "Você confirma",
+          "desc": "A proposta espera na sua caixa de entrada no app. Só quando você confirma algo é criado, e é cobrado uma única vez."
+        }
+      }
+    },
+    "capabilities": {
+      "eyebrow": "O que seu agente pode fazer",
+      "title": "Todo o motor de pesquisa da Fintela, a um prompt de distância",
+      "items": {
+        "verdicts": {
+          "title": "Ler o veredito",
+          "desc": "Se os resultados de um estudo são reais ou sobreajustados, em termos com que seu agente pode agir.",
+          "bullets": [
+            {
+              "label": "Probabilidade de sobreajuste",
+              "desc": "O PBO do estudo inteiro, e um veredito para cada trial."
+            },
+            {
+              "label": "Sharpe deflacionado",
+              "desc": "O desempenho fora da amostra, corrigido por quantas combinações foram testadas."
+            },
+            {
+              "label": "Cada etapa",
+              "desc": "O melhor trial em treino, validação, fora da amostra e holdout, lado a lado."
+            },
+            {
+              "label": "Um método honesto",
+              "desc": "Cada veredito diz qual etapa escolheu o vencedor e o que seu servidor viu."
+            }
+          ]
+        },
+        "explore": {
+          "title": "Explorar sua pesquisa",
+          "desc": "Tudo o que sua organização já rodou, pronto para comparar.",
+          "bullets": [
+            {
+              "label": "Estudos e trials",
+              "desc": "Status, progresso, os melhores trials por qualquer métrica, e até dez completos."
+            },
+            {
+              "label": "O que move os resultados",
+              "desc": "Quais parâmetros movem o objetivo e quais parecem sobreajustados."
+            },
+            {
+              "label": "Por que algo falhou",
+              "desc": "As falhas agrupadas por causa, com um diagnóstico."
+            },
+            {
+              "label": "Sua biblioteca",
+              "desc": "Estratégias, grupos de ativos, funções de fitness e métricas."
+            }
+          ]
+        },
+        "validate": {
+          "title": "Validar de graça",
+          "desc": "Seu agente itera sobre o servidor da sua estratégia até passar, sem custo.",
+          "bullets": [
+            {
+              "label": "O contrato, completo",
+              "desc": "A requisição exata que seu servidor recebe e a resposta que ele deve dar."
+            },
+            {
+              "label": "Verificação de look-ahead",
+              "desc": "A Fintela chama seu servidor com várias janelas para detectar um sinal que olha o futuro."
+            },
+            {
+              "label": "Um veredito claro",
+              "desc": "Aprovado, ou reprovado com o motivo e a correção."
+            },
+            {
+              "label": "De graça",
+              "desc": "Validar nunca custa um token."
+            }
+          ]
+        },
+        "propose": {
+          "title": "Propor, nunca agir",
+          "desc": "Seu agente prepara o trabalho. Sua equipe decide.",
+          "bullets": [
+            {
+              "label": "Novas estratégias externas",
+              "desc": "Adicionadas à sua biblioteca, com o código ficando no seu servidor."
+            },
+            {
+              "label": "Estudos de otimização",
+              "desc": "Com o custo cotado antes que alguém os aprove."
+            },
+            {
+              "label": "Uma caixa de entrada no app",
+              "desc": "Cada proposta espera a pessoa que conectou o agente."
+            },
+            {
+              "label": "Cobrado uma vez",
+              "desc": "Confirmar duas vezes nunca cria nem cobra duas vezes."
+            }
+          ]
+        }
+      }
+    },
+    "useCases": {
+      "eyebrow": "Para que os fundos o usam",
+      "title": "Pesquisa na velocidade do seu agente",
+      "items": {
+        "researchLoop": {
+          "title": "Pesquisa a partir do seu próprio repositório",
+          "desc": "Peça uma mudança em linguagem natural. Seu agente atualiza a estratégia, testa na Fintela e traz os resultados de volta ao seu código, com links para o app."
+        },
+        "overfitGate": {
+          "title": "Um filtro independente de sobreajuste",
+          "desc": "Antes que uma estratégia avance, a Fintela diz se o backtest é real ou sorte. Um juiz que sua equipe não construiu."
+        },
+        "triage": {
+          "title": "Organize toda a sua pesquisa",
+          "desc": "“Quais dos meus estudos são robustos, e o que os move?” Resumido e explicado, sobre tudo o que você já rodou."
+        },
+        "debugFree": {
+          "title": "Corrija seu servidor de graça",
+          "desc": "Validar não custa nada, então seu agente itera até tudo passar. Você só paga pelos estudos que rodam."
+        },
+        "humanSpend": {
+          "title": "Cada token aprovado por uma pessoa",
+          "desc": "Seu agente cota e uma pessoa aprova cada cobrança. Uma segregação de funções que sua área de compliance vai reconhecer."
+        },
+        "committee": {
+          "title": "Resumos prontos para o comitê",
+          "desc": "Seu agente transforma vereditos, etapas e importância de parâmetros em um memorando para o seu comitê de investimentos."
+        }
+      }
+    },
+    "security": {
+      "eyebrow": "Feito para fundos que protegem sua vantagem",
+      "title": "Sua vantagem fica com você",
+      "facts": {
+        "strategy": {
+          "label": "Sua estratégia nunca sai",
+          "value": "Ela roda no seu servidor. A Fintela envia parâmetros e recebe posições; seu código nunca é enviado."
+        },
+        "secret": {
+          "label": "Segredos nunca tocam o modelo",
+          "value": "A credencial do seu servidor é inserida no app, guardada criptografada e enviada somente ao seu servidor."
+        },
+        "noSpend": {
+          "label": "Não gasta nem opera",
+          "value": "O agente lê e propõe. Ele não pode criar, gastar, operar nem chegar a uma corretora."
+        },
+        "signIn": {
+          "label": "Seu próprio login",
+          "value": "Seu agente se conecta com sua conta da Fintela e uma tela de consentimento, nunca com uma chave compartilhada."
+        },
+        "offDefault": {
+          "label": "Desligado por padrão",
+          "value": "Ativado organização por organização, com cada confirmação registrada."
+        }
+      }
+    },
+    "connect": {
+      "eyebrow": "Funciona com o agente que você já usa",
+      "title": "Uma conexão, sobre um padrão aberto",
+      "facts": {
+        "claudeCode": {
+          "label": "Claude Code",
+          "value": "Um comando no seu terminal, e depois o login com sua conta da Fintela."
+        },
+        "claudeAi": {
+          "label": "claude.ai",
+          "value": "Adicione a Fintela como conector personalizado e faça login."
+        },
+        "standard": {
+          "label": "Padrão aberto",
+          "value": "Construído sobre o Model Context Protocol (MCP), o padrão aberto com que agentes de IA se conectam a ferramentas."
+        },
+        "more": {
+          "label": "Mais agentes em breve",
+          "value": "O Claude vem primeiro. O suporte a mais agentes está a caminho."
+        }
+      }
+    },
+    "closingLine": "A Fintela não substitui o que sua equipe construiu. Ela se torna a parte que diz se um resultado é real.",
+    "note": "O Fintela MCP está em piloto. Suas ferramentas funcionam quando ele é ativado para sua organização: solicite acesso e ajudamos você a configurar."
   }
 }

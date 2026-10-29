@@ -7,6 +7,7 @@ import { HeroDiorama } from '../components/sections/HeroDiorama';
 import { InstitutionalSection } from '../components/sections/InstitutionalSection';
 import { TrustBar } from '../components/sections/TrustBar';
 import { WorkflowSection } from '../components/sections/WorkflowSection';
+import { YourAgentSection } from '../components/sections/YourAgentSection';
 import { CapabilitiesBento } from '../components/sections/CapabilitiesBento';
 import { InsightsSection } from '../components/sections/InsightsSection';
 import { FAQSection } from '../components/sections/FAQSection';
@@ -119,6 +120,7 @@ export const HomePage = () => {
           <HeroDiorama />
           <CapabilitiesBento />
           <WorkflowSection />
+          <YourAgentSection />
           {/* PlatformStackSection (the three-layer stack) is on hold; re-add it here, after the platform band. */}
           <InstitutionalSection />
           <TrustBar />

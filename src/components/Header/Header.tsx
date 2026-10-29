@@ -68,6 +68,7 @@ const PRODUCT_ITEMS: NavItem[] = [
   { id: 'samplers', labelKey: 'nav.samplers', href: '/product/samplers', type: 'route' },
   { id: 'inDepthAnalysis', labelKey: 'nav.inDepthAnalysis', href: '/product/in-depth-analysis', type: 'route' },
   { id: 'fintelaApi', labelKey: 'nav.fintelaApi', href: '/product/fintela-api', type: 'route' },
+  { id: 'mcp', labelKey: 'nav.mcp', href: '/product/mcp', type: 'route' },
 ];
 
 const navItems: NavItem[] = [
@@ -91,12 +92,14 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   samplers: () => import('../../pages/SamplersPage'),
   inDepthAnalysis: () => import('../../pages/InDepthAnalysisPage'),
   fintelaApi: () => import('../../pages/FintelaApiPage'),
+  mcp: () => import('../../pages/McpPage'),
   product: () =>
     Promise.all([
       import('../../pages/AgenticAiPage'),
       import('../../pages/SamplersPage'),
       import('../../pages/InDepthAnalysisPage'),
       import('../../pages/FintelaApiPage'),
+      import('../../pages/McpPage'),
     ]),
 };
 

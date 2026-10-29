@@ -89,6 +89,10 @@ const FintelaApiPage = lazy(() =>
   import('./pages/FintelaApiPage').then((m) => ({ default: m.FintelaApiPage })),
 );
 
+// Product menu's "Connect your agent" item: Fintela MCP, a fund's own AI agent
+// reading verdicts and proposing, a person confirming in the app.
+const McpPage = lazy(() => import('./pages/McpPage').then((m) => ({ default: m.McpPage })));
+
 // Documentation. Twenty-five hand-written page components used to be listed here,
 // one lazy import each; the pages are Markdown files in `content/docs/` now, so
 // there is exactly one route and adding a page touches neither this file nor any
@@ -266,6 +270,7 @@ export interface Pages {
   SamplersPage: ComponentType;
   InDepthAnalysisPage: ComponentType;
   FintelaApiPage: ComponentType;
+  McpPage: ComponentType;
   TermsPage: ComponentType;
   PrivacyPage: ComponentType;
   RiskDisclosuresPage: ComponentType;
@@ -284,6 +289,7 @@ const lazyPages: Pages = {
   SamplersPage,
   InDepthAnalysisPage,
   FintelaApiPage,
+  McpPage,
   TermsPage,
   PrivacyPage,
   RiskDisclosuresPage,
@@ -326,6 +332,7 @@ export function AppRoutes({ pages }: { pages: Pages }) {
           <Route path="/product/samplers" element={<pages.SamplersPage />} />
           <Route path="/product/in-depth-analysis" element={<pages.InDepthAnalysisPage />} />
           <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
+          <Route path="/product/mcp" element={<pages.McpPage />} />
 
           {/* Legal */}
           <Route path="/terms" element={<pages.TermsPage />} />

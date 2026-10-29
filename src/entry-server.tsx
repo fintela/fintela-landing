@@ -20,6 +20,7 @@ import { AgenticAiPage } from './pages/AgenticAiPage';
 import { SamplersPage } from './pages/SamplersPage';
 import { InDepthAnalysisPage } from './pages/InDepthAnalysisPage';
 import { FintelaApiPage } from './pages/FintelaApiPage';
+import { McpPage } from './pages/McpPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { RiskDisclosuresPage } from './pages/RiskDisclosuresPage';
@@ -69,6 +70,7 @@ const eagerPages: Pages = {
   SamplersPage,
   InDepthAnalysisPage,
   FintelaApiPage,
+  McpPage,
   TermsPage,
   PrivacyPage,
   RiskDisclosuresPage,
