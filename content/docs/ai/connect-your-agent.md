@@ -63,15 +63,22 @@ accepts whichever local port Claude Code picks.
 
 ## Connect claude.ai
 
-Add a custom connector in claude.ai's connector settings:
+Add a custom connector in claude.ai's connector settings with the URL `https://mcp.fintela.io/mcp`.
+On the second step, choose:
 
 | Field | Value |
 |---|---|
-| URL | `https://mcp.fintela.io/mcp` |
-| OAuth Client ID (advanced settings) | `fintela-mcp-claude` |
-| OAuth Client Secret | leave empty |
+| Authentication | **Sign in now** |
+| OAuth client | **Use your own OAuth client** |
+| Client ID | `fintela-mcp-claude` |
+| Client secret | leave empty |
 
-Then choose **Connect**. You go through the same Fintela sign-in and consent screen.
+claude.ai marks **Register automatically** as detected, but Fintela doesn't allow anonymous client
+registration, so that option fails. Leave the request headers empty.
+
+Then choose **Connect**. You go through the same Fintela sign-in and consent screen. claude.ai lists 16
+tools: 13 read-only, and 3 under write tools that validate a strategy server or file a proposal. A
+proposal creates nothing and spends nothing until you confirm it in Fintela.
 
 ## Signing in and consent
 
