@@ -1592,5 +1592,210 @@
       "title": "Page Not Found | Fintela",
       "description": "The link may be out of date or the address may have a typo. Head back to the home page or browse the documentation to find what you were looking for."
     }
+  },
+  "mcp": {
+    "seo": {
+      "title": "Fintela MCP: connect your AI agent | Fintela",
+      "description": "Connect Claude Code or claude.ai to Fintela. Your agent reads overfitting verdicts, validates your strategy server for free and proposes studies, while your strategy stays on your servers and a person approves every token."
+    },
+    "eyebrow": "Fintela MCP · New",
+    "title": "Fintela speaks MCP.",
+    "titleAccent": "So does your agent.",
+    "description": "Fintela MCP is our server for the Model Context Protocol (MCP), the open standard AI agents use to connect to other tools. Through it, the agent your team already works with reads overfitting verdicts, tests your strategy server against our contract and proposes studies. Your strategy never leaves your servers, and nothing runs or costs a token until a person on your team confirms it.",
+    "ctaPrimary": "Request pilot access",
+    "ctaSecondary": "Read the setup guide",
+    "pilotNote": "Now in pilot with a first group of funds, switched on organization by organization.",
+    "steps": {
+      "eyebrow": "How it works",
+      "title": "Three steps. The last one is always yours.",
+      "items": {
+        "propose": {
+          "title": "Your agent proposes",
+          "desc": "It reads your studies, checks your strategy server and files a proposal: a new strategy or a study, with its cost quoted up front."
+        },
+        "validate": {
+          "title": "Fintela validates",
+          "desc": "Your server is tested against Fintela's contract, for free, and your agent gets back exactly what to fix."
+        },
+        "confirm": {
+          "title": "You confirm",
+          "desc": "The proposal waits in your inbox in the app. Only when you confirm is anything created, and it's charged exactly once."
+        }
+      }
+    },
+    "capabilities": {
+      "eyebrow": "What your agent can do",
+      "title": "Fintela's whole research engine, one prompt away",
+      "items": {
+        "verdicts": {
+          "title": "Read the verdict",
+          "desc": "Whether a study's results are real or overfit, in terms your agent can act on.",
+          "bullets": [
+            {
+              "label": "Probability of overfitting",
+              "desc": "The PBO of the whole study, and a verdict for every trial."
+            },
+            {
+              "label": "Deflated Sharpe",
+              "desc": "Out-of-sample performance corrected for how many combinations were tried."
+            },
+            {
+              "label": "Every stage",
+              "desc": "The best trial on train, validation, out-of-sample and holdout, side by side."
+            },
+            {
+              "label": "An honest method",
+              "desc": "Each verdict states which stage picked the winner and what your server saw."
+            }
+          ]
+        },
+        "explore": {
+          "title": "Explore your research",
+          "desc": "Everything your organization has run, ready to compare.",
+          "bullets": [
+            {
+              "label": "Studies and trials",
+              "desc": "Status, progress, the top trials by any metric, and up to ten in full."
+            },
+            {
+              "label": "What drives results",
+              "desc": "Which parameters move the objective and which look overfit."
+            },
+            {
+              "label": "Why something failed",
+              "desc": "Failures grouped by cause, with a diagnostic."
+            },
+            {
+              "label": "Your library",
+              "desc": "Strategies, asset groups, fitness functions and metrics."
+            }
+          ]
+        },
+        "validate": {
+          "title": "Validate for free",
+          "desc": "Your agent iterates on your strategy server until it passes, at no cost.",
+          "bullets": [
+            {
+              "label": "The contract, in full",
+              "desc": "The exact request your server receives and the answer it must give."
+            },
+            {
+              "label": "Look-ahead checks",
+              "desc": "Fintela calls your server over several windows to catch a signal that peeks at the future."
+            },
+            {
+              "label": "A clear verdict",
+              "desc": "Passed, or failed with the reason and the fix."
+            },
+            {
+              "label": "Free",
+              "desc": "Validation never costs a token."
+            }
+          ]
+        },
+        "propose": {
+          "title": "Propose, never act",
+          "desc": "Your agent prepares the work. Your team decides.",
+          "bullets": [
+            {
+              "label": "New external strategies",
+              "desc": "Added to your library, with the code staying on your server."
+            },
+            {
+              "label": "Optimization studies",
+              "desc": "With the cost quoted before anyone approves it."
+            },
+            {
+              "label": "An inbox in the app",
+              "desc": "Every proposal waits for the person who connected the agent."
+            },
+            {
+              "label": "Charged once",
+              "desc": "Confirming twice never creates or charges twice."
+            }
+          ]
+        }
+      }
+    },
+    "useCases": {
+      "eyebrow": "What funds use it for",
+      "title": "Research at the speed of your agent",
+      "items": {
+        "researchLoop": {
+          "title": "Research from your own repository",
+          "desc": "Ask for a change in plain language. Your agent updates the strategy, tests it on Fintela and brings the results back to your code, with links to the app."
+        },
+        "overfitGate": {
+          "title": "An independent overfitting gate",
+          "desc": "Before a strategy moves forward, Fintela tells you whether its backtest is real or luck. A judge your team didn't build."
+        },
+        "triage": {
+          "title": "Triage all your research",
+          "desc": "“Which of my studies are robust, and what drives them?” Summarized and explained, across everything you've run."
+        },
+        "debugFree": {
+          "title": "Fix your server for free",
+          "desc": "Validation costs nothing, so your agent iterates until everything passes. You only pay for studies that run."
+        },
+        "humanSpend": {
+          "title": "Every token signed off by a person",
+          "desc": "Your agent quotes, a person approves each charge. Separation of duties your compliance team will recognize."
+        },
+        "committee": {
+          "title": "Committee-ready summaries",
+          "desc": "Your agent turns verdicts, stages and parameter importances into a memo for your investment committee."
+        }
+      }
+    },
+    "security": {
+      "eyebrow": "Built for funds that guard their edge",
+      "title": "Your edge stays yours",
+      "facts": {
+        "strategy": {
+          "label": "Your strategy never leaves",
+          "value": "It runs on your server. Fintela sends parameters and reads back positions; your code is never uploaded."
+        },
+        "secret": {
+          "label": "Secrets never touch the model",
+          "value": "Your server's credential is entered in the app, stored encrypted and sent only to your server."
+        },
+        "noSpend": {
+          "label": "No spending, no trading",
+          "value": "The agent reads and proposes. It can't create, spend, trade or reach a broker."
+        },
+        "signIn": {
+          "label": "Your own sign-in",
+          "value": "Your agent connects with your Fintela account and a consent screen, never a shared key."
+        },
+        "offDefault": {
+          "label": "Off by default",
+          "value": "Switched on organization by organization, with every confirmation on the record."
+        }
+      }
+    },
+    "connect": {
+      "eyebrow": "Works with the agent you already use",
+      "title": "One connection, on an open standard",
+      "facts": {
+        "claudeCode": {
+          "label": "Claude Code",
+          "value": "One command in your terminal, then sign in with your Fintela account."
+        },
+        "claudeAi": {
+          "label": "claude.ai",
+          "value": "Add Fintela as a custom connector and sign in."
+        },
+        "standard": {
+          "label": "Open standard",
+          "value": "Built on the Model Context Protocol (MCP), the open standard AI agents use to connect to tools."
+        },
+        "more": {
+          "label": "More agents soon",
+          "value": "Claude comes first. Support for more agents is on the way."
+        }
+      }
+    },
+    "closingLine": "Fintela doesn't replace the stack you built. It becomes the part of it that tells you whether a result is real.",
+    "note": "Fintela MCP is in pilot. Its tools work once it's switched on for your organization: request access and we'll set you up."
   }
 }
