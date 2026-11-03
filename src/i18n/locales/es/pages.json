@@ -1602,9 +1602,9 @@
     "title": "Fintela habla MCP.",
     "titleAccent": "Tu agente también.",
     "description": "Fintela MCP es nuestro servidor del Model Context Protocol (MCP), el estándar abierto con el que los agentes de IA se conectan a otras herramientas. A través de él, el agente con el que tu equipo ya trabaja lee veredictos de sobreajuste, prueba el servidor de tu estrategia contra nuestro contrato y propone estudios. Tu estrategia nunca sale de tus servidores, y nada corre ni cuesta un token hasta que una persona de tu equipo lo confirma.",
-    "ctaPrimary": "Solicita acceso al piloto",
+    "ctaPrimary": "Comenzar",
     "ctaSecondary": "Lee la guía de conexión",
-    "pilotNote": "Ya en piloto con un primer grupo de fondos, encendido organización por organización.",
+    "pilotNote": "Abierto a todas las organizaciones. Los estudios se cobran en tokens, igual que en la app.",
     "steps": {
       "eyebrow": "Cómo funciona",
       "title": "Tres pasos. El último siempre es tuyo.",
@@ -1768,8 +1768,8 @@
           "value": "Tu agente se conecta con tu cuenta de Fintela y una pantalla de consentimiento, nunca con una llave compartida."
         },
         "offDefault": {
-          "label": "Apagado por defecto",
-          "value": "Se enciende organización por organización, y cada confirmación queda registrada."
+          "label": "Todo queda registrado",
+          "value": "Cada confirmación queda registrada a nombre de quien la hizo. Fintela apaga el MCP para tu organización si lo pides."
         }
       }
     },
@@ -1796,6 +1796,6 @@
       }
     },
     "closingLine": "Fintela no reemplaza lo que tu equipo construyó. Se vuelve la parte que te dice si un resultado es real.",
-    "note": "Fintela MCP está en piloto. Sus herramientas funcionan una vez que se enciende para tu organización: solicita acceso y te ayudamos a configurarlo."
+    "note": "Fintela MCP funciona para todas las organizaciones. Entra con tu cuenta de Fintela, conecta tu agente y confirma sus propuestas en la app."
   }
 }

@@ -1602,9 +1602,9 @@
     "title": "Fintela speaks MCP.",
     "titleAccent": "So does your agent.",
     "description": "Fintela MCP is our server for the Model Context Protocol (MCP), the open standard AI agents use to connect to other tools. Through it, the agent your team already works with reads overfitting verdicts, tests your strategy server against our contract and proposes studies. Your strategy never leaves your servers, and nothing runs or costs a token until a person on your team confirms it.",
-    "ctaPrimary": "Request pilot access",
+    "ctaPrimary": "Get started",
     "ctaSecondary": "Read the setup guide",
-    "pilotNote": "Now in pilot with a first group of funds, switched on organization by organization.",
+    "pilotNote": "Open to every organization. Studies are charged in tokens, as they are in the app.",
     "steps": {
       "eyebrow": "How it works",
       "title": "Three steps. The last one is always yours.",
@@ -1768,8 +1768,8 @@
           "value": "Your agent connects with your Fintela account and a consent screen, never a shared key."
         },
         "offDefault": {
-          "label": "Off by default",
-          "value": "Switched on organization by organization, with every confirmation on the record."
+          "label": "On the record",
+          "value": "Every confirmation is recorded under the person who made it. Fintela switches the MCP off for your organization if you ask."
         }
       }
     },
@@ -1796,6 +1796,6 @@
       }
     },
     "closingLine": "Fintela doesn't replace the stack you built. It becomes the part of it that tells you whether a result is real.",
-    "note": "Fintela MCP is in pilot. Its tools work once it's switched on for your organization: request access and we'll set you up."
+    "note": "Fintela MCP works for every organization. Sign in with your Fintela account, connect your agent and confirm its proposals in the app."
   }
 }

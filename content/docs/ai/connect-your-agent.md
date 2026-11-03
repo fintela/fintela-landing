@@ -4,9 +4,9 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 4
 published: true
-updated: 2026-10-28
+updated: 2026-11-03
 summary: Connect Claude Code or claude.ai to Fintela over MCP. Your agent reads study verdicts, validates an external strategy server and proposes. A person confirms each proposal in the app.
-keywords: mcp, model context protocol, claude, claude code, claude.ai, connector, agent, oauth, proposals, external strategy, credential, bearer
+keywords: mcp, model context protocol, claude, claude code, claude.ai, connector, agent, oauth, proposals, external strategy, credential, bearer, benchmark, eligibility, daily updates
 ---
 
 Fintela runs an MCP server at `https://mcp.fintela.io/mcp`. Connect your own agent (Claude Code or
@@ -15,16 +15,20 @@ server you run against Fintela's external strategy contract, and propose a new e
 study. **The agent never creates anything and never spends tokens.** Each proposal waits in your inbox
 in the Fintela app, and nothing happens until the person who connected the agent confirms it there.
 
-> [!IMPORTANT] Enabled per organization
-> The MCP is in pilot. It has to be switched on for your organization before any tool works. If it is
-> off, your agent can still connect and list the tools, but every call returns an error saying the MCP
-> is not enabled for your organization. Ask your Fintela contact to enable it.
+> [!NOTE] On for every organization
+> The MCP works for every Fintela organization. Fintela can switch it off for yours if you ask. While
+> it is off, your agent can still connect and list the tools, but every call returns an error saying
+> the MCP is not enabled for your organization. Ask your Fintela contact to switch it back on.
 
 ## What your agent can and cannot do
 
 The usual loop looks like this. Your agent writes or changes a strategy server in your repository, checks
 it with Fintela, proposes it, and after you confirm, proposes a study of it. When the study finishes, it
 reads the verdict and brings the result back to your repository with links to the app.
+
+Your agent needs your strategy server's code in its workspace, or at least the parameters it takes and
+their ranges. Fintela checks what your server answers, but never asks it which parameters it takes.
+Those come from your agent, and they become the strategy's parameters and the study's search space.
 
 ```text
 your agent ── read ──────────▶ studies, verdicts, trials, your library
@@ -76,8 +80,8 @@ On the second step, choose:
 claude.ai marks **Register automatically** as detected, but Fintela doesn't allow anonymous client
 registration, so that option fails. Leave the request headers empty.
 
-Then choose **Connect**. You go through the same Fintela sign-in and consent screen. claude.ai lists 16
-tools: 13 read-only, and 3 under write tools that validate a strategy server or file a proposal. A
+Then choose **Connect**. You go through the same Fintela sign-in and consent screen. claude.ai lists 17
+tools: 14 read-only, and 3 under write tools that validate a strategy server or file a proposal. A
 proposal creates nothing and spends nothing until you confirm it in Fintela.
 
 ## Signing in and consent
@@ -95,7 +99,7 @@ rest of Fintela's API, and every request goes through the MCP server's own allow
 
 ## The tools
 
-Sixteen tools. Thirteen only read, and three act: one validates and two propose.
+Seventeen tools. Fourteen only read, and three act: one validates and two propose.
 Your agent reads the full descriptions and argument schemas when it connects. This is the map.
 
 **Studies and their results**
@@ -114,9 +118,10 @@ Your agent reads the full descriptions and argument schemas when it connects. Th
 
 | Tool | What it returns |
 |---|---|
-| `list_strategies` | Your strategies: name, type, declared parameters and how many studies use each. For an external strategy, its endpoint (origin and path), timeout and concurrency. Code is never returned. |
+| `list_strategies` | Your strategies: name, type, declared parameters and how many studies use each. For an external strategy, its endpoint (origin and path), timeout and concurrency. For a strategy whose code reads benchmarks, which ones, in order. Code is never returned. |
 | `list_asset_groups` | Your asset groups: asset class, exchanges, a ticker count and a sample. |
-| `list_fitness_functions` | Your fitness functions and Fintela's built-in ones, with the metric each optimizes. |
+| `list_fitness_functions` | Your fitness functions and Fintela's built-in ones, with the metric each optimizes. For a custom one whose code reads benchmarks, which ones, in order. |
+| `list_benchmarks` | Fintela's shortlist of benchmark instruments: code and exchange, label, the asset class each one is a benchmark for, whether it is that class's default, and the price history Fintela holds. Any ticker Fintela tracks with price history also works as a benchmark. |
 | `list_metrics` | The metrics Fintela computes for every trial, with units and direction. These are the names the trial tools take. |
 | `get_resource_contract` | `kind=external_strategy`: the contract your server must meet. It covers the request `POST <endpoint>/simulate` receives and the answer it must give, the checks validation runs, the endpoint rules, and what a study's daily update sends. Have your agent read it before it writes a strategy server. |
 
@@ -132,10 +137,28 @@ Your agent reads the full descriptions and argument schemas when it connects. Th
 |---|---|
 | `validate_resource` | Checks your strategy server against the contract. Fintela calls its `POST /simulate` two to four times (your window, the window extended, and shorter prefixes of it, which catch look-ahead) and returns a verdict: passed, failed with the reason and the fix, or not evaluated. It's free, and capped per organization and per server host. It waits about 25 seconds, and if the verdict is still `running`, the agent calls again to keep waiting. |
 | `propose_resource` | Proposes a new external strategy for your library. The strategy's code stays on your server. |
-| `propose_study` | Proposes an optimization study of a strategy that is already in your library, with its quoted cost. With `launch_now` (the default), confirming saves and launches it and charges the quoted tokens. Without it, the study is saved as a draft and nothing is charged. |
+| `propose_study` | Proposes an optimization study of a strategy that is already in your library, with its quoted cost. With `launch_now` (the default), confirming saves and launches it and charges the quoted tokens. Without it, the study is saved as a draft and nothing is charged. It sets everything the study wizard sets, listed below. |
 
 A brand-new strategy and its first study take **two approvals**. `propose_study` needs a strategy that
 already exists, so you confirm the strategy first.
+
+Besides the strategy, asset group, fitness function, periods, trials, sampler and search space,
+`propose_study` sets everything else the study wizard sets:
+
+- **`benchmark`:** what alpha, beta and the information ratio are measured against. `auto` (the
+  default) takes the asset group's own, and `none` computes no benchmark-relative metric. You can also
+  name an instrument by code and exchange.
+- **`strategy_benchmarks` and `fitness_benchmarks`:** for this study only, other instruments for the
+  benchmarks the code reads. There is one per saved benchmark, in the same order. Each replaces the
+  saved one in its position, and the code still reads it under the saved name.
+- **`eligibility`:** which tickers of the asset group the study keeps: a minimum of bars of history,
+  dropping tickers listed after the study starts, a minimum share of trading days covered, or refusing
+  to launch if any ticker would be dropped.
+- **`daily_updates`:** recalculate the study's portfolios every day as new market data arrives. For a
+  strategy on your server, every daily update calls it. The proposal's page says so before you confirm.
+
+The sampler sets a minimum number of trials: TPE 100, CMAES 1000, QAOA 50 and QKERNEL 30. RANDOM and
+QMC have none. TPE is on every plan, and the other samplers need the Quant plan.
 
 ## The proposal inbox
 
@@ -148,7 +171,12 @@ balance, and which client sent it. **Confirm** creates it. **Cancel** drops it.
 - A proposal expires 24 hours after it was made. An expired proposal can't be confirmed, so the agent
   proposes again.
 - Confirming twice doesn't create or charge twice. The second click shows the result already recorded.
-- Proposing the same thing twice while the first is pending returns the same pending proposal.
+- Proposing the same thing twice while the first is pending returns the same pending proposal. A study
+  identical to one that already exists is refused with that study's reference.
+- **The price check before a launch:** a study that launches when you confirm it first goes through the
+  study wizard's universe quality check. If it flags price moves in the asset group, you see them on
+  the proposal's page, and you tick the tickers you accept losing. Nothing is ticked for you, and the
+  agent can't answer for you. Tickers you don't tick still go through the study's own price screen.
 - If your organization's MCP is switched off, pending proposals can still be read and cancelled, but
   not confirmed.
 
@@ -177,6 +205,20 @@ not even to you. Changing the endpoint deletes it, and you enter it again.
   validation gets the verdict `needs_credential`. That isn't a failure. Propose the strategy, enter the
   credential on the proposal page and confirm. Fintela checks again with the credential before it
   charges anything.
+
+With a protected server, the steps go in this order:
+
+1. Your agent calls `validate_resource`, and the verdict is `needs_credential`.
+2. Your agent calls `propose_resource` with the strategy and its endpoint.
+3. On the proposal's page, you enter the credential and confirm. The strategy is created with it.
+4. Your agent calls `propose_study`, and you confirm the study. Before anything is charged, Fintela
+   makes one authenticated call to your server.
+
+> [!IMPORTANT] Validation doesn't use a saved credential yet
+> `validate_resource` doesn't send the credential you saved. Against a server that requires one, it
+> stops at `needs_credential`, and the checks that catch look-ahead don't run. To run them through
+> your agent, validate the server before you turn its credential on. You can also validate a copy of
+> the server that doesn't require one.
 
 > [!WARNING] The source IP is not authentication
 > Fintela calls your server from `3.150.82.255`. Every Fintela customer's strategies call from that same
