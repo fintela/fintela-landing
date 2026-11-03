@@ -1602,9 +1602,9 @@
     "title": "A Fintela fala MCP.",
     "titleAccent": "Seu agente também.",
     "description": "O Fintela MCP é o nosso servidor do Model Context Protocol (MCP), o padrão aberto com que agentes de IA se conectam a outras ferramentas. Por meio dele, o agente com que sua equipe já trabalha lê vereditos de sobreajuste, testa o servidor da sua estratégia contra o nosso contrato e propõe estudos. Sua estratégia nunca sai dos seus servidores, e nada roda nem custa um token até que uma pessoa da sua equipe confirme.",
-    "ctaPrimary": "Solicite acesso ao piloto",
+    "ctaPrimary": "Começar",
     "ctaSecondary": "Leia o guia de conexão",
-    "pilotNote": "Já em piloto com um primeiro grupo de fundos, ativado organização por organização.",
+    "pilotNote": "Aberto a todas as organizações. Os estudos são cobrados em tokens, como no app.",
     "steps": {
       "eyebrow": "Como funciona",
       "title": "Três passos. O último é sempre seu.",
@@ -1768,8 +1768,8 @@
           "value": "Seu agente se conecta com sua conta da Fintela e uma tela de consentimento, nunca com uma chave compartilhada."
         },
         "offDefault": {
-          "label": "Desligado por padrão",
-          "value": "Ativado organização por organização, com cada confirmação registrada."
+          "label": "Tudo fica registrado",
+          "value": "Cada confirmação fica registrada em nome de quem a fez. A Fintela desliga o MCP para sua organização se você pedir."
         }
       }
     },
@@ -1796,6 +1796,6 @@
       }
     },
     "closingLine": "A Fintela não substitui o que sua equipe construiu. Ela se torna a parte que diz se um resultado é real.",
-    "note": "O Fintela MCP está em piloto. Suas ferramentas funcionam quando ele é ativado para sua organização: solicite acesso e ajudamos você a configurar."
+    "note": "O Fintela MCP funciona para todas as organizações. Entre com sua conta da Fintela, conecte seu agente e confirme as propostas dele no app."
   }
 }

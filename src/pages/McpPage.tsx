@@ -154,7 +154,7 @@ export const McpPage = () => {
           />
 
           <Box sx={{ mt: { xs: 3, md: 4 }, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-            <NeuButton tone="accent" to="/contact" endIcon={<ArrowForwardIcon />}>
+            <NeuButton tone="accent" endIcon={<ArrowForwardIcon />}>
               {t('mcp.ctaPrimary')}
             </NeuButton>
             <NeuButton tone="raised" to={SETUP_GUIDE}>
