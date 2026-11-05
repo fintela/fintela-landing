@@ -12,6 +12,7 @@
 //   4. trailing or doubled /   → 301 the clean form ('/' excepted)
 //   5. /documentation/*        → 301 /docs/<slug>   (LEGACY_DOC_PATHS)
 //      /docs/<renamed>         → 301 /docs/<new>    (DOC_SLUG_REDIRECTS)
+//      /blog/<moved>           → 301 /<section>/<moved>  (MOVED_POSTS)
 //      /docs, /solutions       → 301 their landing page (the SPA did this client-side)
 //   6. any URI with no file extension → REWRITE to <uri>/index.html, the prerendered
 //      page. A route with no prerendered object falls through to S3's 403/404, which
@@ -67,6 +68,11 @@ var DOC_SLUG_REDIRECTS = {
   'running-optimizations': 'studies',
   'data-pipelines': 'data-explorer',
   'api-fitness-and-asset-groups': 'api-fitness'
+};
+
+// Posts that moved off /blog: slug → the section whose URL serves them now.
+var MOVED_POSTS = {
+  'climate-analysis': 'research'
 };
 
 // src/App.tsx: <Route path="/docs"> and <Route path="/solutions"> are <Navigate replace>.
@@ -163,6 +169,12 @@ function canonicalPath(uri) {
   if (path.indexOf('/docs/') === 0) {
     var renamed = lookup(DOC_SLUG_REDIRECTS, path.slice(6));
     if (renamed) return '/docs/' + renamed;
+  }
+
+  // Posts moved to another section (App.tsx BlogPostOrRedirect).
+  if (path.indexOf('/blog/') === 0) {
+    var moved = lookup(MOVED_POSTS, path.slice(6));
+    if (moved) return '/' + moved + '/' + path.slice(6);
   }
 
   // Index routes the SPA bounced client-side.

@@ -72,8 +72,15 @@ export const STATIC_PAGE_ENTRIES: StaticPageEntry[] = [
     id: 'blog',
     titleKey: 'pages:search.pages.blog',
     excerptKey: 'pages:seo.blog.description',
-    keywords: ['articles', 'research', 'insights'],
+    keywords: ['articles', 'news', 'insights', 'tutorials'],
     url: '/blog',
+  },
+  {
+    id: 'research',
+    titleKey: 'pages:search.pages.research',
+    excerptKey: 'pages:seo.research.description',
+    keywords: ['research', 'studies', 'papers', 'analysis'],
+    url: '/research',
   },
   {
     id: 'docs',

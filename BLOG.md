@@ -30,6 +30,25 @@ The filename becomes the URL: `my-post.md` → `/blog/my-post`.
 **Renaming a file changes its URL** and breaks existing links. Add a `slug:` field
 to pin the URL independently of the filename.
 
+### Blog or Research
+
+The site has two post pages, and `section:` in the frontmatter picks one:
+
+| `section` | Listed on | The post's URL | For |
+|---|---|---|---|
+| `blog` (or omitted) | `/blog` | `/blog/<slug>` | general articles and company news |
+| `research` | `/research` | `/research/<slug>` | research notes |
+
+Both live in `content/blog/` and go through the same build; only the page that
+lists a post and its URL differ. Tags are separate: a post tagged `Research` is
+still a blog post unless it says `section: research`. The home page's Research &
+News band shows both.
+
+**Moving a published post between sections changes its URL.** Add the slug to
+`MOVED_POSTS` in `src/App.tsx` and to its verbatim copy in
+`infra/cloudfront/router.js` (the router's tests fail when the two differ), then
+apply the router (`infra/cloudfront/README.md`) so the old URL answers with a 301.
+
 ## Frontmatter
 
 Every post must start with a `---` fenced block:
@@ -58,6 +77,7 @@ Body starts here.
 | `excerpt` | no | Card summary, and the page's meta description (what appears under the title in a search result). Defaults to the first real paragraph. Cards truncate at ~150 characters; a search snippet at about 155. |
 | `tags` | no | `tags: A, B` or `tags: [A, B]` or a `- item` list on following lines. The first tag becomes the card's accent chip. |
 | `slug` | no | Overrides the URL. Defaults to the filename without `.md`, slugified. |
+| `section` | no | `blog` (the default) or `research`: which page lists the post and whether its URL is `/blog/<slug>` or `/research/<slug>`. See *Blog or Research* above. Any other value stops the post with a build warning. |
 | `cover` | no | Card image, as a path under `content/blog/` — e.g. `cover: covers/my-post.jpg`. JPEG, PNG, WebP, AVIF or SVG. Published beside the post's JSON. Shown on the `/blog` card, in the home page's Insights band for the newest (or `featured`) post, and as the post's Open Graph image (the picture a shared link shows), so give it one. |
 | `coverAlt` | no | Alt text for the cover. Set it whenever you set `cover`; the build warns when it is missing. |
 | `featured` | no | `true` pins the post to the home page's featured slot regardless of date. One post at a time. |

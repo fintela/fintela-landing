@@ -14,6 +14,7 @@ import { theme } from './theme/theme';
 import { gradients } from './theme/tokens';
 import { HomePage } from './pages/HomePage';
 import { SOLUTION_PATHS } from './solutions/registry';
+import type { PostSectionProps } from './blog/sections';
 import { ScrollProgressBar } from './components/common/ScrollProgressBar';
 import { FloatingContactButton } from './components/common/FloatingContactButton';
 import { CookieConsentBanner } from './components/common/CookieConsentBanner';
@@ -28,10 +29,11 @@ const ContactPage = lazy(() =>
   import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })),
 );
 
-// Both blog routes are code-split. Post bodies are fetched from the CDN at runtime
-// (see BLOG.md), and the post page also pulls in the markdown renderer + syntax
+// The blog and research routes are code-split (one index page and one post page
+// serve both sections). Post bodies are fetched from the CDN at runtime (see
+// BLOG.md), and the post page also pulls in the markdown renderer + syntax
 // highlighter — none of which belongs on the home page's critical path. Lazy
-// loading keeps all of it in a chunk only /blog visitors fetch.
+// loading keeps all of it in a chunk only /blog and /research visitors fetch.
 const BlogPage = lazy(() => import('./pages/BlogPage').then((m) => ({ default: m.BlogPage })));
 const BlogPostPage = lazy(() =>
   import('./pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage })),
@@ -188,6 +190,28 @@ const DOC_SLUG_REDIRECTS: Record<string, string> = {
 };
 
 /**
+ * Posts that moved off `/blog`: slug → the section (`src/blog/sections.ts`)
+ * whose URL serves them now. The post page would bounce a section mismatch on
+ * its own once the post loaded; this sends the old URL on before anything is
+ * fetched, and `infra/cloudfront/router.js` carries a verbatim copy so the edge
+ * answers it with a 301.
+ *
+ * Keep an entry forever once added, like `DOC_SLUG_REDIRECTS` above.
+ */
+const MOVED_POSTS: Record<string, string> = {
+  // Split out of the blog with the Research page.
+  'climate-analysis': 'research',
+};
+
+/** `/blog/:slug`: a moved post goes to its new URL, everything else renders. */
+function BlogPostOrRedirect({ page: Page }: { page: ComponentType<PostSectionProps> }) {
+  const { slug } = useParams<{ slug: string }>();
+  const { hash } = useLocation();
+  const moved = slug ? MOVED_POSTS[slug] : undefined;
+  return moved ? <Navigate to={`/${moved}/${slug}${hash}`} replace /> : <Page section="blog" />;
+}
+
+/**
  * One `/docs/:slug` route that redirects a renamed page and renders everything else.
  *
  * The redirect is decided here rather than inside `DocPage` so a renamed slug never
@@ -263,8 +287,10 @@ const RouteFallback = () => (
 export interface Pages {
   HomePage: ComponentType;
   HomeDemoPage: ComponentType;
-  BlogPage: ComponentType;
-  BlogPostPage: ComponentType;
+  /** `/blog` and `/research`, by `section`. */
+  BlogPage: ComponentType<PostSectionProps>;
+  /** `/blog/:slug` and `/research/:slug`, by `section`. */
+  BlogPostPage: ComponentType<PostSectionProps>;
   ContactPage: ComponentType;
   PricingPage: ComponentType;
   SolutionPage: ComponentType;
@@ -321,8 +347,10 @@ export function AppRoutes({ pages }: { pages: Pages }) {
           <Route path="/" element={<pages.HomePage />} />
           {/* TEMPORARY: not in STATIC_ROUTES, so never prerendered or in the sitemap. */}
           <Route path="/home-demo" element={<pages.HomeDemoPage />} />
-          <Route path="/blog" element={<pages.BlogPage />} />
-          <Route path="/blog/:slug" element={<pages.BlogPostPage />} />
+          <Route path="/blog" element={<pages.BlogPage section="blog" />} />
+          <Route path="/blog/:slug" element={<BlogPostOrRedirect page={pages.BlogPostPage} />} />
+          <Route path="/research" element={<pages.BlogPage section="research" />} />
+          <Route path="/research/:slug" element={<pages.BlogPostPage section="research" />} />
           <Route path="/contact" element={<pages.ContactPage />} />
           <Route path="/pricing" element={<pages.PricingPage />} />
 

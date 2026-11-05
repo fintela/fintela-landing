@@ -6,10 +6,10 @@
     "subtitlePrefix": "estrategias de inversión en",
     "subtitleSuffix": "en un único ecosistema de quant finance, nativo de IA y en la nube",
     "ctaSecondary": "Mira cómo funciona",
-    "ctaContact": "Contáctenos",
-    "headline": "Investigación de estrategias a",
-    "headlineAccent": "escala de fondo.",
-    "ctaPrimary": "Descubra su ventaja",
+    "ctaContact": "Reserve una demostración",
+    "headline": "Encuentre su",
+    "headlineAccent": "ventaja.",
+    "ctaPrimary": "Comience su prueba gratuita",
     "awardAlt": "Ganador: New Solution Product of the Year, Hedgeweek US Awards 2026",
     "plateCaption": "Inicio de la plataforma · exposición por activo, carteras desplegadas y estrategias en uso",
     "liveBadge": "En vivo",
@@ -21,6 +21,17 @@
       "unit": "/ 500 trials",
       "sub": "train / val / OOS · 70 / 15 / 15"
     }
+  },
+  "award": {
+    "eyebrow": "Ganador · Hedgeweek US Awards 2026",
+    "title": "New Solution Product",
+    "titleAccent": "of the Year.",
+    "about": "Fintela ganó esta categoría en los Hedgeweek US Awards 2026. Los premios reconocen el desempeño de los fondos y la excelencia de los proveedores de servicios en la industria de hedge funds de EE. UU., y los ganadores se deciden por votación de los lectores de Hedgeweek.",
+    "recognizes": "Este premio reconoce la infraestructura de research que Fintela da a los hedge funds y a los equipos quant desde el primer día: pipelines de datos, backtesting y validación fuera de muestra en un solo entorno en la nube, en lugar de meses de ingeniería propia.",
+    "exit": "Leer el anuncio",
+    "photoAlt": "Dos miembros del equipo de Fintela, el cofundador y CEO Manuel Padrón a la derecha, con el trofeo de los Hedgeweek US Awards 2026 frente al fondo de Hedgeweek.",
+    "photoCaption": "Recogiendo el premio en Convene 237 Park Avenue, Nueva York, el 8 de octubre de 2026.",
+    "badgeAlt": "Insignia de ganador de los Hedgeweek US Awards 2026: New Solution Product of the Year."
   },
   "trustBar": {
     "title": "Equipos que construyen con Fintela"
@@ -77,8 +88,6 @@
     },
     "line": {
       "label": "El pipeline de Fintela: cinco pasos conectados, de los grupos de activos al trading en vivo",
-      "play": "Reproducir el pipeline",
-      "pause": "Pausar el pipeline",
       "stepLabel": "Paso {{n}}: {{name}}",
       "tokens": {
         "dataClusters": "11 ETF",
@@ -1049,9 +1058,10 @@
     "eyebrow": "Investigación y Noticias",
     "title": "Notas de investigación y",
     "titleAccent": "novedades de la plataforma.",
-    "exit": "Todas las entradas",
+    "exitBlog": "Blog",
+    "exitResearch": "Investigación",
     "read": "Leer",
-    "browseAll": "Ver todas las entradas",
+    "browseAll": "Ver el blog",
     "count_one": "{{count}} entrada",
     "count_other": "{{count}} entradas",
     "newest": "la más reciente {{date}}",

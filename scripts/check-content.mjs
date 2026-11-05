@@ -84,14 +84,15 @@ async function main() {
   }
 
   const routes = await staticRoutes();
-  const postSlugs = new Set(blog.items.map((p) => p.slug));
+  // `<section>/<slug>`: a post answers only at its own section's URL.
+  const postPaths = new Set(blog.items.map((p) => `${p.section ?? 'blog'}/${p.slug}`));
   const docSlugs = new Set(docs.items.map((d) => d.slug));
 
   /** Whether an in-app path answers 200. */
   const routeExists = (pathname) => {
     if (routes.has(pathname)) return true;
-    const post = /^\/blog\/([^/]+)$/.exec(pathname);
-    if (post) return postSlugs.has(post[1]);
+    const post = /^\/(blog|research)\/([^/]+)$/.exec(pathname);
+    if (post) return postPaths.has(`${post[1]}/${post[2]}`);
     const doc = /^\/docs\/([^/]+)$/.exec(pathname);
     if (doc) return docSlugs.has(doc[1]);
     return false;

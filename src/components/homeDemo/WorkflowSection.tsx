@@ -8,11 +8,16 @@ import { CheckWell } from '../primitives/CheckWell';
 import { AssemblyLine } from '../assemblyLine/AssemblyLine';
 
 /**
- * Band 3. The pipeline as an assembly line: five stations from asset groups
- * to a live broker, one packet carried through them, and under the line the
- * piece of the product each station produces (see AssemblyLine). It replaced
- * the six-node hexagon and its carousel, which drew the pipeline as a loop
- * and never showed one step's output becoming the next one's input.
+ * Band 3. The pipeline as an assembly line walked by scrolling: the band pins
+ * under the header while five stations, from asset groups to a live broker,
+ * go by one per stretch of scroll, with the line on the left and, on the
+ * right, the step's description above the piece of the product it produces
+ * (see AssemblyLine). It replaced a line that played on its own like a video,
+ * which itself replaced the six-node hexagon and its carousel.
+ *
+ * Not wrapped in AnimateOnScroll: the line is several screens tall while
+ * pinned, and the wrapper would keep its top hidden until a share of it was
+ * on screen.
  */
 export const WorkflowSection = () => {
   const { t } = useTranslation('home');
@@ -42,9 +47,7 @@ export const WorkflowSection = () => {
         </Box>
       </AnimateOnScroll>
 
-      <AnimateOnScroll delay={150}>
-        <AssemblyLine />
-      </AnimateOnScroll>
+      <AssemblyLine />
     </Section>
   );
 };

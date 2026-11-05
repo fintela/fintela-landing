@@ -1,6 +1,6 @@
 /**
  * The site's static routes — every URL that exists independently of content.
- * `/blog/<slug>` and `/docs/<slug>` come from `blog/index.json` and
+ * `/blog/<slug>`, `/research/<slug>` and `/docs/<slug>` come from `blog/index.json` and
  * `docs/index.json` at build time (see `routesFor` in `src/entry-server.tsx`).
  *
  * One list, shared by the prerenderer and the sitemap, so a page added to
@@ -14,6 +14,7 @@ export const STATIC_ROUTES = [
   '/pricing',
   '/contact',
   '/blog',
+  '/research',
   '/product/agentic-ai',
   '/product/samplers',
   '/product/in-depth-analysis',

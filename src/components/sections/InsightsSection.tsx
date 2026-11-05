@@ -20,9 +20,11 @@ const pickFeatured = (posts: BlogPostSummary[]): BlogPostSummary[] => {
 };
 
 /**
- * Band 6. The blog on the home page as a bento: the newest (or pinned) post
+ * Band 5. Research & News on the home page as a bento, both sections in one
+ * feed with each card linking to its own post's page: the newest (or pinned) post
  * in a 2×2 plate with its cover, two compact cover tiles beside it, two more
- * under it, and a counter that is also the way to /blog. Degrades by count:
+ * under it, and a counter of the blog's posts that is also the way to /blog;
+ * the header has a way to each section. Degrades by count:
  * one post spans the row; up to three fill the first two rows; the counter
  * takes whatever cell is left.
  */
@@ -33,7 +35,9 @@ export const InsightsSection = () => {
   const [featured, ...rest] = ordered;
   const compact = rest.slice(0, 2);
   const text = rest.slice(2, 4);
-  const newest = posts.reduce((max, p) => (p.date > max ? p.date : max), posts[0]?.date ?? '');
+  // The feed mixes both sections; the counter is the blog's, since that is where it leads.
+  const blogPosts = posts.filter((p) => p.section === 'blog');
+  const newest = blogPosts.reduce((max, p) => (p.date > max ? p.date : max), blogPosts[0]?.date ?? '');
   // The counter fills whatever the last row has left.
   const counterCol = text.length === 0 ? '1 / 4' : text.length === 1 ? 'span 2' : 'auto';
 
@@ -44,9 +48,14 @@ export const InsightsSection = () => {
         title={t('insights.title')}
         titleAccent={t('insights.titleAccent')}
         exit={
-          <NeuButton tone="raised" to="/blog" endIcon={<ArrowForwardIcon />}>
-            {t('insights.exit')}
-          </NeuButton>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+            <NeuButton tone="raised" to="/blog" endIcon={<ArrowForwardIcon />}>
+              {t('insights.exitBlog')}
+            </NeuButton>
+            <NeuButton tone="raised" to="/research" endIcon={<ArrowForwardIcon />}>
+              {t('insights.exitResearch')}
+            </NeuButton>
+          </Box>
         }
       />
 
@@ -81,10 +90,10 @@ export const InsightsSection = () => {
               </AnimateOnScroll>
             </BentoTile>
           ))}
-          {posts.length > 1 && (
+          {posts.length > 1 && blogPosts.length > 0 && (
             <BentoTile col={{ md: counterCol }}>
               <AnimateOnScroll delay={360} stretch>
-                <PostCountCard count={posts.length} newest={newest} />
+                <PostCountCard count={blogPosts.length} newest={newest} />
               </AnimateOnScroll>
             </BentoTile>
           )}

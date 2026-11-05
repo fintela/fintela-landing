@@ -72,8 +72,8 @@ const FIXED = [
 // for what published, so the check follows it rather than guessing a slug.
 try {
   const index = JSON.parse(await readFile(path.join(DIST, 'blog/index.json'), 'utf8'));
-  const first = index.posts?.[0]?.slug;
-  if (first) FIXED.push(`blog/${first}/index.html`);
+  const first = index.posts?.[0];
+  if (first) FIXED.push(`${first.section ?? 'blog'}/${first.slug}/index.html`);
   else fail('blog/index.json lists no posts, so no blog page could be checked');
 } catch (error) {
   fail(`blog/index.json unreadable: ${error.message}`);

@@ -9,6 +9,7 @@ import { clippedGradientSx, noMotionPress } from '../theme/neu';
 import { gradients, motion, soft } from '../theme/tokens';
 import { accentFor } from './format';
 import { blogAssetUrl } from './api';
+import { postPath } from './sections';
 import type { BlogPostSummary } from './types';
 
 /**
@@ -104,7 +105,7 @@ export const FeaturedPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
   const accent = accentFor(post.slug);
   return (
     <NeuPanel
-      to={`/blog/${post.slug}`}
+      to={postPath(post)}
       component="article"
       sx={[{ height: '100%', display: 'flex', flexDirection: 'column' }, readMoreHoverSx]}
     >
@@ -167,7 +168,7 @@ export const VerticalPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
   const { t } = useTranslation('home');
   return (
     <NeuPanel
-      to={`/blog/${post.slug}`}
+      to={postPath(post)}
       component="article"
       sx={[{ height: '100%', display: 'flex', flexDirection: 'column' }, readMoreHoverSx]}
     >
@@ -237,7 +238,7 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
   if (!post.cover) {
     return (
       <NeuPanel
-        to={`/blog/${post.slug}`}
+        to={postPath(post)}
         component="article"
         sx={[
           { height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 1 },
@@ -256,7 +257,7 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
 
   return (
     <NeuPanel
-      to={`/blog/${post.slug}`}
+      to={postPath(post)}
       component="article"
       sx={[
         {
@@ -305,7 +306,7 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
 
 /** A text tile: meta with the lead tag, title, one line of excerpt. */
 export const TextPostCard = ({ post, titleAs = 'h3' }: CardProps) => (
-  <NeuPanel to={`/blog/${post.slug}`} component="article" sx={{ height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+  <NeuPanel to={postPath(post)} component="article" sx={{ height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
     <MetaRow post={post} tag={post.tags[0]} />
     <Typography component={titleAs} sx={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
       {post.title}
@@ -314,7 +315,7 @@ export const TextPostCard = ({ post, titleAs = 'h3' }: CardProps) => (
   </NeuPanel>
 );
 
-/** The exit tile: how many posts there are, and the way to all of them. */
+/** The exit tile: how many posts the blog has, and the way to it (`/research` is reached from the band's header). */
 export const PostCountCard = ({ count, newest }: { count: number; newest: string }) => {
   const { t, i18n } = useTranslation('home');
   return (

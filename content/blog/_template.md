@@ -12,7 +12,8 @@ published: false
   template never appears on /blog.
 
   The filename becomes the URL: copying this to `my-post.md` publishes it at
-  /blog/my-post. Renaming a file later changes its URL and breaks existing links,
+  /blog/my-post. Add `section: research` to publish it on the Research page,
+  at /research/my-post, instead (see BLOG.md). Renaming a file later changes its URL and breaks existing links,
   so add a `slug:` field to pin the URL independently of the filename.
 
   Everything below shows what the renderer supports. Raw HTML (including this

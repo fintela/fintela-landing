@@ -23,6 +23,13 @@ interface SectionHeaderProps {
   gutter?: boolean;
 }
 
+/**
+ * The widest a left-aligned page hero runs (the Solutions pages wrap their
+ * h1 header in it): a left-aligned SectionHeader takes its container's full
+ * width, which puts ~150 characters on a line of the description.
+ */
+export const HERO_MEASURE = 820;
+
 /** The short gold rule that flanks an eyebrow — the site's section marker. */
 const Rule = ({ width = 28 }: { width?: number }) => (
   <Box

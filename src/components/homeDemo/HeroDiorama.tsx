@@ -9,11 +9,8 @@ import { Section } from '../primitives/Section';
 import { NeuButton } from '../primitives/NeuButton';
 import { bandClipSx } from '../../theme/neu';
 import { soft } from '../../theme/tokens';
-import { SOLUTION_PATHS } from '../../solutions/registry';
+import { AWARD_POST } from '../../lib/award';
 import hedgeweekWinnerBadge from '../../assets/awards/hedgeweek-2026-winner.png';
-
-/** The post that tells the award's story; the badge links to it. */
-const AWARD_POST = '/blog/fintela-wins-hedgeweek-us-awards-2026';
 
 /**
  * The mini chat is all client-side motion on the product demo's parts, so it is
@@ -130,7 +127,8 @@ export const HeroDiorama = () => {
                 '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } },
               }}
             >
-              <NeuButton tone="accent" to={SOLUTION_PATHS.funds}>
+              {/* No `to`: NeuButton then links to the app's sign-up page, where the trial starts. */}
+              <NeuButton tone="accent">
                 {t('hero.ctaPrimary')}
               </NeuButton>
               <NeuButton tone="raised" to="/contact">

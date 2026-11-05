@@ -6,9 +6,16 @@
  * and these types must change together.
  */
 
-/** One card in the `/blog` grid — metadata only, no body. */
+import type { PostSection } from './sections';
+
+/** One card in the `/blog` or `/research` grid — metadata only, no body. */
 export interface BlogPostSummary {
   slug: string;
+  /**
+   * Which page lists the post and owns its URL (`section:` in frontmatter,
+   * `blog` when absent). See `src/blog/sections.ts`.
+   */
+  section: PostSection;
   title: string;
   author: string;
   /** `YYYY-MM-DD`, already validated by the generator. */

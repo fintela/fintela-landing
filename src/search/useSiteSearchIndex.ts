@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchBlogIndex } from '../blog/api';
+import { postPath } from '../blog/sections';
 import { fetchDocsIndex, fetchDocsSearch } from '../docs/api';
 import { STATIC_PAGE_ENTRIES } from './siteIndex';
 import type { SearchEntry } from './types';
@@ -65,14 +66,15 @@ export function useSiteSearchIndex(): SiteSearchIndexState {
         url: `/docs/${page.slug}`,
       }));
 
+      // Research notes are posts too, labelled and linked by their own section.
       const blogEntries: SearchEntry[] = posts.map((post) => ({
         id: `blog:${post.slug}`,
         kind: 'blog',
         title: post.title,
-        section: t('pages:search.sectionBlog'),
+        section: t(post.section === 'research' ? 'pages:search.sectionResearch' : 'pages:search.sectionBlog'),
         excerpt: post.excerpt,
         keywords: post.tags,
-        url: `/blog/${post.slug}`,
+        url: postPath(post),
       }));
 
       setState({ status: 'ready', entries: [...staticEntries(t), ...docEntries, ...blogEntries] });

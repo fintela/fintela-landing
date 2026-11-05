@@ -93,7 +93,8 @@ async function loadCards() {
       title: 'The AI-native quant platform',
       subtitle: 'Build, backtest, optimize and live-trade quantitative portfolios in one workspace.',
     },
-    { name: 'blog', kind: 'light', title: 'Research & News', subtitle: pages.blog.hero.subtitle },
+    { name: 'blog', kind: 'light', title: 'Blog', subtitle: pages.blog.hero.subtitle },
+    { name: 'research', kind: 'light', title: 'Research', subtitle: pages.research.hero.subtitle },
     {
       name: 'docs',
       kind: 'light',

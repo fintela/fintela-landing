@@ -3,6 +3,9 @@ import { Box, Container, Typography, Link } from '@mui/material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import XIcon from '@mui/icons-material/X';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import fintelaLargeLogo from '../../assets/logos/fintela_logo_2.png';
 import { gradients, shadows, soft } from '../../theme/tokens';
@@ -11,17 +14,27 @@ import { Groove } from '../primitives/Groove';
 import { scrollToSection } from '../../lib/scrollToSection';
 import { SOLUTION_PATHS } from '../../solutions/registry';
 import { DOCS_HOME } from '../../seo/routes';
-import { ORG } from '../../seo/site';
+import { ORG, SOCIAL_PROFILES } from '../../seo/site';
 import { useTranslation } from 'react-i18next';
 
-// `site.ts` lists the profiles in this order; the same URLs go out as the
-// Organization's `sameAs`, so the visible links and the structured data agree.
-const [LINKEDIN_URL, GITHUB_URL] = ORG.sameAs;
+// Same URLs as the Organization's `sameAs` (see `SOCIAL_PROFILES` in site.ts),
+// so the visible links and the structured data agree.
+const socialIcons = {
+  linkedin: LinkedInIcon,
+  x: XIcon,
+  instagram: InstagramIcon,
+  youtube: YouTubeIcon,
+  github: GitHubIcon,
+} as const;
 
-const socialLinks = [
-  { id: 'linkedin', labelKey: 'footer:social.linkedin', href: LINKEDIN_URL, Icon: LinkedInIcon },
-  { id: 'github', labelKey: 'footer:social.github', href: GITHUB_URL, Icon: GitHubIcon },
-] as const;
+const socialLinks = (Object.keys(SOCIAL_PROFILES) as (keyof typeof SOCIAL_PROFILES)[]).map(
+  (id) => ({
+    id,
+    labelKey: `footer:social.${id}`,
+    href: SOCIAL_PROFILES[id],
+    Icon: socialIcons[id],
+  }),
+);
 
 type FooterLink = {
   id: string;
@@ -130,6 +143,7 @@ const columns: FooterColumn[] = [
         type: 'route',
       },
       { id: 'blog', labelKey: 'footer:columns.resources.links.blog', href: '/blog', type: 'route' },
+      { id: 'research', labelKey: 'footer:columns.resources.links.research', href: '/research', type: 'route' },
     ],
   },
   {
@@ -233,7 +247,7 @@ export const Footer = () => {
             <Box
               component="nav"
               aria-label={t('footer:social.label')}
-              sx={{ display: 'flex', gap: 1, mt: 2.5 }}
+              sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2.5 }}
             >
               {/* rel="me": these are the company's own profiles, the ones the
                   Organization's sameAs points at. */}

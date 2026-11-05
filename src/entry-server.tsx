@@ -30,6 +30,7 @@ import { initServerI18n } from './i18n/server';
 import type { SupportedLng } from './i18n/config';
 import { resetJsonCache, seedJson } from './content/json';
 import { blogJsonUrl } from './blog/api';
+import { POST_SECTIONS, postPath, sectionPath } from './blog/sections';
 import { docJsonUrl } from './docs/api';
 import type { BlogIndex } from './blog/types';
 import type { DocsIndex } from './docs/types';
@@ -162,6 +163,9 @@ export async function render(
   return { head, html, styles, status: notFound ? 404 : 200, data, partial };
 }
 
+/** The static routes that render the post index. */
+const POST_INDEX_ROUTES = new Set<string>(['/', ...POST_SECTIONS.map(sectionPath)]);
+
 export interface PrerenderRoute {
   path: string;
   /** The JSON this route renders from, keyed by fetch URL. */
@@ -194,13 +198,14 @@ export function routesFor(data: Record<string, unknown>): PrerenderRoute[] {
 
   const routes: PrerenderRoute[] = STATIC_ROUTES.map((path) => ({
     path,
-    // The home page's Insights band and /blog both render the post index.
-    data: path === '/' || path === '/blog' ? pick(path, blogIndex ? [blogIndexKey] : []) : {},
+    // The home page's Insights band, /blog and /research all render the post index.
+    data: POST_INDEX_ROUTES.has(path) ? pick(path, blogIndex ? [blogIndexKey] : []) : {},
     partial: {},
   }));
   // A post page also renders the index: its related posts and prev/next pair.
+  // At its section's URL (`/blog/<slug>` or `/research/<slug>`).
   for (const post of blogIndex?.posts ?? []) {
-    const path = `/blog/${post.slug}`;
+    const path = postPath(post);
     routes.push({ path, data: pick(path, [blogJsonUrl(`${post.slug}.json`), blogIndexKey]), partial: {} });
   }
   // The index (sidebar, breadcrumb, prev/next) is seeded whole: without the
@@ -222,4 +227,5 @@ export function routesFor(data: Record<string, unknown>): PrerenderRoute[] {
 export { STATIC_ROUTES } from './seo/routes';
 export { SITE_URL, absoluteUrl } from './seo/site';
 export { blogAssetUrl, blogJsonUrl, blogPostImageUrl } from './blog/api';
+export { postPath } from './blog/sections';
 export { docJsonUrl } from './docs/api';

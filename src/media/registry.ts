@@ -33,6 +33,7 @@ import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg?w=80
 import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import liveOps from '../assets/media/capabilities/live-ops.jpg?w=260;520&format=avif;webp;jpeg&as=picture';
+import awardCeremony from '../assets/media/awards/hedgeweek-2026-ceremony.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import audienceFunds from '../assets/media/audiences/funds.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceTeams from '../assets/media/audiences/teams.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceIndependents from '../assets/media/audiences/independents.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
@@ -187,6 +188,13 @@ export const HERO_BACKDROP = {
 
 export const STILLS = {
   liveOps: still(liveOps),
+  /**
+   * The home award band's photo: the team with the Hedgeweek US Awards 2026
+   * trophy, cut 4/3 around both people from the photographer's original. It
+   * is the other frame of the moment the award post's cover shows, so the
+   * band and that post's card in the blog band never repeat one picture.
+   */
+  awardCeremony: still(awardCeremony),
   /**
    * 800×1000 portraits (cropped for the dossier's former 4/5 seat) in what is
    * now a 16/9 well, which shows a 45 % band of each: `objectPosition` puts

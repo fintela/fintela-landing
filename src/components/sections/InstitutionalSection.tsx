@@ -23,7 +23,7 @@ import type { Audience } from '../../lib/audience';
 import { STILLS } from '../../media/registry';
 import { USE_CASE_KEY } from '../../solutions/registry';
 
-/** Left to right: independent quants leads, then the fund, research and advisory seats. */
+/** Reading order in the 2×2 grid: independent quants and funds on top, research teams and advisors below. */
 const CARD_ORDER: readonly Audience[] = ['independents', 'funds', 'teams', 'advisors'];
 
 const CARD_PAD = { xs: 3, md: 3.5 } as const;
@@ -144,11 +144,10 @@ function useAutoplayAllowed(target: RefObject<HTMLElement | null>): boolean {
 }
 
 /**
- * Band 2. All three seats stay visible as a row of dossier cards; a
- * spotlight cycles between them (autoplay or a click) — the active card
- * stays sharp while the other two dim and blur — with the platform
- * advantages beneath. Same copy and images as before, just a more dynamic
- * presentation.
+ * Band 3, right after the pipeline. The four seats as dossier cards in a 2×2
+ * grid; a spotlight cycles between them (autoplay or a click): the active card
+ * is at full strength and the others dim, but none is blurred, so every card
+ * stays readable. The platform advantages sit beneath.
  */
 export const InstitutionalSection = () => {
   const { t } = useTranslation('home');
@@ -198,9 +197,9 @@ export const InstitutionalSection = () => {
           <Box
             sx={{
               display: 'grid',
-              // 4 rich cards read as cramped at md (900-1199px); wait for lg
-              // to go full-width, 2-up on tablet in between.
-              gridTemplateColumns: { xs: '1fr', sm: neuGrid.columns(2), lg: neuGrid.columns(CARD_ORDER.length) },
+              // 2×2 from tablet up: four rich cards in one row read as cramped,
+              // and two per row gives each photo room.
+              gridTemplateColumns: { xs: '1fr', sm: neuGrid.columns(2) },
               gap: neuGrid.gap,
               alignItems: 'stretch',
             }}
@@ -222,15 +221,13 @@ export const InstitutionalSection = () => {
                     height: '100%',
                     cursor: 'pointer',
                     transformOrigin: 'center',
-                    transition: `transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease, filter 0.5s ease, background-image ${motion.fast}`,
+                    transition: `transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease, background-image ${motion.fast}`,
                     transform: { md: active === idx ? 'scale(1.02)' : 'scale(0.98)' },
                     opacity: active === idx ? 1 : { xs: 1, md: 0.45 },
-                    // The active/inactive blur-and-fade treatment is unchanged —
-                    // the gold ring below is an independent hover/focus cue that
-                    // layers on top of it (a blurred card can still be hovered
-                    // to preview it before a click swaps it in).
-                    filter: active === idx ? 'none' : { xs: 'none', md: 'blur(1.5px) saturate(0.7)' },
-                    '@media (prefers-reduced-motion: reduce)': { transition: 'opacity 0.3s ease', transform: 'none', filter: 'none' },
+                    // No blur on the cards out of the spotlight, only the dim
+                    // above. The gold ring below is an independent hover/focus
+                    // cue that layers on top of it.
+                    '@media (prefers-reduced-motion: reduce)': { transition: 'opacity 0.3s ease', transform: 'none' },
                     // Same two-layer background as PricingPage's plan cards: an
                     // opaque white padding-box layer over the brand gradient
                     // painted to the border-box, so only the 1.5px ring (set on
@@ -370,11 +367,15 @@ const AudienceCard = ({ audience }: { audience: Audience }) => {
         )}
       </Box>
 
+      {/* The photo fills whatever height the card has left, from a floor up,
+          and is cropped to it: laid out absolutely, so the portrait files'
+          own height never drives the card's (at half the band's width it
+          would make each card about 1,000px tall). */}
       <Box
         sx={{
           position: 'relative',
           flex: '1 1 auto',
-          minHeight: { xs: 260, md: 320 },
+          minHeight: { xs: 240, sm: 260, md: 320 },
           mt: 3,
           overflow: 'hidden',
         }}
@@ -384,21 +385,14 @@ const AudienceCard = ({ audience }: { audience: Audience }) => {
           flush
           src={STILLS.audiences[audience]}
           alt={t(`audiences.items.${audience}.imageAlt`)}
-          sizes="(min-width: 900px) 30vw, (min-width: 600px) 560px, 100vw"
+          sizes="(min-width: 1200px) 560px, (min-width: 600px) 50vw, 100vw"
           sx={{
-            position: 'static',
+            position: 'absolute',
+            inset: 0,
             aspectRatio: 'auto',
-            width: '100%',
-            height: '100%',
             borderRadius: 0,
             boxShadow: 'none',
             '&::after': { display: 'none' },
-            '& > img, & > picture, & > picture > img': {
-              position: 'static',
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            },
           }}
         />
       </Box>

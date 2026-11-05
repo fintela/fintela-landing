@@ -6,10 +6,10 @@
     "subtitlePrefix": "Discover your edge across",
     "subtitleSuffix": "in a single AI native quantitative ecosystem.",
     "ctaSecondary": "See how it works",
-    "ctaContact": "Contact us",
-    "headline": "The Future of",
-    "headlineAccent": "Intelligent Investing.",
-    "ctaPrimary": "Find Your Edge",
+    "ctaContact": "Book a Walkthrough",
+    "headline": "Find Your",
+    "headlineAccent": "Edge.",
+    "ctaPrimary": "Start Free Trial",
     "awardAlt": "Winner: New Solution Product of the Year, Hedgeweek US Awards 2026",
     "plateCaption": "Platform home · asset exposure, deployed portfolios and the strategies in use",
     "liveBadge": "Live",
@@ -21,6 +21,17 @@
       "unit": "/ 500 trials",
       "sub": "train / val / OOS · 70 / 15 / 15"
     }
+  },
+  "award": {
+    "eyebrow": "Winner · Hedgeweek US Awards 2026",
+    "title": "New Solution Product",
+    "titleAccent": "of the Year.",
+    "about": "Fintela won this category at the Hedgeweek US Awards 2026. The awards recognize fund performance and service provider excellence across the U.S. hedge fund industry, and the winners are decided by a vote of Hedgeweek’s readers.",
+    "recognizes": "The win recognizes the research infrastructure Fintela gives hedge funds and quant teams from day one: data pipelines, backtesting and out-of-sample validation in one cloud environment, instead of months of in-house engineering.",
+    "exit": "Read the announcement",
+    "photoAlt": "Two members of the Fintela team, co-founder and CEO Manuel Padrón on the right, with the Hedgeweek US Awards 2026 trophy in front of the Hedgeweek backdrop.",
+    "photoCaption": "Collecting the award at Convene 237 Park Avenue, New York, on October 8, 2026.",
+    "badgeAlt": "Hedgeweek US Awards 2026 winner badge: New Solution Product of the Year."
   },
   "trustBar": {
     "title": "Teams building with Fintela"
@@ -77,8 +88,6 @@
     },
     "line": {
       "label": "The Fintela pipeline: five connected steps, from asset groups to live trading",
-      "play": "Play the pipeline",
-      "pause": "Pause the pipeline",
       "stepLabel": "Step {{n}}: {{name}}",
       "tokens": {
         "dataClusters": "11 ETFs",
@@ -1049,9 +1058,10 @@
     "eyebrow": "Research & News",
     "title": "Research notes &",
     "titleAccent": "platform updates.",
-    "exit": "All posts",
+    "exitBlog": "Blog",
+    "exitResearch": "Research",
     "read": "Read",
-    "browseAll": "Browse all posts",
+    "browseAll": "Browse the blog",
     "count_one": "{{count}} post",
     "count_other": "{{count}} posts",
     "newest": "newest {{date}}",

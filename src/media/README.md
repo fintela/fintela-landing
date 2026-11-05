@@ -72,6 +72,7 @@ never upscales, so a rung wider than the file is clamped to it:
 | `hero/platform-home-poster.jpg` | 768 · 1280 | Platform band plate, 16/10 |
 | `capabilities/walkthrough-poster.jpg` | 560 · 1120 | Capabilities bento player, 16/10 |
 | `capabilities/live-ops.jpg` | 260 · 520 | Capabilities bento tile, 3/2 |
+| `awards/hedgeweek-2026-ceremony.jpg` | 640 · 1280 | Home award band, 4/3 |
 | `fintelligent/agents-poster.jpg` | 640 · 1280 | Fintelligent band and solution chapter, 16/9 |
 | `audiences/*.jpg` | 560 · 1120 (→ 800) | Home audience dossier; 800×1000 portraits in a 16/9 well, framed with `objectPosition` |
 | `solutions/*-hero.jpg` | 800 · 1600 | Solution page hero, 16/10 — that page's LCP (`priority`) |
@@ -103,6 +104,7 @@ of their own (the Fintelligent poster, blog covers).
 | `audiences/independents.jpg` | Home audience dossier, independents seat — file is 4/5, slot is now 16/9 (see Stills) | Unsplash, Tai Bui (`dw4WegQZEYc`) |
 | `audiences/advisors.jpg` | Home audience dossier, advisors seat — file is 4/5, slot is now 16/9 (see Stills) | Fintela asset library (`assets-fintela-landing-page/finance_advisor.jpeg`) |
 | `capabilities/live-ops.jpg` | Home capabilities bento, live-trading tile, 3/2 | Pixabay, harryloya (`3033135`) |
+| `awards/hedgeweek-2026-ceremony.jpg` | Home award band, 4/3, in colour (an event photo, not one of the stock seats) | Hedgeweek US Awards 2026 press kit, photographer's `DSC05424.jpg`, cut 4/3 around both people; the award post's cover is the kit's other frame, `DSC05425.jpg` |
 | `fintelligent/agents-poster.jpg` | Fintelligent player poster until the recording exists, 16/9 | Unsplash, Alina Grubnyak (`ZiQkhI7417A`) |
 | `content/blog/covers/welcome-to-the-fintela-blog.jpg` | Blog cover | Unsplash, Lukas Blazek (`mcSDtbWXUZU`) |
 | `content/blog/covers/climate-analysis.jpg` | Blog cover and lead image | Unsplash, Markus Winkler (`IrRbSND5EUc`) |
@@ -119,8 +121,8 @@ under `content/blog/covers/<slug>.jpg`, never on a third-party host, with a
 
 ## Social cards and brand assets
 
-`public/og/*` are the 1200×630 Open Graph cards (`default`, `blog`, `docs`,
-`pricing`, `contact` as PNG; the three `solutions-*` cards as JPEG because their
+`public/og/*` are the 1200×630 Open Graph cards (`default`, `blog`, `research`,
+`docs`, `pricing`, `contact` as PNG; the three `solutions-*` cards as JPEG because their
 photo background does not fit the 250 KB PNG budget). They are rendered locally
 by `scripts/og/render.mjs` from the design tokens, the wordmark and the solution
 hero stills above, and committed; CI never renders them. `public/brand/` holds

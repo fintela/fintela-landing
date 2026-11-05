@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { ArrowBack, ArrowForward, CalendarToday, PersonOutline, SearchOff } from '@mui/icons-material';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Navigate, Link as RouterLink, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
@@ -16,15 +16,26 @@ import { formatContentDate } from '../content/format';
 import { useBlogIndex, useBlogPost } from '../blog/useBlog';
 import { blogAssetUrl, blogPostImageUrl } from '../blog/api';
 import type { BlogPost, BlogPostSummary } from '../blog/types';
+import { DEFAULT_SECTION, SECTION_OG_IMAGE, postPath, sectionPath } from '../blog/sections';
+import type { PostSection, PostSectionProps } from '../blog/sections';
 import { neuGrid, noMotionPress, quietLinkSx } from '../theme/neu';
 import { gradients, motion, soft } from '../theme/tokens';
 import { Seo } from '../seo/Seo';
 import { pageTitle, truncateDescription } from '../seo/text';
-import { blogCrumb, blogPosting, breadcrumbList, homeCrumb, organization, webSite } from '../seo/jsonld';
+import { blogPosting, breadcrumbList, homeCrumb, organization, sectionCrumb, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
 
-const BLOG_OG_IMAGE = '/og/blog.png';
-const TITLE_SUFFIX = 'Research & News';
+/** What follows the post's name in the tab title. */
+const TITLE_SUFFIX: Record<PostSection, string> = { blog: 'Fintela Blog', research: 'Fintela Research' };
+/** The "back to the index" link above and below the article. */
+const BACK_KEY: Record<PostSection, string> = { blog: 'blog.backToBlog', research: 'research.backToResearch' };
+
+/**
+ * Where a post's relative images resolve. Every post's images are published
+ * beside its JSON under `blog/`, whichever page it lives on, so a research
+ * note at `/research/<slug>` must not resolve them against its own URL.
+ */
+const POST_ASSET_BASE = blogAssetUrl('');
 
 /** How many related posts sit under an article. */
 const MAX_RELATED = 3;
@@ -45,11 +56,16 @@ const relatedPosts = (post: BlogPost, posts: BlogPostSummary[]): BlogPostSummary
     .map(({ p }) => p);
 };
 
-/** The neighbours by date: the index is newest-first, so `newer` sits before `post`. */
+/**
+ * The neighbours by date within the post's own section, so older/newer never
+ * walks a research reader out into the blog. The index is newest-first, so
+ * `newer` sits before `post`.
+ */
 const neighbours = (post: BlogPost, posts: BlogPostSummary[]) => {
-  const at = posts.findIndex((p) => p.slug === post.slug);
+  const own = posts.filter((p) => p.section === post.section);
+  const at = own.findIndex((p) => p.slug === post.slug);
   if (at === -1) return { newer: undefined, older: undefined };
-  return { newer: posts[at - 1], older: posts[at + 1] };
+  return { newer: own[at - 1], older: own[at + 1] };
 };
 
 /**
@@ -59,16 +75,17 @@ const neighbours = (post: BlogPost, posts: BlogPostSummary[]) => {
  * BlogPosting lists the crop and the full cover so Google can pick an aspect.
  */
 const PostSeo = ({ post }: { post: BlogPost }) => {
-  const url = absoluteUrl(`/blog/${post.slug}`);
+  const url = absoluteUrl(postPath(post));
   const social = blogPostImageUrl(post);
   const cover = post.cover ? absoluteUrl(blogAssetUrl(post.cover)) : undefined;
   const images = [...new Set([social, cover].filter((u): u is string => !!u))];
+  const fallbackImage = SECTION_OG_IMAGE[post.section];
   return (
     <Seo
-      title={pageTitle(post.title, TITLE_SUFFIX)}
+      title={pageTitle(post.title, TITLE_SUFFIX[post.section])}
       description={truncateDescription(post.excerpt)}
       type="article"
-      image={social ? { url: social, alt: post.coverAlt } : BLOG_OG_IMAGE}
+      image={social ? { url: social, alt: post.coverAlt } : fallbackImage}
       article={{
         publishedTime: post.date,
         modifiedTime: post.updated ?? post.date,
@@ -79,20 +96,24 @@ const PostSeo = ({ post }: { post: BlogPost }) => {
       jsonLd={[
         organization(),
         webSite(),
-        blogPosting(post, url, images.length ? images : absoluteUrl(BLOG_OG_IMAGE)),
-        breadcrumbList([homeCrumb(), blogCrumb(), { name: post.title }]),
+        blogPosting(post, url, images.length ? images : absoluteUrl(fallbackImage)),
+        breadcrumbList([homeCrumb(), sectionCrumb(post.section), { name: post.title }]),
       ]}
     />
   );
 };
 
 /**
- * `/blog/:slug` — one post, rendered from the Markdown body in its `blog/<slug>.json`.
+ * `/blog/:slug` and `/research/:slug` — one post, rendered from the Markdown
+ * body in its `blog/<slug>.json`. `section` is the route's; a post asked for
+ * under the other section's URL is sent to its own (replace, so Back does not
+ * bounce). App.tsx's `MOVED_POSTS` does the same for a known move before the
+ * post is even fetched, and the CloudFront router answers it with a 301.
  *
  * A slug that isn't in the published set renders the not-found state rather than a
  * blank page: posts get renamed or unpublished, and links to them stay in the wild.
  */
-export const BlogPostPage = () => {
+export const BlogPostPage = ({ section = DEFAULT_SECTION }: PostSectionProps) => {
   const { slug } = useParams<{ slug: string }>();
   const { t, i18n } = useTranslation('pages');
   const { status, post } = useBlogPost(slug);
@@ -102,6 +123,12 @@ export const BlogPostPage = () => {
   // cold client-side navigation, once the index arrives — never a mismatch,
   // because `ready` is the only state that renders anything.
   const index = useBlogIndex();
+  const ogImage = SECTION_OG_IMAGE[section];
+  const back = <BackToIndex section={section} label={t(BACK_KEY[section])} />;
+
+  if (status === 'ready' && post && post.section !== section) {
+    return <Navigate to={postPath(post)} replace />;
+  }
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -115,21 +142,21 @@ export const BlogPostPage = () => {
           noindex
           title={pageTitle(
             t(status === 'notFound' ? 'blog.notFound.title' : 'blog.error.title'),
-            TITLE_SUFFIX,
+            TITLE_SUFFIX[section],
           )}
           description={t(status === 'notFound' ? 'blog.notFound.body' : 'blog.error.body')}
-          image={BLOG_OG_IMAGE}
+          image={ogImage}
         />
       )}
       {status === 'loading' && (
-        <Seo title={t('seo.blog.title')} description={t('seo.blog.description')} image={BLOG_OG_IMAGE} />
+        <Seo title={t(`seo.${section}.title`)} description={t(`seo.${section}.description`)} image={ogImage} />
       )}
       <Header />
 
       <Box component="main" id="content">
         {/* No hero fade: the reading panel below must sit on flat ground. */}
         <Section size="md" maxWidth="md" sx={{ pt: { xs: 5, md: 8 }, pb: { xs: 5, md: 9 } }}>
-          <BackToBlog label={t('blog.backToBlog')} />
+          {back}
 
           {/* The loader reserves the article's height, so the footer never sits
               in the first viewport and jumps a screen down when the body lands.
@@ -215,7 +242,7 @@ export const BlogPostPage = () => {
                 sx={{ width: 36, height: 3, borderRadius: '2px', background: gradients.gold, mb: 3 }}
               />
 
-              <MarkdownContent markdown={post.markdown} imageSizes={post.images} />
+              <MarkdownContent markdown={post.markdown} imageSizes={post.images} assetBase={POST_ASSET_BASE} />
             </NeuPanel>
           )}
 
@@ -224,7 +251,7 @@ export const BlogPostPage = () => {
             <>
               {index.status === 'ready' && <PostFooterNav post={post} posts={index.posts} />}
               <Groove sx={{ mt: 6, mb: 4 }} />
-              <BackToBlog label={t('blog.backToBlog')} />
+              {back}
             </>
           )}
         </Section>
@@ -298,7 +325,7 @@ const NeighbourLink = ({ post, direction }: { post: BlogPostSummary; direction: 
   return (
     <NeuPanel
       variant="tile"
-      to={`/blog/${post.slug}`}
+      to={postPath(post)}
       sx={{
         p: { xs: 2, md: 2.5 },
         display: 'flex',
@@ -332,10 +359,10 @@ const NeighbourLink = ({ post, direction }: { post: BlogPostSummary; direction: 
   );
 };
 
-const BackToBlog = ({ label }: { label: string }) => (
+const BackToIndex = ({ section, label }: { section: PostSection; label: string }) => (
   <Box
     component={RouterLink}
-    to="/blog"
+    to={sectionPath(section)}
     sx={[
       quietLinkSx,
       {

@@ -93,9 +93,10 @@ const SAFE_LINK_SCHEMES = new Set(['http', 'https', 'mailto', 'tel']);
 const URL_CONTROL_CHARS = /[\u0000-\u001f\u007f]/g;
 
 /**
- * Where relative image paths resolve. Unset (the default) leaves them relative to
- * the current URL, so `![](diagram.png)` on `/blog/my-post` resolves to
- * `/blog/diagram.png` — i.e. next to the post JSON in the same bucket prefix.
+ * Where relative image paths resolve when the caller passes no `assetBase`.
+ * Unset (the default) leaves them relative to the current URL, so
+ * `![](diagram.png)` on `/docs/my-page` resolves to `/docs/diagram.png`, next to
+ * the page JSON in the same bucket prefix.
  */
 const ASSET_BASE = (() => {
   const configured = import.meta.env.VITE_BLOG_ASSET_BASE_URL || '';
@@ -104,9 +105,9 @@ const ASSET_BASE = (() => {
 
 /**
  * Scheme allow-list for every URL react-markdown is about to emit. Returning an
- * empty string drops the attribute.
+ * empty string drops the attribute. `assetBase` prefixes relative image paths.
  */
-function urlTransform(url: string, key: string): string {
+const makeUrlTransform = (assetBase: string) => (url: string, key: string): string => {
   const value = url.replace(URL_CONTROL_CHARS, '').trim();
   if (!value) return '';
 
@@ -125,7 +126,7 @@ function urlTransform(url: string, key: string): string {
   const scheme = isRelative ? '' : value.slice(0, colon).toLowerCase();
 
   if (key === 'src') {
-    if (!scheme) return ASSET_BASE ? `${ASSET_BASE}${value.replace(/^\.?\//, '')}` : value;
+    if (!scheme) return assetBase ? `${assetBase}${value.replace(/^\.?\//, '')}` : value;
     if (scheme === 'http' || scheme === 'https') return value;
     // Inline base64 images are allowed (the brief permits them for small assets);
     // svg is excluded because it can carry script.
@@ -135,7 +136,7 @@ function urlTransform(url: string, key: string): string {
   // Relative paths and #anchors have no scheme and are always safe.
   if (!scheme) return value;
   return SAFE_LINK_SCHEMES.has(scheme) ? value : '';
-}
+};
 
 const isExternal = (href: string | undefined) => !!href && /^https?:/i.test(href);
 
@@ -198,6 +199,14 @@ export interface MarkdownContentProps {
    * never jumps. Unknown images render as before.
    */
   imageSizes?: Readonly<Record<string, ImageSize>>;
+  /**
+   * Where relative image paths resolve, ending in `/`. A post passes its
+   * collection's prefix (`/blog/`), because the same post renders at
+   * `/research/<slug>` as well as `/blog/<slug>`, and its images are published
+   * beside its JSON either way. Defaults to `VITE_BLOG_ASSET_BASE_URL`, else
+   * relative to the current URL.
+   */
+  assetBase?: string;
 }
 
 const headingSizes = {
@@ -214,7 +223,9 @@ interface LeadImage {
   offset: number;
 }
 
-interface BuildOptions extends Omit<MarkdownContentProps, 'markdown'> {
+interface BuildOptions extends Omit<MarkdownContentProps, 'markdown' | 'assetBase'> {
+  /** The resolved base, possibly empty: see `MarkdownContentProps.assetBase`. */
+  assetBase: string;
   /** The translated "Link to this section" label for heading anchors. */
   anchorLabel: string;
   /**
@@ -236,6 +247,7 @@ function buildComponents({
   imageSizes,
   anchorLabel,
   leadImage,
+  assetBase,
 }: BuildOptions): Components {
   const heading = (key: HeadingKey) =>
     function Heading({ children }: { children?: ReactNode }) {
@@ -461,8 +473,8 @@ function buildComponents({
       if (typeof src !== 'string' || !src) return null;
 
       // The size map is keyed by the src as written; `urlTransform` only ever
-      // prefixes it with ASSET_BASE, so strip that to look it up.
-      const written = ASSET_BASE && src.startsWith(ASSET_BASE) ? src.slice(ASSET_BASE.length) : src;
+      // prefixes it with the asset base, so strip that to look it up.
+      const written = assetBase && src.startsWith(assetBase) ? src.slice(assetBase.length) : src;
       const size = imageSizes?.[written] ?? imageSizes?.[src];
 
       // The lead image is matched by its position in the source (the parser's
@@ -564,6 +576,7 @@ export const MarkdownContent = ({
   headingAnchors,
   resolveHref,
   imageSizes,
+  assetBase: assetBaseProp,
 }: MarkdownContentProps) => {
   const { t } = useTranslation('pages');
   const anchorLabel = t('docs.sectionLink');
@@ -575,9 +588,14 @@ export const MarkdownContent = ({
     return first ? { src: first.src, offset: first.offset } : null;
   }, [markdown]);
 
+  // The build-time override wins, so pointing every image at another origin
+  // still works for posts.
+  const assetBase = ASSET_BASE || assetBaseProp || '';
+  const urlTransform = useMemo(() => makeUrlTransform(assetBase), [assetBase]);
+
   const components = useMemo(
-    () => buildComponents({ headingAnchors, resolveHref, imageSizes, anchorLabel, leadImage }),
-    [headingAnchors, resolveHref, imageSizes, anchorLabel, leadImage],
+    () => buildComponents({ headingAnchors, resolveHref, imageSizes, anchorLabel, leadImage, assetBase }),
+    [headingAnchors, resolveHref, imageSizes, anchorLabel, leadImage, assetBase],
   );
 
   return (

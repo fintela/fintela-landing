@@ -18,7 +18,7 @@ import SyncAltOutlinedIcon from '@mui/icons-material/SyncAltOutlined';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { Section } from '../components/primitives/Section';
-import { SectionHeader } from '../components/primitives/SectionHeader';
+import { HERO_MEASURE, SectionHeader } from '../components/primitives/SectionHeader';
 import { NeuPanel } from '../components/primitives/NeuPanel';
 import { CapabilityExplorer } from '../components/primitives/CapabilityExplorer';
 import { BlockHeading } from '../components/primitives/BlockHeading';
@@ -95,17 +95,22 @@ export const SamplersPage = () => {
 
       <Box component="main" id="content">
         <Section size="lg">
-          <SectionHeader
-            level="h1"
-            eyebrow={t('samplers.eyebrow')}
-            title={t('samplers.title')}
-            titleAccent={t('samplers.titleAccent')}
-            description={t('samplers.description')}
-          />
+          <Box sx={{ maxWidth: HERO_MEASURE }}>
+            <SectionHeader
+              level="h1"
+              align="left"
+              eyebrow={t('samplers.eyebrow')}
+              title={t('samplers.title')}
+              titleAccent={t('samplers.titleAccent')}
+              description={t('samplers.description')}
+            />
+          </Box>
 
           {/* Los siete samplers */}
-          <BlockHeading eyebrow={t('samplers.algorithms.eyebrow')} title={t('samplers.algorithms.title')} />
-          <CapabilityExplorer ns="pages" baseKey="samplers.items" items={SAMPLER_ITEMS} />
+          <Box sx={{ mt: { xs: 6, md: 8 } }}>
+            <BlockHeading eyebrow={t('samplers.algorithms.eyebrow')} title={t('samplers.algorithms.title')} />
+            <CapabilityExplorer ns="pages" baseKey="samplers.items" items={SAMPLER_ITEMS} />
+          </Box>
 
           {/* Cómo elegir */}
           <Box sx={{ mt: { xs: 6, md: 8 } }}>

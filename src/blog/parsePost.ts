@@ -8,6 +8,7 @@ import {
   parseList,
   readingMinutes,
 } from '../content/frontmatter';
+import { DEFAULT_SECTION, POST_SECTIONS, isPostSection } from './sections';
 import type { BlogPost } from './types';
 
 /**
@@ -51,6 +52,12 @@ export function describeSkip(filename: string, source: string): string | null {
     return `updated "${String(data.updated)}" is not YYYY-MM-DD`;
   }
 
+  // A typo here would quietly file a research note under the blog, so it stops the post instead.
+  const section = String(data.section ?? '').trim().toLowerCase();
+  if (section && !isPostSection(section)) {
+    return `section "${String(data.section)}" is not one of ${POST_SECTIONS.join(', ')}`;
+  }
+
   const published = parseBool(data.published);
   if (published === undefined) return "'published' is missing or unparseable";
   if (!published) return 'published: false (draft)';
@@ -79,9 +86,11 @@ export function buildPost(filename: string, source: string): BlogPost | null {
   const fallbackImage = explicitCover ? null : extractFirstImage(markdown);
 
   const updated = parseDate(data.updated);
+  const section = String(data.section ?? '').trim().toLowerCase();
 
   return {
     slug: deriveSlug(filename, data),
+    section: isPostSection(section) ? section : DEFAULT_SECTION,
     title: String(data.title).trim(),
     author: String(data.author).trim(),
     date: parseDate(data.date)!,
