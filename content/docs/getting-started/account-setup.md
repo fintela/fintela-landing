@@ -4,9 +4,9 @@ section: Getting Started
 sectionOrder: 1
 order: 4
 published: true
-updated: 2026-09-04
+updated: 2026-10-13
 summary: Sign in, set up your organization, understand team roles and plan limits, and find your API key.
-keywords: account, signup, login, organization, workspace, roles, team, entitlements, plan, api key, two step authentication, consent
+keywords: account, signup, login, organization, workspace, roles, team, entitlements, plan, api key, two step authentication, two-step login, authenticator, consent
 ---
 
 Everything between having no Fintela account and being ready to work in the platform. Fintela
@@ -43,7 +43,7 @@ If the sign in service is briefly unavailable, you'll see a short message explai
 something went wrong, with a **Retry** button: this is rare and usually resolves itself within a
 few seconds.
 
-### Creating your password and setting up two step authentication
+### Creating your password
 
 The sign in screen asks for your email (or username) and password, with a **Show password**
 toggle so you can check what you typed. If you get either one wrong, Fintela shows the same
@@ -53,17 +53,23 @@ accounts. You can also sign in with **Google**, when your organization has that 
 
 How your account starts depends on how you joined:
 
-- **Invited by a teammate:** you'll set your password, verify your email, and set up two step
-  authentication (an authenticator app code) the first time you open your invitation link.
-- **Signed up yourself:** you choose your password on the sign up form, then verify your email and
-  set up two step authentication the first time you sign in.
-
-Either way, every Fintela account ends up with two step authentication turned on: you'll be asked
-for a code any time you sign in from a new device or browser.
+- **Invited by a teammate:** you'll set your password and verify your email the first time you
+  open your invitation link.
+- **Signed up yourself:** you choose your password on the sign up form, then verify your email.
 
 > [!IMPORTANT]
 > You must verify your email before you can create an organization. If you skip it, you can still
 > sign in, but you'll be stuck on the organization setup screen until you go verify your address.
+
+### Two-step login
+
+Signing up doesn't ask for an authenticator app. Fintela asks for one where it protects something:
+the first time you try an action that can move money, like connecting a brokerage account or
+launching an operation (the full list is on [live trading](/docs/live-trading#connect-a-brokerage-account)). A dialog titled
+**Set up two-step login** says why: *"Brokerage actions need an authenticator app on your account.
+It takes about a minute, then you come straight back here."* **Set up now** walks you through it;
+**Not now** leaves the action undone. Once it's on, signing in with your password also asks for a
+code from the app.
 
 ### Staying signed in
 
@@ -218,10 +224,12 @@ organized into cards, and not everyone sees every card:
 | **Profile** | Everyone | Your name, email, and role; your organization's logo and name (Owners can edit the logo) |
 | **Organization Members** | Owner, Admin | A preview of your team, a **Manage members** button, and (for Owners) a link to the organization's usage dashboard |
 | **Developer access** | Everyone | Your personal API key |
-| **Broker connections** | Everyone | Your connected brokerage account, trading limits, and the kill switch, see [Live trading](/docs/live-trading) |
 | **Tokens** | Owner, Admin | Your Fintela Tokens and Fintela AI Tokens balances; only Owners can purchase more, see [Tokens & Billing](/docs/tokens-and-billing) |
 | **Product tours** | Everyone | Turn off automatic tours, or reset them to see them again, see [Navigation](/docs/navigation) |
 | **Actions** | Everyone | Sign out |
+
+Your broker connections, with their trading limits and **Stop all trading**, aren't on this page:
+they live on **Integrations** (left sidebar → **Integrations**), see [Live trading](/docs/live-trading).
 
 > [!NOTE] There's no subscription page
 > You won't find a plan picker, seat count, invoices, or a billing portal anywhere in Fintela.
@@ -240,8 +248,9 @@ email, and role, with the ability to change or remove each person.
 | **Remove member** (bin icon) | Confirms first, since it's permanent: the person's access is revoked and their account is deleted. There's no undo. |
 
 When you invite someone, they get an email with a secure one time link. They set their own
-password and two step authentication from it: you never need to create or share a password on
-their behalf.
+password from it: you never need to create or share a password on their behalf. Like everyone,
+they're asked to set up [two-step login](#two-step-login) only when they first try an action that
+can move money.
 
 > [!WARNING]
 > If Fintela can't send the invitation email for some reason, the invite is automatically rolled

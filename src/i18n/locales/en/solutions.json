@@ -415,7 +415,7 @@
       },
       "ownership": {
         "q": "Who owns my strategies?",
-        "a": "You do. Strategies are private by default, hashed and time-stamped as yours, and you can export any trial's daily signal as JSON or CSV at any time."
+        "a": "You do. Strategies are private by default, hashed and time-stamped as yours, and you can export any trial's rebalancing signal as JSON or CSV at any time."
       }
     },
     "closing": {

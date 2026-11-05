@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 6
 published: true
-updated: 2026-09-04
+updated: 2026-10-13
 summary: How Fintela's built in and custom risk managers protect a portfolio during a backtest: automatic stops, exposure caps, and trading halts, plus the order in which they act.
 keywords: risk manager, stop loss, trailing stop, take profit, max drawdown, exposure cap, position cap, cash floor, trading halt, re-entry block, risk manager activity log
 ---
@@ -144,7 +144,7 @@ Once trading resumes, the drawdown peak used to judge future halts is reset to t
 
 #### Sector Cap
 
-Keeps your long exposure to any single sector under a limit. If one sector grows past your cap (say, tech runs up and now makes up too much of your book) Fintela sells just enough from each name in that sector, proportionally, to bring it back under the limit.
+Keeps your long exposure to any single sector under a limit. If one sector grows past your cap (say, tech runs up and now makes up too much of your book) the rule trims each name in that sector proportionally, selling just enough to bring the sector back under the limit.
 
 | Setting | What it means | Typical range |
 |---|---|---|
@@ -176,7 +176,7 @@ Only long positions are checked; shorts are left alone.
 
 #### Cash Floor
 
-Makes sure your portfolio always holds at least a minimum share of cash. If your invested exposure creeps above that limit, Fintela trims every holding proportionally (long and short) until the cash floor is restored.
+Makes sure your portfolio always holds at least a minimum share of cash. If your invested exposure creeps above that limit, the rule trims every holding proportionally (long and short) until the cash floor is restored.
 
 | Setting | What it means | Typical range |
 |---|---|---|
@@ -195,7 +195,7 @@ Caps your combined long plus short exposure (your total gross leverage) rather t
 > [!WARNING]
 > This setting is a **leverage multiple**, not a percentage of equity like every other cap in the catalogue. `1.0` means fully invested with no leverage; `2.0` means 2× leverage. Double check you're not entering a percentage by mistake.
 
-When your combined long and short exposure goes over the cap, Fintela trims every holding proportionally until you're back under it.
+When your combined long and short exposure goes over the cap, the rule trims every holding proportionally until you're back under it.
 
 #### Time Window Halt
 

@@ -10,7 +10,8 @@
     "documentation": "Docs",
     "blog": "Blog",
     "research": "Research",
-    "solutions": "The Desk"
+    "solutions": "The Desk",
+    "mcp": "Connect your agent (MCP)"
   },
   "actions": {
     "getStarted": "Get started"

@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 6
 published: true
-updated: 2026-10-08
+updated: 2026-10-24
 summary: Build your first study by hand, writing the strategy in Python yourself, from a blank account to ranked results.
 keywords: quickstart, python, tutorial, first study, first strategy, write strategy code, manual setup, first results
 ---
@@ -173,17 +173,21 @@ validate**. Once they are set, live validation fires on a short debounce against
 sample: the chip moves to **Validating…** and then to **Valid**. If it lands on **Validation error**
 or **Error on line N**, click it to jump to the offending line.
 
-Leave the rail's **Advanced options → Lookback** section alone. It is **Auto synced**, meaning
-Fintela generated a `required_lookback` function from your parameters:
+Leave the rail's **Advanced options → Lookback** section alone. It reads **Derived from your code**,
+meaning Fintela read the window your code opens and wrote a `required_lookback` function over your
+parameter names:
 
 ```python
-def required_lookback(lookback, top_n):
-    return max(lookback, top_n)
+def required_lookback(lookback):
+    # Derived from this strategy's own code: tail(61)
+    return lookback + 1
 ```
 
-That is how much price history is loaded *before* the study's start date so your indicators are warm
-on day one. The study reevaluates it at each parameter's **maximum** to confirm the asset group has
-enough history.
+That is how much price history your code sees by the study's start date: a `required_lookback` of N
+loads N − 1 trading days *before* it, so on the start date `data` already holds N rows, counting that
+day. Here that is the `lookback + 1` rows your `tail(lookback + 1)` window needs, so the first signal
+can land on day one. The study reevaluates it at each parameter's **maximum** to confirm the asset
+group has enough history.
 
 ### Name and save the strategy
 
@@ -302,7 +306,7 @@ Leave the **Advanced options** accordion closed. For the record, this is what yo
 | **Grid precision (decimals)** | empty (continuous, irrelevant here, both parameters are integers) |
 | **Stop early if health drops below threshold** | on, **Failure threshold: 30 %** |
 | **Recalculate daily after market data arrives** | off |
-| **Eligibility rules** | **Insufficient warmup history** on; the other three off; **Require every ticker eligible** off |
+| **Eligibility rules** | **No price data in window** and **Insufficient warmup history** always on, with **Min history** empty (your strategy's declared warmup); **Listed after the study start** and **Below minimum coverage** off; **Require every ticker eligible** off |
 | **Risk Managers** | none attached |
 
 > [!NOTE]

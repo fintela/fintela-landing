@@ -554,7 +554,7 @@
       },
       "seedExport": {
         "q": "¿Puedo exportar la señal de mi estrategia?",
-        "a": "Sí. Cada trial, basket y ejecución de sandbox expone su seed: la señal diaria de rebalanceo (fecha → ticker → posición/asignación) que el engine usó para construir el backtest. Puedes inspeccionarla fecha por fecha y descargarla como JSON (la entrada exacta del engine) o CSV, directamente desde la app."
+        "a": "Sí. Cada trial, basket y ejecución de sandbox expone su seed: la señal de rebalanceo (fecha → ticker → posición/asignación) que el engine usó para construir el backtest. Puedes inspeccionarla fecha por fecha y descargarla como JSON (la entrada exacta del engine) o CSV, directamente desde la app."
       },
       "liveTrading": {
         "q": "¿Cómo funciona el trading en vivo?",
@@ -1165,6 +1165,27 @@
         "value": "96 % · 12 posiciones"
       },
       "outlook": "NVDA y MSFT aportaron la mayor parte de la ganancia. La exposición es del 96 %, así que la cartera seguirá de cerca al mercado en un día a la baja."
+    }
+  },
+  "yourAgent": {
+    "eyebrow": "Nuevo · Fintela MCP",
+    "title": "Trae tu propio agente.",
+    "titleAccent": "Conserva tu ventaja.",
+    "description": "Tu equipo ya construye con IA. Conecta tu agente a Fintela por MCP, el estándar abierto para herramientas de IA, y podrá leer veredictos de sobreajuste, validar el servidor de tu estrategia y proponer estudios, mientras tu estrategia se queda en tus servidores y una persona aprueba cada token.",
+    "exit": "Conoce Fintela MCP",
+    "tiles": {
+      "verdict": {
+        "title": "Lee el veredicto",
+        "desc": "Real o sobreajustado, directo en tu agente."
+      },
+      "validate": {
+        "title": "Valida gratis",
+        "desc": "Tu agente itera hasta que tu servidor pasa."
+      },
+      "confirm": {
+        "title": "Tú confirmas",
+        "desc": "Nada corre ni cuesta un token sin una persona."
+      }
     }
   }
 }

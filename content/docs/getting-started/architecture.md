@@ -4,7 +4,7 @@ section: Getting Started
 sectionOrder: 1
 order: 2
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: What happens behind the scenes when you use Fintela, from instant actions to background jobs and daily data updates.
 keywords: architecture, how it works, background jobs, studies, live trading, market data, sign in, developer api
 ---
@@ -230,7 +230,7 @@ surprise.
 | Using an external strategy limits how much a study can parallelize | An external endpoint and full distributed execution don't mix; see [execution modes](/docs/execution-modes) |
 | External strategies can't be tracked day to day | Daily updates rerun your strategy on Fintela's own schedule against Fintela's own data, which only works for strategies written inside Fintela |
 | Market data is end of day | Fintela doesn't display intraday prices; see [Market](/docs/market) |
-| Data Pipelines has been folded into Data Explorer | Old links redirect automatically to the [Data Explorer](/docs/data-explorer); a strategy still picks its data sources from its own editor |
+| Data Pipelines has been folded into Data Explorer | Old links redirect automatically to the Data Sources catalog in the [Data Explorer](/docs/data-explorer#data-sources-catalog); a strategy still picks its data sources from its own editor |
 
 Where to go from here: [Core concepts](/docs/core-concepts) for the vocabulary,
 [Quickstart](/docs/quickstart) to put three of these objects on screen yourself, and

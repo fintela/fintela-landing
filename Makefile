@@ -80,7 +80,8 @@ docs-links-check: build
 	@node scripts/check-docs-links.mjs
 
 # Content hygiene: no hot-linked images or placeholder alt text, no links to
-# redirecting paths, every referenced cover published.
+# redirecting paths, every referenced cover published, and no prose that casts
+# Fintela as the one trading (orders are the user's: scripts/order-voice.mjs).
 content-check: build
 	@node scripts/check-content.mjs
 

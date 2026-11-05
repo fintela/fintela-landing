@@ -15,14 +15,14 @@ import winnerBadge from '../../assets/awards/hedgeweek-2026-winner-white.png';
 const bodySx = { fontSize: { xs: '1rem', md: '1.0625rem' }, lineHeight: 1.65, color: soft.textSecondary } as const;
 
 /**
- * Band 4, after the pipeline (WorkflowSection) and who it is for
- * (InstitutionalSection), as proof of the product the visitor has just
+ * Band 5, after the pipeline (WorkflowSection), who it is for
+ * (InstitutionalSection) and bring-your-own-agent (YourAgentSection), as proof of the product the visitor has just
  * walked through: Fintela won New Solution Product of the
  * Year at the Hedgeweek US Awards 2026. The ceremony photo sits in a white card on the left (imagery
  * is always set into a surface, never on the ground); on the right are the
  * organiser's winner badge, what the awards are and what the win recognizes,
- * and the announcement post as the exit. On the light ground, so it breaks
- * up the ink bands either side of it (Who it's for, Research & News).
+ * and the announcement post as the exit. On the light ground, before the
+ * ink Research & News band.
  *
  * The badge is Hedgeweek's own artwork, shown unaltered: never recoloured or
  * cropped. This is the variant on a white ground; the hero shows the

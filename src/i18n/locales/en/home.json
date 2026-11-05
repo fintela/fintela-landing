@@ -554,7 +554,7 @@
       },
       "seedExport": {
         "q": "Can I export my strategy's signal?",
-        "a": "Yes. Every trial, basket, and sandbox run exposes its seed: the daily rebalancing signal (date → ticker → position/allocation) the engine used to build the backtest. You can inspect it date by date and download it as JSON (the exact engine input) or CSV, straight from the app."
+        "a": "Yes. Every trial, basket, and sandbox run exposes its seed: the rebalancing signal (date → ticker → position/allocation) the engine used to build the backtest. You can inspect it date by date and download it as JSON (the exact engine input) or CSV, straight from the app."
       },
       "liveTrading": {
         "q": "How does live trading work?",
@@ -1165,6 +1165,27 @@
         "value": "96% · 12 holdings"
       },
       "outlook": "NVDA and MSFT contributed most of the gain. Exposure is 96%, so the book will track the market closely on a down day."
+    }
+  },
+  "yourAgent": {
+    "eyebrow": "New · Fintela MCP",
+    "title": "Bring your own agent.",
+    "titleAccent": "Keep your edge.",
+    "description": "Your team already builds with AI. Connect your agent to Fintela through MCP, the open standard for AI tools, and it reads overfitting verdicts, validates your strategy server and proposes studies, while your strategy stays on your servers and a person approves every token.",
+    "exit": "Explore Fintela MCP",
+    "tiles": {
+      "verdict": {
+        "title": "Read the verdict",
+        "desc": "Real or overfit, straight into your agent."
+      },
+      "validate": {
+        "title": "Validate for free",
+        "desc": "Your agent iterates until your server passes."
+      },
+      "confirm": {
+        "title": "You confirm",
+        "desc": "Nothing runs or costs a token without a person."
+      }
     }
   }
 }

@@ -4,29 +4,26 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 2
 published: true
-updated: 2026-09-08
-summary: Everything Fintelligent can do for you inside Fintela, and exactly where it needs your confirmation before anything changes.
+updated: 2026-10-14
+summary: Everything Fintelligent can do for you inside Fintela, and exactly where it waits for your Confirm before anything changes.
 keywords: capabilities, permissions, confirmations, creating strategies, launching studies, editing risk managers, reading portfolios, limits
 ---
 
 Fintelligent can take around 190 distinct actions across the platform, organized into the categories
 covered on this page. It can never invent an action outside this fixed list: everything it does is
 one of the capabilities described below. Most of what it can do (164 actions) is pure lookup: reading
-your studies, portfolios, market data, and more. A much smaller set (30 actions) can actually create,
-change, or delete something in your account. This page walks through every category, says what each
-one touches, and (most importantly) tells you exactly where Fintelligent needs your click before
-anything is saved, and where it does not.
+your studies, portfolios, market data, and more. A much smaller set (25 actions) can actually create
+or change something in your account, and none can delete anything. This page walks through every
+category, says what each one touches, and (most importantly) tells you exactly where Fintelligent
+needs your click before anything is saved, and where it does not.
 
-> [!CAUTION]
-> Not every change Fintelligent makes shows you a confirmation dialog first. When it fills in one of
-> Fintela's own editors (for a strategy, study, fitness function, risk manager, or asset group) it
-> always ends by asking you to click Confirm before anything is saved. But a faster, direct path
-> (creating a strategy, creating or launching a study, deleting something, or changing a portfolio
-> group) saves immediately, with no dialog. Fintelligent is instructed to tell you in chat what it's
-> about to do before it takes that kind of action, but nothing forces it to wait for your reply first,
-> so always read that message before assuming it's asking permission. See
-> [Which actions need your confirmation](#which-actions-need-your-confirmation) below for exactly
-> which is which.
+> [!NOTE]
+> Fintelligent saves nothing in your library on its own. Creating, changing, duplicating or forking a
+> strategy, fitness function, risk manager or asset group, and creating, duplicating, launching or
+> resuming a study, all stop at a **Confirm** card in the chat: nothing is saved until you click
+> Confirm, and your click is what saves it, as you. A change to a portfolio group that trades waits
+> for your Confirm too, and Fintelligent cannot delete anything. A few small actions run without a
+> card; [Which actions need your confirmation](#which-actions-need-your-confirmation) lists them.
 
 ## How Fintelligent's actions work
 
@@ -55,8 +52,8 @@ Every action Fintelligent can take falls into one of a few categories:
 ### Focused specialists for complex requests
 
 For simple questions, Fintelligent answers directly using its everyday set of lookup actions. One
-change (deriving a new asset group from an existing grouping) is available to it immediately too,
-without any extra setup, since it's low-risk and easy to reverse.
+change (deriving a new asset group from an existing grouping) is available to it without any extra
+setup too, since it's low-risk and easy to reverse; like every other, it waits for your Confirm.
 
 For anything more involved (writing a new strategy, launching a study, editing a risk manager, and
 so on), Fintelligent first loads the matching checklist for that kind of work: one for strategies,
@@ -81,14 +78,15 @@ A few rules always hold, no matter how a request is phrased:
   any of that.
 - Handing work off to a specialist is read-only by default. It has to be specifically marked as
   allowed to write before that piece of work can change anything.
-- Fintelligent can never create, update, or delete a strategy, study, fitness function, risk manager,
-  or asset group on its own initiative: that always goes through either the on-screen editor (with
-  your Confirm click) or a specialist explicitly allowed to write.
+- Fintelligent can never create or update a strategy, study, fitness function, risk manager, or
+  asset group on its own: that always waits for your click, on the Confirm card in the chat or in the
+  on-screen editor's own Save dialog. It cannot delete one at all.
 
 ### Every action is logged
 
-Every change Fintelligent makes to your account (creating, editing, or deleting a strategy, study,
-fitness function, risk manager, asset group, or portfolio group) is permanently recorded: who
+Every change made to your account through Fintelligent (creating, editing, or duplicating a
+strategy, study, fitness function, risk manager, asset group, or portfolio group) is permanently
+recorded: who
 requested it, when, and exactly what changed. That record can never be edited or deleted afterward,
 so it stays a reliable history of what the assistant did on your behalf. Plain lookups aren't logged
 this way, since they don't change anything.
@@ -106,17 +104,17 @@ in parallel, since there's no risk of one interfering with another.
 
 | Area | Actions | Can create or change something | What it covers |
 |---|---:|---:|---|
-| Portfolio analysis & portfolio groups | 46 | 4 | Trial-portfolio metrics, equity, holdings, lineage, overfitting, what-if previews, cross-study rankings, portfolio groups, and managed portfolios |
+| Portfolio analysis & portfolio groups | 45 | 3 | Trial-portfolio metrics, equity, holdings, lineage, overfitting, what-if previews, cross-study rankings, portfolio groups, and managed portfolios |
 | Market | 24 | 0 | Market overview, indices, sectors, countries, per-ticker prices, financials, sentiment, insider activity, analyst ratings, corporate actions, rates, news |
 | Studies | 19 | 5 | Listing, metadata, progress, errors, clustering, parameter importance, overfitting, comparisons, cost previews, plus creating, launching, stopping, resuming, and duplicating |
 | Data Explorer | 17 | 0 | Data catalog, dataset summaries and coverage, feature series, raw rows, rates, macro series, calendars, symbol changes, metadata fields |
-| Asset groups | 15 | 5 | Universes, date coverage, metadata quality, compatibility checks, groupings, plus creating, updating, deleting, and duplicating |
-| Risk managers | 12 | 5 | Your own and the public library, quotas, versions, previews, plus creating, updating, deleting, duplicating, and forking |
+| Asset groups | 14 | 4 | Universes, date coverage, metadata quality, compatibility checks, groupings, plus creating, updating, and duplicating |
+| Risk managers | 11 | 4 | Your own and the public library, quotas, versions, previews, plus creating, updating, duplicating, and forking |
 | Reference and knowledge | 11 | 0 | Data sources, built-in risk managers, reference building blocks, worked examples, resource requirements, metrics, samplers, benchmarks, a workspace snapshot |
-| Strategies | 9 | 4 | Listing, metadata, declared parameters, versions, previews, plus creating, updating, deleting, and duplicating |
+| Strategies | 8 | 3 | Listing, metadata, declared parameters, versions, previews, plus creating, updating, and duplicating |
 | Tickers | 9 | 0 | Symbol lookup, search, snapshots, indices, constituents, time series, exchanges, filter values |
 | On-screen actions | 8 | 2 | Navigation, editor writes, opening editors, save requests, question cards, PDF reports, on-screen command batches |
-| Fitness functions | 8 | 4 | Listing, metadata, versions, previews, plus creating, updating, deleting, and duplicating |
+| Fitness functions | 7 | 3 | Listing, metadata, versions, previews, plus creating, updating, and duplicating |
 | Checking your code | 7 | 0 | The checks run on your own code, external connections, and built-in resources before anything can be saved |
 | Screener | 3 | 0 | Filter options, match counts, match results |
 | Saved drafts | 2 | 1 | Reading and saving your in-progress authoring work |
@@ -124,49 +122,53 @@ in parallel, since there's no risk of one interfering with another.
 | Long-running checks | 1 | 0 | Waiting on a check that takes a moment to finish |
 | Re-reading your screen | 1 | 0 | Re-running the query behind whatever you're currently looking at |
 | Live brokerage | 0 | 0 | Intentionally empty: no live-brokerage action exists yet |
-| **Total** | **194** | **30** | |
+| **Total** | **189** | **25** | |
 
 ## Actions that change your data
 
-### What Fintelligent can create, edit, or delete
+### What Fintelligent can create or change
 
 | What you're working with | What Fintelligent can do to it |
 |---|---|
-| Strategy | Create, fully update, delete, or duplicate |
-| Fitness function | Create, fully update, delete, or duplicate |
-| Risk manager | Create, update, delete, duplicate, or fork a public one into your own library |
-| Asset group | Derive one from a study's universe or from a grouping, fully replace its ticker universe, delete, or duplicate |
-| Study | Save, launch (this is the one that spends Fintela tokens and starts the optimization), stop, resume with more trials, or make a config-only duplicate |
-| Portfolio group | Create from a set of portfolios, partially update, delete, or refresh its member data |
+| Strategy | Create, fully update, or duplicate, each after your Confirm |
+| Fitness function | Create, fully update, or duplicate, each after your Confirm |
+| Risk manager | Create, update, duplicate, or fork a public one into your own library, each after your Confirm |
+| Asset group | Create one, derive one from a study's universe or from a grouping, fully replace its ticker universe, or duplicate, each after your Confirm |
+| Study | Save, launch (this is the one that spends Fintela tokens and starts the optimization), resume with more trials, or make a config-only duplicate, each after your Confirm; stop a running one |
+| Portfolio group | Create one from a set of portfolios, or update one that doesn't trade; an update to a group that trades waits for your Confirm, and refreshing its member data waits for your yes in the chat |
 | Your in-progress draft | Save your work-in-progress on a strategy, study, fitness function, risk manager, or asset group, so it survives you navigating away or closing the tab |
 
-Every one of these persists immediately when Fintelligent acts on it directly: there is no separate
-confirmation dialog on this path. The next section explains when that direct path is used instead of
-the editor, and how to tell which one you're getting.
+Fintelligent has no way to delete anything: deleting stays a button on the page itself, with its own
+confirmation dialog.
 
-Creating a portfolio group with a paid allocation method also charges to unlock that method at the
-moment of creation; if your balance can't cover it, the creation is declined rather than partially
-applied.
+When a change waits for your Confirm, the chat shows a card with exactly what would be saved. Nothing
+is written until you click Confirm, and Cancel discards it. Your click runs the change as you, with
+your permissions and the same checks your own Save runs, and the card shows the outcome: what was
+saved, or why it was refused.
+
+An advanced allocation method on a portfolio group needs the Institutional plan; on another plan the
+creation is declined rather than partially applied.
 
 > [!WARNING]
 > Launching a study (whether by saving one with "launch now" turned on, or launching an existing
 > saved study) spends **Fintela tokens**, the platform's compute currency, and starts the
-> optimization running. You can always see the cost ahead of time: ask Fintelligent to preview the
-> cost of a new configuration or of a saved study before you commit (previewing never creates
-> anything or spends any tokens) but Fintelligent isn't required to show you that number before it
-> launches something, so ask for it yourself if you want to see it first.
+> optimization running. The Confirm card shows that cost, and your balance, before you click. You
+> can also ask Fintelligent to preview the cost of a new configuration or of a saved study at any time
+> (previewing never creates anything or spends any tokens).
 
 ### Which actions need your confirmation
 
-There are two ways an object gets created, edited, or deleted, and only one of them ends in a dialog.
-
-| | Through the editor | Fintelligent acting directly |
-|---|---|---|
-| What happens | Fintelligent opens the real editor for that object and fills it in, exactly as if you had | Fintelligent creates, updates, or deletes the object without opening anything on screen |
-| What you see | The actual editor, filled in, followed by the same Save confirmation dialog you'd see doing it by hand | Nothing on screen until it's already done |
-| Who actually saves it | **You**, by clicking Confirm | Fintelligent, on its own |
-| While you wait | A clear "waiting for you to confirm" status | No waiting step at all |
-| When it's used | The default, safer path | Meant for when you've explicitly asked to skip the editor |
+| What Fintelligent does | When it's saved |
+|---|---|
+| Creates, changes, duplicates or forks a strategy, fitness function, risk manager or asset group | Only when you click **Confirm** on its card |
+| Creates, duplicates, launches or resumes a study, or tunes risk managers on a trial | Only when you click **Confirm** on its card |
+| Changes a portfolio group that trades | Only when you click **Confirm** on its card |
+| Refreshes a portfolio group's member data, or runs a sandbox preview that spends tokens | After you answer **yes** to its question in the chat |
+| Fills in an editor on your screen | Only when you save it yourself, in that editor's own Save dialog |
+| Creates a portfolio group, or changes one that doesn't trade | Right away: a group that doesn't trade places no order |
+| Stops a running study | Right away |
+| Re-runs one of a study's analyses that couldn't be produced | Right away, at no token cost |
+| Saves your in-progress draft | Right away |
 
 Requesting a save through the editor path always runs the same checks your own Save button would,
 then stops there: it never persists anything by itself. For a study specifically, this step never
@@ -347,12 +349,12 @@ See [Studies](/docs/studies) and [Study lifecycle](/docs/study-lifecycle).
 
 ### Strategies
 
-9 actions, four of which can change something.
+8 actions, three of which can change something.
 
 Fintelligent can list your organization's strategies (without exposing the underlying code), pull
 metadata for specific ones, list their declared parameters, show their version history, and preview
 the positions a strategy would take over a date range against a chosen asset group. It can also
-create, fully update, delete, or duplicate a strategy.
+create, fully update, or duplicate a strategy, each after your Confirm.
 
 **Limits.** Fintelligent can only act on strategies it already knows the id of from something earlier
 in the conversation: if it names one that doesn't exist or isn't accessible, the whole request fails
@@ -364,11 +366,12 @@ See [Strategies](/docs/strategies) and [Execution modes](/docs/execution-modes).
 
 ### Fitness functions
 
-8 actions, four of which can change something.
+7 actions, three of which can change something.
 
 Fintelligent can list the built-in objectives plus your organization's own (again, without exposing
 the code), pull metadata and version history, and preview the score a fitness function would produce
-over a date range. It can also create, fully update, delete, or duplicate a fitness function.
+over a date range. It can also create, fully update, or duplicate a fitness function, each after your
+Confirm.
 
 **Limits.** Previewing a fitness function needs a fitness id, a strategy id, an asset group, both
 sets of parameters, and a date range. Your own code is validated the same way strategy code is, with
@@ -378,13 +381,13 @@ See [Fitness functions](/docs/fitness-functions) and [External fitness](/docs/ex
 
 ### Risk managers
 
-12 actions, five of which can change something: the largest set of write actions of any single area.
+11 actions, four of which can change something.
 
 Fintelligent can list your own risk managers and the shared public library, check quotas and usage,
 show version history, and preview one risk manager on its own or an ordered stack of several
 together. It can also create a risk manager (built-in, your own code, an external connection, or a
-rules-based one), update it, delete it, duplicate it, or fork a public one into your own library so
-you can customize it.
+rules-based one), update it, duplicate it, or fork a public one into your own library so you can
+customize it, each after your Confirm.
 
 **Limits.** A built-in risk manager needs you to name which one; anything else needs its own
 execution details filled in. Previewing a single risk manager needs either an existing one or a
@@ -394,24 +397,24 @@ See [Risk managers](/docs/risk-managers).
 
 ### Asset groups
 
-15 actions, five of which can change something. (You may also see these called "data clusters"
+14 actions, four of which can change something. (You may also see these called "data clusters"
 elsewhere in the product: it's the same thing.)
 
 Fintelligent can show your universes and what they contain, how well a set of existing groups covers
 a requested list of instruments, metadata, date coverage, a data-quality report, the most recent
 available date, whether a group can feed a given strategy's data needs, every available
 sector/industry taxonomy, and detail on one grouping. It can also derive a new asset group from a
-study's universe or from an existing grouping, replace a group's entire ticker universe, delete a
-group, or duplicate one.
+study's universe or from an existing grouping, replace a group's entire ticker universe, or
+duplicate one, each after your Confirm.
 
 > [!WARNING]
 > Updating an asset group's ticker list **replaces the whole universe**: it doesn't add to it. If
 > you ask Fintelligent to add a few tickers to an existing group, make sure the full intended list is
 > what actually gets sent; anything left out is removed.
 
-Deriving a new asset group from an existing grouping is the one change Fintelligent can make
-immediately, without first loading a checklist or asking a specialist, because it's low-risk and
-easy to reverse.
+Deriving a new asset group from an existing grouping is the one change Fintelligent can propose
+without first loading a checklist or asking a specialist, because it's low-risk and easy to reverse;
+it still waits for your Confirm.
 
 See [Asset groups](/docs/asset-groups).
 
@@ -480,7 +483,7 @@ and [Metrics reference](/docs/metrics-reference).
 
 ### Portfolio groups
 
-18 actions, four of which can change something. (These are sometimes called "baskets" elsewhere in
+17 actions, three of which can change something. (These are sometimes called "baskets" elsewhere in
 the product.)
 
 Fintelligent can show your organization's portfolio groups, one group's full detail and
@@ -490,11 +493,11 @@ period, blended equity and stats, the underlying seed data, how current each mem
 is, sentiment across a group's holdings with headlines, rolling ranking windows, a read-only preview
 of how the group would trade live (without placing any actual order), and the status of live and
 drafted group operations. It can also create a group from a set of portfolios (any trial portfolios
-you include are automatically promoted to managed portfolios), partially update a group, delete a
-group, or refresh a group's member data.
+you include are automatically promoted to managed portfolios), partially update a group (one that
+trades only after your Confirm), or refresh a group's member data (after your yes in the chat).
 
-**Limits.** Creating a group with a paid allocation method also charges to unlock that method: if
-your balance can't cover it, the creation is declined. Turning on scheduled rebalancing requires you
+**Limits.** An advanced allocation method needs the Institutional plan: on another plan, creating a
+group with one is declined. Turning on scheduled rebalancing requires you
 to also set how often it rebalances. Switching a group to equal-weight or manual allocation needs its
 old allocation parameters explicitly cleared, or they'll linger. Recomputing a group's backtest from
 inception is only available for a group that has never actually been operated live.
@@ -664,9 +667,9 @@ before Fintelligent does anything, and you're told plainly why. See
 |---|---|
 | Read your connected brokerage account directly | This is intentionally left out entirely: none of your broker connection, live positions, order fills, allocations, or end-of-day reconciliation data ever reaches Fintelligent |
 | Read a managed portfolio's live positions or equity curve | Kept off-limits on purpose, for the same reason: it can point you to a managed portfolio, but never read what it actually holds |
-| Connect a broker, launch or rebalance live trading, execute or force-stop a portfolio-group operation, or promote something to managed | None of these are available yet: live-trading changes are deliberately withheld until there's a dedicated human-confirmation step for them. Everything Fintelligent can do around your live trading is read-only |
+| Connect a broker, launch or rebalance live trading, execute or force-stop a portfolio-group operation, or promote something to managed | None of these are available: Fintelligent never connects a broker and never starts, stops or rebalances trading. The one change it can propose to a group that trades, an edit to what the group holds, waits for your Confirm, and the group's next rebalance trades it as it would your own edit |
 | Delete anything through a batch of on-screen commands | There's no delete step in that system, for you or for Fintelligent |
-| Delete, stop, or resume something by asking it directly | Those specific actions are always left to the page's own buttons and their own confirmation dialogs |
+| Delete something by asking it directly | Deleting is always left to the page's own button and its own confirmation dialog |
 | Receive a file you upload in chat | Attaching a file shows it in the composer, but it isn't actually sent anywhere: only pasted code text goes through |
 | Hand you a file from its own side | Every PDF report is built and downloaded entirely inside your browser: there's no separate copy sitting on a server to fetch later |
 | Take you straight to one specific record | It can send you to a page (your studies list, say) but not yet straight into one particular study on that page |

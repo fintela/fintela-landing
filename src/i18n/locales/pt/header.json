@@ -10,7 +10,8 @@
     "documentation": "Documentação",
     "blog": "Blog",
     "research": "Pesquisa",
-    "solutions": "A Mesa"
+    "solutions": "A Mesa",
+    "mcp": "Conecte seu agente (MCP)"
   },
   "actions": {
     "getStarted": "Começar"

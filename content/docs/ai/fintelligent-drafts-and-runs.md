@@ -4,7 +4,7 @@ section: Artificial Intelligence
 sectionOrder: 6
 order: 3
 published: true
-updated: 2026-09-04
+updated: 2026-10-14
 summary: How Fintelligent proposes changes as an unsaved draft, and how you track, confirm or stop it while it's working.
 keywords: draft, unsaved changes, run, in progress, approve, apply, review, confirmation, discard, notifications
 ---
@@ -391,24 +391,24 @@ until you Keep or Discard it, and a question card, which Fintelligent puts on sc
 decision from you and which is never on a clock: it waits as long as you need. See
 [Fintelligent capabilities](/docs/fintelligent-capabilities) for more on the question card.
 
-### What Fintelligent can do without a dialog
+### What waits for your Confirm, and what doesn't
 
-Be clear eyed about this: the editor and confirm path above is the default, **not the only path**.
-Fintelligent also has a set of direct actions that save immediately, with no confirmation dialog at
-all. One of the direct strategy actions is explicitly built this way: it's meant to be used only
-when you've clearly asked to skip the usual step by step flow, and Fintelligent is instructed to
-check with you in chat first: but that instruction is guidance for the assistant, not a hard lock in
-the product.
+Besides the editor path above, Fintelligent can propose a change straight from the chat, and it
+saves nothing in your library on its own that way either. When it creates, changes, duplicates or
+forks a strategy, fitness function, risk manager or asset group, or creates, duplicates, launches
+or resumes a study, the chat shows a **Confirm** card with exactly what would be saved, and nothing
+is written until you click Confirm; your click runs the change as you. A change to a portfolio
+group that trades waits for your Confirm too, and Fintelligent has no way to delete anything.
 
-| Area | What Fintelligent can do immediately, without your confirmation |
-|---|---|
-| Strategies | Create, update, delete, or duplicate one |
-| Fitness functions | Create, update, delete, or duplicate one |
-| Risk managers | Create, update, delete, duplicate, or fork a public one into your library |
-| Asset groups | Create one from a study or a grouping, update, delete, or duplicate one |
-| Studies | Create, duplicate, launch, stop, or resume one |
-| Portfolio groups | Create, update, delete one, or refresh a member portfolio's data |
-| Drafts and quick actions | Save a draft, open an editor, or run a short batch of interface actions |
+| Area | What waits for your Confirm | What Fintelligent does right away |
+|---|---|---|
+| Strategies | Create, update, or duplicate one | Nothing |
+| Fitness functions | Create, update, or duplicate one | Nothing |
+| Risk managers | Create, update, duplicate, or fork a public one into your library | Nothing |
+| Asset groups | Create one from a study or a grouping, update, or duplicate one | Nothing |
+| Studies | Create, duplicate, launch, or resume one | Stop a running one |
+| Portfolio groups | Update one that trades | Create one, or update one that doesn't trade; refreshing a member portfolio's data waits for your yes in the chat |
+| Drafts and quick actions | Nothing | Save a draft, open an editor, or run a short batch of interface actions |
 
 What actually constrains them:
 
@@ -420,10 +420,10 @@ What actually constrains them:
   be edited or deleted, not even by Fintela's own systems. It's a permanent record of what the
   assistant did on your behalf.
 - **The same validation as a manual save.** Saving code for a strategy, fitness function or risk
-  manager (whether through the editor or through one of Fintelligent's direct actions) requires
+  manager (whether through the editor or from the Confirm card) requires
   that the exact version being saved has already passed Fintela's checks, recently. There's no way to
   skip validation through either path.
-- **A saved study doesn't start running by itself.** Creating a study this way saves it: it doesn't
+- **A saved study doesn't start running by itself.** Creating a study saves it: it doesn't
   spend any compute budget or begin optimizing unless launching immediately was explicitly requested.
   A saved but not launched study costs you nothing. See [Tokens & billing](/docs/tokens-and-billing).
 - **Fintelligent's quick action shortcuts can't delete, stop or resume anything.** They can open a
@@ -431,11 +431,11 @@ What actually constrains them:
   or resuming one always has to go through the button and confirmation dialog on the page itself. The
   same is true of Fintelligent's batch action shortcut: there's no delete step available through it
   at all, for anyone, and if one step in a batch fails, none of the steps after it run either.
-- **Live trading is completely off limits to Fintelligent.** Connecting a broker, launching or
-  rebalancing live trading, force stopping a live portfolio group, and promoting something to managed
-  status are all deliberately kept out of reach until a manual confirmation step exists for each of
-  them. Anything Fintelligent tells you about live trading is read only. See
-  [Live trading](/docs/live-trading).
+- **Fintelligent never trades.** It never connects a broker, never starts, stops or rebalances
+  trading, and never force stops a portfolio group. The one change it can propose to a group that
+  trades, an edit to what the group holds, waits for your Confirm, and the group's next rebalance
+  trades it as it would your own edit. Anything else it tells you about live trading is read only.
+  See [Live trading](/docs/live-trading).
 
 ### How the conversation shows what just happened
 

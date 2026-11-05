@@ -415,7 +415,7 @@
       },
       "ownership": {
         "q": "¿De quién son mis estrategias?",
-        "a": "Suyas. Las estrategias son privadas por defecto, con hash y marca de tiempo a su nombre, y puede exportar la señal diaria de cualquier trial como JSON o CSV en cualquier momento."
+        "a": "Suyas. Las estrategias son privadas por defecto, con hash y marca de tiempo a su nombre, y puede exportar la señal de rebalanceo de cualquier trial como JSON o CSV en cualquier momento."
       }
     },
     "closing": {

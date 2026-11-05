@@ -10,7 +10,8 @@
     "documentation": "Documentación",
     "blog": "Blog",
     "research": "Investigación",
-    "solutions": "La Mesa"
+    "solutions": "La Mesa",
+    "mcp": "Conecta tu agente (MCP)"
   },
   "actions": {
     "getStarted": "Comenzar"

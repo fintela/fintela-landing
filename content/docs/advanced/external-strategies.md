@@ -4,7 +4,7 @@ section: Configuration & Advanced
 sectionOrder: 8
 order: 4
 published: true
-updated: 2026-09-04
+updated: 2026-10-28
 summary: Run your own trading logic on your own systems, in any language, and connect it to Fintela so it can be scored and traded alongside strategies you build in the app.
 keywords: external strategy, self hosted strategy, own infrastructure, trading signal, max concurrency, timeout, private data, own language
 ---
@@ -13,7 +13,8 @@ An external strategy lets you run your own trading logic on your own systems, in
 language, using any data or models you like, and plug it into Fintela so it can be scored,
 tested and traded alongside the strategies you build directly in the app. Fintela only ever
 holds three things about it: where your service lives, how long to wait for a response, and
-how many calls it can handle at once. Your code, your data, your models and your edge never
+how many calls it can handle at once, plus, if your service requires one, the credential it
+checks. Your code, your data, your models and your edge never
 leave your own infrastructure: Fintela just sends over the numbers to test and reads back the
 trading signal you produce.
 
@@ -24,7 +25,9 @@ your endpoint: its address, how long to wait for a response, and how many reques
 allowed to handle at once. Everything else about the strategy (its name, description, the
 parameters you've declared and how far back it needs price history) is the same metadata
 Fintela keeps for any strategy, used to build the study's search space and load the right
-price history. None of your logic, your data or your credentials ever reach Fintela.
+price history. None of your logic or your data ever reach Fintela. If your service requires a
+credential, Fintela keeps that too, encrypted, and only ever sends it to your service (see
+[Authentication and secrets](#authentication-and-secrets)).
 
 This is the core tradeoff between the two ways of building a strategy. With
 [Internal execution](/docs/execution-modes) you write your logic directly in Fintela's own
@@ -336,21 +339,36 @@ lines of:
 
 ## Authentication and secrets
 
-Fintela never sends any credentials to your endpoint. There's no field for an API key, no
-custom headers, no signing and no shared secret anywhere in an external strategy's setup:
-every call arrives with just the date range, parameter values and optional ticker list, no
-authentication attached.
+Your service is on the internet, so protect it with a credential. Give the strategy one and
+Fintela sends it on every call, as `Authorization: Bearer <token>` or under one header you pick
+from `x-api-key`, `api-key`, `x-auth-token` and `x-fintela-token`. You enter it in the
+strategy's editor in the app. Fintela stores it encrypted and never shows it again, not even to
+you. If you change the endpoint's address, the credential is deleted and you enter it again.
 
-Because of that, your service has to accept unauthenticated requests from Fintela; if it
-answers with an authentication error, every trial will fail. The one thing standing between
-the open internet and your service is the address itself: making it hard to guess, for example
-by including a long random segment in the path, is a reasonable way to keep out unwanted
-traffic, since that hard to guess piece stays part of every call Fintela makes.
+- **Only to your address:** the credential is sent only to your endpoint's exact scheme, host
+  and port, and never through a redirect. An endpoint with a credential must use `https://`.
+- **On every call, the health check included:** studies call `POST /simulate`, and the daily
+  updates first call `GET /health`. Both carry the same header, so check it on both.
+- **Before anything is charged:** when a study is launched or resumed, Fintela first makes one
+  authenticated call to your service. If it answers 401 or 403, nothing is created or charged.
+- **The value:** 1 to 4096 characters of printable ASCII (letters, digits, punctuation and
+  spaces), with no space at the start or the end. Fintela refuses anything else when you save
+  it, and sends the value exactly as saved.
+
+A strategy without a credential calls your service with no authentication attached, so your
+service has to accept those requests. If it answers 401 or 403 instead, validation tells you it
+needs a credential, and a study is refused before it's charged.
+
+> [!WARNING] The source IP is not authentication
+> Fintela calls your service from `3.150.82.255`. Every Fintela customer's strategies call from
+> that same address, so allowlisting it only narrows who can reach you. Check the credential on
+> every request, and never echo it back in an error body.
 
 > [!WARNING] Plain http:// means plain text
 > If you register an `http://` address, the parameter values Fintela sends and the signal you
 > return travel over the network unencrypted. That's your call to make about your own service,
-> but make it knowingly, use `https://` if that matters to you.
+> but make it knowingly, use `https://` if that matters to you. A credential is only ever sent
+> over `https://`.
 
 ## Live portfolios and the daily health check
 

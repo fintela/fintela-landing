@@ -4,7 +4,7 @@ section: Analysis & Portfolios
 sectionOrder: 4
 order: 2
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: The six views inside a single portfolio: performance, holdings, trades and orders, risk analytics, robustness, and a shareable investor profile.
 keywords: portfolio detail, performance, holdings, transactions, trades, orders, risk analytics, robustness, tearsheet, profile
 ---
@@ -61,7 +61,7 @@ Four buttons sit above the equity chart (collapsing to icons on mobile):
 
 | Button | What it does |
 |---|---|
-| Seed | Opens a dialog showing this trial's seed (the daily rebalancing signal the strategy produced) which you can download. |
+| Seed | Opens a dialog showing this trial's seed (the rebalancing signal the strategy produced: its target positions and weights on each date it rebalanced) which you can download. |
 | Test Risk Manager | Opens the sandbox with this portfolio loaded, so you can try a risk manager against it before committing to one. |
 | Derive / Optimize RMs | Opens the Derive Risk Managers wizard, pre loaded with this portfolio as the starting point. |
 | Invert (what if) | Flips every position long to short and short to long and reruns the simulation, purely as a preview: nothing is saved or traded. |

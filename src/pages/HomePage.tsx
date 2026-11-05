@@ -8,6 +8,7 @@ import { AwardSection } from '../components/sections/AwardSection';
 import { InstitutionalSection } from '../components/sections/InstitutionalSection';
 import { TrustBar } from '../components/sections/TrustBar';
 import { WorkflowSection } from '../components/sections/WorkflowSection';
+import { YourAgentSection } from '../components/sections/YourAgentSection';
 import { InsightsSection } from '../components/sections/InsightsSection';
 import { FAQSection } from '../components/sections/FAQSection';
 import { Footer } from '../components/Footer/Footer';
@@ -119,10 +120,12 @@ export const HomePage = () => {
           <HeroDiorama />
           {/* The product story first, in one band: the pipeline, the agentic
               demo and the capabilities (`#capabilities` lives inside it). Then
-              who it is for, the Hedgeweek award as proof of it, then the blog. */}
+              who it is for, bringing your own agent (MCP), the Hedgeweek award
+              as proof of it, then the blog. */}
           <WorkflowSection />
           {/* PlatformStackSection (the three-layer stack) is on hold; re-add it here, after the platform band. */}
           <InstitutionalSection />
+          <YourAgentSection />
           <AwardSection />
           <InsightsSection />
           <TrustBar />

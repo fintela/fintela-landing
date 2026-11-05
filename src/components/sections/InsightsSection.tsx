@@ -20,7 +20,7 @@ const pickFeatured = (posts: BlogPostSummary[]): BlogPostSummary[] => {
 };
 
 /**
- * Band 5. Research & News on the home page as a bento, both sections in one
+ * Band 6. Research & News on the home page as a bento, both sections in one
  * feed with each card linking to its own post's page: the newest (or pinned) post
  * in a 2×2 plate with its cover, two compact cover tiles beside it, two more
  * under it, and a counter of the blog's posts that is also the way to /blog;

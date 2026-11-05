@@ -4,7 +4,7 @@ section: Features
 sectionOrder: 7
 order: 1
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: An interactive Python notebook workspace for exploring data and testing strategies, fitness functions and risk managers before you save them for real.
 keywords: laboratory, notebook, python, session, workspace, editor, sdk, files, catalog, lab
 ---
@@ -473,8 +473,9 @@ for how resources that run inside Fintela differ from ones that run on your own 
   created this way.
 - **It doesn't include Data Pipelines anymore.** That feature has been retired: a strategy,
   fitness function or risk manager now picks its data sources directly inside its own editor. An
-  old bookmark to Data Pipelines redirects you to the [Data Explorer](/docs/data-explorer) instead,
-  which is itself a separately unlockable feature.
+  old bookmark to Data Pipelines redirects you to the Data Sources catalog in the
+  [Data Explorer](/docs/data-explorer#data-sources-catalog) instead, which is itself a separately
+  unlockable feature.
 - **It isn't where you run a full backtest.** A notebook is for quick exploration under the data
   limits above; batch testing across history belongs in a [study](/docs/studies): see the
   [end to end workflow](/docs/end-to-end-workflow) for how the pieces fit together.

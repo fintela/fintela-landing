@@ -415,7 +415,7 @@
       },
       "ownership": {
         "q": "De quem são as minhas estratégias?",
-        "a": "Suas. As estratégias são privadas por padrão, com hash e carimbo de tempo em seu nome, e você pode exportar o sinal diário de qualquer trial como JSON ou CSV a qualquer momento."
+        "a": "Suas. As estratégias são privadas por padrão, com hash e carimbo de tempo em seu nome, e você pode exportar o sinal de rebalanceamento de qualquer trial como JSON ou CSV a qualquer momento."
       }
     },
     "closing": {

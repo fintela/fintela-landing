@@ -4,7 +4,7 @@ section: Registries
 sectionOrder: 3
 order: 5
 published: true
-updated: 2026-09-04
+updated: 2026-10-24
 summary: Define what "better" means for your studies: score simulated trades with a built in performance metric, your own logic written inside Fintela, or your own external service.
 keywords: fitness, objective, score, sharpe, sortino, calmar, direction, maximize, minimize, custom scoring, external scoring, built-in metrics, portfolio metric
 ---
@@ -162,7 +162,7 @@ A switch at the top of the editor lets you pick how the function runs: **Interna
 The center of the screen is a full code editor for Python: syntax highlighting, a starter template, live validation feedback as you type, jump to error, import and export, full screen mode, and code formatting. Two tools are specific to fitness functions:
 
 - **Reference**: opens a quick reference showing exactly what your function receives and how to use it, so you don't have to leave the editor to look it up.
-- **Validation universe**: lets you choose what sample price data Fintela uses to test your code before you save: a single default ticker, a custom list of tickers, or one of your own asset groups. Pointing validation at data that resembles what your function will really see helps catch problems the generic default might miss.
+- **Validation universe**: lets you choose what sample price data Fintela uses to test your code before you save: a small default set of test tickers, a custom list of tickers, or one of your own asset groups. The prices are synthetic either way: a custom list or an asset group hands your function those real ticker codes, which proves your code runs on them, not how it would score.
 
 Until you've made changes to the starter template, an info message reminds you that editing the name or description will still update the template automatically: the moment you touch the actual code, it becomes your own custom version.
 
@@ -200,7 +200,7 @@ The panel and your code stay in sync automatically: edit your function's argumen
 
 The right hand panel holds a few more sections, most collapsed by default:
 
-- **Data sources**: price history is always available to your function automatically. Anything else (fundamentals, sentiment data, or one of your own asset groups) needs to be added here so it's loaded and handed to your function when it runs.
+- **Data sources**: price history reaches your function as `data` only when the study it runs in has a fitness asset group, which is set per study rather than on the function; without one, `data` is `None`, so check for that before you use it. Anything else (fundamentals, sentiment data, or one of your own asset groups) needs to be added here so it's loaded and handed to your function when it runs.
 - **Variables**: a live inspector showing the real shape and sample contents of everything your function is about to receive, so you can double check your logic matches reality before you save.
 - **Validation**: the result of testing your code, plus (for internal functions) an **Output sample**: run your function once against sample data and see both the score it produced and every piece of data it was actually handed. It's the fastest way to sanity check your logic before committing to it.
 - **Version History** *(editing an existing function only)*: compare any past version against what's currently in the editor, and restore an earlier version if it was an internal function.
@@ -222,7 +222,7 @@ An internal fitness function has to pass validation before it can be saved: Fint
 - An error thrown while your code actually runs against the sample data
 - A return value that isn't a valid score (see [Returning a valid score](#returning-a-valid-score) below)
 
-Unlike strategies, a fitness function isn't checked for memory usage and doesn't need a warmup period: it always receives the full price history, so there's no lookback window to prove out. And if your code imports something outside the recommended set of libraries, you'll see a warning rather than a hard block.
+Unlike strategies, a fitness function isn't checked for memory usage and doesn't need a warmup period: it receives the full price history of the study's fitness asset group (or `None` when the study has none), so there's no lookback window to prove out. And if your code imports something outside the recommended set of libraries, you'll see a warning rather than a hard block.
 
 If you have unsaved changes sitting in the editor that you haven't reviewed yet, you'll be asked to review them before you can validate or save: this protects you from accidentally saving a draft you didn't mean to keep.
 

@@ -55,8 +55,10 @@ jobs:
 
       # Content hygiene for what a crawler will see: no hot-linked images, real
       # alt text, no links to redirecting paths (/docs, /solutions, trailing
-      # slashes), every referenced cover published. Runs on dist/ like the above.
-      - name: Content images and links are clean
+      # slashes), every referenced cover published, and no prose that casts
+      # Fintela as the one trading (scripts/order-voice.mjs). Runs on dist/ like
+      # the above.
+      - name: Content images, links and order voice are clean
         run: node scripts/check-content.mjs
 
       # Every video the registry points at must exist under public/media — a
