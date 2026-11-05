@@ -15,7 +15,7 @@ import { orderFaq } from '../../lib/faqOrder';
 import { FAQList } from './FAQList';
 
 /**
- * Band 7. The accordion is unchanged inside; it moves right, and a sticky
+ * Band 8. The accordion is unchanged inside; it moves right, and a sticky
  * left column holds the header, a "talk to us" tile and the docs link, so the
  * questions scroll past a fixed point of contact. The audience switch (band 2)
  * promotes that seat's questions to the top.

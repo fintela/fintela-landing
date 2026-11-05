@@ -33,9 +33,11 @@ every request before the cache lookup. In order:
 4. Trailing or doubled slashes → `301` the clean form (`/` excepted). The
    canonical form has no trailing slash because every internal link and both
    redirect maps already use it.
-5. The two redirect maps copied verbatim from `src/App.tsx`
+5. The three redirect maps copied verbatim from `src/App.tsx`
    (`LEGACY_DOC_PATHS` for the pre-Markdown `/documentation/*` tree,
-   `DOC_SLUG_REDIRECTS` for renamed `/docs/*` slugs) and the two index routes
+   `DOC_SLUG_REDIRECTS` for renamed `/docs/*` slugs, `MOVED_POSTS` for posts
+   that moved off `/blog` to another section, e.g. `/blog/climate-analysis` →
+   `/research/climate-analysis`) and the two index routes
    the SPA used to bounce client-side (`/docs` → `/docs/overview`,
    `/solutions` → `/solutions/hedge-funds`). These were JS `<Navigate>`s on a
    200 response, which transfers no ranking signal and leaves the old URL in

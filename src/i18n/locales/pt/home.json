@@ -6,10 +6,10 @@
     "subtitlePrefix": "estratégias de investimento em",
     "subtitleSuffix": "num único ecossistema de quant finance, nativo de IA e na nuvem",
     "ctaSecondary": "Veja como funciona",
-    "ctaContact": "Fale conosco",
-    "headline": "Pesquisa de estratégias em",
-    "headlineAccent": "escala de fundo.",
-    "ctaPrimary": "Descubra sua vantagem",
+    "ctaContact": "Agende uma demonstração",
+    "headline": "Encontre sua",
+    "headlineAccent": "vantagem.",
+    "ctaPrimary": "Comece seu teste grátis",
     "awardAlt": "Vencedor: New Solution Product of the Year, Hedgeweek US Awards 2026",
     "plateCaption": "Início da plataforma · exposição por ativo, carteiras implantadas e estratégias em uso",
     "liveBadge": "Ao vivo",
@@ -21,6 +21,17 @@
       "unit": "/ 500 trials",
       "sub": "train / val / OOS · 70 / 15 / 15"
     }
+  },
+  "award": {
+    "eyebrow": "Vencedor · Hedgeweek US Awards 2026",
+    "title": "New Solution Product",
+    "titleAccent": "of the Year.",
+    "about": "A Fintela venceu esta categoria no Hedgeweek US Awards 2026. O Hedgeweek US Awards reconhece o desempenho de fundos e a excelência de prestadores de serviços na indústria de hedge funds dos EUA, e os vencedores são decididos por votação dos leitores da Hedgeweek.",
+    "recognizes": "Esta vitória reconhece a infraestrutura de research que a Fintela oferece a hedge funds e equipes quant desde o primeiro dia: pipelines de dados, backtesting e validação fora da amostra em um único ambiente na nuvem, em vez de meses de engenharia própria.",
+    "exit": "Ler o anúncio",
+    "photoAlt": "Dois membros da equipe da Fintela, o cofundador e CEO Manuel Padrón à direita, com o troféu do Hedgeweek US Awards 2026 diante do painel da Hedgeweek.",
+    "photoCaption": "Recebendo o prêmio no Convene 237 Park Avenue, Nova York, em 8 de outubro de 2026.",
+    "badgeAlt": "Selo de vencedor do Hedgeweek US Awards 2026: New Solution Product of the Year."
   },
   "trustBar": {
     "title": "Times construindo com a Fintela"
@@ -77,8 +88,6 @@
     },
     "line": {
       "label": "O pipeline da Fintela: cinco etapas conectadas, dos grupos de ativos ao trading ao vivo",
-      "play": "Reproduzir o pipeline",
-      "pause": "Pausar o pipeline",
       "stepLabel": "Etapa {{n}}: {{name}}",
       "tokens": {
         "dataClusters": "11 ETFs",
@@ -1049,13 +1058,114 @@
     "eyebrow": "Pesquisa e Notícias",
     "title": "Notas de pesquisa e",
     "titleAccent": "novidades da plataforma.",
-    "exit": "Todos os posts",
+    "exitBlog": "Blog",
+    "exitResearch": "Pesquisa",
     "read": "Ler",
-    "browseAll": "Ver todos os posts",
+    "browseAll": "Ver o blog",
     "count_one": "{{count}} post",
     "count_other": "{{count}} posts",
     "newest": "mais recente {{date}}",
     "coverAlt": "Imagem de capa de {{title}}"
+  },
+  "homeChat": {
+    "label": "Demonstração interativa do Fintelligent, o assistente da Fintela. Escolha uma pergunta para vê-lo criar uma estratégia, um grupo de ativos, lançar um estudo ou responder sobre um portfólio implantado.",
+    "hint": "Escolha uma pergunta para ver como funciona",
+    "transcript": "Conversa",
+    "reset": "Recomeçar",
+    "resetLabel": "Recomeçar a conversa",
+    "note": "Demonstração ilustrativa com dados de amostra. A Fintela é uma ferramenta de pesquisa, não um consultor de investimentos.",
+    "announce": "O Fintelligent terminou: {{label}}",
+    "suggestions": {
+      "strategy": {
+        "label": "Criar uma estratégia",
+        "prompt": "Escreva uma estratégia de momentum 12-1 com pesos por volatilidade inversa e uma meta de volatilidade."
+      },
+      "group": {
+        "label": "Criar um grupo de ativos",
+        "prompt": "Filtre o S&P 500 por qualidade (ROE acima de 15%, dívida sobre patrimônio abaixo de 1) em um grupo de ativos."
+      },
+      "study": {
+        "label": "Lançar um estudo",
+        "prompt": "Rode um estudo de 500 trials de quality_momentum_vt em sp500_quality_40, avaliado por Sharpe."
+      },
+      "portfolio": {
+        "label": "Perguntar sobre um portfólio",
+        "prompt": "Como está indo neste mês o meu portfólio implantado Quality Momentum?"
+      }
+    },
+    "narration": {
+      "strategy": {
+        "read": "Conferindo a API de estratégias e os seus dados.",
+        "write": "Escrevendo a estratégia: momentum 12-1, pesos por volatilidade inversa, uma meta de volatilidade.",
+        "validate": "Validando o código com dados de amostra antes de salvá-lo.",
+        "stage": "Validada. Preparando a estratégia para a sua confirmação."
+      },
+      "group": {
+        "screen": "Filtrando o S&P 500 por fundamentos: primeiro retorno sobre o patrimônio, depois alavancagem.",
+        "rank": "214 nomes passam em retorno sobre o patrimônio e 131 em alavancagem. Ordenando e ficando com os 40 primeiros.",
+        "stage": "Preparando o grupo de ativos para a sua confirmação."
+      },
+      "study": {
+        "design": "Desenhando o estudo: objetivo, otimizador, janelas.",
+        "space": "Dimensionando o espaço de busca: lookback, skip, posições, meta de volatilidade.",
+        "cost": "Calculando o gasto antes de rodar qualquer coisa."
+      },
+      "portfolio": {
+        "find": "Procurando os seus portfólios implantados.",
+        "read": "Lendo os retornos, o risco e as exposições deste mês."
+      }
+    },
+    "tools": {
+      "strategyApi": "Lendo a API de estratégias",
+      "writeCode": "Escrevendo o código da estratégia",
+      "validate": "Validando a estratégia",
+      "screen": "Filtrando o S&P 500",
+      "rank": "Ordenando por qualidade",
+      "design": "Desenhando o estudo",
+      "quote": "Calculando o gasto",
+      "listPortfolios": "Listando portfólios",
+      "portfolioStats": "Lendo o desempenho do portfólio"
+    },
+    "strategy": {
+      "built": "Escrevi <1>quality_momentum_vt</1>:",
+      "saved": "Salva. <1>quality_momentum_vt</1> está na sua Biblioteca, pronta para um estudo."
+    },
+    "group": {
+      "built": "Filtrei o S&P 500 em <1>sp500_quality_40</1>: 40 nomes com ROE acima de 15% e dívida sobre patrimônio abaixo de 1, ordenados por ROE.",
+      "saved": "Salvo. O grupo congela o filtro de hoje: ele não vai reaplicar os filtros depois."
+    },
+    "study": {
+      "ready": "<1>Momentum de qualidade · S&P 500</1> está configurado, com os critérios de aprovação fixados antes da busca:",
+      "final": "Pronto. O melhor trial, o nº {{trial}}, alcança um índice de Sharpe de {{value}} na validação. Vou ler o fora da amostra uma única vez, contra os critérios acima."
+    },
+    "portfolio": {
+      "summary": "O Quality Momentum sobe 3,4% neste mês, 1,1 ponto acima do S&P 500, sem nenhuma queda maior que 4,1%.",
+      "head": {
+        "metric": "Métrica",
+        "value": "Valor"
+      },
+      "return": {
+        "label": "Retorno no mês",
+        "value": "+3,4%"
+      },
+      "relative": {
+        "label": "vs S&P 500",
+        "value": "+1,1 pt"
+      },
+      "sharpe": {
+        "label": "Sharpe, 90 dias",
+        "value": "1,38"
+      },
+      "drawdown": {
+        "label": "Queda máxima",
+        "value": "−4,1%"
+      },
+      "exposure": {
+        "label": "Exposição líquida",
+        "value": "96% · 12 posições"
+      },
+      "outlook": "NVDA e MSFT contribuíram com a maior parte do ganho. A exposição é de 96%, então a carteira vai acompanhar de perto o mercado num dia de queda."
+    }
   },
   "yourAgent": {
     "eyebrow": "Novo · Fintela MCP",

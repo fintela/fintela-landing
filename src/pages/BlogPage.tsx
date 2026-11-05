@@ -11,13 +11,16 @@ import { BlogEmptyState } from '../blog/BlogEmptyState';
 import { CompactPostCard, FeaturedPostCard, TextPostCard, VerticalPostCard } from '../blog/BentoCards';
 import { layoutPuzzle, type PuzzleShape } from '../blog/puzzleLayout';
 import { useBlogIndex } from '../blog/useBlog';
+import { DEFAULT_SECTION, SECTION_OG_IMAGE, sectionPath } from '../blog/sections';
+import type { PostSection, PostSectionProps } from '../blog/sections';
 import { neuGrid, srOnly } from '../theme/neu';
 import type { BlogPostSummary } from '../blog/types';
 import { Seo } from '../seo/Seo';
-import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
+import { breadcrumbList, homeCrumb, organization, sectionCrumb, webPage, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
 
-const BLOG_OG_IMAGE = '/og/blog.png';
+/** Each section index's Schema.org page type. */
+const SECTION_PAGE_TYPE: Record<PostSection, string> = { blog: 'Blog', research: 'CollectionPage' };
 
 const SHAPE_VARIANT: Record<PuzzleShape, typeof CompactPostCard> = {
   tall: VerticalPostCard,
@@ -85,34 +88,39 @@ const BlogPuzzleGrid = ({ posts }: { posts: BlogPostSummary[] }) => {
 };
 
 /**
- * `/blog` — the card grid.
+ * `/blog` and `/research` — the card grid of one section (`section`, default
+ * `blog`): general articles and company news, or research notes.
  *
  * Posts are Markdown files in `landing/content/blog/`, published as static JSON
- * under `blog/` on the CDN by `blog-publish.yml` (see `BLOG.md`). Adding a
- * post is a sync of that one prefix, not a site deploy — which is why this page
+ * under `blog/` on the CDN by `blog-publish.yml` (see `BLOG.md`); `section:` in
+ * a post's frontmatter decides which of the two pages lists it. Adding a post
+ * is a sync of that one prefix, not a site deploy — which is why this page
  * fetches at runtime instead of reading posts bundled into the app.
  */
-export const BlogPage = () => {
+export const BlogPage = ({ section = DEFAULT_SECTION }: PostSectionProps) => {
   const { t } = useTranslation('pages');
-  const { status, posts } = useBlogIndex();
+  const index = useBlogIndex();
+  const status = index.status;
+  const posts = index.posts.filter((post) => post.section === section);
+  const ogImage = SECTION_OG_IMAGE[section];
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Seo
-        title={t('seo.blog.title')}
-        description={t('seo.blog.description')}
-        image={BLOG_OG_IMAGE}
+        title={t(`seo.${section}.title`)}
+        description={t(`seo.${section}.description`)}
+        image={ogImage}
         jsonLd={[
           organization(),
           webSite(),
           webPage({
-            type: 'Blog',
-            name: t('seo.blog.title'),
-            description: t('seo.blog.description'),
-            url: absoluteUrl('/blog'),
-            image: absoluteUrl(BLOG_OG_IMAGE),
+            type: SECTION_PAGE_TYPE[section],
+            name: t(`seo.${section}.title`),
+            description: t(`seo.${section}.description`),
+            url: absoluteUrl(sectionPath(section)),
+            image: absoluteUrl(ogImage),
           }),
-          breadcrumbList([homeCrumb(), { name: 'Blog' }]),
+          breadcrumbList([homeCrumb(), { name: sectionCrumb(section).name }]),
         ]}
       />
       <Header />
@@ -122,9 +130,9 @@ export const BlogPage = () => {
         <Section tone="hero" size="sm" sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 8 } }}>
           <SectionHeader
             level="h1"
-            eyebrow={t('blog.hero.chip')}
-            title={t('blog.hero.title')}
-            description={t('blog.hero.subtitle')}
+            eyebrow={t(`${section}.hero.chip`)}
+            title={t(`${section}.hero.title`)}
+            description={t(`${section}.hero.subtitle`)}
           />
         </Section>
 
@@ -150,7 +158,14 @@ export const BlogPage = () => {
 
           {status !== 'loading' && posts.length === 0 && <BlogEmptyState status={status} />}
 
-          {posts.length > 0 && <BlogPuzzleGrid posts={posts} />}
+          {/* A lone post would span the whole xl container, its cover ~780px
+              tall; capped, it reads as one article under the centred hero.
+              Today that is Research, which has a single note. */}
+          {posts.length > 0 && (
+            <Box sx={posts.length === 1 ? { maxWidth: 960, mx: 'auto' } : undefined}>
+              <BlogPuzzleGrid posts={posts} />
+            </Box>
+          )}
         </Section>
       </Box>
 

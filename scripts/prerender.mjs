@@ -241,10 +241,11 @@ const rfc822 = (date) => new Date(`${date}T00:00:00Z`).toUTCString()
 const IMAGE_TYPES = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.avif': 'image/avif', '.svg': 'image/svg+xml' }
 
 async function feed(posts, entry, copy) {
-  const { SITE_URL, absoluteUrl, blogAssetUrl } = entry
+  const { SITE_URL, absoluteUrl, blogAssetUrl, postPath } = entry
   const items = []
+  // Both sections: one feed of everything published, each item at its own URL.
   for (const post of posts) {
-    const link = absoluteUrl(`/blog/${post.slug}`)
+    const link = absoluteUrl(postPath(post))
     let enclosure = ''
     // Only a cover the build published itself can be an enclosure: its size
     // is on disk, and a hot-linked image is not ours to promise.
@@ -292,7 +293,7 @@ async function main() {
   }
 
   const entry = await buildServerEntry()
-  const { render, routesFor, STATIC_ROUTES, SITE_URL, absoluteUrl, blogJsonUrl, docJsonUrl } = entry
+  const { render, routesFor, STATIC_ROUTES, SITE_URL, absoluteUrl, blogJsonUrl, docJsonUrl, postPath } = entry
 
   const blogFiles = await readJsonDir(path.join(DIST, 'blog'))
   const docFiles = await readJsonDir(path.join(DIST, 'docs'))
@@ -372,8 +373,9 @@ async function main() {
     // the rest only when its copy does, which nothing records.
     lastmod: route === '/' ? today() : (legal[route] ?? null),
   }))
+  // Every post, /blog and /research alike (the file name predates the split).
   const blog = posts.map((p) => ({
-    loc: absoluteUrl(`/blog/${p.slug}`),
+    loc: absoluteUrl(postPath(p)),
     lastmod: lastmod(p.updated ?? p.date, p.sourcePath),
   }))
   const docsUrls = docs.map((d) => ({

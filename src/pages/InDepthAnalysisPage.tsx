@@ -18,13 +18,13 @@ import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { Section } from '../components/primitives/Section';
-import { SectionHeader } from '../components/primitives/SectionHeader';
+import { HERO_MEASURE, SectionHeader } from '../components/primitives/SectionHeader';
 import { NeuPanel } from '../components/primitives/NeuPanel';
 import { CapabilityExplorer } from '../components/primitives/CapabilityExplorer';
 import { BlockHeading } from '../components/primitives/BlockHeading';
 import { AnimateOnScroll } from '../components/common/AnimateOnScroll';
-import { quietLinkSx, wellSx } from '../theme/neu';
-import { radii, soft } from '../theme/tokens';
+import { quietLinkSx } from '../theme/neu';
+import { soft } from '../theme/tokens';
 import { Seo } from '../seo/Seo';
 
 /** "Explora cada dataset": the Data Explorer's seven dataset groups. */
@@ -91,32 +91,16 @@ export const InDepthAnalysisPage = () => {
 
       <Box component="main" id="content">
         <Section size="lg" tone="hero">
-          <Box
-            sx={{
-              ...wellSx('sm'),
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.75,
-              px: 1.5,
-              py: 0.6,
-              borderRadius: `${radii.pill}px`,
-              mb: 2.5,
-            }}
-          >
-            <Box aria-hidden sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: soft.accent }} />
-            <Typography sx={{ fontSize: '0.66rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: soft.text }}>
-              {t('inDepthAnalysis.hero.moduleTag')}
-            </Typography>
+          <Box sx={{ maxWidth: HERO_MEASURE }}>
+            <SectionHeader
+              level="h1"
+              align="left"
+              eyebrow={t('inDepthAnalysis.hero.eyebrow')}
+              title={t('inDepthAnalysis.hero.title')}
+              titleAccent={t('inDepthAnalysis.hero.titleAccent')}
+              description={t('inDepthAnalysis.hero.description')}
+            />
           </Box>
-
-          <SectionHeader
-            level="h1"
-            eyebrow={t('inDepthAnalysis.hero.eyebrow')}
-            title={t('inDepthAnalysis.hero.title')}
-            titleAccent={t('inDepthAnalysis.hero.titleAccent')}
-            description={t('inDepthAnalysis.hero.description')}
-            align="left"
-          />
 
           {/* Explora cada dataset */}
           <Box sx={{ mt: { xs: 6, md: 8 } }}>

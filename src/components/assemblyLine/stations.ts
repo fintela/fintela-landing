@@ -7,19 +7,47 @@ export const STATIONS = ['dataClusters', 'strategies', 'studies', 'portfolios', 
 
 export type StationKey = (typeof STATIONS)[number];
 
-/** Seconds each station holds the line before the packet moves on. */
-export const STEP = 4.2;
-export const LOOP = STEP * STATIONS.length;
+/** A plate's side on the floor, before the isometric turn. */
+export const PLATE = 150;
 
 /**
- * The floor the plates stand on, before the isometric turn: 1150 × 330 px,
- * plate centres zigzagging along it so the line climbs to the right once
- * turned — idea at the bottom left, live at the top right.
+ * The camera: the floor turns −35° about Z, then tips 55° about X, with no
+ * perspective — the `rotateX(55deg) rotateZ(-35deg)` the line is drawn with.
+ * A floor point (x, y) lands on screen at (C·x + S·y, K·(C·y − S·x)).
  */
-export const FLOOR = { w: 1150, h: 330 } as const;
-export const PLATE = 150;
-export const CX = [75, 325, 575, 825, 1075] as const;
-export const CY = [215, 125, 215, 125, 215] as const;
+const C = Math.cos((35 * Math.PI) / 180);
+const S = Math.sin((35 * Math.PI) / 180);
+const K = Math.cos((55 * Math.PI) / 180);
+
+/** Half a plate's drawn width and height once turned (≈ 104 × 60 px). */
+const PLATE_HALF_W = ((C + S) * PLATE) / 2;
+const PLATE_HALF_H = (K * (C + S) * PLATE) / 2;
+
+/** Screen px from one station down to the next, and how far the line swings either side of its axis. */
+const DROP = 124;
+const SWING = 52;
+/** Room above the first plate for the pieces that lift off it, and under the last for its shadow. */
+const HEAD = 130;
+const FOOT = PLATE_HALF_H + 40;
+
+/**
+ * The line's natural box (px, before scaling): the stations run down the
+ * screen in a gentle zigzag, idea at the top and live at the bottom, so
+ * scrolling down walks the pipeline in order.
+ */
+export const LINE = { w: 2 * (SWING + PLATE_HALF_W), h: HEAD + (STATIONS.length - 1) * DROP + FOOT } as const;
+
+/** Where the floor's origin lands on screen: the line's axis, level with the first plate. */
+export const ORIGIN = { x: SWING + PLATE_HALF_W, y: HEAD } as const;
+
+/** Station i's plate centre on screen, in the line's natural box. */
+export const screenAt = (i: number) => ({ x: ORIGIN.x + (i % 2 ? SWING : -SWING), y: HEAD + i * DROP });
+
+/**
+ * The floor point the camera draws at a screen offset (dx, dy) from the
+ * floor's origin: the camera undone (un-tip, then turn back).
+ */
+export const floorAt = (dx: number, dy: number) => ({ x: C * dx - S * (dy / K), y: S * dx + C * (dy / K) });
 
 /** The eleven SPDR sector funds of the "Sector ETFs (US)" collection, as the app seeds them. */
 export const SECTOR_ETFS = [

@@ -1,4 +1,6 @@
 import type { BlogPostSummary } from '../blog/types';
+import { sectionPath } from '../blog/sections';
+import type { PostSection } from '../blog/sections';
 import type { DocSummary } from '../docs/types';
 import { DOCS_HOME } from './routes';
 import { APP_URL, ORG, SITE_URL, absoluteUrl } from './site';
@@ -137,7 +139,12 @@ export interface Breadcrumb {
  * overview page and solution pages sit directly under Home.
  */
 export const homeCrumb = (): Breadcrumb => ({ name: 'Home', url: `${SITE_URL}/` });
-export const blogCrumb = (): Breadcrumb => ({ name: 'Blog', url: absoluteUrl('/blog') });
+const SECTION_CRUMB: Record<PostSection, string> = { blog: 'Blog', research: 'Research' };
+/** `/blog` or `/research`, the index a post sits under. */
+export const sectionCrumb = (section: PostSection): Breadcrumb => ({
+  name: SECTION_CRUMB[section],
+  url: absoluteUrl(sectionPath(section)),
+});
 export const docsCrumb = (): Breadcrumb => ({ name: 'Documentation', url: absoluteUrl(DOCS_HOME) });
 
 export function breadcrumbList(items: Breadcrumb[]): JsonLdNode {

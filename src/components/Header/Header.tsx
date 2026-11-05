@@ -75,6 +75,7 @@ const navItems: NavItem[] = [
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
   { id: 'documentation', labelKey: 'nav.documentation', href: DOCS_HOME, type: 'route', activePrefix: '/docs' },
   { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
+  { id: 'research', labelKey: 'nav.research', href: '/research', type: 'route' },
 ];
 
 /**
@@ -87,6 +88,7 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   pricing: () => import('../../pages/PricingPage'),
   documentation: () => import('../../pages/DocPage'),
   blog: () => import('../../pages/BlogPage'),
+  research: () => import('../../pages/BlogPage'),
   solutions: () => import('../../pages/SolutionPage'),
   fintelligent: () => import('../../pages/AgenticAiPage'),
   samplers: () => import('../../pages/SamplersPage'),

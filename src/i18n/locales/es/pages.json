@@ -258,9 +258,9 @@
   },
   "blog": {
     "hero": {
-      "chip": "Investigación y Noticias",
-      "title": "Fintela Research & News",
-      "subtitle": "Análisis, tutoriales, mejores prácticas y noticias de la compañía para las finanzas cuantitativas y el trading algorítmico."
+      "chip": "Blog",
+      "title": "Blog de Fintela",
+      "subtitle": "Artículos, tutoriales, mejores prácticas y noticias de la compañía para las finanzas cuantitativas y el trading algorítmico."
     },
     "readMore": "Leer más",
     "readTime": "{{minutes}} min de lectura",
@@ -287,6 +287,14 @@
       "title": "Artículo no encontrado",
       "body": "Puede que este artículo se haya movido o despublicado. Vuelve al blog para ver todo lo que está disponible."
     }
+  },
+  "research": {
+    "hero": {
+      "chip": "Investigación",
+      "title": "Investigación de Fintela",
+      "subtitle": "Notas de investigación del equipo de Fintela: estrategias construidas y probadas en la plataforma, contrastadas con la investigación académica en la que se basan, con sus salvedades."
+    },
+    "backToResearch": "Volver a Investigación"
   },
   "docs": {
     "readTime": "{{minutes}} min de lectura",
@@ -339,6 +347,7 @@
     "noResults": "Sin resultados para \"{{query}}\". Prueba con otra búsqueda.",
     "sectionPages": "Páginas",
     "sectionBlog": "Blog",
+    "sectionResearch": "Investigación",
     "pages": {
       "home": "Inicio",
       "pricing": "Precios",
@@ -348,6 +357,7 @@
       "solutionsAdvisors": "Asesores financieros",
       "contact": "Contacto",
       "blog": "Blog",
+      "research": "Investigación",
       "docs": "Documentación"
     }
   },
@@ -714,7 +724,6 @@
       "description": "Explora cada dataset que alimenta la plataforma y consulta un reporte completo de robustez, clustering y optimización para cualquier búsqueda de estrategias."
     },
     "hero": {
-      "moduleTag": "Data Explorer",
       "eyebrow": "Productos",
       "title": "Análisis en",
       "titleAccent": "Profundidad.",
@@ -1565,8 +1574,12 @@
       "description": "Treinta minutos sobre tus propias estrategias con el equipo que construyó la plataforma. Cuéntanos sobre tu mesa y confirmamos un horario en un día hábil."
     },
     "blog": {
-      "title": "Investigación y Noticias | Investigación cuant y noticias de Fintela",
-      "description": "Ideas, tutoriales y guías prácticas de finanzas cuantitativas y trading algorítmico, escritas por el equipo que construye la plataforma Fintela."
+      "title": "Blog | Artículos de finanzas cuantitativas y noticias de Fintela",
+      "description": "Artículos, tutoriales y guías prácticas de finanzas cuantitativas y trading algorítmico, además de noticias de la compañía, escritos por el equipo que construye la plataforma Fintela."
+    },
+    "research": {
+      "title": "Investigación | Notas de investigación cuant de Fintela",
+      "description": "Notas de investigación del equipo de Fintela: estrategias construidas y probadas en la plataforma, contrastadas con la investigación académica en la que se basan."
     },
     "docs": {
       "title": "Documentación | Fintela Docs",

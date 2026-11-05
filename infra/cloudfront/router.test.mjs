@@ -18,12 +18,13 @@ const source = await readFile(path.join(here, 'router.js'), 'utf8');
 // Same shape the console's test event uses. Bare context: a ReferenceError for
 // `process`, `require` or `URL` here means the code would fail in production.
 const sandbox = vm.createContext({});
-vm.runInContext(`${source}\nthis.__router = { handler, LEGACY_DOC_PATHS, DOC_SLUG_REDIRECTS };`, sandbox);
+vm.runInContext(`${source}\nthis.__router = { handler, LEGACY_DOC_PATHS, DOC_SLUG_REDIRECTS, MOVED_POSTS };`, sandbox);
 const { handler } = sandbox.__router;
 // Copied into this realm: strict deep equality also compares prototypes, and the
 // sandbox has its own Object.
 const LEGACY_DOC_PATHS = { ...sandbox.__router.LEGACY_DOC_PATHS };
 const DOC_SLUG_REDIRECTS = { ...sandbox.__router.DOC_SLUG_REDIRECTS };
+const MOVED_POSTS = { ...sandbox.__router.MOVED_POSTS };
 
 const event = (uri, { host = 'fintela.io', querystring = {} } = {}) => ({
   version: '1.0',
@@ -253,6 +254,24 @@ test('LEGACY_DOC_PATHS and DOC_SLUG_REDIRECTS are verbatim copies of src/App.tsx
   assert.deepEqual(DOC_SLUG_REDIRECTS, mapFromAppTsx(tsx, 'DOC_SLUG_REDIRECTS'));
   assert.ok(Object.keys(LEGACY_DOC_PATHS).length >= 28, 'the legacy map lost entries');
   assert.ok(Object.keys(DOC_SLUG_REDIRECTS).length >= 6, 'the renamed-slug map lost entries');
+});
+
+test('MOVED_POSTS is a verbatim copy of src/App.tsx', async () => {
+  const tsx = await readFile(path.join(here, '..', '..', 'src', 'App.tsx'), 'utf8');
+  assert.deepEqual(MOVED_POSTS, mapFromAppTsx(tsx, 'MOVED_POSTS'));
+  assert.ok(Object.keys(MOVED_POSTS).length >= 1, 'the moved-post map lost entries');
+});
+
+test('a post moved off /blog gets one 301 to its section, query and case fixed on the way', () => {
+  expectRedirect('/blog/climate-analysis', '/research/climate-analysis');
+  expectRedirect('/Blog/Climate-Analysis/', '/research/climate-analysis');
+  expectRedirect('/blog/climate-analysis', '/research/climate-analysis?ref=x', { querystring: { ref: { value: 'x' } } });
+  expectRewrite('/research/climate-analysis', '/research/climate-analysis/index.html');
+  // Posts that stayed, the blog index and the covers under it are untouched.
+  expectRewrite('/blog/deflated-sharpe', '/blog/deflated-sharpe/index.html');
+  expectRewrite('/blog', '/blog/index.html');
+  expectRewrite('/research', '/research/index.html');
+  expectRewrite('/blog/covers/climate-analysis.jpg', '/blog/covers/climate-analysis.jpg');
 });
 
 test('the two maps never chain: no legacy target is a renamed slug', () => {

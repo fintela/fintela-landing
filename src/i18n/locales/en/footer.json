@@ -23,7 +23,8 @@
         "api": "API reference",
         "engine": "Engine reference",
         "datacluster": "Asset groups",
-        "blog": "Research & News"
+        "blog": "Blog",
+        "research": "Research"
       }
     },
     "company": {
@@ -37,6 +38,9 @@
   "social": {
     "label": "Follow Fintela",
     "linkedin": "Fintela on LinkedIn",
+    "x": "Fintela on X",
+    "instagram": "Fintela on Instagram",
+    "youtube": "Fintela on YouTube",
     "github": "Fintela on GitHub"
   }
 }

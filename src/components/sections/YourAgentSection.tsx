@@ -21,8 +21,8 @@ const TILES = [
 /**
  * Fintela MCP on the home page: a fund brings its own AI agent and keeps its
  * edge. Three tiles and the way through to /product/mcp, where the whole
- * pitch lives. Sits between the platform band and the ink "for funds" band,
- * on the hero tone so neither neighbour shares its ground.
+ * pitch lives. Band 4, between the ink "who it's for" band and the award
+ * band, on the hero tone so neither neighbour shares its ground.
  */
 export const YourAgentSection = () => {
   const { t } = useTranslation('home');

@@ -5,6 +5,7 @@ import { NeuPanel } from '../components/primitives/NeuPanel';
 import { TierBadge } from '../components/primitives/TierBadge';
 import { MediaWell } from '../components/primitives/MediaWell';
 import { blogAssetUrl } from './api';
+import { postPath } from './sections';
 import { formatContentDate, truncate } from '../content/format';
 import { noMotionPress } from '../theme/neu';
 import { motion, soft } from '../theme/tokens';
@@ -26,7 +27,7 @@ export const BlogCard = ({ post }: { post: BlogPostSummary }) => {
 
   return (
     <NeuPanel
-      to={`/blog/${post.slug}`}
+      to={postPath(post)}
       sx={{
         height: '100%',
         p: { xs: 3, md: 4 },

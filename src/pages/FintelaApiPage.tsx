@@ -23,7 +23,7 @@ import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { Section } from '../components/primitives/Section';
-import { SectionHeader } from '../components/primitives/SectionHeader';
+import { HERO_MEASURE, SectionHeader } from '../components/primitives/SectionHeader';
 import { NeuPanel } from '../components/primitives/NeuPanel';
 import { IconWell } from '../components/primitives/IconWell';
 import { CapabilityExplorer } from '../components/primitives/CapabilityExplorer';
@@ -126,17 +126,22 @@ export const FintelaApiPage = () => {
 
       <Box component="main" id="content">
         <Section size="lg">
-          <SectionHeader
-            level="h1"
-            eyebrow={t('fintelaApi.eyebrow')}
-            title={t('fintelaApi.title')}
-            titleAccent={t('fintelaApi.titleAccent')}
-            description={t('fintelaApi.description')}
-          />
+          <Box sx={{ maxWidth: HERO_MEASURE }}>
+            <SectionHeader
+              level="h1"
+              align="left"
+              eyebrow={t('fintelaApi.eyebrow')}
+              title={t('fintelaApi.title')}
+              titleAccent={t('fintelaApi.titleAccent')}
+              description={t('fintelaApi.description')}
+            />
+          </Box>
 
           {/* Qué puedes leer */}
-          <BlockHeading eyebrow={t('fintelaApi.resources.eyebrow')} title={t('fintelaApi.resources.title')} />
-          <CapabilityExplorer ns="pages" baseKey="fintelaApi.resources.items" items={RESOURCE_ITEMS} />
+          <Box sx={{ mt: { xs: 6, md: 8 } }}>
+            <BlockHeading eyebrow={t('fintelaApi.resources.eyebrow')} title={t('fintelaApi.resources.title')} />
+            <CapabilityExplorer ns="pages" baseKey="fintelaApi.resources.items" items={RESOURCE_ITEMS} />
+          </Box>
 
           {/* Para qué la usan */}
           <Box sx={{ mt: { xs: 6, md: 8 } }}>

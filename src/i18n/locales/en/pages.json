@@ -258,9 +258,9 @@
   },
   "blog": {
     "hero": {
-      "chip": "Research & News",
-      "title": "Fintela Research & News",
-      "subtitle": "Research notes, tutorials, practical guides and company news for quantitative finance and algorithmic trading."
+      "chip": "Blog",
+      "title": "Fintela Blog",
+      "subtitle": "Articles, tutorials, practical guides and company news for quantitative finance and algorithmic trading."
     },
     "readMore": "Read More",
     "readTime": "{{minutes}} min read",
@@ -287,6 +287,14 @@
       "title": "Post not found",
       "body": "This article may have been moved or unpublished. Head back to the blog to see everything that's live."
     }
+  },
+  "research": {
+    "hero": {
+      "chip": "Research",
+      "title": "Fintela Research",
+      "subtitle": "Research notes from the Fintela team: strategies built and tested on the platform, checked against the academic research behind them, caveats included."
+    },
+    "backToResearch": "Back to Research"
   },
   "docs": {
     "readTime": "{{minutes}} min read",
@@ -339,6 +347,7 @@
     "noResults": "No results for \"{{query}}\". Try a different search.",
     "sectionPages": "Pages",
     "sectionBlog": "Blog",
+    "sectionResearch": "Research",
     "pages": {
       "home": "Home",
       "pricing": "Pricing",
@@ -348,6 +357,7 @@
       "solutionsAdvisors": "Financial Advisors",
       "contact": "Contact",
       "blog": "Blog",
+      "research": "Research",
       "docs": "Documentation"
     }
   },
@@ -714,7 +724,6 @@
       "description": "Browse every dataset powering the platform and drill into a full robustness, clustering and optimization report for any strategy search."
     },
     "hero": {
-      "moduleTag": "Data Explorer",
       "eyebrow": "Products",
       "title": "In-Depth",
       "titleAccent": "Analysis.",
@@ -1565,8 +1574,12 @@
       "description": "Thirty minutes on your own strategies with the team that built the platform. Tell us about your desk and we confirm a time within one business day."
     },
     "blog": {
-      "title": "Research & News | Quant Research Notes & Fintela News",
-      "description": "Insights, tutorials and practical guides for quantitative finance and algorithmic trading, from the team building the Fintela platform."
+      "title": "Blog | Quant Finance Articles & Fintela News",
+      "description": "Articles, tutorials and practical guides for quantitative finance and algorithmic trading, plus company news, from the team building the Fintela platform."
+    },
+    "research": {
+      "title": "Research | Quant Research Notes from Fintela",
+      "description": "Research notes from the Fintela team: strategies built and tested on the platform, checked against the academic research behind them."
     },
     "docs": {
       "title": "Documentation | Fintela Docs",

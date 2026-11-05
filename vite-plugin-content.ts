@@ -187,6 +187,7 @@ async function collect<T extends { slug: string }>(
 
 const toPostSummary = (post: BlogPost): BlogPostSummary => ({
   slug: post.slug,
+  section: post.section,
   title: post.title,
   author: post.author,
   date: post.date,

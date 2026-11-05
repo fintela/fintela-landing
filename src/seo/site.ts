@@ -37,6 +37,19 @@ export const absoluteUrl = (path: string): string => {
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 };
 
+/**
+ * The company's own profiles. The footer renders them in this order, and the
+ * same URLs go out as the Organization's `sameAs`, so the visible links and the
+ * structured data cannot drift apart.
+ */
+export const SOCIAL_PROFILES = {
+  linkedin: 'https://www.linkedin.com/company/fintela-financial-intelligence',
+  x: 'https://x.com/fintela_io',
+  instagram: 'https://www.instagram.com/fintela.io',
+  youtube: 'https://www.youtube.com/@fintela-official',
+  github: 'https://github.com/fintela',
+} as const;
+
 /** The organisation behind the site, as Schema.org and the legal documents name it. */
 export const ORG = {
   name: 'Fintela',
@@ -44,10 +57,7 @@ export const ORG = {
   url: SITE_URL,
   logo: `${SITE_URL}/brand/fintela-mark-512.png`,
   email: 'hello@fintela.io',
-  sameAs: [
-    'https://www.linkedin.com/company/fintela-financial-intelligence',
-    'https://github.com/fintela',
-  ],
+  sameAs: Object.values(SOCIAL_PROFILES),
   address: {
     streetAddress: 'Avenida José Vasconcelos 404, Interior 604, Colonia Centro',
     addressLocality: 'San Pedro Garza García',

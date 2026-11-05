@@ -4,11 +4,11 @@ import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
 import { HeroDiorama } from '../components/sections/HeroDiorama';
+import { AwardSection } from '../components/sections/AwardSection';
 import { InstitutionalSection } from '../components/sections/InstitutionalSection';
 import { TrustBar } from '../components/sections/TrustBar';
 import { WorkflowSection } from '../components/sections/WorkflowSection';
 import { YourAgentSection } from '../components/sections/YourAgentSection';
-import { CapabilitiesBento } from '../components/sections/CapabilitiesBento';
 import { InsightsSection } from '../components/sections/InsightsSection';
 import { FAQSection } from '../components/sections/FAQSection';
 import { Footer } from '../components/Footer/Footer';
@@ -20,7 +20,7 @@ import { Seo } from '../seo/Seo';
 import { faqPage, organization, softwareApplication, webSite } from '../seo/jsonld';
 
 /** Band ids the header's scroll-spy follows, in page order. */
-const SCROLL_SECTIONS = ['hero', 'capabilities', 'platform', 'for-funds', 'insights', 'faq'] as const;
+const SCROLL_SECTIONS = ['hero', 'platform', 'capabilities', 'for-funds', 'award', 'insights', 'faq'] as const;
 
 /**
  * Where the old band ids went. These hashes are in the app, in mail and in
@@ -118,13 +118,17 @@ export const HomePage = () => {
         <Header activeSection={activeSection} onNavigate={scrollToSection} />
         <Box component="main" id="content">
           <HeroDiorama />
-          <CapabilitiesBento />
+          {/* The product story first, in one band: the pipeline, the agentic
+              demo and the capabilities (`#capabilities` lives inside it). Then
+              who it is for, bringing your own agent (MCP), the Hedgeweek award
+              as proof of it, then the blog. */}
           <WorkflowSection />
-          <YourAgentSection />
           {/* PlatformStackSection (the three-layer stack) is on hold; re-add it here, after the platform band. */}
           <InstitutionalSection />
-          <TrustBar />
+          <YourAgentSection />
+          <AwardSection />
           <InsightsSection />
+          <TrustBar />
           <FAQSection />
         </Box>
         <Footer />

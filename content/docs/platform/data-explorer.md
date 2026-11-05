@@ -460,4 +460,4 @@ Four places on this page let you download what's currently on screen as a CSV fi
 > [!TIP] Further reading
 > A research note that leans on the datasets above, scoring agricultural tickers on climate
 > anomalies and price momentum:
-> [Climate Risk against Agricultural Stocks](/blog/climate-analysis).
+> [Climate Risk against Agricultural Stocks](/research/climate-analysis).

@@ -1,25 +1,11 @@
 import { Box } from '@mui/material';
-import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { NeuButton } from '../primitives/NeuButton';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-
-/**
- * The demo is all client-side motion, so it is its own chunk, fetched after
- * hydration rather than riding in the entry; the server renders the
- * placeholder, which holds the demo's size.
- */
-const AgenticDemo = lazy(() =>
-  import('../fintelligentDemo/AgenticDemo').then((m) => ({ default: m.AgenticDemo })),
-);
-
-/** The demo's footprint (its stage ratio per layout, plus the player bar) while the chunk loads. */
-const DemoPlaceholder = () => (
-  <Box aria-hidden sx={{ aspectRatio: { xs: '1 / 1.98', md: '1 / 0.69' }, mb: '52px' }} />
-);
+import { AgenticDemoLazy } from '../fintelligentDemo/AgenticDemoLazy';
 
 /**
  * Band: the Agentic AI hero. The "Agentic AI" pitch and its CTAs head the
@@ -44,6 +30,7 @@ export const AlgoAgentBuilder = () => {
       >
         <AnimateOnScroll direction="left">
           <SectionHeader
+            level="h1"
             align="left"
             gutter={false}
             eyebrow={t('fintelAgent.eyebrow')}
@@ -65,9 +52,7 @@ export const AlgoAgentBuilder = () => {
       </Box>
 
       <AnimateOnScroll delay={120}>
-        <Suspense fallback={<DemoPlaceholder />}>
-          <AgenticDemo />
-        </Suspense>
+        <AgenticDemoLazy />
       </AnimateOnScroll>
     </Section>
   );
