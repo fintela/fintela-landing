@@ -5,8 +5,6 @@ import { radii } from '../../theme/tokens';
 interface ArticleSkeletonProps {
   /** Announced to screen readers; the shapes themselves are `aria-hidden`. */
   label: string;
-  /** A blog post's tag chips; documentation pages have no equivalent row. */
-  withTags?: boolean;
 }
 
 /** One body paragraph's width rhythm, last line short like real prose. */
@@ -18,18 +16,11 @@ const PARAGRAPH_WIDTHS = ['100%', '96%', '88%', '100%', '72%'];
  * so the footer doesn't jump once the body lands (see the call sites' own
  * comments on why the loading state reserves space).
  */
-export const ArticleSkeleton = ({ label, withTags = false }: ArticleSkeletonProps) => (
+export const ArticleSkeleton = ({ label }: ArticleSkeletonProps) => (
   <Box role="status">
     <Box sx={srOnly}>{label}</Box>
 
     <Box aria-hidden="true">
-      {withTags && (
-        <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
-          <Skeleton variant="rounded" width={72} height={24} sx={{ borderRadius: `${radii.pill}px` }} />
-          <Skeleton variant="rounded" width={88} height={24} sx={{ borderRadius: `${radii.pill}px` }} />
-        </Box>
-      )}
-
       <Skeleton variant="text" sx={{ fontSize: '2.4rem', width: '85%', mb: 0.5 }} />
       <Skeleton variant="text" sx={{ fontSize: '2.4rem', width: '55%', mb: 2.5 }} />
 

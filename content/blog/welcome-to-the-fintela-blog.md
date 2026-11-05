@@ -1,11 +1,11 @@
 ---
 title: Welcome to the Fintela blog
-author: Fintela Team
+author: Myrna Ortiz
 date: 2026-07-28
 excerpt: What we plan to write about here: research notes, engineering write-ups, and practical guides for building quantitative strategies on Fintela.
 tags: Announcements
 published: true
-updated: 2026-09-14
+updated: 2026-11-05
 cover: covers/welcome-to-the-fintela-blog.jpg
 coverAlt: A laptop on a desk showing an analytics dashboard of charts, a heat map and a world map.
 ---

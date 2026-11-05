@@ -369,16 +369,6 @@
             "The AI proposes; the engine always computes the numbers."
           ]
         }
-      },
-      "usage": {
-        "facts": {
-          "where": { "label": "Where", "value": "A floating panel from any page, or a full-page conversation. On mobile too." },
-          "history": { "label": "History", "value": "Every conversation is saved: search it, rename it, and pin up to 20." },
-          "language": { "label": "Language", "value": "Replies in whatever language you write to it." },
-          "suggestions": { "label": "Suggestions", "value": "Contextual shortcuts per page: review code, detect overfitting, build my portfolio…" },
-          "cost": { "label": "Cost", "value": "Billed in Fintela tokens. Every reply shows what it cost. 10 free messages a day." },
-          "who": { "label": "Who", "value": "Manager or Owner role accounts." }
-        }
       }
     },
     "chat": {
@@ -670,7 +660,7 @@
       "liveTrading": "Live trading docs",
       "agenticAi": "Explore Agentic AI",
       "samplers": "Explore the optimization engine",
-      "inDepthAnalysis": "Explore In-Depth Analysis"
+      "dataExplorer": "Data Explorer docs"
     },
     "chapters": {
       "pulse": "Pulse",

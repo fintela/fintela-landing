@@ -22,9 +22,12 @@ import { absoluteUrl } from '../seo/site';
 /** Each section index's Schema.org page type. */
 const SECTION_PAGE_TYPE: Record<PostSection, string> = { blog: 'Blog', research: 'CollectionPage' };
 
+/** The 1×1 slot: the text tile plus the post's cover, which every other slot of the puzzle already shows. */
+const StandardPostCard: typeof CompactPostCard = (props) => <TextPostCard {...props} withCover />;
+
 const SHAPE_VARIANT: Record<PuzzleShape, typeof CompactPostCard> = {
   tall: VerticalPostCard,
-  standard: TextPostCard,
+  standard: StandardPostCard,
   wide: CompactPostCard,
 };
 
@@ -130,7 +133,6 @@ export const BlogPage = ({ section = DEFAULT_SECTION }: PostSectionProps) => {
         <Section tone="hero" size="sm" sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 8 } }}>
           <SectionHeader
             level="h1"
-            eyebrow={t(`${section}.hero.chip`)}
             title={t(`${section}.hero.title`)}
             description={t(`${section}.hero.subtitle`)}
           />

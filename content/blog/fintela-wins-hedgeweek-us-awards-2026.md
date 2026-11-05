@@ -1,10 +1,11 @@
 ---
 title: Fintela Wins New Solution Product of the Year at the Hedgeweek US Awards 2026
-author: Fintela Team
+author: Ivan Buda
 date: 2026-10-14
 excerpt: Fintela has won New Solution Product of the Year at the Hedgeweek US Awards 2026, recognized for giving hedge funds and quant teams research infrastructure from day one.
 tags: Awards
 published: true
+updated: 2026-11-05
 featured: true
 cover: covers/fintela-wins-hedgeweek-us-awards-2026.jpg
 coverAlt: Two members of the Fintela team, co-founder Manuel Padrón on the right, holding the Hedgeweek US Awards 2026 trophy in front of the Hedgeweek backdrop in New York.

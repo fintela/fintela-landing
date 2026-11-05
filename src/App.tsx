@@ -84,12 +84,6 @@ const SamplersPage = lazy(() =>
   import('./pages/SamplersPage').then((m) => ({ default: m.SamplersPage })),
 );
 
-// Product menu's "In-Depth Analysis" item — the Data Explorer catalog plus a
-// worked strategy robustness/clustering/optimization report.
-const InDepthAnalysisPage = lazy(() =>
-  import('./pages/InDepthAnalysisPage').then((m) => ({ default: m.InDepthAnalysisPage })),
-);
-
 // Product menu's "Fintela API" item — a marketing overview of the read-only
 // developer API, linking through to the full reference under /docs.
 const FintelaApiPage = lazy(() =>
@@ -300,7 +294,6 @@ export interface Pages {
   SolutionPage: ComponentType;
   AgenticAiPage: ComponentType;
   SamplersPage: ComponentType;
-  InDepthAnalysisPage: ComponentType;
   FintelaApiPage: ComponentType;
   McpPage: ComponentType;
   TermsPage: ComponentType;
@@ -320,7 +313,6 @@ const lazyPages: Pages = {
   SolutionPage,
   AgenticAiPage,
   SamplersPage,
-  InDepthAnalysisPage,
   FintelaApiPage,
   McpPage,
   TermsPage,
@@ -367,7 +359,6 @@ export function AppRoutes({ pages }: { pages: Pages }) {
 
           <Route path="/product/agentic-ai" element={<pages.AgenticAiPage />} />
           <Route path="/product/samplers" element={<pages.SamplersPage />} />
-          <Route path="/product/in-depth-analysis" element={<pages.InDepthAnalysisPage />} />
           <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
           <Route path="/product/mcp" element={<pages.McpPage />} />
 

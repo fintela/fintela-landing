@@ -304,16 +304,36 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
   );
 };
 
-/** A text tile: meta with the lead tag, title, one line of excerpt. */
-export const TextPostCard = ({ post, titleAs = 'h3' }: CardProps) => (
-  <NeuPanel to={postPath(post)} component="article" sx={{ height: '100%', p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-    <MetaRow post={post} tag={post.tags[0]} />
-    <Typography component={titleAs} sx={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
-      {post.title}
-    </Typography>
-    <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.55 }}>{truncate(post.excerpt, 110)}</Typography>
-  </NeuPanel>
-);
+/**
+ * A text tile: meta with the lead tag, title, one line of excerpt. With
+ * `withCover`, a post that has a cover gets it in a 16/9 well across the top
+ * (the same crop the /blog card and the featured slot use). It is opt-in
+ * because the "Related posts" row under an article uses this tile too, and
+ * stays text-only there.
+ */
+export const TextPostCard = ({ post, titleAs = 'h3', withCover = false }: CardProps & { withCover?: boolean }) => {
+  const { t } = useTranslation('home');
+  return (
+    <NeuPanel to={postPath(post)} component="article" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {withCover && post.cover && (
+        <MediaWell
+          ratio="16/9"
+          flush
+          src={blogAssetUrl(post.cover)}
+          alt={post.coverAlt ?? t('insights.coverAlt', { title: post.title })}
+          sizes="(min-width: 1200px) 400px, 90vw"
+        />
+      )}
+      <Box sx={{ p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1 }}>
+        <MetaRow post={post} tag={post.tags[0]} />
+        <Typography component={titleAs} sx={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
+          {post.title}
+        </Typography>
+        <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.55 }}>{truncate(post.excerpt, 110)}</Typography>
+      </Box>
+    </NeuPanel>
+  );
+};
 
 /** The exit tile: how many posts the blog has, and the way to it (`/research` is reached from the band's header). */
 export const PostCountCard = ({ count, newest }: { count: number; newest: string }) => {

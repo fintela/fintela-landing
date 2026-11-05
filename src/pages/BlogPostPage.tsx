@@ -7,7 +7,6 @@ import { Footer } from '../components/Footer/Footer';
 import { Section } from '../components/primitives/Section';
 import { NeuPanel } from '../components/primitives/NeuPanel';
 import { IconWell } from '../components/primitives/IconWell';
-import { TierBadge } from '../components/primitives/TierBadge';
 import { Groove } from '../components/primitives/Groove';
 import { ArticleSkeleton } from '../components/common/ArticleSkeleton';
 import { MarkdownContent } from '../blog/MarkdownContent';
@@ -164,7 +163,7 @@ export const BlogPostPage = ({ section = DEFAULT_SECTION }: PostSectionProps) =>
               already carries the post. */}
           {status === 'loading' && (
             <NeuPanel component="article" sx={{ p: { xs: 3, md: 6 } }}>
-              <ArticleSkeleton label={t('blog.loadingPost')} withTags />
+              <ArticleSkeleton label={t('blog.loadingPost')} />
             </NeuPanel>
           )}
 
@@ -189,14 +188,6 @@ export const BlogPostPage = ({ section = DEFAULT_SECTION }: PostSectionProps) =>
             <NeuPanel component="article" sx={{ p: { xs: 3, md: 6 } }}>
               {/* Metadata header */}
               <Box sx={{ mb: 4 }}>
-                {post.tags.length > 0 && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2.5 }}>
-                    {post.tags.map((tag) => (
-                      <TierBadge key={tag}>{tag}</TierBadge>
-                    ))}
-                  </Box>
-                )}
-
                 <Typography
                   variant="h1"
                   sx={{

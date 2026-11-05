@@ -1,11 +1,11 @@
 ---
 title: Why Quantitative Finance Teams Are Moving Away from Legacy Tools
-author: Ivan Buda
+author: Myrna Ortiz
 date: 2026-08-07
 excerpt: How fragmented infrastructure is costing funds thousands and thousands of hours (and money), and why a unified platform is becoming the competitive advantage.
 tags: Finance, Infrastructure, Trading
 published: true
-updated: 2026-09-14
+updated: 2026-11-05
 cover: covers/quants-moving-away-from-legacy-tools.jpg
 coverAlt: A laptop screen with a legacy charting terminal, a price line and volume bars on a dark grid.
 ---
