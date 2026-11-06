@@ -1,12 +1,12 @@
 ---
 title: Climate Risk against Agricultural Stocks
-author: Fintela Team
+author: Myrna Ortiz
 date: 2026-07-28
 excerpt: We built a strategy that scores agricultural tickers on climate anomalies and price momentum, then checked our results against the academic research it's based on, including the parts of that research that should make us skeptical of our own numbers.
 tags: Research
 section: research
 published: true
-updated: 2026-09-14
+updated: 2026-11-05
 cover: covers/climate-analysis.jpg
 coverAlt: A green price line stepping across a laptop screen, hour marks along the bottom axis.
 ---

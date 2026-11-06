@@ -214,8 +214,8 @@ export const CapabilitiesBento = () => {
             <FeatureTile
               title={t('features.items.dataAnalysis.title')}
               description={t('features.items.dataAnalysis.description')}
-              docs="/product/in-depth-analysis"
-              docsLabel={docsLabel('inDepthAnalysis')}
+              docs="/docs/data-explorer"
+              docsLabel={docsLabel('dataExplorer')}
             />
           </AnimateOnScroll>
         </BentoTile>

@@ -1,11 +1,11 @@
 ---
 title: The backtest you didn't run is still costing you
-author: Fintela Team
+author: Myrna Ortiz
 date: 2026-09-03
 excerpt: Running a thousand parameter combinations and keeping the best Sharpe ratio isn't the same as finding a good strategy. It's closer to p-hacking, and there's a specific correction for how much to discount the number you end up with.
 tags: Research
 published: true
-updated: 2026-09-16
+updated: 2026-11-05
 cover: covers/deflated-sharpe.jpg
 coverAlt: Line chart of the expected maximum Sharpe ratio rising with the number of independent trials, from 0 to 1,000, for trial variances of 1 and 4.
 ---

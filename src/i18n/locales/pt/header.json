@@ -1,17 +1,16 @@
 {
   "nav": {
     "product": "Soluções",
-    "samplers": "Motor de Otimização",
-    "fintelagent": "IA Agêntica",
-    "inDepthAnalysis": "Análise em Profundidade",
-    "fintelaApi": "API da Fintela",
+    "samplers": "Otimizador",
+    "fintelagent": "IA",
+    "fintelaApi": "API",
     "useCases": "Casos de uso",
     "pricing": "Preços",
     "documentation": "Documentação",
     "blog": "Blog",
     "research": "Pesquisa",
     "solutions": "A Mesa",
-    "mcp": "Conecte seu agente (MCP)"
+    "mcp": "MCP"
   },
   "actions": {
     "getStarted": "Começar"

@@ -14,7 +14,7 @@ import { AgenticDemoLazy } from '../fintelligentDemo/AgenticDemoLazy';
 /** The three capabilities under the demo: copy under `features.items.<key>`, each with its product page. */
 const CAPABILITIES = [
   { key: 'ai', to: '/product/agentic-ai', label: 'agenticAi' },
-  { key: 'dataAnalysis', to: '/product/in-depth-analysis', label: 'inDepthAnalysis' },
+  { key: 'dataAnalysis', to: '/docs/data-explorer', label: 'dataExplorer' },
   { key: 'bayesian', to: '/product/samplers', label: 'samplers' },
 ] as const;
 

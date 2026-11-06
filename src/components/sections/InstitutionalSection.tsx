@@ -1,8 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
-import type { RefObject, ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -18,15 +17,35 @@ import { IconWell } from '../primitives/IconWell';
 import { MediaWell } from '../primitives/MediaWell';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { clippedGradientSx, neuGrid, quietLinkSx } from '../../theme/neu';
-import { gradients, motion, soft } from '../../theme/tokens';
+import { gradients, motion, palette, soft } from '../../theme/tokens';
 import type { Audience } from '../../lib/audience';
 import { STILLS } from '../../media/registry';
-import { USE_CASE_KEY } from '../../solutions/registry';
+import { SOLUTION_PATHS, USE_CASE_KEY } from '../../solutions/registry';
 
-/** Reading order in the 2×2 grid: independent quants and funds on top, research teams and advisors below. */
+/** Left to right in the 4×1 row: independent quants lead, then funds, research teams and advisors. */
 const CARD_ORDER: readonly Audience[] = ['independents', 'funds', 'teams', 'advisors'];
 
-const CARD_PAD = { xs: 3, md: 3.5 } as const;
+/**
+ * The row is four across from `lg` up, 2×2 on tablet and one column on a
+ * phone. Four rich cards in a row are ~264px wide at the 1200px container, and
+ * below that the copy would break into slivers, so `md` stays 2-up.
+ */
+const CARD_COLUMNS = { xs: neuGrid.columns(1), sm: neuGrid.columns(2), lg: neuGrid.columns(4) } as const;
+
+/** Tight at lg, where a card is ~264px wide; the roomier 2-up and 1-up layouts keep the larger inset. */
+const CARD_PAD = { xs: 3, lg: 2.75 } as const;
+
+/**
+ * The gold ring (the PricingPage plan-card treatment): an opaque white
+ * padding-box layer over the brand gradient painted to the border-box, so only
+ * the card's 1.5px transparent border reads the gradient. Painted on the card
+ * itself, never a wrapper, so it cannot square off the rounded corners.
+ */
+const goldRingSx = {
+  backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+  backgroundOrigin: 'border-box',
+  backgroundClip: 'padding-box, border-box',
+} as const;
 
 const AUDIENCE_ICON: Record<Audience, ReactNode> = {
   funds: <BusinessIcon />,
@@ -41,10 +60,6 @@ const ADVANTAGES = [
   { key: 'provenance', icon: <VerifiedUserOutlinedIcon /> },
   { key: 'reports', icon: <DescriptionOutlinedIcon /> },
 ] as const;
-
-/** Autoplay tick and how long a manual pick holds the carousel before it resumes. */
-const AUTOPLAY_MS = 5200;
-const RESUME_DELAY_MS = 9000;
 
 /**
  * The band's centered header on the soft ground. Mirrors `SectionHeader`'s
@@ -113,70 +128,13 @@ const AudiencesHeaderBand = ({
 const AudiencesBand = ({ children }: { children: ReactNode }) => <Box>{children}</Box>;
 
 /**
- * Whether the carousel may tick: the panel is on screen, the tab is visible
- * and the visitor has not asked for reduced motion.
- */
-function useAutoplayAllowed(target: RefObject<HTMLElement | null>): boolean {
-  const [allowed, setAllowed] = useState(false);
-
-  useEffect(() => {
-    const el = target.current;
-    if (!el) return undefined;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let inView = false;
-    const update = () =>
-      setAllowed(inView && document.visibilityState === 'visible' && !reduced.matches);
-    const observer = new IntersectionObserver(([entry]) => {
-      inView = entry.isIntersecting;
-      update();
-    });
-    observer.observe(el);
-    document.addEventListener('visibilitychange', update);
-    reduced.addEventListener('change', update);
-    return () => {
-      observer.disconnect();
-      document.removeEventListener('visibilitychange', update);
-      reduced.removeEventListener('change', update);
-    };
-  }, [target]);
-
-  return allowed;
-}
-
-/**
- * Band 3, right after the pipeline. The four seats as dossier cards in a 2×2
- * grid; a spotlight cycles between them (autoplay or a click): the active card
- * is at full strength and the others dim, but none is blurred, so every card
- * stays readable. The platform advantages sit beneath.
+ * Band 3, right after the pipeline. The four seats as dossier cards in a 4×1
+ * row (2×2 on tablet, stacked on a phone). Every card is a link to that seat's
+ * `/solutions/*` page: it lifts and takes a gold ring on hover and focus, and
+ * the whole surface is the click target. The platform advantages sit beneath.
  */
 export const InstitutionalSection = () => {
   const { t } = useTranslation('home');
-  const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const autoplay = useAutoplayAllowed(carouselRef);
-  const count = CARD_ORDER.length;
-
-  useEffect(() => {
-    if (paused || !autoplay) return undefined;
-    const id = setInterval(() => setActive((i) => (i + 1) % count), AUTOPLAY_MS);
-    return () => clearInterval(id);
-  }, [paused, autoplay, count]);
-
-  useEffect(
-    () => () => {
-      if (resumeTimer.current) clearTimeout(resumeTimer.current);
-    },
-    [],
-  );
-
-  const goTo = (idx: number) => {
-    setActive((idx + count) % count);
-    setPaused(true);
-    if (resumeTimer.current) clearTimeout(resumeTimer.current);
-    resumeTimer.current = setTimeout(() => setPaused(false), RESUME_DELAY_MS);
-  };
 
   return (
     <Section id="for-funds" size="lg" tone="ink">
@@ -189,101 +147,19 @@ export const InstitutionalSection = () => {
         />
 
         <Box
-          ref={carouselRef}
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          sx={{ mb: { xs: 3, md: 4 } }}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: CARD_COLUMNS,
+            gap: neuGrid.gap,
+            alignItems: 'stretch',
+            mb: { xs: 3, md: 4 },
+          }}
         >
-          <Box
-            sx={{
-              display: 'grid',
-              // 2×2 from tablet up: four rich cards in one row read as cramped,
-              // and two per row gives each photo room.
-              gridTemplateColumns: { xs: '1fr', sm: neuGrid.columns(2) },
-              gap: neuGrid.gap,
-              alignItems: 'stretch',
-            }}
-          >
-            {CARD_ORDER.map((audience, idx) => (
-              <AnimateOnScroll key={audience} delay={idx * 90} stretch>
-                <Box
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={active === idx}
-                  onClick={() => goTo(idx)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      goTo(idx);
-                    }
-                  }}
-                  sx={{
-                    height: '100%',
-                    cursor: 'pointer',
-                    transformOrigin: 'center',
-                    transition: `transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease, background-image ${motion.fast}`,
-                    transform: { md: active === idx ? 'scale(1.02)' : 'scale(0.98)' },
-                    opacity: active === idx ? 1 : { xs: 1, md: 0.45 },
-                    // No blur on the cards out of the spotlight, only the dim
-                    // above. The gold ring below is an independent hover/focus
-                    // cue that layers on top of it.
-                    '@media (prefers-reduced-motion: reduce)': { transition: 'opacity 0.3s ease', transform: 'none' },
-                    // Same two-layer background as PricingPage's plan cards: an
-                    // opaque white padding-box layer over the brand gradient
-                    // painted to the border-box, so only the 1.5px ring (set on
-                    // AudienceCard's NeuPanel, which this targets as its direct
-                    // child) reads the gradient. Card, not wrapper, so it never
-                    // squares off the rounded corners.
-                    '@media (hover: hover)': {
-                      '&:hover > article': {
-                        backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
-                        backgroundOrigin: 'border-box',
-                        backgroundClip: 'padding-box, border-box',
-                      },
-                    },
-                    '&:focus-within > article': {
-                      backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
-                      backgroundOrigin: 'border-box',
-                      backgroundClip: 'padding-box, border-box',
-                    },
-                  }}
-                >
-                  <AudienceCard audience={audience} />
-                </Box>
-              </AnimateOnScroll>
-            ))}
-          </Box>
-
-          <Box
-            role="tablist"
-            aria-label={t('audiences.title')}
-            sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: { xs: 2.5, md: 3 } }}
-          >
-            {CARD_ORDER.map((audience, idx) => (
-              <Box
-                key={audience}
-                component="button"
-                type="button"
-                role="tab"
-                aria-selected={active === idx}
-                aria-label={t(`useCases.audiences.${USE_CASE_KEY[audience]}.title`)}
-                onClick={() => goTo(idx)}
-                sx={{
-                  width: active === idx ? 22 : 8,
-                  height: 8,
-                  p: 0,
-                  border: 'none',
-                  borderRadius: 999,
-                  cursor: 'pointer',
-                  // This band is permanently ink (tone="ink" above), not a
-                  // light ground, so the inactive dot is the onInk-muted
-                  // white rather than palette.borderStrong.
-                  background: active === idx ? gradients.gold : soft.onInkMuted,
-                  transition: 'width 0.25s ease, background 0.25s ease',
-                }}
-              />
-            ))}
-          </Box>
+          {CARD_ORDER.map((audience, idx) => (
+            <AnimateOnScroll key={audience} delay={idx * 90} stretch>
+              <AudienceCard audience={audience} />
+            </AnimateOnScroll>
+          ))}
         </Box>
 
         <Box
@@ -318,6 +194,12 @@ export const InstitutionalSection = () => {
   );
 };
 
+/**
+ * One seat. The card is an <article>, not an <a>, because the fund seat also
+ * carries a pricing link and anchors cannot nest. Instead the title's link
+ * stretches over the whole card (its ::after fills the article) and the
+ * pricing link is lifted above that overlay.
+ */
 const AudienceCard = ({ audience }: { audience: Audience }) => {
   const { t } = useTranslation('home');
   const useCase = USE_CASE_KEY[audience];
@@ -325,41 +207,92 @@ const AudienceCard = ({ audience }: { audience: Audience }) => {
   return (
     <NeuPanel
       component="article"
+      interactive
       sx={{
         display: 'flex',
         flexDirection: 'column',
         p: 0,
         overflow: 'hidden',
-        maxWidth: { xs: 560, md: 'none' },
-        mx: { xs: 'auto', md: 0 },
+        maxWidth: { xs: 560, lg: 'none' },
+        mx: { xs: 'auto', lg: 0 },
         width: '100%',
         height: '100%',
         // 1.5px transparent at rest (NeuPanel's own raisedPanelSx is 1px), so
-        // the hover/focus gold ring painted by the wrapping Box above never
-        // shifts the card's size when it appears.
+        // the gold ring that appears on hover/focus never shifts the card's size.
         border: '1.5px solid transparent',
+        transition: `box-shadow ${motion.base}, transform ${motion.base}, background-image ${motion.fast}`,
+        '@media (hover: hover)': {
+          '&:hover': goldRingSx,
+          // Hovering the card nudges the arrow and slowly pushes in on the photo.
+          '&:hover .audience-arrow': { transform: 'translateX(4px)', color: soft.accent },
+          '&:hover .audience-photo img': { transform: 'scale(1.05)' },
+        },
+        // Keyboard: the stretched link's focus ring is the card's, outside it.
+        // It is painted straight on the band's ink ground, where an ink-reset
+        // card cannot use soft.linkAccent (the card resets that var to near-black
+        // on itself), so it is the red that var takes on ink (see index.css).
+        '&:has(.audience-link:focus-visible)': { ...goldRingSx, outline: `2px solid ${palette.red}`, outlineOffset: 4 },
+        '@media (prefers-reduced-motion: reduce)': {
+          transition: 'none',
+          '&:hover': { transform: 'none' },
+          '& .audience-arrow, & .audience-photo img': { transition: 'none', transform: 'none !important' },
+        },
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', p: CARD_PAD, pb: 0, flex: '0 0 auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.75 }}>
           <IconWell size={40}>{AUDIENCE_ICON[audience]}</IconWell>
-          <Typography
-            component="h3"
-            sx={{ fontSize: { xs: '1.15rem', md: '1.25rem' }, fontWeight: 800, lineHeight: 1.2, letterSpacing: '-0.02em', color: soft.text }}
+          <ArrowForwardIcon
+            aria-hidden
+            className="audience-arrow"
+            sx={{ fontSize: 20, color: soft.textSecondary, transition: `transform ${motion.base}, color ${motion.fast}` }}
+          />
+        </Box>
+        <Typography
+          component="h3"
+          sx={{ fontSize: { xs: '1.15rem', lg: '1.1rem' }, fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.02em', color: soft.text, mb: 1.25 }}
+        >
+          <Box
+            component={RouterLink}
+            to={SOLUTION_PATHS[audience]}
+            className="audience-link"
+            sx={{
+              color: 'inherit',
+              textDecoration: 'none',
+              // The stretched hit area: the nearest positioned ancestor is the card.
+              '&::after': { content: '""', position: 'absolute', inset: 0, zIndex: 1 },
+              // The card draws the focus ring (see :has above), not the link.
+              '&:focus-visible': { outline: 'none' },
+            }}
           >
             {t(`useCases.audiences.${useCase}.title`)}
-          </Typography>
-        </Box>
-        <Typography sx={{ fontSize: '0.9rem', lineHeight: 1.65, color: soft.textSecondary }}>
+          </Box>
+        </Typography>
+        <Typography sx={{ fontSize: { xs: '0.9rem', lg: '0.86rem' }, lineHeight: 1.6, color: soft.textSecondary }}>
           {t(`useCases.audiences.${useCase}.description`)}
         </Typography>
         {/* The fund seat is the one bought on a custom plan, so its card is
-            where the pricing page earns a contextual link. */}
+            where the pricing page earns a contextual link. It sits above the
+            card-wide link (zIndex) so it stays its own target. */}
         {audience === 'funds' && (
           <Box
             component={RouterLink}
             to="/pricing"
-            sx={[quietLinkSx, { mt: 2, display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.88rem', fontWeight: 600, color: soft.accent, alignSelf: 'flex-start' }]}
+            sx={[
+              quietLinkSx,
+              {
+                position: 'relative',
+                zIndex: 2,
+                mt: 1.75,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                fontSize: '0.86rem',
+                fontWeight: 600,
+                color: soft.accent,
+                alignSelf: 'flex-start',
+              },
+            ]}
           >
             {t('audiences.items.funds.pricingLink')}
             <ArrowForwardIcon sx={{ fontSize: 14 }} />
@@ -369,15 +302,17 @@ const AudienceCard = ({ audience }: { audience: Audience }) => {
 
       {/* The photo fills whatever height the card has left, from a floor up,
           and is cropped to it: laid out absolutely, so the portrait files'
-          own height never drives the card's (at half the band's width it
-          would make each card about 1,000px tall). */}
+          own height never drives the card's. The floor is low at lg, where the
+          copy sets the card's height, and roomier when the cards are wider. */}
       <Box
+        className="audience-photo"
         sx={{
           position: 'relative',
           flex: '1 1 auto',
-          minHeight: { xs: 240, sm: 260, md: 320 },
-          mt: 3,
+          minHeight: { xs: 220, sm: 260, lg: 170 },
+          mt: 2.5,
           overflow: 'hidden',
+          '& img': { transition: `transform ${motion.slow}` },
         }}
       >
         <MediaWell
@@ -385,7 +320,7 @@ const AudienceCard = ({ audience }: { audience: Audience }) => {
           flush
           src={STILLS.audiences[audience]}
           alt={t(`audiences.items.${audience}.imageAlt`)}
-          sizes="(min-width: 1200px) 560px, (min-width: 600px) 50vw, 100vw"
+          sizes="(min-width: 1200px) 280px, (min-width: 600px) 50vw, 100vw"
           sx={{
             position: 'absolute',
             inset: 0,

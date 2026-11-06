@@ -17,7 +17,6 @@ export const STATIC_ROUTES = [
   '/research',
   '/product/agentic-ai',
   '/product/samplers',
-  '/product/in-depth-analysis',
   '/product/fintela-api',
   '/product/mcp',
   '/solutions/hedge-funds',

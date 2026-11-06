@@ -1,17 +1,16 @@
 {
   "nav": {
     "product": "Solutions",
-    "samplers": "Optimization Engine",
-    "fintelagent": "Agentic AI",
-    "inDepthAnalysis": "In-Depth Analysis",
-    "fintelaApi": "Fintela API",
+    "samplers": "Optimizer",
+    "fintelagent": "AI",
+    "fintelaApi": "API",
     "useCases": "Use Cases",
     "pricing": "Pricing",
     "documentation": "Docs",
     "blog": "Blog",
     "research": "Research",
     "solutions": "The Desk",
-    "mcp": "Connect your agent (MCP)"
+    "mcp": "MCP"
   },
   "actions": {
     "getStarted": "Get started"

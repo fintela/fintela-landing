@@ -18,7 +18,6 @@ import { NeuPanel } from '../primitives/NeuPanel';
 import { IconWell } from '../primitives/IconWell';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { fonts, motion, soft } from '../../theme/tokens';
-import { useMediaMatch } from '../../lib/useMediaMatch';
 
 /**
  * The ten things Fintelligent does, from `fintelAgent.fullCapabilities.items.*`
@@ -38,139 +37,196 @@ const ITEMS = [
   { key: 'oneClickIdeas', icon: <TipsAndUpdatesOutlinedIcon /> },
 ] as const;
 
-const FACT_KEYS = ['where', 'history', 'language', 'suggestions', 'cost', 'who'] as const;
-
 /**
- * The scatter. Cards run down columns in number order (01–04, 05–07, 08–10
- * on wide screens), so the DOM, the tab order and the numbers all agree.
- * Each column starts at its own depth, and each card sits at its own inset
- * inside its column, so no edge lines up with its neighbour's. A card that
- * opens only pushes down the cards under it in the same column.
+ * The grid: 5×2 on wide screens, 2×5 on tablets, one column on phones. Ten
+ * tiles fill those with no hole in the last row, which 3 or 4 columns can't.
+ * Every tile owns two grid rows, its own and a detail row under it that stays
+ * zero-height until opened, so an open detail spans the band and pushes the
+ * next row down without changing the size of any tile. Placement is CSS, so
+ * the prerendered page already has the right layout before it hydrates.
  */
-const WIDE = '(min-width: 1200px)';
-const MEDIUM = '(min-width: 900px)';
-const LAYOUTS = {
-  wide: { columns: [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9]], offsets: [0, 96, 44] },
-  medium: { columns: [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], offsets: [0, 56] },
-  narrow: { columns: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], offsets: [0] },
-} as const;
-/** Left and right inset of each card, in % of its column. */
-const INSETS: ReadonlyArray<readonly [number, number]> = [
-  [0, 10], [8, 0], [3, 7], [12, 0], [0, 4], [6, 0], [0, 12], [10, 2], [2, 9], [0, 0],
-];
-/** On a phone there is one column, so the cards zig-zag instead. */
-const zigzag = (i: number): readonly [number, number] => (i % 2 ? [7, 0] : [0, 7]);
+const perLayout = <T,>(place: (columns: number) => T) => ({ xs: place(1), sm: place(2), lg: place(5) });
+const tileRow = (i: number, columns: number) => 2 * Math.floor(i / columns) + 1;
+
+/** Half the column gap: two of these, around a zero-height detail row, make one even gutter. */
+const HALF_GAP = { xs: 1, md: 1.5 };
 
 const OPEN_MS = 280;
 
 /**
- * One capability as a disclosure: the header (number, icon, title) is the
- * button, and the description and its points open below it, in place. The
- * body stays in the DOM while closed (crawlers and in-page search still find
- * it) but hidden from the accessibility tree and the tab order.
+ * Keeps a tile where it is on screen for a moment, scrolling to absorb a
+ * detail collapsing above it, so a click never sends its own target away.
+ * Instant because the page's global smooth scrolling would lag every step.
  */
-const CapabilityCard = ({
+const holdOnScreen = (el: HTMLElement, ms: number) => {
+  const top = el.getBoundingClientRect().top;
+  const end = performance.now() + ms;
+  const step = () => {
+    if (!el.isConnected) return;
+    window.scrollBy({ top: el.getBoundingClientRect().top - top, behavior: 'instant' });
+    if (performance.now() < end) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+};
+
+/**
+ * One capability as a disclosure: the tile (number, icon, title) is the
+ * button, and the description and its points open in the detail row below.
+ * Tile and detail are siblings in the DOM, so the reading and tab order stay
+ * 01, 02, 03… while the grid places the detail under the whole row. The body
+ * stays in the DOM while closed (crawlers still find it) but hidden from the
+ * accessibility tree and the tab order.
+ */
+const Capability = ({
   index,
   itemKey,
   icon,
   open,
+  otherOpen,
   onToggle,
 }: {
   index: number;
   itemKey: (typeof ITEMS)[number]['key'];
   icon: ReactNode;
   open: boolean;
-  onToggle: () => void;
+  /** Another tile's detail is open, so closing this one is a hand-over. */
+  otherOpen: boolean;
+  onToggle: (tile: HTMLElement) => void;
 }) => {
   const { t } = useTranslation('home');
-  const bodyId = useId();
+  const detailId = useId();
   const base = `fintelAgent.fullCapabilities.items.${itemKey}`;
   const bullets = t(`${base}.bullets`, { returnObjects: true }) as string[];
 
   return (
-    <NeuPanel
-      sx={{
-        overflow: 'hidden',
-        transition: `transform ${motion.base}, outline-color ${motion.fast}`,
-        outline: '2px solid transparent',
-        outlineOffset: '-2px',
-        ...(open
-          ? { outlineColor: soft.accent }
-          : { '@media (hover: hover)': { '&:hover': { transform: 'translateY(-3px)' } } }),
-      }}
-    >
-      <Typography component="h3" sx={{ m: 0, font: 'inherit' }}>
-        <Box
-          component="button"
-          type="button"
-          aria-expanded={open}
-          aria-controls={bodyId}
-          onClick={onToggle}
-          sx={{
-            all: 'unset',
-            boxSizing: 'border-box',
-            width: '100%',
-            display: 'block',
-            cursor: 'pointer',
-            p: { xs: 2.25, md: 2.5 },
-            borderRadius: 'inherit',
-            // Inset: the panel clips its overflow, so an outer ring would be cut off.
-            '&:focus-visible': { outline: `2px solid ${soft.accent}`, outlineOffset: '-4px' },
-            '@media (forced-colors: active)': { '&:focus-visible': { outline: '3px solid Highlight' } },
-            '@media (hover: hover)': { '&:hover .cap-toggle': { color: soft.accent } },
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.75 }}>
-            <IconWell size={36}>{icon}</IconWell>
-            <Box
-              component="span"
-              aria-hidden
-              sx={{ fontFamily: fonts.mono, fontSize: '0.72rem', fontWeight: 700, color: soft.textSecondary, letterSpacing: '0.04em' }}
-            >
-              {String(index + 1).padStart(2, '0')}
-            </Box>
-            <Box
-              className="cap-toggle"
-              aria-hidden
-              sx={{
-                ml: 'auto',
-                display: 'flex',
-                color: open ? soft.accent : soft.textSecondary,
-                transition: `transform ${OPEN_MS}ms ease, color ${motion.fast}`,
-                transform: open ? 'rotate(45deg)' : 'none',
-                '& svg': { fontSize: 22 },
-              }}
-            >
-              <AddRoundedIcon />
-            </Box>
-          </Box>
-          <Box
-            component="span"
-            sx={{ display: 'block', fontWeight: 700, fontSize: { xs: '1rem', md: '1.05rem' }, lineHeight: 1.35, color: soft.text, textWrap: 'balance' }}
-          >
-            {t(`${base}.title`)}
-          </Box>
-        </Box>
-      </Typography>
-
-      {/* 0fr → 1fr animates to the body's own height without measuring it.
-          Visibility flips after the close finishes, so a closed body can't
-          be tabbed into or read, and is there at once when it opens. */}
+    <>
       <Box
-        id={bodyId}
         sx={{
+          gridColumn: perLayout((columns) => (index % columns) + 1),
+          gridRow: perLayout((columns) => tileRow(index, columns)),
+          aspectRatio: { lg: '1 / 1' },
+        }}
+      >
+        <AnimateOnScroll delay={(index % 5) * 60} stretch>
+          <NeuPanel
+            sx={{
+              display: 'flex',
+              transition: `transform ${motion.base}, outline-color ${motion.fast}`,
+              outline: '2px solid transparent',
+              outlineOffset: '-2px',
+              ...(open
+                ? { outlineColor: soft.accent }
+                : { '@media (hover: hover)': { '&:hover': { transform: 'translateY(-3px)' } } }),
+            }}
+          >
+            <Typography component="h3" sx={{ m: 0, font: 'inherit', flex: 1, minWidth: 0, display: 'flex', borderRadius: 'inherit' }}>
+              <Box
+                component="button"
+                type="button"
+                aria-expanded={open}
+                aria-controls={detailId}
+                onClick={(event) => onToggle(event.currentTarget)}
+                sx={{
+                  all: 'unset',
+                  boxSizing: 'border-box',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                  p: { xs: 2.25, md: 2.5 },
+                  borderRadius: 'inherit',
+                  '&:focus-visible': { outline: `2px solid ${soft.accent}`, outlineOffset: '-4px' },
+                  '@media (forced-colors: active)': { '&:focus-visible': { outline: '3px solid Highlight' } },
+                  '@media (hover: hover)': { '&:hover .cap-toggle': { color: soft.accent } },
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.75 }}>
+                  <IconWell size={36}>{icon}</IconWell>
+                  <Box
+                    component="span"
+                    aria-hidden
+                    sx={{ fontFamily: fonts.mono, fontSize: '0.72rem', fontWeight: 700, color: soft.textSecondary, letterSpacing: '0.04em' }}
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </Box>
+                  <Box
+                    className="cap-toggle"
+                    aria-hidden
+                    sx={{
+                      ml: 'auto',
+                      display: 'flex',
+                      color: open ? soft.accent : soft.textSecondary,
+                      transition: `transform ${OPEN_MS}ms ease, color ${motion.fast}`,
+                      transform: open ? 'rotate(45deg)' : 'none',
+                      '& svg': { fontSize: 22 },
+                    }}
+                  >
+                    <AddRoundedIcon />
+                  </Box>
+                </Box>
+                <Box
+                  component="span"
+                  sx={{ display: 'block', fontWeight: 700, fontSize: { xs: '1rem', md: '1.05rem', lg: '1rem' }, lineHeight: 1.35, color: soft.text, textWrap: 'balance' }}
+                >
+                  {t(`${base}.title`)}
+                </Box>
+              </Box>
+            </Typography>
+          </NeuPanel>
+        </AnimateOnScroll>
+      </Box>
+
+      {/* 0fr → 1fr animates to the body's own height without measuring it. The
+          clip sits inside the panel so it can't cut the panel's shadow, and the
+          fade hides that shadow while closed. Visibility flips after the close
+          finishes, so a closed body can't be read, and is there at once when
+          it opens. Details of one row share a cell, so on a hand-over the old
+          one fades at once but keeps its height until the new one has grown:
+          shrinking together would dip the row and bounce everything below. */}
+      <NeuPanel
+        id={detailId}
+        sx={{
+          gridColumn: '1 / -1',
+          gridRow: perLayout((columns) => tileRow(index, columns) + 1),
+          alignSelf: 'start',
           display: 'grid',
           gridTemplateRows: open ? '1fr' : '0fr',
+          my: open ? HALF_GAP : 0,
+          // The panel's transparent border would hold a closed row 2px open.
+          borderWidth: open ? '1px' : 0,
+          opacity: open ? 1 : 0,
           visibility: open ? 'visible' : 'hidden',
-          transition: `grid-template-rows ${OPEN_MS}ms ease, visibility 0s linear ${open ? '0s' : `${OPEN_MS}ms`}`,
+          transition: [
+            `grid-template-rows ${OPEN_MS}ms ease ${otherOpen ? OPEN_MS : 0}ms`,
+            `margin ${OPEN_MS}ms ease ${otherOpen ? OPEN_MS : 0}ms`,
+            `opacity ${OPEN_MS}ms ease`,
+            `visibility 0s linear ${open ? 0 : OPEN_MS}ms`,
+          ].join(', '),
         }}
       >
         <Box sx={{ overflow: 'hidden', minHeight: 0 }}>
-          <Box sx={{ px: { xs: 2.25, md: 2.5 }, pb: { xs: 2.5, md: 3 } }}>
-            <Typography sx={{ color: soft.textSecondary, fontSize: '0.92rem', lineHeight: 1.6, mb: 2 }}>
+          <Box
+            sx={{
+              p: { xs: 2.25, md: 3 },
+              display: 'grid',
+              gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1fr) minmax(0, 2fr)' },
+              gap: { xs: 2, lg: 4 },
+            }}
+          >
+            <Typography sx={{ color: soft.textSecondary, fontSize: '0.92rem', lineHeight: 1.6 }}>
               {t(`${base}.desc`)}
             </Typography>
-            <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 1.1 }}>
+            <Box
+              component="ul"
+              sx={{
+                listStyle: 'none',
+                m: 0,
+                p: 0,
+                display: 'grid',
+                gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' },
+                gap: { xs: 1.1, md: '12px 24px' },
+              }}
+            >
               {bullets.map((b) => (
                 <Box component="li" key={b} sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
                   <CheckRoundedIcon sx={{ fontSize: 16, color: soft.accent, mt: '3px', flexShrink: 0 }} />
@@ -180,35 +236,27 @@ const CapabilityCard = ({
             </Box>
           </Box>
         </Box>
-      </Box>
-    </NeuPanel>
+      </NeuPanel>
+    </>
   );
 };
 
 /**
- * The full capability surface for the Agentic AI page: ten cards scattered
- * across the band in uneven columns, each opening downward in place to show
- * what it covers, and a fact strip underneath for the practical "how it's
- * used" questions. Deliberately not a Section of its own; it lives inside
- * FintelligentSection, right below the agentic demo it backs up with the
- * complete list.
+ * The full capability surface for the Agentic AI page: ten equal tiles in a
+ * straight grid, each opening a detail row below to show what it covers.
+ * Deliberately not a Section of its own; it lives inside FintelligentSection,
+ * right below the agentic demo it backs up with the complete list.
  */
 export const FintelligentCapabilityExplorer = () => {
   const { t } = useTranslation('home');
-  // All closed to start: one open card would stretch its column well past
-  // the others before the visitor has asked for anything.
-  const [open, setOpen] = useState<ReadonlySet<number>>(() => new Set());
-  const wide = useMediaMatch(WIDE);
-  const medium = useMediaMatch(MEDIUM);
-  const layout = LAYOUTS[wide ? 'wide' : medium ? 'medium' : 'narrow'];
+  // All closed to start: the grid reads as a whole before anything is opened.
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const toggle = (i: number) =>
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
-    });
+  const toggle = (i: number, tile: HTMLElement) => {
+    // The hand-over runs twice OPEN_MS: the new detail grows, then the old one closes.
+    if (openIndex !== null && openIndex !== i) holdOnScreen(tile, 2 * OPEN_MS + 100);
+    setOpenIndex(openIndex === i ? null : i);
+  };
 
   return (
     <Box>
@@ -221,55 +269,29 @@ export const FintelligentCapabilityExplorer = () => {
         </Typography>
       </AnimateOnScroll>
 
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: { xs: 2, md: 3 } }}>
-        {layout.columns.map((column, c) => (
-          <Box
-            key={c}
-            sx={{ flex: '1 1 0', minWidth: 0, pt: `${layout.offsets[c]}px`, display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 } }}
-          >
-            {column.map((i, row) => {
-              const [ml, mr] = layout.columns.length === 1 ? zigzag(i) : INSETS[i];
-              return (
-                <AnimateOnScroll key={ITEMS[i].key} delay={c * 90 + row * 60}>
-                  <Box sx={{ ml: `${ml}%`, mr: `${mr}%` }}>
-                    <CapabilityCard
-                      index={i}
-                      itemKey={ITEMS[i].key}
-                      icon={ITEMS[i].icon}
-                      open={open.has(i)}
-                      onToggle={() => toggle(i)}
-                    />
-                  </Box>
-                </AnimateOnScroll>
-              );
-            })}
-          </Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: perLayout((columns) => `repeat(${columns}, minmax(0, 1fr))`),
+          // In an auto-height grid every 1fr track takes the height of the
+          // tallest one, so all tile rows match whatever the titles' lengths.
+          gridTemplateRows: perLayout((columns) => `repeat(${Math.ceil(ITEMS.length / columns)}, 1fr auto)`),
+          columnGap: { xs: 2, md: 3 },
+          rowGap: HALF_GAP,
+        }}
+      >
+        {ITEMS.map((item, i) => (
+          <Capability
+            key={item.key}
+            index={i}
+            itemKey={item.key}
+            icon={item.icon}
+            open={openIndex === i}
+            otherOpen={openIndex !== null && openIndex !== i}
+            onToggle={(tile) => toggle(i, tile)}
+          />
         ))}
       </Box>
-
-      <AnimateOnScroll delay={140} stretch>
-        <NeuPanel
-          variant="tile"
-          sx={{
-            mt: { xs: 4, md: 6 },
-            p: { xs: 2.5, md: 3 },
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(6, minmax(0, 1fr))' },
-            gap: { xs: 2.5, md: 3 },
-          }}
-        >
-          {FACT_KEYS.map((key) => (
-            <Box key={key}>
-              <Typography sx={{ fontSize: '0.64rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: soft.textSecondary, mb: 0.6 }}>
-                {t(`fintelAgent.fullCapabilities.usage.facts.${key}.label`)}
-              </Typography>
-              <Typography sx={{ fontSize: '0.82rem', lineHeight: 1.55, color: soft.text }}>
-                {t(`fintelAgent.fullCapabilities.usage.facts.${key}.value`)}
-              </Typography>
-            </Box>
-          ))}
-        </NeuPanel>
-      </AnimateOnScroll>
     </Box>
   );
 };

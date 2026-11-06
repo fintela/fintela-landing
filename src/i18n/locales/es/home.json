@@ -369,16 +369,6 @@
             "La IA propone; los números los calcula siempre el motor."
           ]
         }
-      },
-      "usage": {
-        "facts": {
-          "where": { "label": "Dónde", "value": "Panel flotante desde cualquier página, o conversación a página completa. También en móvil." },
-          "history": { "label": "Historial", "value": "Todas tus conversaciones se guardan; búscalas, renómbralas y fija hasta 20." },
-          "language": { "label": "Idioma", "value": "Responde en el idioma en que le escribes." },
-          "suggestions": { "label": "Sugerencias", "value": "Atajos contextuales según la página: revisar código, detectar sobreajuste, construir mi portafolio…" },
-          "cost": { "label": "Costo", "value": "Se factura en tokens de Fintela. Cada respuesta muestra lo que costó. 10 mensajes gratis al día." },
-          "who": { "label": "Quién", "value": "Cuentas con rol Manager u Owner." }
-        }
       }
     },
     "chat": {
@@ -670,7 +660,7 @@
       "liveTrading": "Docs de trading en vivo",
       "agenticAi": "Explora Agentic AI",
       "samplers": "Explora el motor de optimización",
-      "inDepthAnalysis": "Explora In-Depth Analysis"
+      "dataExplorer": "Docs del Data Explorer"
     },
     "chapters": {
       "pulse": "Pulso",
