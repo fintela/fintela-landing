@@ -46,6 +46,12 @@ export interface BlogPostSummary {
    * generator produced one. Same prefix rules as `cover`.
    */
   ogImage?: string;
+  /**
+   * The author's face for the byline (`covers/authors/<author-slug>.jpg`, a
+   * square the page rounds), when they have a portrait. Absent, the byline
+   * shows their initials. Same prefix rules as `cover`.
+   */
+  authorImage?: string;
   /** Repo-relative path of the source file, e.g. `content/blog/my-post.md`. */
   sourcePath?: string;
   /** Pins the post to the home page's featured slot regardless of date. */
@@ -54,6 +60,11 @@ export interface BlogPostSummary {
 
 /** A full post — `blog/<slug>.json`. */
 export interface BlogPost extends BlogPostSummary {
+  /**
+   * One line under the title on the post's share image (`subtitle:` in
+   * frontmatter). Absent, the share image uses the excerpt instead.
+   */
+  subtitle?: string;
   markdown: string;
   /**
    * Sizes of the body's local images, keyed by the `src` exactly as written in

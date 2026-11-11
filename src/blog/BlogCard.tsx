@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { ArrowForward, CalendarToday, PersonOutline } from '@mui/icons-material';
+import { ArrowForward, CalendarToday } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { NeuPanel } from '../components/primitives/NeuPanel';
 import { TierBadge } from '../components/primitives/TierBadge';
@@ -10,6 +10,7 @@ import { formatContentDate, truncate } from '../content/format';
 import { noMotionPress } from '../theme/neu';
 import { motion, soft } from '../theme/tokens';
 import { accentFor } from './format';
+import { AuthorByline } from './AuthorByline';
 import type { BlogPostSummary } from './types';
 
 /** How many tag chips fit on a card before the rest collapse into "+N". */
@@ -73,11 +74,8 @@ export const BlogCard = ({ post }: { post: BlogPostSummary }) => {
           {post.title}
         </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
-          <PersonOutline sx={{ fontSize: '0.95rem', color: soft.textSecondary }} />
-          <Typography variant="caption" sx={{ color: soft.textSecondary, fontWeight: 600 }}>
-            {post.author}
-          </Typography>
+        <Box sx={{ mt: 0.5, mb: 2 }}>
+          <AuthorByline author={post.author} image={post.authorImage} />
         </Box>
 
         <Typography sx={{ color: soft.textSecondary, mb: 2.5, lineHeight: 1.7, flexGrow: 1 }}>

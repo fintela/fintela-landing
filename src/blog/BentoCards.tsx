@@ -8,6 +8,7 @@ import { formatContentDate, truncate } from '../content/format';
 import { clippedGradientSx, noMotionPress } from '../theme/neu';
 import { gradients, motion, soft } from '../theme/tokens';
 import { accentFor } from './format';
+import { AuthorByline } from './AuthorByline';
 import { blogAssetUrl } from './api';
 import { postPath } from './sections';
 import type { BlogPostSummary } from './types';
@@ -137,9 +138,12 @@ export const FeaturedPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
       )}
       <Box sx={{ px: { xs: 3, md: 3.5 }, pt: 2.5, pb: { xs: 3, md: 3 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <MetaRow post={post} tag={post.tags[0]} />
-        <Typography component={titleAs} sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' }, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.2, color: soft.text, mt: 1.25, mb: 1 }}>
+        <Typography component={titleAs} sx={{ fontSize: { xs: '1.3rem', md: '1.5rem' }, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.2, color: soft.text, mt: 1.25, mb: 1.5 }}>
           {post.title}
         </Typography>
+        <Box sx={{ mb: 1.5 }}>
+          <AuthorByline author={post.author} image={post.authorImage} />
+        </Box>
         <Typography sx={{ color: soft.textSecondary, lineHeight: 1.65, fontSize: '0.95rem', maxWidth: 560, mb: 2.5 }}>
           {truncate(post.excerpt)}
         </Typography>
@@ -211,10 +215,13 @@ export const VerticalPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
         <MetaRow post={post} tag={post.tags[0]} />
         <Typography
           component={titleAs}
-          sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text, mt: 1, mb: 1 }}
+          sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text, mt: 1, mb: 1.25 }}
         >
           {post.title}
         </Typography>
+        <Box sx={{ mb: 1.25 }}>
+          <AuthorByline author={post.author} image={post.authorImage} />
+        </Box>
         <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6, mb: 'auto' }}>
           {truncate(post.excerpt, 110)}
         </Typography>
@@ -225,7 +232,7 @@ export const VerticalPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
 };
 
 /**
- * Beside the feature: meta, title, a line of excerpt. With a cover, the image
+ * Beside the feature: meta, title, byline, a line of excerpt. With a cover, the image
  * fills the whole card as a blurred, darkened background instead of sitting in
  * its own well — this tile is too small for a crisp thumbnail to read well
  * next to text, so it becomes texture instead, and every label switches to
@@ -249,6 +256,7 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
         <Typography component={titleAs} sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
           {post.title}
         </Typography>
+        <AuthorByline author={post.author} image={post.authorImage} />
         <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6, mt: 0.5 }}>{truncate(post.excerpt, 120)}</Typography>
         <ReadMore label={t('insights.read')} accent={accent} />
       </NeuPanel>
@@ -295,6 +303,7 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
         <Typography component={titleAs} sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: '#fff' }}>
           {post.title}
         </Typography>
+        <AuthorByline author={post.author} image={post.authorImage} tone="onImage" />
         <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.88rem', lineHeight: 1.6, mt: 0.5 }}>
           {truncate(post.excerpt, 120)}
         </Typography>
@@ -305,7 +314,7 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
 };
 
 /**
- * A text tile: meta with the lead tag, title, one line of excerpt. With
+ * A text tile: meta with the lead tag, title, byline, one line of excerpt. With
  * `withCover`, a post that has a cover gets it in a 16/9 well across the top
  * (the same crop the /blog card and the featured slot use). It is opt-in
  * because the "Related posts" row under an article uses this tile too, and
@@ -329,6 +338,7 @@ export const TextPostCard = ({ post, titleAs = 'h3', withCover = false }: CardPr
         <Typography component={titleAs} sx={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
           {post.title}
         </Typography>
+        <AuthorByline author={post.author} image={post.authorImage} />
         <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.55 }}>{truncate(post.excerpt, 110)}</Typography>
       </Box>
     </NeuPanel>

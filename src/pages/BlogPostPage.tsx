@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { ArrowBack, ArrowForward, CalendarToday, PersonOutline, SearchOff } from '@mui/icons-material';
+import { ArrowBack, ArrowForward, CalendarToday, SearchOff } from '@mui/icons-material';
 import { Navigate, Link as RouterLink, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
@@ -10,6 +10,7 @@ import { IconWell } from '../components/primitives/IconWell';
 import { Groove } from '../components/primitives/Groove';
 import { ArticleSkeleton } from '../components/common/ArticleSkeleton';
 import { MarkdownContent } from '../blog/MarkdownContent';
+import { AuthorByline } from '../blog/AuthorByline';
 import { TextPostCard } from '../blog/BentoCards';
 import { formatContentDate } from '../content/format';
 import { useBlogIndex, useBlogPost } from '../blog/useBlog';
@@ -70,8 +71,9 @@ const neighbours = (post: BlogPost, posts: BlogPostSummary[]) => {
 /**
  * The post's head: title, excerpt, cover and dates as Open Graph `article:*`
  * tags plus a BlogPosting node. The social image is the generator's 1200×630
- * crop when there is one, else the cover, else the blog's default card; the
- * BlogPosting lists the crop and the full cover so Google can pick an aspect.
+ * share card (the author's badge, title and subtitle over the cover — see
+ * blog-preview.ts) when there is one, else the blog's default card; the
+ * BlogPosting lists the card and the full cover so Google can pick an aspect.
  */
 const PostSeo = ({ post }: { post: BlogPost }) => {
   const url = absoluteUrl(postPath(post));
@@ -84,7 +86,7 @@ const PostSeo = ({ post }: { post: BlogPost }) => {
       title={pageTitle(post.title, TITLE_SUFFIX[post.section])}
       description={truncateDescription(post.excerpt)}
       type="article"
-      image={social ? { url: social, alt: post.coverAlt } : fallbackImage}
+      image={social ? { url: social, alt: `${post.title}, by ${post.author}` } : fallbackImage}
       article={{
         publishedTime: post.date,
         modifiedTime: post.updated ?? post.date,
@@ -210,12 +212,7 @@ export const BlogPostPage = ({ section = DEFAULT_SECTION }: PostSectionProps) =>
                     color: soft.textSecondary,
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <PersonOutline sx={{ fontSize: '1.05rem' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {post.author}
-                    </Typography>
-                  </Box>
+                  <AuthorByline author={post.author} image={post.authorImage} size="md" />
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <CalendarToday sx={{ fontSize: '0.95rem' }} />
                     <Typography variant="body2">

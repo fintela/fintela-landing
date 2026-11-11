@@ -78,8 +78,9 @@ Body starts here.
 | `tags` | no | `tags: A, B` or `tags: [A, B]` or a `- item` list on following lines. The first tag becomes the card's accent chip. |
 | `slug` | no | Overrides the URL. Defaults to the filename without `.md`, slugified. |
 | `section` | no | `blog` (the default) or `research`: which page lists the post and whether its URL is `/blog/<slug>` or `/research/<slug>`. See *Blog or Research* above. Any other value stops the post with a build warning. |
-| `cover` | no | Card image, as a path under `content/blog/` — e.g. `cover: covers/my-post.jpg`. JPEG, PNG, WebP, AVIF or SVG. Published beside the post's JSON. Shown on the `/blog` card, in the home page's Insights band for the newest (or `featured`) post, and as the post's Open Graph image (the picture a shared link shows), so give it one. |
-| `coverAlt` | no | Alt text for the cover. Set it whenever you set `cover`; the build warns when it is missing. |
+| `cover` | no | Card image, as a path under `content/blog/` — e.g. `cover: covers/my-post.jpg`. JPEG, PNG, WebP, AVIF or SVG. Published beside the post's JSON. Shown on the `/blog` card and in the home page's Insights band, and it is the background of the post's share image — see [Preview images](#preview-images). Pick it by the rules there. |
+| `coverAlt` | no | Alt text for the cover. Set it whenever you set `cover`; the build warns when it is missing. Describe the photo. |
+| `subtitle` | no | One sentence under the title on the post's share image, ≤ 90 characters. Omitted, the excerpt is used and usually cut short with "…". |
 | `featured` | no | `true` pins the post to the home page's featured slot regardless of date. One post at a time. |
 
 A missing cover is not an error. If the post has no `cover:` field, the build
@@ -89,6 +90,60 @@ same sources the renderer allows; see [Images](#images)). Only when the post
 also has no such image do the cards fall back to their text form. A `cover`
 that points at a file which is not in `content/blog/` is dropped with a build
 warning rather than published as a broken image.
+
+## Preview images
+
+Every post is presented with a person: the author. The build renders the
+share image for each post, and a small round face for each author, from the
+frontmatter, so they are consistent without anyone opening a design tool. The
+template itself is code, `blog-preview.ts`; what follows is what it does and
+what it needs from you.
+
+```
+SHARE IMAGE  1200×630                         ON THE SITE
+what LinkedIn, Slack, X show for a link       /blog card and post header
+┌────────────────────────────────────────┐    ┌──────────────────────────────┐
+│ cover, out of focus   FINTELA          │    │ cover, as authored — alone   │
+│     .-''''-.                           │    │                              │
+│   /  ◕   ◕  \       Title, up to three │    └──────────────────────────────┘
+│  |     ‿     |      lines              │      Title
+│   \         /       ▬▬▬                │      (◕‿◕) Author   ·  date
+│     '-....-'        Subtitle, ≤ 3 lines│
+│   ( Author )                           │
+└────────────────────────────────────────┘
+```
+
+On the share image the person is the **author badge**: a round black-and-white
+portrait in a white ring, with the author's name on a white tag below it,
+centred on the left. On the site the cover stands alone (on the card, on the
+home page and inside the post), and the author's face is in the **byline**:
+round, in front of their name, on the `/blog` card and in the post's header.
+
+**What you supply**
+
+| Input | Where | Rules |
+|---|---|---|
+| Background | `cover:` | A real photograph that sets the scene of the post's topic: a desk, a screen, a trading floor, a city. Landscape, at least 1600×900 (16:9), JPEG. On the share image the left third sits behind the badge, out of focus. |
+| Portrait | `content/blog/authors/<author-slug>.png` | One per author, reused on every post. The slug is the `author:` value lowercased, accents dropped, spaces as hyphens: `Myrna Ortiz` → `myrna-ortiz.png`. A transparent cut-out of head and shoulders, facing the camera, eyes about a third of the way down, at least 600 px wide. Colour or not, it is rendered black and white. |
+| Title | `title:` | Aim for 60 characters or fewer. It takes up to three lines, stepping down from 56 to 40 px before it is cut short. |
+| Subtitle | `subtitle:` | One sentence, 90 characters or fewer, saying what the reader gets. |
+| Name | `author:` | Printed on the badge's tag and in the byline, as written. A long name is set smaller to fit the tag. |
+
+**What is fixed** (change it in `blog-preview.ts`, never per post)
+
+- Colours come from `src/theme/tokens.ts`, as on the site's static cards in `public/og/`. The type is Inter, drawn from the font files in `node_modules`, so a laptop and CI draw the same pixels.
+- Share image: the cover is cropped to 1.91:1, slightly desaturated and blurred. The badge is centred in the left 540 px: a 320 px photo circle on a light grey disc, head and shoulders, head centred, in a 9 px white ring with a soft drop shadow; below it the name on a white pill, Inter Bold 26 px. The text column runs from x = 540 to 1136 on the site's light ground at 92%. From the top: wordmark (34 px), title (Inter ExtraBold, −2% tracking, black), a 96×6 red-to-black rule, and the subtitle (Inter Medium 25 px, `textMuted`; two lines when the title takes three).
+- Byline face: a 160×160 crop of the same portrait, head and shoulders as in the badge, published once per author at `blog/covers/authors/<author-slug>.jpg`. The site shows it round, 32 px on the card and 44 px in the post header, in a white ring (`src/blog/AuthorByline.tsx`).
+
+**When something is missing**
+
+- No portrait for the author: the build warns. The badge and the byline show their initials, white on black.
+- No cover: the share image uses the brand ground.
+- If an image fails to render, the build warns and publishes a plain crop of the cover (or of the portrait) instead. It never fails the build.
+
+**Checking one**: with `npm run dev`, open `/blog/covers/og/<slug>.jpg` for the
+share image and `/blog/covers/authors/<author-slug>.jpg` for the byline face.
+Both are re-rendered on every request, so edit and refresh.
 
 ## What the renderer supports
 
@@ -223,6 +278,9 @@ neither, so posts render exactly as they always have.
 | `content/blog/*.md` | the posts — the only place content lives |
 | `content/blog/_template.md` | copy-to-start template (a draft, never published) |
 | `vite-plugin-content.ts` | emits `blog/*.json` (and `docs/*.json`); serves the same paths in dev |
+| `blog-preview.ts` | the preview-image template: renders each post's share image and each author's byline face |
+| `content/blog/authors/*.png` | one portrait cut-out per author, named after the `author:` slug |
+| `src/blog/AuthorByline.tsx` | the author's face and name, on the `/blog` card and in the post header |
 | `scripts/prerender.mjs` | renders every route — each post's page, the index — to static HTML, plus the sitemaps and `feed.xml` |
 | `scripts/sync-site.sh` | uploads `dist/` with per-class headers and invalidates CloudFront; called by both deploy paths |
 | `scripts/check-seo-output.mjs` | CI: every prerendered page has one `<title>`, one `<h1>`, a canonical, a description and an OG image; sitemaps list only real pages |

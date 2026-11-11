@@ -3,6 +3,15 @@ import { createReadStream } from 'node:fs'
 import path from 'node:path'
 import sharp from 'sharp'
 import type { Plugin } from 'vite'
+import {
+  AUTHORS_DIR,
+  SHARE_HEIGHT,
+  SHARE_WIDTH,
+  authorSlug,
+  portraitFile,
+  renderAuthorAvatar,
+  renderShareImage,
+} from './blog-preview'
 import { buildPost, describeSkip, isValidCover } from './src/blog/parsePost'
 import type { BlogPost, BlogPostSummary } from './src/blog/types'
 import { extractImages } from './src/content/frontmatter'
@@ -18,7 +27,10 @@ import type { DocDetail, DocSearchEntry, DocSummary, ImageSize } from './src/doc
  *   blog/index.json            metadata for every published post, newest first
  *   blog/<slug>.json           metadata + markdown body + `images` (intrinsic sizes)
  *   blog/covers/<file>         every cover a post names in frontmatter or its body
- *   blog/covers/og/<slug>.jpg  a 1200×630 social crop of each post's cover
+ *   blog/covers/og/<slug>.jpg  each post's 1200×630 share image: cover, author
+ *                              badge, title and subtitle (see blog-preview.ts)
+ *   blog/covers/authors/<a>.jpg  each author's round byline face, for authors
+ *                              with a portrait (see blog-preview.ts)
  *   docs/index.json            ordered sections + metadata for every published page
  *                              (no body text — small enough to embed in every page)
  *   docs/search.json           the ⌘K palette's index: slug, title, section,
@@ -53,20 +65,31 @@ const BLOG_DIR = 'content/blog'
 const DOCS_DIR = 'content/docs'
 const PUBLIC_DIR = 'public'
 
-/** The social crop every post with a local cover gets (Open Graph's 1.91:1). */
-const OG_WIDTH = 1200
-const OG_HEIGHT = 630
+/** Where each post's share image is published (Open Graph's 1.91:1). */
 const OG_JPEG_QUALITY = 82
-const ogCropPath = (slug: string) => `covers/og/${slug}.jpg`
+const sharePath = (slug: string) => `covers/og/${slug}.jpg`
+/** Where an author's byline face is published — under covers/ for its cache rules. */
+const avatarPath = (author: string) => `covers/authors/${authorSlug(author)}.jpg`
 
-/** Produce the crop: cover-fit so nothing letterboxes, centred on the image. */
-const ogCrop = (file: string): Promise<Buffer> =>
+/**
+ * The share image's fallback when the template cannot be rendered: the cover
+ * cropped to 1.91:1, as every post had before the template existed.
+ */
+const plainCrop = (file: string): Promise<Buffer> =>
   sharp(file)
     .rotate() // honour EXIF orientation before cropping
-    .resize(OG_WIDTH, OG_HEIGHT, { fit: 'cover', position: 'centre' })
+    .resize(SHARE_WIDTH, SHARE_HEIGHT, { fit: 'cover', position: 'centre' })
     .flatten({ background: '#edf0f5' }) // PNG alpha onto the site's ground colour
     .jpeg({ quality: OG_JPEG_QUALITY, mozjpeg: true })
     .toBuffer()
+
+/**
+ * An image the build makes rather than copies, keyed by the path it is
+ * published at. Made on demand — the build makes every one, dev only the one a
+ * request asks for — and never fatal: a failure is reported through `warn` and
+ * the producer falls back to something publishable.
+ */
+type Derived = (warn: (message: string) => void) => Promise<Buffer>
 
 /**
  * Width and height as the browser will lay the image out — i.e. after the EXIF
@@ -202,6 +225,7 @@ const toPostSummary = (post: BlogPost): BlogPostSummary => ({
     ? { coverWidth: post.coverWidth, coverHeight: post.coverHeight }
     : {}),
   ...(post.ogImage ? { ogImage: post.ogImage } : {}),
+  ...(post.authorImage ? { authorImage: post.authorImage } : {}),
   ...(post.featured ? { featured: true } : {}),
 })
 
@@ -292,8 +316,9 @@ async function render(root: string, now: string) {
   const warnings: Skipped[] = []
   // Image files to publish verbatim: published path -> absolute source file.
   const assets = new Map<string, string>()
-  // Social crops to derive: published path -> absolute cover file.
-  const ogCrops = new Map<string, string>()
+  // Images the build makes (share images, byline faces).
+  const derived = new Map<string, Derived>()
+  let avatars = 0
 
   // ---- blog ----------------------------------------------------------------
   const blog = await collect(root, BLOG_DIR, describeSkip, buildPost, (post, _source, warn) => {
@@ -307,9 +332,33 @@ async function render(root: string, now: string) {
   for (const post of blog.items) {
     const warn = (reason: string) => blog.warnings.push({ file: post.sourcePath ?? post.slug, reason })
 
-    // The cover: published, measured, and cropped for social cards. A cover
-    // that is not on disk is dropped from the post rather than published as a
-    // broken URL — the card falls back to text and og:image to the blog's default.
+    // The author's portrait, if they have one: it goes on the share image and,
+    // cropped to the face, in front of their name wherever the site prints it.
+    const portrait = portraitFile(root, post.author)
+    const hasPortrait = await exists(portrait)
+    if (hasPortrait) {
+      post.authorImage = avatarPath(post.author)
+      const key = `blog/${post.authorImage}`
+      if (!derived.has(key)) {
+        avatars++
+        derived.set(key, (report) =>
+          renderAuthorAvatar(root, post.author, portrait).catch((error: Error) => {
+            report(`${post.authorImage}: byline face not rendered (${error.message}) — using the portrait as is`)
+            return sharp(portrait).resize(160, 160, { fit: 'cover', position: 'north' }).flatten({ background: '#eeeeee' }).jpeg().toBuffer()
+          }),
+        )
+      }
+    } else {
+      warn(
+        `author "${post.author}" has no portrait at ${AUTHORS_DIR}/${authorSlug(post.author)}.png — ` +
+          'the share image and the bylines show their initials instead (see BLOG.md, "Preview images")',
+      )
+    }
+
+    // The cover: published as authored, and measured. A cover that is not on
+    // disk is dropped from the post rather than published as a broken URL — the
+    // card falls back to text.
+    let background: string | undefined
     if (post.cover && isValidCover(post.cover)) {
       const file = path.resolve(root, BLOG_DIR, post.cover)
       if (await exists(file)) {
@@ -318,23 +367,40 @@ async function render(root: string, now: string) {
         if (size) {
           post.coverWidth = size.width
           post.coverHeight = size.height
-          if (size.width < OG_WIDTH || size.height < OG_HEIGHT) {
+          if (size.width < SHARE_WIDTH || size.height < SHARE_HEIGHT) {
             warn(
-              `cover "${post.cover}" is ${size.width}×${size.height}; the ${OG_WIDTH}×${OG_HEIGHT} ` +
-                'social crop will be upscaled — export it at least that large',
+              `cover "${post.cover}" is ${size.width}×${size.height}; the ${SHARE_WIDTH}×${SHARE_HEIGHT} ` +
+                'share image will upscale it — export it at least that large',
             )
           }
         }
-        if (path.extname(file).toLowerCase() !== '.svg') {
-          post.ogImage = ogCropPath(post.slug)
-          ogCrops.set(`blog/${post.ogImage}`, file)
-        }
+        if (path.extname(file).toLowerCase() !== '.svg') background = file
       } else {
         warn(`cover "${post.cover}" not found under ${BLOG_DIR}/ — the post is published without it`)
         delete post.cover
         delete post.coverAlt
       }
     }
+
+    // The share image: every post gets one, cover or not.
+    post.ogImage = sharePath(post.slug)
+    const share = {
+      title: post.title,
+      subtitle: post.subtitle ?? post.excerpt,
+      author: post.author,
+      background,
+      portrait: hasPortrait ? portrait : undefined,
+    }
+    derived.set(`blog/${post.ogImage}`, (report) =>
+      renderShareImage(root, share).catch((error: Error) => {
+        report(`${post.slug}: share image not rendered (${error.message}) — using a plain crop`)
+        return background
+          ? plainCrop(background)
+          : readFile(path.resolve(root, PUBLIC_DIR, 'og/blog.png')).then((png) =>
+              sharp(png).jpeg({ quality: OG_JPEG_QUALITY, mozjpeg: true }).toBuffer(),
+            )
+      }),
+    )
 
     // Body images: every `covers/<file>` a post shows inline ships too, not
     // only the one named in frontmatter.
@@ -407,7 +473,7 @@ async function render(root: string, now: string) {
   skipped.push(...docs.skipped.map((s) => ({ ...s, file: `docs: ${s.file}` })))
   warnings.push(...docs.warnings.map((w) => ({ ...w, file: `docs: ${w.file}` })))
 
-  return { files, assets, ogCrops, posts, pages, sections, skipped, warnings }
+  return { files, assets, derived, avatars, posts, pages, sections, skipped, warnings }
 }
 
 export function contentJson(): Plugin {
@@ -433,10 +499,8 @@ export function contentJson(): Plugin {
       // it again there would only redo the image work into a folder nobody reads.
       if (ssr) return
 
-      const { files, assets, ogCrops, posts, pages, sections, skipped, warnings } = await render(
-        root,
-        new Date().toISOString(),
-      )
+      const { files, assets, derived, avatars, posts, pages, sections, skipped, warnings } =
+        await render(root, new Date().toISOString())
 
       for (const [fileName, source] of files) {
         this.emitFile({ type: 'asset', fileName, source })
@@ -444,8 +508,8 @@ export function contentJson(): Plugin {
       for (const [fileName, file] of assets) {
         this.emitFile({ type: 'asset', fileName, source: await readFile(file) })
       }
-      for (const [fileName, file] of ogCrops) {
-        this.emitFile({ type: 'asset', fileName, source: await ogCrop(file) })
+      for (const [fileName, make] of derived) {
+        this.emitFile({ type: 'asset', fileName, source: await make((m) => this.warn(`content: ${m}`)) })
       }
 
       for (const { file, reason } of skipped) {
@@ -459,7 +523,8 @@ export function contentJson(): Plugin {
       }
 
       this.info(
-        `blog: emitted ${posts.length} published post(s), ${ogCrops.size} social crop(s)`,
+        `blog: emitted ${posts.length} published post(s), ${posts.length} share image(s), ` +
+          `${avatars} author face(s) for the bylines`,
       )
       this.info(
         `docs: emitted ${pages.length} published page(s) across ${sections.length} section(s)`,
@@ -477,16 +542,17 @@ export function contentJson(): Plugin {
         if (!isContent) return next()
 
         // Images: streamed from content/ exactly as the build emits them; the
-        // social crops are derived on demand, the same way the build derives them.
+        // share images and byline faces are made on demand, the same way the
+        // build makes them.
         const type = url ? IMAGE_TYPES[path.extname(url).toLowerCase()] : undefined
         if (url && type) {
-          const { assets, ogCrops } = await render(root, new Date().toISOString())
+          const { assets, derived } = await render(root, new Date().toISOString())
           const key = url.slice(1)
-          const cover = ogCrops.get(key)
-          if (cover) {
-            res.setHeader('content-type', 'image/jpeg')
+          const make = derived.get(key)
+          if (make) {
+            res.setHeader('content-type', type)
             res.setHeader('cache-control', 'no-store')
-            res.end(await ogCrop(cover))
+            res.end(await make((m) => server.config.logger.warn(`content: ${m}`)))
             return
           }
           const file = assets.get(key)

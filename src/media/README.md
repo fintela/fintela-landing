@@ -106,7 +106,9 @@ of their own (the Fintelligent poster, blog covers).
 | `capabilities/live-ops.jpg` | Home capabilities bento, live-trading tile, 3/2 | Pixabay, harryloya (`3033135`) |
 | `awards/hedgeweek-2026-ceremony.jpg` | Home award band, 4/3, in colour (an event photo, not one of the stock seats) | Hedgeweek US Awards 2026 press kit, photographer's `DSC05424.jpg`, cut 4/3 around both people; the award post's cover is the kit's other frame, `DSC05425.jpg` |
 | `fintelligent/agents-poster.jpg` | Fintelligent player poster until the recording exists, 16/9 | Unsplash, Alina Grubnyak (`ZiQkhI7417A`) |
-| `content/blog/covers/welcome-to-the-fintela-blog.jpg` | Blog cover | Unsplash, Lukas Blazek (`mcSDtbWXUZU`) |
+| `content/blog/covers/welcome-to-the-fintela-blog.jpg` | Blog cover and lead image | Unsplash, Lukas Blazek (`mcSDtbWXUZU`) |
+| `content/blog/authors/myrna-ortiz.png` | Author portrait for Myrna Ortiz's share-image badge and byline face (see BLOG.md, "Preview images") | Supplied by Fintela, background removed |
+| `content/blog/authors/ivan-buda.png` | Author portrait for Ivan Buda's share-image badge and byline face (see BLOG.md, "Preview images") | Supplied by Fintela, background removed, black and white |
 | `content/blog/covers/climate-analysis.jpg` | Blog cover and lead image | Unsplash, Markus Winkler (`IrRbSND5EUc`) |
 | `content/blog/covers/quants-moving-away-from-legacy-tools.jpg` | Blog cover and lead image | Unsplash, Chris Liverani (`dBI_My696Rk`) |
 | `content/blog/covers/fintela-hedgeweek-announcement.png` | Blog cover and closing image | Hedgeweek US Awards 2026 shortlist crowd card (800×420) |
