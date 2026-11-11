@@ -10,6 +10,8 @@ cover: covers/welcome-to-the-fintela-blog.jpg
 coverAlt: A laptop on a desk showing an analytics dashboard of charts, a heat map and a world map.
 ---
 
+![A laptop on a desk showing an analytics dashboard of charts, a heat map and a world map.](covers/welcome-to-the-fintela-blog.jpg)
+
 This is the first post on the Fintela blog. We built this space to write about the
 work behind the platform, in more depth than a product page allows.
 

@@ -78,6 +78,7 @@ export function buildPost(filename: string, source: string): BlogPost | null {
 
   const cover = String(data.cover ?? '').trim();
   const coverAlt = String(data.coverAlt ?? '').trim();
+  const subtitle = String(data.subtitle ?? '').trim();
   const featured = parseBool(data.featured) === true;
 
   // No `cover:` in frontmatter? Fall back to the post's own first image, so a
@@ -96,6 +97,7 @@ export function buildPost(filename: string, source: string): BlogPost | null {
     date: parseDate(data.date)!,
     ...(updated ? { updated } : {}),
     excerpt: String(data.excerpt ?? '').trim() || firstParagraph(markdown),
+    ...(subtitle ? { subtitle } : {}),
     tags: parseList(data.tags),
     readingMinutes: readingMinutes(markdown),
     sourcePath: filename,

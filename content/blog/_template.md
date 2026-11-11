@@ -3,6 +3,7 @@ title: Post title goes here
 author: Your Name
 date: 2026-01-01
 excerpt: One or two sentences for the card. Optional. If you omit it, the first paragraph of the body is used instead. Cards truncate at ~150 characters.
+subtitle: One sentence under the title on the share image, 90 characters or fewer.
 tags: Research, Engineering
 published: false
 ---
@@ -65,6 +66,12 @@ it in the body with the same relative path. The build copies only frontmatter
 covers into `dist/blog/covers/`, so the lead image and the card image are one
 file. Describe the picture in the alt text, and never hot-link an image host: the
 cover doubles as the post's social preview.
+
+The build makes the post's share image from the cover, the author's portrait
+(`content/blog/authors/<author-slug>.png`, shown round with their name below
+it), the title and `subtitle:`, and puts the author's face in front of their
+name in the byline. The cover itself is published as is. BLOG.md, "Preview
+images", has the rules.
 
 ```markdown
 ![A rolling Sharpe line dipping below zero during 2020.](covers/my-post.jpg)
