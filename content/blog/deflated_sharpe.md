@@ -1,6 +1,6 @@
 ---
 title: The backtest you didn't run is still costing you
-author: Ivan Buda
+author: Ivan Buda 
 date: 2026-09-03
 excerpt: Running a thousand parameter combinations and keeping the best Sharpe ratio isn't the same as finding a good strategy. It's closer to p-hacking, and there's a specific correction for how much to discount the number you end up with.
 tags: Research
