@@ -1,6 +1,6 @@
 ---
 title: Why momentum works, and why it sometimes stops working
-author: Myrna Ortiz
+author: Sergio Montes
 date: 2026-09-03
 excerpt: Momentum is one of the most replicated anomalies in finance and one of the hardest to explain cleanly. Two competing behavioral stories both predict it, and the same mechanism that produces the effect is also what makes it crash.
 tags: Research
