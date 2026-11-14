@@ -4,14 +4,14 @@ section: Registries
 sectionOrder: 3
 order: 3
 published: true
-updated: 2026-10-24
-summary: How to define the trading logic a study optimizes: write it directly in Fintela's Python editor, or connect a service you run yourself.
-keywords: strategy, signal, parameters, python editor, internal, external, backtest, lookback, versions, execution mode
+updated: 2026-11-13
+summary: How to define the trading logic a study optimizes: declare it in Python with Fintela's trade/1 SDK, or connect a service you run yourself.
+keywords: strategy, declarative, trade/1, fintela_trade, signal, parameters, python editor, internal, external, backtest, warmup, versions, execution mode
 ---
 
 A strategy is where you define the trading logic that a study will test and tune. Write it once (as Python code in Fintela's editor, or as a connection to logic running on your own systems) and everything downstream builds on it: backtests, optimization studies, and live trading all execute the same decision logic you defined here.
 
-Every strategy answers one question, for every date it runs: **which instruments do I hold, on which side, and at what weight?** That answer is called a **signal**, and producing one, correctly and consistently, is the one thing every strategy has to do: however you choose to build it.
+Every strategy answers one question, for every date it runs: **which instruments do I hold, on which side, and at what weight?** That answer is called a **signal**, and producing one, correctly and consistently, is the one thing every strategy has to do: however you choose to build it. A declarative strategy answers it with rules (which names may enter, which may stay, what closes a position, how big each one is), and Fintela's engine turns those rules into the answer every day. A strategy written before trade/1, or a private external one, returns the answer directly.
 
 ## Overview and purpose
 
@@ -124,24 +124,69 @@ Free tier organizations can have up to **2 strategies** at a time. The limit onl
 
 ## Creating and editing a strategy
 
-There's no multi step wizard: the strategy editor is one screen: your code (or your endpoint's address) in the center, and a panel of settings alongside it. You name your strategy at the very end, when you save it, not at the start.
+Creating a strategy takes four steps: how it is written, what it receives, its code (or your server's address), and a validation run that has to pass before you can create it. You name it when you save, not at the start.
 
-### Internal vs. external strategies
+### Choosing how a strategy is written
 
-When you create a strategy, you choose how it runs, and this choice is permanent:
+When you create a strategy, you choose how it is written, and this choice is permanent:
 
 | Option | What it means |
 |---|---|
-| **Internal** | You write Python code directly in Fintela's editor. It runs inside Fintela's sandbox |
-| **External** | You point Fintela at a service you run and control: your logic, your infrastructure, your language of choice |
-| **Rule based** | A preview of what's coming: building a strategy visually, without code. Not available yet |
+| **Declarative** (recommended) | You write Python with Fintela's `fintela_trade` SDK that *declares* when a name may enter, while it may stay, what closes a position and how big each one is. Fintela derives the warmup and the data it reads, and runs it in its own engine |
+| **Declarative, from your server** | Your own server answers each parameter set with the same kind of declaration. Fintela validates it, runs it in its engine, and freezes it when a trial is promoted, so your server doesn't have to stay up for it |
+| **External** | Your server keeps all the logic and returns the positions itself: your code and your data never leave your systems |
+| **Internal** | Python that returns positions directly. This is how strategies were written before trade/1: those keep running, updating daily and being edited, and new ones are Declarative |
 
 > [!WARNING]
-> Choose carefully: once a strategy is created, you can't switch it between Internal and External. If you need the other mode, duplicate it as a new strategy of that type instead.
+> Choose carefully: a strategy's type is fixed when it is created. If you need another one, create a new strategy of that type.
 
-Reasons to choose external: keep proprietary models, code, or data entirely on your own systems; use a language other than Python; reuse logic you've already built elsewhere. See [external strategies](/docs/external-strategies) for a full walkthrough of connecting your own service.
+Reasons to keep your logic on your own server: proprietary models, code, or data that must stay on your systems; a language other than Python; logic you've already built elsewhere. See [external strategies](/docs/external-strategies) for connecting your own service.
 
-### Writing your strategy in the code editor (internal)
+### Writing a declarative strategy (trade/1)
+
+A declarative strategy is one Python function, decorated with `@strategy`, that returns a `Trade`. It touches no data: it returns rules, and Fintela's engine applies them to every instrument in the study's universe, every day, using only what was known that day.
+
+```python
+from fintela_trade import Cooldown, Float, Int, MaxHold, Size, Trade, TrailingStop, strategy, x
+
+
+@strategy
+def momentum_with_trailing_exit(
+    lookback: Int[20, 252] = 126,
+    top: Int[5, 30] = 10,
+    trail: Float[0.02, 0.2] = 0.06,
+    hold: Int[5, 60] = 20,
+    wait: Int[0, 20] = 5,
+) -> Trade:
+    rank = x.close.pct_change(lookback).rank()
+    return Trade(
+        enter=rank <= top,
+        stay=rank <= 2 * top,
+        priority=-rank,
+        size=Size.equal(top),
+        exits=[TrailingStop(trail), MaxHold(hold)],
+        cooldown=Cooldown(wait, after=[TrailingStop, MaxHold]),
+    )
+```
+
+Read it as rules: a name enters when its return over `lookback` days ranks in the top `top`, and stays while it ranks in the top `2 × top`. The best ranked names take the free slots first, and each holds an equal slot. A position closes on a trailing stop or after `hold` days, and then waits `wait` days before it can enter again.
+
+What you can write with the SDK:
+
+- **Data:** the close and the volume, a reference series such as `x.series("benchmark:SPY")`, index membership, and fundamentals as known on each date (`F.pe`, `F.eps_ttm`, and others).
+- **Calculations over each name's own history:** returns and differences, moving windows (mean, sum, standard deviation, max, min), exponential averages, where a value sits in its own past (`.rolling(n).rank()`), quantiles, skew and kurtosis, correlation and beta to a series, weekly and monthly bars of closed periods (`.weekly()`), and state such as a value at the last time a condition held (`.value_when(...)`).
+- **Across names:** ranks, z-scores, and ranks within a sector.
+- **Positions:** stops, trailing stops, take profits (also partial ones), a maximum holding period, or any condition you write; equal slots, fixed weights, or weights in proportion to a signal; short positions and adding to a position.
+
+**Parameters are the function's signature.** `lookback: Int[20, 252] = 126` names the type, the range a study searches, and the default. The editor shows them read only: to change one, edit the signature.
+
+**Fintela derives what your code reads.** The panel next to the editor shows the warmup (the history needed at the defaults, and the most any declared range needs) and the price fields, series, membership lists, fundamentals and named instruments the code reads. There is no lookback to write and no data source to turn on.
+
+**Saving needs a passing validation of this exact code.** Fintela runs your function in an isolated sandbox at the defaults and at each end of every declared range, and checks every declaration it builds. Edit the code and it has to pass again.
+
+### Writing an Internal strategy (before trade/1)
+
+This section, and the parameter, advanced and execution sections below, describe strategies written before trade/1 (Internal) and External ones. A declarative strategy works as described above.
 
 The code editor supports the conveniences you'd expect: a save shortcut, code formatting, import/export of your file, and a fullscreen mode. Starting from a blank strategy gives you working template code to build from: a banner reminds you that you're still using it until you make a change.
 
@@ -257,7 +302,7 @@ Before your strategy is saved, Fintela works through a series of checks and tell
 6. Any built in data source that needs its own warmup has one.
 7. Your code passes Fintela's automatic validation run.
 
-Once everything checks out, you're asked to name your strategy and add a description: the only point where you set the name. Typing a name automatically formats it into a valid identifier (lowercase, spaces become underscores) and, for internal strategies, renames the entry point in your code to match. If the name is already taken, Fintela appends a number to keep it unique.
+Once everything checks out, you're asked to name your strategy and add a description: the only point where you set the name. The name is a label for people: the function your code defines is what runs, whatever the strategy is called. If the name is already taken, Fintela appends a number to keep it unique.
 
 If you're editing a strategy that studies already depend on, and your change genuinely affects its behavior, Fintela warns you first: any study that already launched keeps running against the version it started with, so your edit won't retroactively change results you already have.
 
@@ -283,7 +328,7 @@ A launched study always keeps running against the version of the strategy it sta
 
 ## Execution modes
 
-Every strategy runs in one of two ways today. A third option (Rule based) is visible in the editor as a preview of what's coming, but isn't available yet. See [execution modes](/docs/execution-modes) for how this choice compares across the platform.
+This table compares the two ways a strategy that returns its positions can run: Internal (written before trade/1) and External. A declarative strategy, written in the editor or answered by your server, always runs in Fintela's engine, as described in Writing a declarative strategy, above. See [execution modes](/docs/execution-modes) for how this choice compares across the platform.
 
 | | Internal | External |
 |---|---|---|
@@ -330,7 +375,7 @@ def your_strategy(
 > - Argument **names** matter, not their order: write them however makes sense to you.
 > - Any data source you don't name as an argument simply isn't passed to your function.
 > - Every value your function needs must be a named argument: there's no catch all for extra data.
-> - Your function's name has to match your strategy's name; Fintela keeps these in sync automatically when you name your strategy at save time.
+> - Your function's name is independent of your strategy's name: the name is a label, and a copy of the strategy keeps running the same function.
 
 ### The signal your strategy returns
 
