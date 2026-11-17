@@ -22,6 +22,4 @@ export const LNG_STORAGE_KEY = 'fintela-lng';
 /** Human-readable language names (endonyms) for the switcher — not translated. */
 export const LNG_LABELS: Record<SupportedLng, string> = {
   en: 'English',
-  es: 'Español',
-  pt: 'Português',
 };

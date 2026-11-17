@@ -120,10 +120,9 @@ const prefetch = (id: string) => {
  * the theme's 900px `md`: the bar holds the logo, six nav items, search, the
  * language switcher and the call to action, and with the Spanish and
  * Portuguese labels ("Comenzar prueba gratuita") that does not fit under
- * about 975px. `NAV_MID` is the stretch between here and `lg`.
+ * about 975px.
  */
 const NAV_UP = '@media (min-width: 1000px)';
-const NAV_MID = '@media (min-width: 1000px) and (max-width: 1199.95px)';
 
 /** The section id a band link scrolls to: `/#platform` → `platform`. */
 const bandId = (item: NavItem) => item.href.replace(/^\/#/, '');
