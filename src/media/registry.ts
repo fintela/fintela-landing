@@ -129,7 +129,7 @@ export const VIDEOS: Record<VideoId, VideoAsset> = {
    * picture, in English only. The poster is the frame at 6.3 s.
    */
   thesisToEdge: {
-    // No `av1`: SVT-AV1 came out only 21 % smaller than x264 crf 26 on this cut
+    // No `av1`: SVT-AV1 came out only 20 % smaller than x264 crf 26 on this cut
     // (scripts/encode-media.sh drops an AV1 that is not >30 % smaller).
     src: { mp4: mediaUrl('thesis-to-edge.mp4') },
     poster: still(thesisToEdgePoster),

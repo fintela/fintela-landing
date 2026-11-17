@@ -27,7 +27,8 @@
     "title": "Quant research infrastructure your AI can operate.",
     "titleMark": "your AI can operate.",
     "filmAlt": "Animation of the Fintela workflow: an AI model is plugged into the platform, a market universe is saved, a market thesis becomes a strategy, the optimizer searches its parameters over 1,000 trials, the portfolio candidates are ranked, one is tested on out-of-sample data and then deployed live. Illustrative data.",
-    "subtitle": "Build a strategy, optimize it across thousands of trials, and test it on data it has never seen, all in one cloud platform. Use the built-in assistant or connect your own agent. You decide what goes live.",
+    "filmNote": "Illustrative animation for informational purposes only, not a recording of the Fintela product. The data shown is fictional.",
+    "subtitle": "Build a strategy, send it to optimization engines, test it on out-of-sample data, validate with scientific-grade analysis, all in one cloud platform. Use the built-in agent or connect your own AI. You decide what goes live.",
     "loop": {
       "label": "Animated illustration: a one-line hypothesis becomes a Python function, the function fans into 1,000 trial curves, and two candidates remain. The best trial in sample is flagged as overfit risk because it falls once it reaches held-out data; a steadier one is rated well trained and sent to a person for review.",
       "frame": "study · sector momentum",
