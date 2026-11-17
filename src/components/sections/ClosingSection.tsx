@@ -3,41 +3,31 @@ import type { ReactNode } from 'react';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { NeuPanel } from '../primitives/NeuPanel';
-import { NeuButton } from '../primitives/NeuButton';
+import { CtaButton } from '../primitives/CtaButton';
 import { Groove } from '../primitives/Groove';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { ctaRowSx } from '../../theme/neu';
 import { fonts, soft } from '../../theme/tokens';
 
-export interface ClosingCta {
-  label: string;
-  /** Internal route. */
-  to?: string;
-  /** External URL; with neither, the button links to the app. */
-  href?: string;
-}
-
 export interface ClosingSectionProps {
   id?: string;
-  eyebrow: string;
+  eyebrow?: string;
   title: ReactNode;
   titleAccent?: ReactNode;
   body: string;
-  primary: ClosingCta;
-  secondary?: ClosingCta;
+  /** Which of the site's two calls to action is the filled one. Desks lead with the walkthrough. */
+  lead?: 'trial' | 'walkthrough';
+  /** Sent with the click events, so the closing band of each page can be told apart. */
+  placement?: string;
   /** Mono strip under the groove: the facts, separated by dots. */
   strip?: string;
 }
-
-// Spread only what is set: an explicit `href: undefined` would override the
-// button's default link to the app.
-const linkProps = (cta: ClosingCta) => (cta.to ? { to: cta.to } : cta.href ? { href: cta.href, rel: 'noopener' } : {});
 
 /**
  * The one centred band. After seven off-axis compositions symmetry reads as a
  * full stop; no ring — the gold here is the display accent in the title.
  */
-export const ClosingSection = ({ id = 'start', eyebrow, title, titleAccent, body, primary, secondary, strip }: ClosingSectionProps) => (
+export const ClosingSection = ({ id = 'start', eyebrow, title, titleAccent, body, lead = 'trial', placement = 'closing', strip }: ClosingSectionProps) => (
   <Section id={id} size="lg" sx={{ pt: { xs: 4, md: 6 } }}>
     <AnimateOnScroll>
       <NeuPanel sx={{ maxWidth: 780, mx: 'auto', px: { xs: 3, md: 6 }, py: { xs: 5, md: 7 }, textAlign: 'center' }}>
@@ -46,14 +36,8 @@ export const ClosingSection = ({ id = 'start', eyebrow, title, titleAccent, body
           {body}
         </Typography>
         <Box sx={ctaRowSx}>
-          <NeuButton tone="accent" {...linkProps(primary)}>
-            {primary.label}
-          </NeuButton>
-          {secondary && (
-            <NeuButton tone="raised" {...linkProps(secondary)}>
-              {secondary.label}
-            </NeuButton>
-          )}
+          <CtaButton kind={lead} placement={placement} emphasis="primary" />
+          <CtaButton kind={lead === 'trial' ? 'walkthrough' : 'trial'} placement={placement} emphasis="secondary" />
         </Box>
         {strip && (
           <>

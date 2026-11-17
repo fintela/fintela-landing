@@ -239,13 +239,13 @@ export const InstitutionalSection = () => {
                     // squares off the rounded corners.
                     '@media (hover: hover)': {
                       '&:hover > article': {
-                        backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+                        backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.mark}`,
                         backgroundOrigin: 'border-box',
                         backgroundClip: 'padding-box, border-box',
                       },
                     },
                     '&:focus-within > article': {
-                      backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+                      backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.mark}`,
                       backgroundOrigin: 'border-box',
                       backgroundClip: 'padding-box, border-box',
                     },

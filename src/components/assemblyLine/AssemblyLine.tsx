@@ -392,7 +392,7 @@ const StationCards = memo(
               {index + 1}
             </Box>
             <Box sx={{ minWidth: 0 }}>
-              <Box component="h3" sx={{ m: 0, fontSize: { xs: 21, md: 24 }, fontWeight: 800, letterSpacing: '-0.01em', color: soft.text }}>
+              <Box component="h2" sx={{ m: 0, fontSize: { xs: 21, md: 24 }, fontWeight: 600, letterSpacing: '-0.01em', color: soft.text }}>
                 {t(`workflow.nodes.${station}.label`)}
               </Box>
               <Box sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: soft.textSecondary }}>

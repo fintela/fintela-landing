@@ -1,103 +1,79 @@
 import { Box, CircularProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { Link as RouterLink } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Section } from '../primitives/Section';
-import { BandHeader } from '../primitives/BandHeader';
-import { NeuButton } from '../primitives/NeuButton';
-import { BentoGrid, BentoTile } from '../primitives/BentoGrid';
+import { SectionHeader } from '../primitives/SectionHeader';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
+import { quietLinkSx } from '../../theme/neu';
 import { soft } from '../../theme/tokens';
 import { useBlogIndex } from '../../blog/useBlog';
 import { BlogEmptyState } from '../../blog/BlogEmptyState';
-import { CompactPostCard, FeaturedPostCard, PostCountCard } from '../../blog/BentoCards';
+import { PostCard } from '../../blog/PostCard';
 import type { BlogPostSummary } from '../../blog/types';
 
-/** The featured slot goes to a pinned post if there is one, else the newest. */
-const pickFeatured = (posts: BlogPostSummary[]): BlogPostSummary[] => {
-  const pinned = posts.find((p) => p.featured);
-  if (!pinned) return posts;
-  return [pinned, ...posts.filter((p) => p !== pinned)];
+/**
+ * The research the home page shows, by slug and in this order. Chosen, not
+ * "newest first": the page is where the method is argued, so company news and
+ * award posts stay on /blog.
+ */
+const HOME_RESEARCH = ['deflated-sharpe', 'momentum-research', 'climate-analysis'] as const;
+const SHOWN = HOME_RESEARCH.length;
+
+const isResearch = (post: BlogPostSummary) =>
+  post.section === 'research' || post.tags.some((tag) => tag.toLowerCase() === 'research');
+
+/** The chosen posts that are published; if one is missing, the newest other research post stands in. */
+const pickResearch = (posts: BlogPostSummary[]): BlogPostSummary[] => {
+  const chosen = HOME_RESEARCH.map((slug) => posts.find((p) => p.slug === slug)).filter(
+    (p): p is BlogPostSummary => p !== undefined,
+  );
+  const standIns = posts.filter((p) => !chosen.includes(p) && isResearch(p));
+  return [...chosen, ...standIns].slice(0, SHOWN);
 };
 
-/**
- * Band 6. Research & News on the home page as a bento, both sections in one
- * feed with each card linking to its own post's page: the newest (or pinned) post
- * in a 2×2 plate with its cover, two compact cover tiles beside it, two more
- * under it, and a counter of the blog's posts that is also the way to /blog;
- * the header has a way to each section. Degrades by count:
- * one post spans the row; up to three fill the first two rows; the counter
- * takes whatever cell is left.
- */
+/** Section 6, first part: three research pieces, as the same ruled cards as /blog and /research. */
 export const InsightsSection = () => {
   const { t } = useTranslation('home');
   const { status, posts } = useBlogIndex();
-  const ordered = pickFeatured(posts);
-  const [featured, ...rest] = ordered;
-  const compact = rest.slice(0, 2);
-  const text = rest.slice(2, 4);
-  // The feed mixes both sections; the counter is the blog's, since that is where it leads.
-  const blogPosts = posts.filter((p) => p.section === 'blog');
-  const newest = blogPosts.reduce((max, p) => (p.date > max ? p.date : max), blogPosts[0]?.date ?? '');
-  // The counter fills whatever the last row has left.
-  const counterCol = text.length === 0 ? '1 / 4' : text.length === 1 ? 'span 2' : 'auto';
+  const research = pickResearch(posts);
 
   return (
-    <Section id="insights" size="lg" tone="ink">
-      <BandHeader
-        eyebrow={t('insights.eyebrow')}
-        title={t('insights.title')}
-        titleAccent={t('insights.titleAccent')}
-        exit={
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-            <NeuButton tone="raised" to="/blog" endIcon={<ArrowForwardIcon />}>
-              {t('insights.exitBlog')}
-            </NeuButton>
-            <NeuButton tone="raised" to="/research" endIcon={<ArrowForwardIcon />}>
-              {t('insights.exitResearch')}
-            </NeuButton>
-          </Box>
-        }
-      />
+    <Section id="research" size="lg">
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2, mb: { xs: 4, md: 6 } }}>
+        <SectionHeader align="left" gutter={false} title={t('research.title')} />
+        <Box
+          component={RouterLink}
+          to="/research"
+          sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.linkAccent, pb: 0.5 }]}
+        >
+          {t('research.link')}
+          <ArrowForwardIcon sx={{ fontSize: 16 }} />
+        </Box>
+      </Box>
 
       {status === 'loading' && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          {/* This band is permanently ink (tone="ink" above): soft.accent
-              is near-black and would be invisible on it. */}
-          <CircularProgress size={28} sx={{ color: soft.onInk }} />
+          <CircularProgress size={28} sx={{ color: soft.textSecondary }} />
         </Box>
       )}
 
-      {status !== 'loading' && posts.length === 0 && <BlogEmptyState status={status} />}
+      {status !== 'loading' && research.length === 0 && <BlogEmptyState status={status} />}
 
-      {featured && (
-        <BentoGrid columns={{ xs: 1, md: 3 }}>
-          <BentoTile col={{ md: compact.length ? '1 / 3' : '1 / 4' }} row={{ md: compact.length ? '1 / 3' : 'auto' }}>
-            <AnimateOnScroll direction="left" stretch>
-              <FeaturedPostCard post={featured} />
-            </AnimateOnScroll>
-          </BentoTile>
-          {compact.map((post, idx) => (
-            <BentoTile key={post.slug}>
-              <AnimateOnScroll delay={100 + idx * 80} direction="right" stretch>
-                <CompactPostCard post={post} />
+      {research.length > 0 && (
+        <Box
+          component="ul"
+          role="list"
+          sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: { xs: '1fr', md: `repeat(${SHOWN}, minmax(0, 1fr))` }, columnGap: { md: 5 }, rowGap: 5 }}
+        >
+          {research.map((post, idx) => (
+            <Box component="li" key={post.slug}>
+              <AnimateOnScroll delay={idx * 70} stretch>
+                <PostCard post={post} />
               </AnimateOnScroll>
-            </BentoTile>
+            </Box>
           ))}
-          {text.map((post, idx) => (
-            <BentoTile key={post.slug}>
-              <AnimateOnScroll delay={200 + idx * 80} stretch>
-                <CompactPostCard post={post} />
-              </AnimateOnScroll>
-            </BentoTile>
-          ))}
-          {posts.length > 1 && blogPosts.length > 0 && (
-            <BentoTile col={{ md: counterCol }}>
-              <AnimateOnScroll delay={360} stretch>
-                <PostCountCard count={blogPosts.length} newest={newest} />
-              </AnimateOnScroll>
-            </BentoTile>
-          )}
-        </BentoGrid>
+        </Box>
       )}
     </Section>
   );

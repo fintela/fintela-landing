@@ -45,6 +45,17 @@ export interface VideoPlateProps {
   tier?: 'md' | 'sm';
   /** Accessible name of the player region. */
   label: string;
+  /**
+   * 'ambient' only: a play/pause button in the plate's corner. A loop that
+   * runs longer than five seconds needs one, and it is also how a visitor who
+   * prefers reduced motion (for whom an ambient plate never starts by itself)
+   * can choose to watch.
+   */
+  pausable?: boolean;
+  /** 'ambient' only: play even under reduced motion or data-saver. */
+  alwaysPlay?: boolean;
+  /** The poster is the page's largest image above the fold: fetch it eagerly. */
+  priority?: boolean;
   onChapterChange?: (id: string) => void;
   onPlayingChange?: (playing: boolean) => void;
   /**
@@ -118,6 +129,9 @@ export const VideoPlate = ({
   ratio = '16/9',
   tier = 'md',
   label,
+  pausable = false,
+  alwaysPlay = false,
+  priority = false,
   onChapterChange,
   onPlayingChange,
   grow = false,
@@ -134,6 +148,8 @@ export const VideoPlate = ({
   const pendingPlay = useRef(false);
   const scrubbing = useRef(false);
   const lastChapter = useRef<string | undefined>(undefined);
+  /** An ambient loop the visitor paused stays paused when it scrolls back into view. */
+  const userPaused = useRef(false);
 
   const hasSource = Boolean(src?.mp4 || src?.webm || src?.av1);
   const [attached, setAttached] = useState(false);
@@ -159,13 +175,13 @@ export const VideoPlate = ({
     if (failed || !hasSource) return;
     const frame = frameRef.current;
     if (!frame) return;
-    if (mode === 'ambient' && (prefersReducedMotion() || saveData())) return;
+    if (mode === 'ambient' && !alwaysPlay && (prefersReducedMotion() || saveData())) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         const video = videoRef.current;
         if (entry.isIntersecting) {
           setAttached(true);
-          if (mode === 'ambient') video?.play().catch(() => {});
+          if (mode === 'ambient' && !userPaused.current) video?.play().catch(() => {});
         } else if (mode === 'ambient') {
           video?.pause();
         }
@@ -174,7 +190,7 @@ export const VideoPlate = ({
     );
     observer.observe(frame);
     return () => observer.disconnect();
-  }, [mode, failed, hasSource]);
+  }, [mode, failed, hasSource, alwaysPlay]);
 
   // <source> children added after mount do not reload the element by themselves.
   useEffect(() => {
@@ -205,6 +221,10 @@ export const VideoPlate = ({
   }, [attached]);
   const pause = useCallback(() => videoRef.current?.pause(), []);
   const toggle = useCallback(() => (playing ? pause() : play()), [playing, play, pause]);
+  const toggleAmbient = () => {
+    userPaused.current = playing;
+    toggle();
+  };
 
   const seekTo = useCallback(
     (target: string | number, autoplay = true) => {
@@ -355,6 +375,7 @@ export const VideoPlate = ({
         src={poster}
         alt={posterAlt}
         sizes={sizes}
+        priority={priority}
         role={isPlayer ? 'group' : undefined}
         aria-label={isPlayer ? label : undefined}
         tabIndex={isPlayer ? 0 : undefined}
@@ -393,7 +414,17 @@ export const VideoPlate = ({
             tabIndex={-1}
             onPlay={() => setPlayingState(true)}
             onPause={() => setPlayingState(false)}
-            onEnded={() => setPlayingState(false)}
+            onEnded={() => {
+              // `loop` keeps an ambient plate from ever ending. Where a browser
+              // stops anyway (it cannot seek back, say), restart it by hand.
+              const video = videoRef.current;
+              if (mode === 'ambient' && video && !userPaused.current) {
+                video.currentTime = 0;
+                video.play().catch(() => {});
+                return;
+              }
+              setPlayingState(false);
+            }}
             onTimeUpdate={onTimeUpdate}
             onLoadedMetadata={onLoadedMetadata}
             onLoadedData={() => setHasFrame(true)}
@@ -429,6 +460,18 @@ export const VideoPlate = ({
             aria-label={playing ? t('player.pause') : t('player.play')}
             onClick={toggle}
           />
+        )}
+        {pausable && mode === 'ambient' && !failed && (
+          <IconButton
+            aria-label={playing ? t('player.pause') : t('player.play')}
+            onClick={toggleAmbient}
+            sx={[
+              neuIconButtonSx,
+              { position: 'absolute', right: { xs: 8, sm: 12 }, bottom: { xs: 8, sm: 12 }, zIndex: 1, width: 36, height: 36 },
+            ]}
+          >
+            {playing ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
+          </IconButton>
         )}
       </MediaWell>
 

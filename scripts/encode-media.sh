@@ -3,21 +3,21 @@
 #
 #   media-masters/<name>.mp4  --ffmpeg-->  public/media/<name>[.<rung>|.av1].mp4
 #
-# The masters are the best copies we hold (the 1920×880 hero crop, the two
-# screen recordings as they were captured); nothing in public/media is a
+# The masters are the best copies we hold (the two screen recordings as they
+# were captured; the 1920×880 hero crop is kept there too, though the home
+# page no longer plays it); nothing in public/media is a
 # master, so re-running this script never re-encodes an encode. Outputs are
 # only written when the master (or this script) is newer than them — run
 # with FORCE=1 to redo everything. Outputs are committed: CI never runs this.
 #
 # What it produces, and why (audit IMG-01, IMG-12, CWV-14):
-#   hero-backdrop-1280.mp4   H.264 crf 28, preset slow — desktops ≥ 1024 px
-#   hero-backdrop-960.mp4    H.264 crf 30, preset slow — 600–1023 px
-#     The loop is a blurred backdrop behind the hero copy, so the 1920 master
-#     is never served (it was 5.0 MB on every visit, phones included); below
-#     600 px the poster stands in for it (HeroVideoBackdrop.tsx). Full length,
-#     no re-cut: the loop point is a creative decision, not an encoding one.
 #   platform-home-loop.mp4   H.264 crf 26, preset slow — the ambient loop
 #   feature-walkthrough.mp4  H.264 crf 27, preset slow — the capabilities player
+#   thesis-to-edge.mp4       H.264 crf 26, preset slow — the home hero's film,
+#     kept at the master's 60 fps (at 30 fps it is a quarter smaller, and
+#     visibly less smooth for an animation).
+#     Its master carries a music track; the hero plays it muted and looping,
+#     so the encode drops the audio like every other file here (-an).
 #   <name>.av1.mp4           SVT-AV1 crf 38, preset 6, for the two plates — kept
 #     only when it is >30 % smaller than the H.264 file (an AV1 that barely
 #     wins is not worth a second file to cache and sync). When one is kept,
@@ -106,10 +106,6 @@ av1() {
 
 echo "encode-media: masters in $MASTERS → $OUT"
 
-echo "hero backdrop (H.264 rungs; the 1920 master is not served)"
-h264 "$MASTERS/hero-backdrop-1920.mp4" "$OUT/hero-backdrop-1280.mp4" 28 high -vf scale=1280:-2
-h264 "$MASTERS/hero-backdrop-1920.mp4" "$OUT/hero-backdrop-960.mp4" 30 main -vf scale=960:-2
-
 echo "platform home loop (ambient plate)"
 h264 "$MASTERS/platform-home-loop.mp4" "$OUT/platform-home-loop.mp4" 26 high
 av1 "$MASTERS/platform-home-loop.mp4" "$OUT/platform-home-loop.av1.mp4" "$OUT/platform-home-loop.mp4" 240
@@ -117,5 +113,9 @@ av1 "$MASTERS/platform-home-loop.mp4" "$OUT/platform-home-loop.av1.mp4" "$OUT/pl
 echo "feature walkthrough (capabilities player)"
 h264 "$MASTERS/feature-walkthrough.mp4" "$OUT/feature-walkthrough.mp4" 27 high
 av1 "$MASTERS/feature-walkthrough.mp4" "$OUT/feature-walkthrough.av1.mp4" "$OUT/feature-walkthrough.mp4" 120
+
+echo "thesis to edge (home hero film)"
+h264 "$MASTERS/thesis-to-edge.mp4" "$OUT/thesis-to-edge.mp4" 26 high
+av1 "$MASTERS/thesis-to-edge.mp4" "$OUT/thesis-to-edge.av1.mp4" "$OUT/thesis-to-edge.mp4" 600
 
 echo "done; run node scripts/check-media.mjs to confirm the registry matches"

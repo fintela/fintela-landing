@@ -94,6 +94,21 @@ const FintelaApiPage = lazy(() =>
 // reading verdicts and proposing, a person confirming in the app.
 const McpPage = lazy(() => import('./pages/McpPage').then((m) => ({ default: m.McpPage })));
 
+// Product menu's "Platform" item: the five-stage pipeline, moved off the home page so the home page can stay on outcomes.
+const PlatformPage = lazy(() =>
+  import('./pages/PlatformPage').then((m) => ({ default: m.PlatformPage })),
+);
+
+// Trust page: how results are recorded, held out and judged. The home page's trust anchors land here.
+const MethodologyPage = lazy(() =>
+  import('./pages/MethodologyPage').then((m) => ({ default: m.MethodologyPage })),
+);
+
+// Trust page: where code and data live, and what the AI may do. Only what the docs state.
+const SecurityPage = lazy(() =>
+  import('./pages/SecurityPage').then((m) => ({ default: m.SecurityPage })),
+);
+
 // Documentation. Twenty-five hand-written page components used to be listed here,
 // one lazy import each; the pages are Markdown files in `content/docs/` now, so
 // there is exactly one route and adding a page touches neither this file nor any
@@ -296,6 +311,9 @@ export interface Pages {
   SamplersPage: ComponentType;
   FintelaApiPage: ComponentType;
   McpPage: ComponentType;
+  SecurityPage: ComponentType;
+  MethodologyPage: ComponentType;
+  PlatformPage: ComponentType;
   TermsPage: ComponentType;
   PrivacyPage: ComponentType;
   RiskDisclosuresPage: ComponentType;
@@ -315,6 +333,9 @@ const lazyPages: Pages = {
   SamplersPage,
   FintelaApiPage,
   McpPage,
+  PlatformPage,
+  MethodologyPage,
+  SecurityPage,
   TermsPage,
   PrivacyPage,
   RiskDisclosuresPage,
@@ -361,6 +382,9 @@ export function AppRoutes({ pages }: { pages: Pages }) {
           <Route path="/product/samplers" element={<pages.SamplersPage />} />
           <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
           <Route path="/product/mcp" element={<pages.McpPage />} />
+          <Route path="/product/platform" element={<pages.PlatformPage />} />
+          <Route path="/methodology" element={<pages.MethodologyPage />} />
+          <Route path="/security" element={<pages.SecurityPage />} />
 
           {/* Legal */}
           <Route path="/terms" element={<pages.TermsPage />} />

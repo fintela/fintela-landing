@@ -25,12 +25,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import fintelaLargeLogo from '../../assets/logos/fintela_logo_2.png';
+import { FINTELA_LOGO } from '../../media/logo';
 import { motion, radii, shadows, soft } from '../../theme/tokens';
 import { eyebrowSx, focusRingSx, navPillMobileSx, navPillSx, neuIconButtonSx, srOnly } from '../../theme/neu';
-import { NeuButton } from '../primitives/NeuButton';
+import { CtaButton } from '../primitives/CtaButton';
 import { Groove } from '../primitives/Groove';
-import { LanguageSwitcher } from '../LanguageSwitcher';
 import { AUDIENCES } from '../../lib/audience';
 import { SOLUTION_PATHS } from '../../solutions/registry';
 import { DOCS_HOME } from '../../seo/routes';
@@ -59,11 +58,13 @@ type NavItem = {
 };
 
 /**
- * The Product menu: Agentic AI and Samplers, each its own route. A
+ * The Product menu: the pipeline, Fintelligent, the optimization engine, the
+ * API and MCP, each its own route. A
  * menu rather than top-level items keeps the bar from growing every
  * time a product area gets its own page.
  */
 const PRODUCT_ITEMS: NavItem[] = [
+  { id: 'platform', labelKey: 'nav.platform', href: '/product/platform', type: 'route' },
   { id: 'fintelligent', labelKey: 'nav.fintelagent', href: '/product/agentic-ai', type: 'route' },
   { id: 'samplers', labelKey: 'nav.samplers', href: '/product/samplers', type: 'route' },
   { id: 'fintelaApi', labelKey: 'nav.fintelaApi', href: '/product/fintela-api', type: 'route' },
@@ -73,6 +74,10 @@ const PRODUCT_ITEMS: NavItem[] = [
 const navItems: NavItem[] = [
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
   { id: 'documentation', labelKey: 'nav.documentation', href: DOCS_HOME, type: 'route', activePrefix: '/docs' },
+];
+
+/** The Blog menu: the blog and the research section live under one trigger. */
+const BLOG_ITEMS: NavItem[] = [
   { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
   { id: 'research', labelKey: 'nav.research', href: '/research', type: 'route' },
 ];
@@ -93,8 +98,10 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   samplers: () => import('../../pages/SamplersPage'),
   fintelaApi: () => import('../../pages/FintelaApiPage'),
   mcp: () => import('../../pages/McpPage'),
+  platform: () => import('../../pages/PlatformPage'),
   product: () =>
     Promise.all([
+      import('../../pages/PlatformPage'),
       import('../../pages/AgenticAiPage'),
       import('../../pages/SamplersPage'),
       import('../../pages/FintelaApiPage'),
@@ -107,6 +114,15 @@ const prefetch = (id: string) => {
   // will load the chunk the normal way.
   void PREFETCH[id]?.().catch(() => undefined);
 };
+
+/**
+ * Where the bar switches from the menu drawer to the inline nav. 1000px, not
+ * the theme's 900px `md`: the bar holds the logo, six nav items, search, the
+ * language switcher and the call to action, and with the Spanish and
+ * Portuguese labels ("Comenzar prueba gratuita") that does not fit under
+ * about 975px.
+ */
+const NAV_UP = '@media (min-width: 1000px)';
 
 /** The section id a band link scrolls to: `/#platform` → `platform`. */
 const bandId = (item: NavItem) => item.href.replace(/^\/#/, '');
@@ -187,6 +203,8 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
+  const [blogOpen, setBlogOpen] = useState(false);
+  const [blogButton, setBlogButton] = useState<HTMLButtonElement | null>(null);
   // The trigger element, held in state (a callback ref) rather than a ref so
   // it can be read during render as the Popper's anchor.
   const [solutionsButton, setSolutionsButton] = useState<HTMLButtonElement | null>(null);
@@ -201,6 +219,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     return location.pathname === '/' && activeSection === bandId(item);
   };
   const onProduct = PRODUCT_ITEMS.some((item) => isActive(item));
+  const onBlog = BLOG_ITEMS.some((item) => isActive(item));
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -216,6 +235,12 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     if (wasSolutionsOpen.current && !solutionsOpen) solutionsButton?.focus();
     wasSolutionsOpen.current = solutionsOpen;
   }, [solutionsOpen, solutionsButton]);
+
+  const wasBlogOpen = useRef(blogOpen);
+  useEffect(() => {
+    if (wasBlogOpen.current && !blogOpen) blogButton?.focus();
+    wasBlogOpen.current = blogOpen;
+  }, [blogOpen, blogButton]);
 
   const wasProductOpen = useRef(productOpen);
   useEffect(() => {
@@ -274,6 +299,25 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     }
   };
 
+  const closeBlog = (event?: Event | SyntheticEvent) => {
+    if (event && blogButton?.contains(event.target as Node)) return;
+    setBlogOpen(false);
+  };
+
+  const onBlogKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      setBlogOpen(false);
+    } else if (e.key === 'Escape') {
+      setBlogOpen(false);
+    }
+  };
+
+  const handleBlogItemClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
+    setBlogOpen(false);
+    handleNavClick(e, item);
+  };
+
   const handleProductItemClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     setProductOpen(false);
     handleNavClick(e, item);
@@ -304,30 +348,31 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: soft.ground,
+          // Frosted: the page scrolls blurred beneath the bar.
+          bgcolor: `color-mix(in srgb, ${soft.ground} 72%, transparent)`,
+          backdropFilter: 'blur(16px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
           color: soft.text,
           // The theme's MuiPaper radius (10px) reaches the AppBar even though it is
           // `square`; without this the bar's corners curve up once it casts neuBar.
           borderRadius: 0,
           boxShadow: scrolled ? shadows.neuBar : 'none',
           transition: `box-shadow ${motion.base}`,
-          '@media (forced-colors: active)': { boxShadow: 'none', borderBottom: scrolled ? '1px solid CanvasText' : 0 },
+          '@media (forced-colors: active)': { boxShadow: 'none', borderBottom: scrolled ? '1px solid CanvasText' : 0, backdropFilter: 'none', bgcolor: 'Canvas' },
           '@media print': { boxShadow: 'none' },
         }}
       >
         <Toolbar
           sx={{
-            // xs: just the logo and the actions cluster (nav is display:none
-            // below md) — plain space-between, edge to edge, as before.
-            // md+: a 3-column grid. The two outer tracks are equal 1fr's, so
-            // the nav sits at the bar's true geometric center regardless of
-            // the logo and actions cluster being different widths — a flex
-            // `space-between` with 3 children only centers the middle one
-            // when its neighbours happen to match width, which logo/actions
-            // never do here.
-            display: { xs: 'flex', md: 'grid' },
-            justifyContent: { xs: 'space-between' },
-            gridTemplateColumns: { md: 'minmax(max-content, 1fr) auto minmax(max-content, 1fr)' },
+            // Below NAV_UP: just the logo and the actions cluster (the nav is
+            // in the drawer), space-between.
+            // NAV_UP+: a 3-column grid with the logo in the middle track. The
+            // outer tracks are equal 1fr's (never narrower than their content),
+            // so the logo sits at the bar's true center: primary nav on the
+            // left, Blog menu and actions on the right.
+            display: 'flex',
+            justifyContent: 'space-between',
+            [NAV_UP]: { display: 'grid', gridTemplateColumns: 'minmax(max-content, 1fr) auto minmax(max-content, 1fr)' },
             alignItems: 'center',
             py: { xs: 1, md: 1.25 },
             px: { xs: 2, md: 2, lg: 4 },
@@ -337,33 +382,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             width: '100%',
           }}
         >
-          {/* Logo: a real link home. The intrinsic size keeps the row from
-              reflowing while the file arrives (CSS still sets the height). */}
-          <Box
-            component={RouterLink}
-            to="/"
-            aria-label={t('aria.home')}
-            // Same-page click: the router replaces the entry in place and
-            // nothing else scrolls, so this does.
-            onClick={() => window.scrollTo(0, 0)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              height: { xs: 17, md: 22 },
-              borderRadius: `${radii.neuWell}px`,
-              justifySelf: 'start',
-              ...focusRingSx,
-            }}
-          >
-            <img
-              src={fintelaLargeLogo}
-              alt="Fintela"
-              width={442}
-              height={154}
-              style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
-            />
-          </Box>
-
           {/* Desktop navigation: a landmark of anchors. The Product and
               Solutions menus are Poppers kept mounted in place (no portal),
               so their links are in the prerendered HTML and the DOM whether
@@ -372,10 +390,11 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             component="nav"
             aria-label={t('aria.primaryNav')}
             sx={{
-              display: { xs: 'none', md: 'flex' },
+              display: 'none',
+              [NAV_UP]: { display: 'flex' },
               gap: { md: 0.25, lg: 0.5 },
               alignItems: 'center',
-              justifySelf: 'center',
+              justifySelf: 'start',
             }}
           >
             <Button
@@ -412,7 +431,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             >
               {t('nav.solutions')}
             </Button>
-            {navItems.map((item) => (
+            {navItems.filter((item) => item.id !== 'documentation').map((item) => (
               <Button
                 key={item.id}
                 component={RouterLink}
@@ -530,7 +549,120 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
           </Box>
 
           {/* Actions */}
-          <Box sx={{ display: 'flex', gap: { xs: 1, md: 1.5 }, alignItems: 'center', justifySelf: 'end' }}>
+          {/* Logo: a real link home. The intrinsic size keeps the row from
+              reflowing while the file arrives (CSS still sets the height). */}
+          <Box
+            component={RouterLink}
+            to="/"
+            aria-label={t('aria.home')}
+            // Same-page click: the router replaces the entry in place and
+            // nothing else scrolls, so this does.
+            onClick={() => window.scrollTo(0, 0)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              height: { xs: 17, md: 22 },
+              borderRadius: `${radii.neuWell}px`,
+              justifySelf: 'center',
+              ...focusRingSx,
+            }}
+          >
+            <img
+              src={FINTELA_LOGO.src}
+              alt="Fintela"
+              width={FINTELA_LOGO.width}
+              height={FINTELA_LOGO.height}
+              style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: { xs: 0.75, md: 1, lg: 1.5 }, alignItems: 'center', justifySelf: 'end' }}>
+            <Box sx={{ display: 'none', [NAV_UP]: { display: 'flex' }, position: 'relative' }}>
+            <Button
+              id="blog-menu-button"
+              ref={setBlogButton}
+              onClick={() => setBlogOpen((open) => !open)}
+              onMouseEnter={() => prefetch('blog')}
+              onFocus={() => prefetch('blog')}
+              disableRipple
+              aria-haspopup="menu"
+              aria-controls={blogOpen ? 'blog-menu' : undefined}
+              aria-expanded={blogOpen || undefined}
+              aria-current={onBlog ? 'page' : undefined}
+              className={blogOpen ? 'is-active' : undefined}
+              endIcon={<ExpandMoreIcon sx={{ fontSize: '18px !important', ml: -0.5 }} />}
+              sx={[navPillSx, navPillButtonSx, { pr: 1.25 }, navMenuTriggerSx]}
+            >
+              {t('nav.blog')}
+            </Button>
+            <Popper
+              open={blogOpen}
+              anchorEl={blogButton}
+              placement="bottom-end"
+              role={undefined}
+              transition
+              keepMounted
+              disablePortal
+            >
+              {({ TransitionProps }) => (
+                <Grow {...TransitionProps} style={{ transformOrigin: 'right top' }}>
+                  <Paper sx={menuPaperSx}>
+                    <ClickAwayListener onClickAway={closeBlog}>
+                      <MenuList
+                        id="blog-menu"
+                        aria-labelledby="blog-menu-button"
+                        autoFocusItem={blogOpen}
+                        onKeyDown={onBlogKeyDown}
+                        sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}
+                      >
+                        {BLOG_ITEMS.map((item) => (
+                          <MenuItem
+                            key={item.id}
+                            component={RouterLink}
+                            to={item.href}
+                            onClick={(e: MouseEvent<HTMLAnchorElement>) => handleBlogItemClick(e, item)}
+                            selected={isActive(item)}
+                            aria-current={isActive(item) ? 'page' : undefined}
+                            sx={[
+                              navPillSx,
+                              {
+                                px: 1.75,
+                                py: 1,
+                                fontSize: '0.92rem',
+                                minWidth: 200,
+                                justifyContent: 'flex-start',
+                                textAlign: 'left',
+                                '&::after': { display: 'none' },
+                              },
+                            ]}
+                          >
+                            {t(item.labelKey)}
+                          </MenuItem>
+                        ))}
+                      </MenuList>
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+              )}
+            </Popper>
+            </Box>
+            {/* Docs sits with the right-hand cluster on desktop; the drawer
+                still lists it with the other items. */}
+            {navItems.filter((item) => item.id === 'documentation').map((item) => (
+              <Button
+                key={item.id}
+                component={RouterLink}
+                to={item.href}
+                onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
+                onMouseEnter={() => prefetch(item.id)}
+                onFocus={() => prefetch(item.id)}
+                disableRipple
+                aria-current={isActive(item) ? 'page' : undefined}
+                sx={[navPillSx, navPillButtonSx, { display: 'none', [NAV_UP]: { display: 'inline-flex' } }]}
+              >
+                {t(item.labelKey)}
+              </Button>
+            ))}
             <IconButton
               aria-label={t('aria.search')}
               aria-keyshortcuts="Meta+K Control+K"
@@ -539,14 +671,12 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             >
               <SearchIcon />
             </IconButton>
-            <LanguageSwitcher />
-            <NeuButton tone="accent" size="sm" sx={{ px: { xs: 2, md: 2.5 } }}>
-              {t('actions.getStarted')}
-            </NeuButton>
+            {/* Tighter on a phone:  the logo needs its room. */}
+            <CtaButton kind="login" emphasis="primary" placement="header" size="sm" sx={{ px: { xs: 1.5, lg: 2.5 }, fontSize: { xs: '0.8125rem', lg: '0.875rem' } }} />
 
             <IconButton
               aria-label={t('aria.openMenu')}
-              sx={[neuIconButtonSx, { display: { xs: 'inline-flex', md: 'none' } }]}
+              sx={[neuIconButtonSx, { display: 'inline-flex', [NAV_UP]: { display: 'none' } }]}
               onClick={() => setMobileOpen(true)}
             >
               <MenuIcon />
@@ -561,7 +691,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         anchor="right"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        sx={{ display: { xs: 'block', md: 'none' } }}
+        sx={{ display: 'block', [NAV_UP]: { display: 'none' } }}
         slotProps={{ root: { keepMounted: true }, paper: { elevation: 0, sx: { width: 300 } } }}
       >
         <Box
@@ -575,10 +705,10 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         >
           <Box sx={{ height: 18 }}>
             <img
-              src={fintelaLargeLogo}
+              src={FINTELA_LOGO.src}
               alt="Fintela"
-              width={442}
-              height={154}
+              width={FINTELA_LOGO.width}
+              height={FINTELA_LOGO.height}
               style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
             />
           </Box>
@@ -638,6 +768,28 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             ))}
             <Groove sx={{ my: 1, mx: 3 }} />
 
+            <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 1, pb: 1 }}>
+              {t('nav.blog')}
+            </ListSubheader>
+            {BLOG_ITEMS.map((item) => (
+              <ListItem key={item.id} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={item.href}
+                  onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
+                  selected={isActive(item)}
+                  aria-current={isActive(item) ? 'page' : undefined}
+                  sx={[navPillSx, navPillMobileSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
+                >
+                  <ListItemText
+                    primary={t(item.labelKey)}
+                    slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+            <Groove sx={{ my: 1, mx: 3 }} />
+
             {navItems.map((item) => (
               <ListItem key={item.id} disablePadding>
                 <ListItemButton
@@ -661,9 +813,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
         <Groove sx={{ my: 2, mx: 3 }} />
 
         <Box sx={{ px: 3, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-          <NeuButton tone="accent" fullWidth>
-            {t('actions.getStarted')}
-          </NeuButton>
+          <CtaButton kind="login" emphasis="primary" placement="header_drawer" fullWidth />
         </Box>
       </Drawer>
     </>

@@ -12,11 +12,13 @@ import { canonicalPath } from './seo/site';
 const PRERENDERED_LANG: SupportedLng = 'en';
 
 /**
- * The query parameters that change what a page renders (`/contact?intent=`,
- * `/?for=`). A document prerendered without them cannot be hydrated with them.
- * Add to this list when a page starts reading a new one.
+ * The query parameters that change what a page renders (`/contact?intent=`).
+ * A document prerendered without them cannot be hydrated with them. Add to
+ * this list when a page starts reading a new one. (`/?for=` was here until the
+ * home page stopped reordering itself by audience; old sales links carrying it
+ * still open the page, which now ignores it.)
  */
-const RENDER_AFFECTING_PARAMS = ['intent', 'for'];
+const RENDER_AFFECTING_PARAMS = ['intent'];
 
 /**
  * The JSON the prerender rendered this route from, embedded at the end of

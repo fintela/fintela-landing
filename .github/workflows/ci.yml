@@ -67,6 +67,13 @@ jobs:
       - name: Registered media files exist
         run: node scripts/check-media.mjs
 
+      # The solution pages may only claim what the app does (claims policy,
+      # docs/redesign/SOLUTIONS-PLAN.md): a denylist over their copy and the
+      # pricing strings, every chapter complete, and no rendered alt text that
+      # is still an i18n key. Runs on dist/ as well, so it sits after the build.
+      - name: Solution pages claims and chapters
+        run: node scripts/check-solution-claims.mjs
+
       # The prerendered site is what crawlers index. Every route must have its
       # HTML with exactly one <title>, <h1> and canonical, a description, an OG
       # image and parseable JSON-LD; the sitemaps must list only pages that

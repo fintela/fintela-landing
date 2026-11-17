@@ -1,161 +1,121 @@
 {
   "common": {
-    "watch": "See the platform",
-    "chaptersLabel": "Capabilities on this page",
-    "alsoFor": {
-      "label": "Also built for"
-    },
     "research": {
-      "label": "From the research blog"
+      "label": "From our research"
     },
-    "why": {
-      "eyebrow": "Why they switch",
-      "title": "Stop building infrastructure.",
-      "titleAccent": "Start building strategies.",
-      "description": "A side by side look at what changes when research, optimization and execution share one cloud workspace instead of a stack you run yourself.",
-      "legacyHeader": "Legacy stack",
-      "withFintelaHeader": "With Fintela"
+    "badges": {
+      "app": "App · demo data",
+      "illustrative": "Illustrative · fictional data",
+      "diagram": "Diagram"
     },
-    "chapters": {
-      "eyebrow": "Capabilities"
+    "diagrams": {
+      "versions": {
+        "label": "A study keeps the version it launched on",
+        "strategy": "quality_momentum_vt",
+        "editing": "being edited",
+        "current": "Current",
+        "study": "Study",
+        "launchedOn": "Launched on v3",
+        "unchanged": "Its results don't change"
+      },
+      "riskProfiles": {
+        "label": "One strategy run under two risk policies",
+        "strategy": "One strategy",
+        "conservative": "Conservative",
+        "growth": "Growth",
+        "study": "Study",
+        "policy": "risk policy",
+        "group": "Portfolio group"
+      }
     },
-    "closing": {
-      "eyebrow": "Ready when your desk is",
-      "ctaSecondary": "Compare plans"
+    "vignettes": {
+      "confirmName": "Quality momentum, monthly",
+      "confirmDescription": "Rebalances monthly into the 20 strongest names by 12-month return."
     }
   },
   "funds": {
     "seo": {
       "title": "Quant Platform for Hedge Funds | Fintela",
-      "description": "Research at fund scale without the infrastructure: concurrent studies, cryptographic provenance and broker-connected execution in one cloud workspace."
+      "description": "Research at fund scale without the infrastructure: studies side by side on cloud workers, every result tested out of sample, every study locked at launch."
     },
     "badge": "For hedge funds & institutional traders",
-    "badgeAccent": "institutional traders",
     "title": "Research at fund scale,",
     "titleAccent": "without the infrastructure.",
-    "lead": "Concurrent studies, cryptographic provenance and broker-connected execution, in one cloud workspace your desk does not have to run.",
-    "ctaPrimary": "Book a walkthrough",
-    "heroCaption": "Institutional by design · research, governance and execution in one workspace",
-    "heroAlt": "Two glass towers seen from the street, curving up into a clouded sky",
-    "heroImageAlt": "An executive briefing colleagues across a boardroom table, black and white",
-    "stat": {
-      "eyebrow": "Queue wait",
-      "value": "0",
-      "unit": "minutes",
-      "sub": "studies run concurrently, not in a serial queue"
+    "lead": "Your desk runs studies side by side on cloud workers, and every result is tested on data the search never saw.",
+    "heroProof": {
+      "label": "New Solution Product of the Year · Hedgeweek US Awards 2026",
+      "to": "/blog/fintela-wins-hedgeweek-us-awards-2026"
     },
     "why": {
+      "title": "What changes for a fund's desk",
+      "legacyHeader": "Legacy stack",
+      "withHeader": "With Fintela",
       "rows": [
-        {
-          "without": "Research, backtesting and execution in separate tools",
-          "with": "One workflow, from study to live"
-        },
-        {
-          "without": "Infrastructure to build, fund and maintain",
-          "with": "Nothing to build or maintain"
-        },
-        {
-          "without": "Studies queued behind a shared optimizer box",
-          "with": "Concurrent studies across the desk"
-        },
-        {
-          "without": "A local environment for every new quant",
-          "with": "Nothing to install"
-        },
-        {
-          "without": "Provenance reconstructed from notebooks and chat logs",
-          "with": "Hashed, time-stamped strategy history"
-        },
-        {
-          "without": "Backtest and live on different code paths",
-          "with": "Risk managers identical in backtest and live"
-        }
-      ],
-      "panel": {
-        "eyebrow": "For a fund's desk",
-        "before": "Strategy research across concurrent experiments,",
-        "highlight": "without running",
-        "after": "your own infrastructure.",
-        "points": [
-          "No infrastructure to build or maintain",
-          "Concurrent studies, not a serial queue",
-          "Nothing for new quants to install"
-        ]
-      }
+        { "without": "Studies queued behind a shared optimizer box", "with": "Studies side by side" },
+        { "without": "A best backtest nobody can tell from luck", "with": "A luck test on every study", "to": "#chapter-luck" },
+        { "without": "Provenance rebuilt from notebooks and chat logs", "with": "Every study locked at launch", "to": "#chapter-provenance" },
+        { "without": "Backtest and live on different code paths", "with": "Risk limits carried into trading", "to": "#chapter-trading" }
+      ]
     },
-    "chaptersTitle": "What changes",
-    "chaptersTitleAccent": "for a fund.",
     "chapters": {
-      "research": {
-        "title": "Research at scale",
-        "docsLabel": "How studies work",
-        "mediaAlt": "The portfolio analysis performance tab: a radar of metrics and the train, validation and test comparison",
-        "description": "Every quant on the desk launches studies in parallel; nobody waits for the optimizer box. Bayesian search focuses thousands of trials on the promising regions, and every study is scored on train, validation and out-of-sample windows.",
-        "outcomes": [
-          "Concurrent studies across the whole desk",
-          "Train / validation / OOS by default",
-          "Parameter importance with an overfitting contrast"
-        ]
+      "luck": {
+        "title": "Know which results are luck",
+        "sentence": "Each finished study reports its probability of backtest overfitting and the Sharpe ratio luck alone would reach over that many trials.",
+        "proof": "PBO · luck threshold (SR₀) · effective trials, per study",
+        "docsLabel": "Robustness, explained"
       },
-      "governance": {
-        "title": "Governance & provenance",
-        "docsLabel": "Strategy registry docs",
-        "description": "Strategies and configurations are cryptographically hashed and time-stamped, so authorship, versions and results are verifiable long after the study ran. Keep everything private, then share selectively.",
-        "outcomes": [
-          "Hashed, time-stamped strategy history",
-          "Version history on every strategy",
-          "Private by default; share on your terms"
+      "provenance": {
+        "title": "Every result traces back",
+        "sentence": "Each study records the asset group, strategy, fitness function and risk policy it ran on, with its strategy version and tickers frozen at launch.",
+        "proof": "Later edits never change a launched study's results",
+        "docsLabel": "Version history docs"
+      },
+      "trading": {
+        "title": "Risk limits carry into trading",
+        "sentence": "Deploy a portfolio group to your connected brokerage account, on paper or with real money; its risk policy keeps applying limits, and Pause takes one click.",
+        "proof": "Pause in one click · Stop all trading on every account",
+        "docsLabel": "Live trading docs"
+      },
+      "safeguards": {
+        "title": "Safeguards on the trading path",
+        "sentence": "The controls a due-diligence review asks about, set per connection and per account.",
+        "points": [
+          { "title": "Limits on every connection", "body": "A cap per order, a cap per batch, and a kill switch." },
+          { "title": "Stop all trading", "body": "Halts new orders on every account within about a minute." },
+          { "title": "Two-step login to move money", "body": "Never needed to Pause or Stop an operation." },
+          { "title": "Owner-only real money", "body": "Only the Owner trades a real-money account, and broker credentials are stored encrypted." }
         ],
-        "mediaAlt": "An investment report header: who prepared it, as of when, the data window and the source strategy"
-      },
-      "execution": {
-        "title": "Execution & risk managers",
-        "docsLabel": "Live trading docs",
-        "description": "Promote validated portfolios to live operations that execute through your connected brokerage. Risk managers attach to any strategy, identical in backtest and live, with real-time order logs and a one-click pause.",
-        "outcomes": [
-          "Broker-connected live long/short operations",
-          "Risk managers identical in backtest and live",
-          "Real-time order logs, P&L and one-click pause"
-        ],
-        "mediaAlt": "Risk charts for the ranked portfolios: drawdown and volatility over the study window"
-      },
-      "workspace": {
-        "title": "Team workspace & permissions",
-        "docsLabel": "Registries docs",
-        "description": "Shared registries for asset groups, strategies, fitness functions and risk managers, in one organisational workspace. Publish results-only dashboards that hide code and parameters.",
-        "outcomes": [
-          "One source of truth across the desk",
-          "Results-only dashboards for the committee",
-          "PDF reports on demand"
-        ],
-        "mediaAlt": "A results-only performance dashboard: the equity curve and a metrics comparison, no code or parameters"
-      },
-      "security": {
-        "title": "Security & AI providers",
-        "docsLabel": "Fintelligent drafts and runs docs",
-        "description": "Choose which provider powers Fintelligent, with Fintela-managed access and no API key to bring. Every tool call is visible in the conversation, and every irreversible action waits for explicit confirmation.",
-        "outcomes": [
-          "Provider choice, Fintela-managed access",
-          "Every tool call visible in the conversation",
-          "Irreversible actions wait for confirmation"
-        ]
+        "docsLabel": "Trading safeguards"
       }
     },
-    "faqIntro": "The questions institutional desks ask first: security, providers, execution and data.",
+    "faqTitle": "Due-diligence questions",
+    "faq": {
+      "code": {
+        "q": "Where does our code run, and who can see it?",
+        "a": "Strategies written in Fintela run on its servers. Everything your team builds is shared across your organisation and isolated from every other one. External strategies stay on your own server. Fintelligent, if you use it, sends your prompts to the AI providers named in our privacy notice."
+      },
+      "trading": {
+        "q": "Can we trade real money?",
+        "a": "Yes. Connect your brokerage account on the Integrations page and deploy a portfolio group as an operation, on paper or with real money. On a real-money account only the Owner can trade, and actions that can move money ask for two-step login first."
+      },
+      "data": {
+        "q": "Which market data do studies use, and can we bring our own?",
+        "a": "Studies use Fintela's daily market data for US equities and ETFs, crypto and forex. To use your own data or models, run an external strategy on your own systems: Fintela calls your service, and your logic and data stay with you."
+      },
+      "assistant": {
+        "q": "What can the AI assistant do without our approval?",
+        "a": "Fintelligent, the assistant built into Fintela, drafts and explains. Saving to your library, launching or resuming a study, and changing a portfolio group that trades all wait for your Confirm. It cannot delete anything, and it never connects to or trades through your broker."
+      },
+      "cost": {
+        "q": "What does a desk cost?",
+        "a": "Plans and prices are on the pricing page. There is nothing to install or run, and any trial's investment report exports as PDF, Word or Excel."
+      }
+    },
     "research": {
       "label": "Why quantitative finance teams are moving away from legacy tools"
     },
-    "faq": {
-      "onboarding": {
-        "q": "How long does it take a fund to onboard?",
-        "a": "There is no environment to build. A desk connects its data and brokerage, brings strategies through the Laboratory or the API, and runs its first studies in the first week. Most of the calendar is the strategies themselves, not the setup."
-      },
-      "data": {
-        "q": "Whose data does Fintela use, and can we bring our own?",
-        "a": "Asset groups are built from Fintela's market data across equities, ETFs, forex and global markets. External strategies and fitness functions can read your own data sources through the API, so proprietary signals stay on your side."
-      }
-    },
     "closing": {
+      "eyebrow": "Ready when your desk is",
       "title": "See it on your own",
       "titleAccent": "strategies.",
       "body": "Thirty minutes with the team that built the platform, on the strategies your desk actually runs."
@@ -164,135 +124,79 @@
   "teams": {
     "seo": {
       "title": "Quant Research Team Workspace | Fintela",
-      "description": "One library, one workspace, one source of truth: shared registries, hashed history and committee-ready reports for quant research desks."
+      "description": "One library, one workspace, one source of truth for quant research desks: shared strategies, one ranking across every study, kept versions and committee reports in one click."
     },
     "badge": "For quant research teams",
-    "badgeAccent": "research teams",
     "title": "One library, one workspace,",
     "titleAccent": "one source of truth.",
-    "lead": "Shared registries, hashed history and committee-ready reports, so a research desk stops reconciling notebooks and starts comparing results.",
-    "ctaPrimary": "Book a walkthrough",
-    "heroCaption": "Every seat in play · one shared library of strategies, asset groups and results",
-    "heroAlt": "A row of chess pawns on a board, one in sharp focus in front of the king",
-    "heroImageAlt": "Two researchers comparing work on laptops across a table, a hand mid-gesture, black and white",
-    "stat": {
-      "eyebrow": "Sources of truth",
-      "value": "1",
-      "unit": "workspace",
-      "sub": "strategies, asset groups, fitness and results in one place"
-    },
+    "lead": "Every researcher builds in the same library, so the desk stops reconciling notebooks and compares everyone's results on held-out data.",
     "why": {
+      "title": "What changes for a research desk",
+      "legacyHeader": "Today",
+      "withHeader": "With Fintela",
       "rows": [
-        {
-          "without": "Strategies scattered across personal notebooks",
-          "with": "One shared strategy library"
-        },
-        {
-          "without": "Asset groups and results rebuilt by each researcher",
-          "with": "Shared asset groups and optimization results"
-        },
-        {
-          "without": "Authorship and versions reconstructed by hand",
-          "with": "Cryptographically hashed, time-stamped history"
-        },
-        {
-          "without": "Results reconciled across machines before every meeting",
-          "with": "One results dashboard for the team"
-        },
-        {
-          "without": "Committee decks assembled by hand",
-          "with": "PDF reports on demand"
-        },
-        {
-          "without": "A local environment for every new hire",
-          "with": "Nothing to install"
-        }
-      ],
-      "panel": {
-        "eyebrow": "For a research desk",
-        "before": "Shared strategies, asset groups and results,",
-        "highlight": "in one organisational workspace",
-        "after": "with cryptographic provenance built in.",
-        "points": [
-          "One source of truth across the team",
-          "Cryptographically hashed, time-stamped strategy history",
-          "PDF reports for the investment committee"
-        ]
-      }
+        { "without": "Strategies scattered across personal notebooks", "with": "One shared library", "to": "#chapter-library" },
+        { "without": "Results reconciled across machines before every meeting", "with": "One ranking across every study", "to": "#chapter-ranking" },
+        { "without": "Authorship and versions reconstructed by hand", "with": "Versions kept, results locked", "to": "#chapter-versions" },
+        { "without": "Committee decks assembled by hand", "with": "A report in one click", "to": "#chapter-report" }
+      ]
     },
-    "chaptersTitle": "What changes",
-    "chaptersTitleAccent": "for a research desk.",
     "chapters": {
-      "workspace": {
-        "title": "Shared registries",
-        "docsLabel": "Registries docs",
-        "description": "Asset groups, strategies, fitness functions and risk managers live in registries the whole desk reads from. A colleague's validated strategy is one click from your next study, not an export away.",
-        "outcomes": [
-          "One catalogue for the whole desk",
-          "Cross-organisation publishing with permissions",
-          "Nothing to install for a new hire"
-        ],
-        "mediaAlt": "The platform home: asset exposure, and the studies, portfolios, strategies and asset groups in use"
+      "library": {
+        "title": "Build on each other's work",
+        "sentence": "A new hire opens a colleague's strategy, sees who wrote it and when it last changed, and builds on it in the same library. Nothing to install.",
+        "proof": "Version · Author · Created · Last edited",
+        "docsLabel": "Library docs"
       },
-      "research": {
-        "title": "Concurrent research",
-        "docsLabel": "How studies work",
-        "mediaAlt": "Rate-of-change and Sharpe charts for the top trials, with the desk's top ten spanning three distinct strategies",
-        "description": "Everyone launches studies at once. Bayesian search over thousands of trials, scored on train, validation and out-of-sample windows, with results the desk compares in one dashboard.",
-        "outcomes": [
-          "Studies in parallel, not in a queue",
-          "Train / validation / OOS by default",
-          "One results dashboard for the team"
-        ]
+      "ranking": {
+        "title": "One ranking across every study",
+        "sentence": "Rank every study's trials on their own out-of-sample periods in one view, then check the leader against its study's luck threshold.",
+        "proof": "Study: All studies · Rank by: OOS",
+        "docsLabel": "Dashboard docs"
       },
-      "provenance": {
-        "title": "Provenance and versions",
-        "docsLabel": "Strategy registry docs",
-        "description": "Every strategy and configuration is hashed and time-stamped, with version history, so the desk can say who wrote what, when, and which version produced which result.",
-        "outcomes": [
-          "Cryptographically hashed history",
-          "Version history on every strategy",
-          "Authorship that survives staff changes"
-        ],
-        "mediaAlt": "A ranked trial's menu: promote it, derive or optimize a new version, or open its dashboard"
+      "versions": {
+        "title": "Versions kept, results locked",
+        "sentence": "Every saved change to a strategy becomes a dated version you can compare and restore, and each study stays on the version it launched with.",
+        "proof": "v4 Current · the study stays on v3",
+        "caption": "Diagram · a study stays on v3 while the strategy moves to v4",
+        "mediaAlt": "Diagram: a strategy's versions v1 to v4 on a line, with a study tied to v3. Version 4 is being edited, and the study's results do not change.",
+        "docsLabel": "Version history docs"
       },
-      "reports": {
-        "title": "Committee-ready reports",
-        "docsLabel": "Portfolio detail docs",
-        "description": "Results-only dashboards and PDF reports that show equity curves, drawdowns and parameter importance while hiding code and hyperparameters.",
-        "outcomes": [
-          "PDF reports on demand",
-          "Results-only dashboards hide the code",
-          "The same figures in backtest and live"
-        ],
-        "mediaAlt": "An investment report's performance section: growth of $100,000 against the benchmark, out-of-sample window marked"
-      },
-      "agents": {
-        "title": "Fintelligent on the desk",
-        "docsLabel": "Fintelligent docs",
-        "description": "An assistant wired into the platform's data and actions: it explains a study, drafts the next strategy, and stages runs for a human to confirm. Every tool call is visible.",
-        "outcomes": [
-          "Answers about any study with sources",
-          "Drafts strategies for review",
-          "Irreversible actions wait for confirmation"
-        ]
+      "report": {
+        "title": "A committee report in one click",
+        "sentence": "Any trial becomes an investment report with its out-of-sample period marked: PDF or Word to read, Excel with every figure, trade and parameter.",
+        "proof": "PDF document · Word document · Excel workbook",
+        "docsLabel": "Report docs"
       }
     },
-    "faqIntro": "The questions research desks ask first: sharing, provenance, exports and providers.",
+    "faqTitle": "Questions research desks ask",
+    "faq": {
+      "access": {
+        "q": "Who on the desk can see and change what?",
+        "a": "Everyone in your organisation sees every asset group, strategy, study and result, and your workspace is isolated from every other organisation. Roles set the rest: Analysts build strategies but can't launch studies, Managers also launch them, and only Owners and Admins can delete anything."
+      },
+      "ownCode": {
+        "q": "Can we keep our code and data on our own servers?",
+        "a": "Yes. Write strategies in Fintela's browser editor, or keep one on your own systems as an external strategy: Fintela calls your service, and your logic and data stay with you. On a paid plan, any trial's rebalancing signal downloads as JSON or CSV."
+      },
+      "data": {
+        "q": "What market data do studies run on?",
+        "a": "Fintela's daily market data for US equities and ETFs, crypto and forex. Each study splits its date range into train, validation and out-of-sample periods. External strategies can read your own data on your own systems."
+      },
+      "assistant": {
+        "q": "What can Fintelligent do in a shared workspace?",
+        "a": "Fintelligent, the assistant built into Fintela, explains studies and results in plain language and drafts strategies and studies. Every step it takes is listed in the conversation, nothing is saved or launched until you click Confirm, and it cannot delete anything."
+      },
+      "pricing": {
+        "q": "How is Fintela priced for a desk?",
+        "a": "Plans and prices are on the pricing page. There is nothing to install or maintain, and each researcher's studies run side by side on cloud workers."
+      }
+    },
     "research": {
       "label": "Why momentum works, and why it sometimes stops working"
     },
-    "faq": {
-      "sharing": {
-        "q": "Can we keep some strategies private inside the team?",
-        "a": "Yes. Everything is private by default. You share a strategy, an asset group or a study with named colleagues or with the whole organisation, and you can publish results-only dashboards that hide code and parameters."
-      },
-      "committee": {
-        "q": "What can we hand to an investment committee?",
-        "a": "PDF reports built from any trial or basket: equity curves across train, validation and out-of-sample windows, drawdowns, parameter importance and the trade log, with code and hyperparameters withheld."
-      }
-    },
     "closing": {
+      "eyebrow": "Walkthrough for research desks",
       "title": "See it with your",
       "titleAccent": "team's strategies.",
       "body": "Thirty minutes with the team that built the platform, on the research your desk is running now."
@@ -301,264 +205,162 @@
   "independents": {
     "seo": {
       "title": "Fintela for Independent Quants & Traders",
-      "description": "From notebook to live without a devops project: Python strategies, intelligent optimization and broker-connected execution in the browser."
+      "description": "Write a Python strategy in the browser, optimize it with every trial scored on data the search never saw, then trade what holds up through your brokerage account."
     },
     "badge": "For independent quants & traders",
-    "badgeAccent": "& traders",
-    "title": "From notebook to live,",
-    "titleAccent": "without a devops project.",
-    "lead": "Python strategies, intelligent optimization and broker-connected execution in the browser, with nothing to install and nothing to keep running.",
-    "ctaPrimary": "Start free",
-    "heroCaption": "One seat, the whole board · from notebook to live deployment, without a devops project",
-    "heroAlt": "A black knight standing alone on a chessboard, a pawn and the king out of focus behind it",
-    "heroImageAlt": "A trader alone at a multi-monitor desk, reading live charts, black and white",
-    "stat": {
-      "eyebrow": "Local installs",
-      "value": "0",
-      "unit": "to maintain",
-      "sub": "Python, data and execution all in the browser"
+    "title": "Your Python strategy,",
+    "titleAccent": "tested on data the search never saw.",
+    "lead": "Write it in Python in the browser with Fintela's strategy SDK, then trade what holds up through your connected broker. Nothing to install.",
+    "heroProof": {
+      "label": "Free to start: 250 Fintela Tokens and 200 AI Tokens · trading on paid plans",
+      "to": "/pricing"
     },
     "why": {
+      "title": "What you stop building yourself",
+      "legacyHeader": "On your own",
+      "withHeader": "With Fintela",
       "rows": [
-        {
-          "without": "A local environment to build and keep alive",
-          "with": "Python in the browser, nothing to install"
-        },
-        {
-          "without": "Backtesting, optimization and execution stitched together by hand",
-          "with": "Optimization, backtesting and live deployment in one place"
-        },
-        {
-          "without": "Optimization loops written from scratch",
-          "with": "Intelligent optimization built in"
-        },
-        {
-          "without": "Validation windows set up by hand for every study",
-          "with": "Train / validation / OOS by default"
-        },
-        {
-          "without": "A devops project to go live",
-          "with": "Brokerage-connected live deployment"
-        },
-        {
-          "without": "Servers to keep running",
-          "with": "Nothing to keep running"
-        }
-      ],
-      "panel": {
-        "eyebrow": "For one quant",
-        "before": "Optimization, backtesting and live deployment,",
-        "highlight": "without building or maintaining",
-        "after": "a single line of infrastructure.",
-        "points": [
-          "No local environment, no devops",
-          "Intelligent optimization with train / validation / OOS built in",
-          "Brokerage-connected live deployment"
-        ]
-      }
+        { "without": "A local Python environment to build and maintain", "with": "Python in your browser", "to": "/docs/quickstart-python" },
+        { "without": "Optimization loops and validation windows set up by hand", "with": "Held-out scoring, built in", "to": "#chapter-heldOut" },
+        { "without": "A great backtest you can't tell from luck", "with": "A luck check on every study", "to": "#chapter-luck" },
+        { "without": "A server running your broker script", "with": "Trading with a way out", "to": "#chapter-trading" }
+      ]
     },
-    "chaptersTitle": "What changes",
-    "chaptersTitleAccent": "for one quant.",
     "chapters": {
-      "noDevops": {
-        "title": "No environment to build",
-        "docsLabel": "Quickstart guide",
-        "mediaAlt": "The platform home in the browser, greeting the user with the Fintelligent prompt; nothing installed",
-        "description": "Write plain Python in the Laboratory with NumPy, pandas, SciPy and scikit-learn already there. Named parameters, typed ranges and version history, and no local install to keep alive.",
-        "outcomes": [
-          "Python in the browser, batteries included",
-          "Typed parameter ranges and version history",
-          "Nothing to install or update"
-        ]
+      "heldOut": {
+        "title": "Held out by default",
+        "sentence": "Fintela's default Bayesian search (TPE) runs your trials on cloud workers and scores every one on validation and out-of-sample windows, not just training.",
+        "proof": "Train · Validation · Out of sample on every trial",
+        "docsLabel": "Reading study results"
       },
-      "optimization": {
-        "title": "Optimization built in",
-        "docsLabel": "Choosing a sampler",
-        "mediaAlt": "The metrics table of a study: Calmar, Sharpe, Sortino and trade statistics across train, validation and test",
-        "description": "Bayesian search over thousands of trials with train, validation and out-of-sample windows by default, plus parameter importance so you know which knobs matter.",
-        "outcomes": [
-          "Thousands of trials in parallel",
-          "Train / validation / OOS by default",
-          "Parameter importance and clustering"
-        ]
+      "luck": {
+        "title": "Skill, or the luckiest trial?",
+        "sentence": "The best of many trials can look strong by luck alone, so each study reports the Sharpe ratio luck would reach over that many trials.",
+        "proof": "Luck threshold (SR₀) · PBO · effective trials",
+        "docsLabel": "Robustness, explained"
       },
-      "live": {
-        "title": "Live through your broker",
-        "docsLabel": "Live trading docs",
-        "description": "Promote a validated portfolio to a live operation that trades through your connected brokerage, with real-time order logs, P&L and a one-click pause.",
-        "outcomes": [
-          "Broker-connected execution",
-          "Real-time order log and P&L",
-          "One click to pause or stop"
-        ],
-        "mediaAlt": "Live operations on the platform home: deployed portfolios per strategy, active group performance and most traded assets"
-      },
-      "agent": {
-        "title": "An assistant that does the work",
-        "docsLabel": "Fintelligent docs",
-        "description": "Describe the idea in plain English and Fintelligent writes the Python, configures the parameters and stages the study, then waits for you to confirm.",
-        "outcomes": [
-          "Strategies drafted from a description",
-          "Studies staged for your confirmation",
-          "Explanations of any result, with sources"
-        ]
+      "trading": {
+        "title": "Trade it, with a way out",
+        "sentence": "On a paid plan, connect your brokerage account and deploy what held up; caps limit every order, and Stop all trading halts new orders everywhere.",
+        "proof": "Max per order · Max per batch · Stop all trading",
+        "docsLabel": "Trading safeguards"
       }
     },
-    "faqIntro": "The questions traders ask first: Python, optimization, speed and going live.",
-    "research": {
-      "label": "The backtest you didn't run is still costing you"
-    },
+    "faqTitle": "The questions solo quants ask first",
     "faq": {
       "cost": {
         "q": "What does it cost to start?",
-        "a": "The free tier includes the Laboratory, asset groups and studies with the basic samplers and allocation methods. Advanced features unlock per basket with tokens, so you pay for what a study actually uses."
+        "a": "Every new organisation starts with 250 Fintela Tokens and 200 Fintela AI Tokens on the house, one free allowance per person. Paid plans add tokens and unlock trading through your brokerage account; plans and prices are on the pricing page."
+      },
+      "code": {
+        "q": "Which libraries can my strategy use?",
+        "a": "Strategies are Python functions written with Fintela's strategy SDK: one function declares entries, exits and sizing, and its arguments set each parameter's search range. Besides the SDK you can import math, datetime, typing and functools. Everything runs on Fintela's servers."
+      },
+      "data": {
+        "q": "What data can I test on?",
+        "a": "Fintela's daily bars for US equities and ETFs, crypto and forex, the same for every user, with nothing to upload. There are no intraday bars. Your own data can feed an external strategy running on your own systems."
       },
       "ownership": {
-        "q": "Who owns my strategies?",
-        "a": "You do. Strategies are private by default, hashed and time-stamped as yours, and you can export any trial's rebalancing signal as JSON or CSV at any time."
+        "q": "Who owns my code?",
+        "a": "You do: under our terms of use, your code remains your exclusive property. On a paid plan you can also download any trial's rebalancing signal as JSON or CSV."
+      },
+      "trading": {
+        "q": "Can I trade real money?",
+        "a": "Yes, on paid plans. Add promoted trials to a portfolio group and deploy it to your connected brokerage account, on paper or with real money. Order statuses update as your broker reports fills, P&L arrives daily from your broker, and Pause takes one click."
       }
     },
+    "research": {
+      "label": "The backtest you didn't run is still costing you"
+    },
     "closing": {
+      "eyebrow": "Your first study",
       "title": "Bring a strategy,",
       "titleAccent": "leave with a study.",
-      "body": "Start on the free tier, run your first optimization today, and book a walkthrough when you want a second pair of eyes."
+      "body": "Start free, write your strategy in Python or let Fintelligent, the built-in assistant, draft it, and run your first study today."
     }
   },
   "advisors": {
     "seo": {
       "title": "Fintela for Financial Advisors & Wealth Managers",
-      "description": "Backtested, optimized strategies with client-ready reports and a full audit trail, built for advisory practices with nothing to install or maintain."
+      "description": "Systematic strategies without a research desk: describe an idea in plain English, check it against luck, and export client reports marked Simulated."
     },
     "badge": "For financial advisors & wealth managers",
-    "badgeAccent": "advisors & wealth managers",
     "title": "Systematic strategies,",
     "titleAccent": "without a research desk.",
-    "lead": "Backtested, optimized strategies with a full audit trail and client-ready reports, in one cloud workspace your practice doesn't have to install or maintain.",
-    "ctaPrimary": "Book a walkthrough",
-    "heroCaption": "Every client, one process · from a backtested idea to a report you can hand across the table",
-    "heroAlt": "A handshake across a polished conference table, a city skyline blurred through the window behind",
-    "heroImageAlt": "A financial advisor reviewing a portfolio report with a client across a desk, black and white",
-    "stat": {
-      "eyebrow": "Lines of code required",
-      "value": "0",
-      "unit": "to start",
-      "sub": "Fintelligent drafts the strategy from a plain-English description"
-    },
+    "lead": "Turn an investment idea into a tested strategy without writing code, then hand clients a report clearly marked Simulated.",
     "why": {
+      "title": "What changes in your practice",
+      "legacyHeader": "Today",
+      "withHeader": "With Fintela",
       "rows": [
-        {
-          "without": "Client portfolios built and rebalanced by hand or in spreadsheets",
-          "with": "Backtested, optimized strategies, versioned automatically"
-        },
-        {
-          "without": "A strategy idea that needs a developer to test it",
-          "with": "Fintelligent drafts the Python from a plain-English description"
-        },
-        {
-          "without": "One risk approach stretched across every client",
-          "with": "A risk manager matched to each client's mandate"
-        },
-        {
-          "without": "Performance summaries rebuilt by hand before every review",
-          "with": "Client-ready PDF reports on demand"
-        },
-        {
-          "without": "No paper trail for why a trade happened",
-          "with": "Every strategy hashed and time-stamped, backtest to live"
-        },
-        {
-          "without": "A devops project to go live",
-          "with": "Broker-connected execution, nothing to maintain"
-        }
-      ],
-      "panel": {
-        "eyebrow": "For an advisory practice",
-        "before": "Backtested strategies and client-ready reports,",
-        "highlight": "without building",
-        "after": "a research desk of your own.",
-        "points": [
-          "No infrastructure to build or maintain",
-          "Fintelligent drafts the strategy, you approve every step",
-          "A hashed, time-stamped record for every client file"
-        ]
-      }
+        { "without": "An idea that needs a developer to test it", "with": "Drafted from your own words", "to": "#chapter-draft" },
+        { "without": "A backtest you can't defend to a client", "with": "Checked against luck first", "to": "#chapter-validation" },
+        { "without": "One risk approach stretched across every client", "with": "One strategy, several risk profiles", "to": "#chapter-riskProfiles" },
+        { "without": "Performance summaries rebuilt by hand before every review", "with": "A report in one click", "to": "#chapter-reporting" }
+      ]
     },
-    "chaptersTitle": "What changes",
-    "chaptersTitleAccent": "for an advisory practice.",
     "chapters": {
-      "research": {
-        "title": "Strategies without a research desk",
-        "docsLabel": "Quickstart guide",
-        "mediaAlt": "The platform home in the browser, greeting the user with the Fintelligent prompt; nothing installed",
-        "description": "Describe a mandate in plain English and Fintelligent drafts the Python, configures the parameters and stages it for your review. NumPy, pandas, SciPy and scikit-learn are already there, with nothing to install.",
-        "outcomes": [
-          "Strategies drafted from a plain-English description",
-          "Named parameters and version history from day one",
-          "Nothing to install or maintain"
-        ]
+      "draft": {
+        "title": "Describe it. Review it. Confirm it.",
+        "sentence": "Describe the idea in plain English; Fintelligent, the built-in assistant, drafts the strategy, and nothing is saved or launched until you click Confirm.",
+        "proof": "Fintelligent can't delete anything or touch your broker",
+        "caption": "Confirm card · the change Fintelligent prepared, waiting for you",
+        "mediaAlt": "Illustration of Fintelligent's Confirm card: one proposed change, create strategy Quality momentum, monthly, with Cancel and Confirm & create buttons.",
+        "docsLabel": "How drafting works"
       },
       "validation": {
-        "title": "Validated before a client sees it",
-        "docsLabel": "Choosing a sampler",
-        "mediaAlt": "The metrics table of a study: Calmar, Sharpe, Sortino and trade statistics across train, validation and test",
-        "description": "Bayesian search over thousands of trials, with train, validation and out-of-sample windows by default, so an idea is pressure-tested before it becomes a recommendation.",
-        "outcomes": [
-          "Thousands of trials in parallel",
-          "Train / validation / OOS by default",
-          "Parameter importance flags overfitting early"
-        ]
+        "title": "Skill or luck, checked first",
+        "sentence": "Each result is scored on data held back from the search and set against what luck alone would produce after that many tries, then given a verdict in plain words.",
+        "proof": "Scored on data the search never saw",
+        "caption": "Toggle · the same search, one trial holds up and one doesn't",
+        "docsLabel": "How robustness works"
       },
       "riskProfiles": {
-        "title": "One strategy, every client's mandate",
-        "docsLabel": "Live trading docs",
-        "mediaAlt": "Risk charts for the ranked portfolios: drawdown and volatility over the study window",
-        "description": "A risk manager attaches to any strategy independently of its trading logic, so a conservative mandate and a growth mandate can run the same strategy with different risk managers, identical in backtest and live.",
-        "outcomes": [
-          "A risk manager matched to each client's mandate",
-          "Identical logic in backtest and live",
-          "Real-time order logs, P&L and a one-click pause"
-        ]
+        "title": "One strategy, different risk profiles",
+        "sentence": "A study's risk policy sets portfolio-wide limits apart from the strategy, so one idea can be tested and run as a conservative and a growth version.",
+        "proof": "Caps · a drawdown breaker · trading halts",
+        "caption": "Diagram · one strategy, two risk policies, two portfolio groups",
+        "mediaAlt": "Diagram: one strategy runs as two studies, one under a conservative risk policy and one under a growth risk policy, each leading to its own portfolio group.",
+        "docsLabel": "Risk managers docs"
       },
       "reporting": {
-        "title": "Reports a client or a regulator can read",
-        "docsLabel": "Portfolio detail docs",
-        "mediaAlt": "An investment report's performance section: growth of $100,000 against the benchmark, out-of-sample window marked",
-        "description": "Results-only dashboards and PDF reports show equity curves, drawdowns and the trade log while hiding code and parameters, ready for a client meeting or a compliance file.",
-        "outcomes": [
-          "PDF reports on demand, no code or parameters shown",
-          "Cryptographically hashed, time-stamped history for the file",
-          "The same figures in backtest and live"
-        ]
-      },
-      "security": {
-        "title": "An assistant a compliance team can trust",
-        "docsLabel": "Fintelligent drafts and runs docs",
-        "description": "Choose which provider powers Fintelligent, with Fintela-managed access and no API key to bring. Every tool call is visible in the conversation, and every irreversible action waits for your explicit confirmation.",
-        "outcomes": [
-          "Provider choice, Fintela-managed access",
-          "Every tool call visible in the conversation",
-          "Irreversible actions wait for confirmation"
-        ]
+        "title": "Ready for the review meeting",
+        "sentence": "Export any backtest's investment report as PDF, Word or Excel, marked Simulated and ending with the full hypothetical-performance disclosure.",
+        "proof": "Simulated · out-of-sample period marked · disclosure",
+        "docsLabel": "Report docs"
       }
     },
-    "faqIntro": "The questions advisors ask first: whether you need to code, how the AI is supervised, and what a client or a regulator gets to see.",
+    "faqTitle": "What your compliance officer will ask",
+    "faq": {
+      "backtests": {
+        "q": "Can we show clients backtested results?",
+        "a": "Every report is marked Simulated, marks the out-of-sample period on its chart and ends with the full hypothetical-performance disclosure. How you use hypothetical performance with clients is your firm's call under the rules you follow."
+      },
+      "coding": {
+        "q": "Do I need to know how to code?",
+        "a": "No. Describe the idea in plain English and Fintelligent, the built-in assistant, drafts the strategy and its study for you to review. Nothing is saved or launched until you click Confirm."
+      },
+      "accountable": {
+        "q": "Who is accountable for what the AI does?",
+        "a": "You are: Fintela is a research tool, not an investment adviser. Every step Fintelligent takes is listed in the conversation, nothing is saved, launched or resumed until you click Confirm, and it cannot delete anything or touch your broker."
+      },
+      "clientAccounts": {
+        "q": "Can Fintela trade our clients' accounts?",
+        "a": "No. Fintela doesn't connect to custodians or hold client accounts. Plans with trading send orders to a brokerage account you connect, where only the Owner can trade real money. On a paid plan you can also download a strategy's target weights for each rebalance date as CSV."
+      },
+      "record": {
+        "q": "What record can we keep for the compliance file?",
+        "a": "Every saved change to a strategy is kept as a dated version, and every study stays locked to the version it ran. Each report names your firm, the date it was produced and the data window it covers."
+      }
+    },
     "research": {
       "label": "Climate Risk against Agricultural Stocks"
     },
-    "faq": {
-      "clientRisk": {
-        "q": "Can I run the same strategy with different risk settings for different clients?",
-        "a": "Yes. A risk manager attaches to any strategy independently of its trading logic, so a conservative mandate and a growth mandate can run the exact same strategy with different risk managers, identical in backtest and live."
-      },
-      "compliance": {
-        "q": "What can I show a client or a regulator?",
-        "a": "Results-only PDF reports and dashboards that show performance, drawdowns and the trade log while hiding code and parameters, plus a cryptographically hashed, time-stamped history of every strategy and configuration change for the file."
-      }
-    },
     "closing": {
+      "eyebrow": "For your practice",
       "title": "See it with your",
       "titleAccent": "own clients in mind.",
-      "body": "Thirty minutes with the team that built the platform, on the mandates your practice actually manages."
+      "body": "Thirty minutes with the team that built the platform, on the mandates your practice manages."
     }
   }
 }

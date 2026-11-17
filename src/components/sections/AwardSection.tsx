@@ -1,94 +1,67 @@
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { Link as RouterLink } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { Section } from '../primitives/Section';
-import { SectionHeader } from '../primitives/SectionHeader';
-import { NeuButton } from '../primitives/NeuButton';
-import { NeuPanel } from '../primitives/NeuPanel';
 import { MediaWell } from '../primitives/MediaWell';
-import { AnimateOnScroll } from '../common/AnimateOnScroll';
+import { quietLinkSx } from '../../theme/neu';
 import { soft } from '../../theme/tokens';
 import { STILLS } from '../../media/registry';
 import { AWARD_POST } from '../../lib/award';
 import winnerBadge from '../../assets/awards/hedgeweek-2026-winner-white.png';
 
-const bodySx = { fontSize: { xs: '1rem', md: '1.0625rem' }, lineHeight: 1.65, color: soft.textSecondary } as const;
-
 /**
- * Band 5, after the pipeline (WorkflowSection), who it is for
- * (InstitutionalSection) and bring-your-own-agent (YourAgentSection), as proof of the product the visitor has just
- * walked through: Fintela won New Solution Product of the
- * Year at the Hedgeweek US Awards 2026. The ceremony photo sits in a white card on the left (imagery
- * is always set into a surface, never on the ground); on the right are the
- * organiser's winner badge, what the awards are and what the win recognizes,
- * and the announcement post as the exit. On the light ground, before the
- * ink Research & News band.
+ * The Hedgeweek award, once and compact: the ceremony photo, the organiser's
+ * winner badge, one sentence and the announcement as the way out. The hero
+ * carries the award as a line of text; the long story lives in the post.
  *
  * The badge is Hedgeweek's own artwork, shown unaltered: never recoloured or
- * cropped. This is the variant on a white ground; the hero shows the
- * orange one, so the two never read as the same picture twice.
+ * cropped.
  */
-export const AwardSection = () => {
+export const AwardBand = () => {
   const { t } = useTranslation('home');
 
   return (
-    <Section id="award" size="md">
-      <SectionHeader align="left" eyebrow={t('award.eyebrow')} title={t('award.title')} titleAccent={t('award.titleAccent')} />
-
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
-          columnGap: { md: 6 },
-          rowGap: { xs: 5, md: 0 },
-          alignItems: 'center',
-        }}
-      >
-        <AnimateOnScroll direction="left">
-          <NeuPanel sx={{ overflow: 'hidden' }}>
-            <Box component="figure" sx={{ m: 0 }}>
-              <MediaWell
-                ratio="4/3"
-                tone="plain"
-                flush
-                src={STILLS.awardCeremony}
-                alt={t('award.photoAlt')}
-                sizes="(min-width: 1200px) 640px, (min-width: 900px) 55vw, calc(100vw - 32px)"
-              />
-              <Typography
-                component="figcaption"
-                sx={{ px: { xs: 2.5, md: 3 }, py: 2, fontSize: '0.85rem', lineHeight: 1.5, color: soft.textSecondary }}
-              >
-                {t('award.photoCaption')}
-              </Typography>
-            </Box>
-          </NeuPanel>
-        </AnimateOnScroll>
-
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 3, md: 3.5 } }}>
-          <AnimateOnScroll delay={120} direction="right">
-            <Box
-              component="img"
-              src={winnerBadge}
-              alt={t('award.badgeAlt')}
-              width={960}
-              height={365}
-              loading="lazy"
-              decoding="async"
-              sx={{ display: 'block', width: '100%', maxWidth: 420, height: 'auto', borderRadius: '10px' }}
-            />
-          </AnimateOnScroll>
-          <AnimateOnScroll delay={180}>
-            <Typography sx={bodySx}>{t('award.about')}</Typography>
-            <Typography sx={{ ...bodySx, mt: 2 }}>{t('award.recognizes')}</Typography>
-          </AnimateOnScroll>
-          <AnimateOnScroll delay={240}>
-            <NeuButton tone="raised" to={AWARD_POST} endIcon={<ArrowForwardIcon />}>
-              {t('award.exit')}
-            </NeuButton>
-          </AnimateOnScroll>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 5fr) minmax(0, 7fr)' },
+        columnGap: { sm: 4, md: 6 },
+        rowGap: 3,
+        alignItems: 'center',
+        maxWidth: 880,
+        mx: 'auto',
+      }}
+    >
+      <MediaWell
+        ratio="4/3"
+        tone="plain"
+        src={STILLS.awardCeremony}
+        alt={t('proof.award.photoAlt')}
+        sizes="(min-width: 900px) 360px, (min-width: 600px) 40vw, calc(100vw - 32px)"
+      />
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+        <Box
+          component="img"
+          src={winnerBadge}
+          alt={t('proof.award.badgeAlt')}
+          width={960}
+          height={365}
+          loading="lazy"
+          decoding="async"
+          sx={{ display: 'block', width: '100%', maxWidth: 260, height: 'auto', borderRadius: '8px' }}
+        />
+        <Typography sx={{ fontSize: { xs: '1rem', md: '1.0625rem' }, lineHeight: 1.6, color: soft.text, maxWidth: '46ch' }}>
+          {t('proof.award.sentence')}
+        </Typography>
+        <Box
+          component={RouterLink}
+          to={AWARD_POST}
+          sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: '0.92rem', fontWeight: 600, color: soft.linkAccent }]}
+        >
+          {t('proof.award.link')}
+          <ArrowForwardIcon sx={{ fontSize: 16 }} />
         </Box>
       </Box>
-    </Section>
+    </Box>
   );
 };

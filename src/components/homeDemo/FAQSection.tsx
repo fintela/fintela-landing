@@ -5,7 +5,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { NeuPanel } from '../primitives/NeuPanel';
-import { NeuButton } from '../primitives/NeuButton';
+import { CtaButton } from '../primitives/CtaButton';
 import { StickyAside } from '../primitives/StickyAside';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { quietLinkSx } from '../../theme/neu';
@@ -50,9 +50,7 @@ export const FAQSection = () => {
               <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6, mt: 0.5, mb: 2 }}>
                 {t('faq.aside.body')}
               </Typography>
-              <NeuButton tone="accent" size="sm" to="/contact">
-                {t('faq.aside.cta')}
-              </NeuButton>
+              <CtaButton kind="walkthrough" placement="home_demo_faq" emphasis="primary" size="sm" />
             </NeuPanel>
           </AnimateOnScroll>
           {/* The two self-serve exits next to the human one: the docs, and the

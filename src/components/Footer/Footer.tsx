@@ -7,7 +7,7 @@ import XIcon from '@mui/icons-material/X';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import fintelaLargeLogo from '../../assets/logos/fintela_logo_2.png';
+import { FINTELA_LOGO } from '../../media/logo';
 import { gradients, shadows, soft } from '../../theme/tokens';
 import { neuIconButtonSx, quietLinkSx } from '../../theme/neu';
 import { Groove } from '../primitives/Groove';
@@ -60,8 +60,8 @@ const columns: FooterColumn[] = [
       {
         id: 'platform',
         labelKey: 'footer:columns.product.links.platform',
-        href: '/#hero',
-        type: 'scroll',
+        href: '/product/platform',
+        type: 'route',
       },
       {
         id: 'fintelagent',
@@ -72,8 +72,8 @@ const columns: FooterColumn[] = [
       {
         id: 'capabilities',
         labelKey: 'footer:columns.product.links.capabilities',
-        href: '/#capabilities',
-        type: 'scroll',
+        href: '/product/samplers',
+        type: 'route',
       },
       {
         id: 'funds',
@@ -156,6 +156,8 @@ const columns: FooterColumn[] = [
         href: '/contact',
         type: 'route',
       },
+      { id: 'methodology', labelKey: 'footer:columns.company.links.methodology', href: '/methodology', type: 'route' },
+      { id: 'security', labelKey: 'footer:columns.company.links.security', href: '/security', type: 'route' },
       { id: 'faq', labelKey: 'footer:columns.company.links.faq', href: '/#faq', type: 'scroll' },
     ],
   },
@@ -212,10 +214,10 @@ export const Footer = () => {
           <Box>
             <Box sx={{ height: 22, mb: 2.5 }}>
               <img
-                src={fintelaLargeLogo}
+                src={FINTELA_LOGO.src}
                 alt="Fintela"
-                width={442}
-                height={154}
+                width={FINTELA_LOGO.width}
+                height={FINTELA_LOGO.height}
                 style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
               />
             </Box>

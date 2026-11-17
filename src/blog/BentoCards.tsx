@@ -14,11 +14,10 @@ import { postPath } from './sections';
 import type { BlogPostSummary } from './types';
 
 /**
- * The heading level of a card's title. The cards sit directly under the `/blog`
- * page's `<h1>` (so `h2`) and under the home page's Insights `<h2>` (so `h3`,
- * the default); the size is the card's own either way.
+ * The bento cards of the `/home-demo` sandbox's Insights band. `/blog`,
+ * `/research` and the home page use `PostCard` (PostCard.tsx) instead.
  */
-export type CardTitleLevel = 'h2' | 'h3';
+type CardTitleLevel = 'h2' | 'h3';
 
 interface CardProps {
   post: BlogPostSummary;
@@ -161,77 +160,6 @@ export const FeaturedPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
 };
 
 /**
- * A portrait slot beside the hero. The cover crops to a square rather than a
- * taller ratio — covers are author-supplied at whatever aspect ratio their
- * source image came in (see BLOG.md), and a landscape cover cropped into a
- * true portrait frame loses too much of itself; square is the least
- * destructive middle ground. The excerpt earns its keep the same way: it fills
- * the column's extra height with typography instead of stretching the image.
- */
-export const VerticalPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
-  const { t } = useTranslation('home');
-  return (
-    <NeuPanel
-      to={postPath(post)}
-      component="article"
-      sx={[{ height: '100%', display: 'flex', flexDirection: 'column' }, readMoreHoverSx]}
-    >
-      {post.cover ? (
-        <MediaWell
-          ratio="1/1"
-          flush
-          src={blogAssetUrl(post.cover)}
-          alt={post.coverAlt ?? t('insights.coverAlt', { title: post.title })}
-          sizes="(min-width: 1200px) 320px, 90vw"
-        />
-      ) : (
-        <MediaWell
-          ratio="1/1"
-          tone="plain"
-          tier="md"
-          flush
-          sx={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            p: 2.5,
-          }}
-        >
-          <Typography
-            sx={{
-              position: 'relative',
-              zIndex: 1,
-              fontSize: '1.1rem',
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.15,
-              ...clippedGradientSx(gradients.goldText),
-            }}
-          >
-            {post.tags[0] ?? t('insights.eyebrow')}
-          </Typography>
-        </MediaWell>
-      )}
-      <Box sx={{ px: 2.5, pt: 2, pb: 2.5, display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <MetaRow post={post} tag={post.tags[0]} />
-        <Typography
-          component={titleAs}
-          sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text, mt: 1, mb: 1.25 }}
-        >
-          {post.title}
-        </Typography>
-        <Box sx={{ mb: 1.25 }}>
-          <AuthorByline author={post.author} image={post.authorImage} />
-        </Box>
-        <Typography sx={{ color: soft.textSecondary, fontSize: '0.88rem', lineHeight: 1.6, mb: 'auto' }}>
-          {truncate(post.excerpt, 110)}
-        </Typography>
-        <ReadMore label={t('insights.read')} accent={accentFor(post.slug)} />
-      </Box>
-    </NeuPanel>
-  );
-};
-
-/**
  * Beside the feature: meta, title, byline, a line of excerpt. With a cover, the image
  * fills the whole card as a blurred, darkened background instead of sitting in
  * its own well — this tile is too small for a crisp thumbnail to read well
@@ -308,38 +236,6 @@ export const CompactPostCard = ({ post, titleAs = 'h3' }: CardProps) => {
           {truncate(post.excerpt, 120)}
         </Typography>
         <ReadMore label={t('insights.read')} accent="#fff" />
-      </Box>
-    </NeuPanel>
-  );
-};
-
-/**
- * A text tile: meta with the lead tag, title, byline, one line of excerpt. With
- * `withCover`, a post that has a cover gets it in a 16/9 well across the top
- * (the same crop the /blog card and the featured slot use). It is opt-in
- * because the "Related posts" row under an article uses this tile too, and
- * stays text-only there.
- */
-export const TextPostCard = ({ post, titleAs = 'h3', withCover = false }: CardProps & { withCover?: boolean }) => {
-  const { t } = useTranslation('home');
-  return (
-    <NeuPanel to={postPath(post)} component="article" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {withCover && post.cover && (
-        <MediaWell
-          ratio="16/9"
-          flush
-          src={blogAssetUrl(post.cover)}
-          alt={post.coverAlt ?? t('insights.coverAlt', { title: post.title })}
-          sizes="(min-width: 1200px) 400px, 90vw"
-        />
-      )}
-      <Box sx={{ p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1 }}>
-        <MetaRow post={post} tag={post.tags[0]} />
-        <Typography component={titleAs} sx={{ fontSize: '1.02rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em', color: soft.text }}>
-          {post.title}
-        </Typography>
-        <AuthorByline author={post.author} image={post.authorImage} />
-        <Typography sx={{ color: soft.textSecondary, fontSize: '0.86rem', lineHeight: 1.55 }}>{truncate(post.excerpt, 110)}</Typography>
       </Box>
     </NeuPanel>
   );

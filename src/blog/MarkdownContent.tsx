@@ -126,7 +126,12 @@ const makeUrlTransform = (assetBase: string) => (url: string, key: string): stri
   const scheme = isRelative ? '' : value.slice(0, colon).toLowerCase();
 
   if (key === 'src') {
-    if (!scheme) return assetBase ? `${assetBase}${value.replace(/^\.?\//, '')}` : value;
+    // A root-relative path (`/blog-assets/x.png`) is already site-absolute, served
+    // from `public/`; prefixing it would send it to `/blog/blog-assets/x.png`.
+    if (!scheme) {
+      if (value.startsWith('/') && !value.startsWith('//')) return value;
+      return assetBase ? `${assetBase}${value.replace(/^\.\//, '')}` : value;
+    }
     if (scheme === 'http' || scheme === 'https') return value;
     // Inline base64 images are allowed (the brief permits them for small assets);
     // svg is excluded because it can carry script.

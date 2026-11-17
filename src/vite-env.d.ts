@@ -13,6 +13,12 @@ declare module '*&as=picture' {
   export default picture;
 }
 
+/** A single resized image from vite-imagetools (`?w=360&format=webp`): its URL. */
+declare module '*&format=webp' {
+  const src: string;
+  export default src;
+}
+
 /**
  * Every `VITE_*` variable the app reads. All optional: the site builds and runs
  * with none of them set (README.md "Getting started"), and `.env.example`

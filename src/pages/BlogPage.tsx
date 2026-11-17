@@ -1,19 +1,20 @@
-import { Box } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import { Box, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { Section } from '../components/primitives/Section';
-import { SectionHeader } from '../components/primitives/SectionHeader';
-import { BentoGrid, BentoTile } from '../components/primitives/BentoGrid';
-import { BlogCard } from '../blog/BlogCard';
-import { BlogCardSkeleton } from '../blog/BlogCardSkeleton';
+import { HERO_MEASURE, SectionHeader } from '../components/primitives/SectionHeader';
+import { NeuButton } from '../components/primitives/NeuButton';
+import { AnimateOnScroll } from '../components/common/AnimateOnScroll';
+import { LeadPost, PostCard, PostCardSkeleton } from '../blog/PostCard';
 import { BlogEmptyState } from '../blog/BlogEmptyState';
-import { CompactPostCard, FeaturedPostCard, TextPostCard, VerticalPostCard } from '../blog/BentoCards';
-import { layoutPuzzle, type PuzzleShape } from '../blog/puzzleLayout';
 import { useBlogIndex } from '../blog/useBlog';
 import { DEFAULT_SECTION, SECTION_OG_IMAGE, sectionPath } from '../blog/sections';
 import type { PostSection, PostSectionProps } from '../blog/sections';
-import { neuGrid, srOnly } from '../theme/neu';
+import { srOnly } from '../theme/neu';
+import { soft } from '../theme/tokens';
 import type { BlogPostSummary } from '../blog/types';
 import { Seo } from '../seo/Seo';
 import { breadcrumbList, homeCrumb, organization, sectionCrumb, webPage, webSite } from '../seo/jsonld';
@@ -22,77 +23,87 @@ import { absoluteUrl } from '../seo/site';
 /** Each section index's Schema.org page type. */
 const SECTION_PAGE_TYPE: Record<PostSection, string> = { blog: 'Blog', research: 'CollectionPage' };
 
-/** The 1×1 slot: the text tile plus the post's cover, which every other slot of the puzzle already shows. */
-const StandardPostCard: typeof CompactPostCard = (props) => <TextPostCard {...props} withCover />;
+/** How many cards the grid shows at first, and how many more each "See more" adds: three full rows. */
+const PAGE_SIZE = 9;
 
-const SHAPE_VARIANT: Record<PuzzleShape, typeof CompactPostCard> = {
-  tall: VerticalPostCard,
-  standard: StandardPostCard,
-  wide: CompactPostCard,
-};
+/** The grid: three columns of the home page's card, the same gaps as its bands. */
+const gridSx = {
+  listStyle: 'none',
+  m: 0,
+  p: 0,
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' },
+  columnGap: { sm: 4, lg: 5 },
+  rowGap: { xs: 5, md: 7 },
+} as const;
 
 /**
- * Two alternative grids, not a fallback chain: exactly one is ever in the
- * accessibility tree (`display: none` removes it, unlike `visibility`),
- * switched by breakpoint in CSS rather than `useMediaQuery` — consistent with
- * how every other responsive span in this codebase is done. The puzzle's
- * explicit column/row placement assumes the 3-column desktop grid, so tablet
- * and below get the plain stacked grid instead of trying to reflow it.
- *
- * Both stay mounted on purpose. The page is prerendered and hydrated, and a
- * `useMediaQuery` switch would render one grid on the server and possibly the
- * other on the client — a hydration mismatch and a layout shift on first
- * paint. The cost is that every post title is in the DOM twice; both copies
- * are proper `<h2>`s under the page's `<h1>`, so the outline reads the same
- * whichever grid a viewport shows.
+ * Every post after the lead, a page at a time. "See more" adds the next page
+ * and moves focus to the first card it revealed, so a keyboard or screen
+ * reader user lands on the new posts instead of on a button that may be gone.
  */
-const BlogPuzzleGrid = ({ posts }: { posts: BlogPostSummary[] }) => {
-  const [hero, second, ...bandPosts] = posts;
-  const layout = layoutPuzzle(posts.length);
+const PostGrid = ({ posts, heading }: { posts: BlogPostSummary[]; heading: string }) => {
+  const { t } = useTranslation('pages');
+  const [shown, setShown] = useState(PAGE_SIZE);
+  const firstRevealed = useRef<number | null>(null);
+  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  useEffect(() => {
+    if (firstRevealed.current === null) return;
+    linkRefs.current[firstRevealed.current]?.focus();
+    firstRevealed.current = null;
+  }, [shown]);
+
+  const visible = posts.slice(0, shown);
+  const remaining = posts.length - visible.length;
 
   return (
-    <>
-      <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-        <BentoGrid columns={3}>
-          <BentoTile col={layout.heroCol} row={layout.heroRow}>
-            <FeaturedPostCard post={hero} titleAs="h2" />
-          </BentoTile>
-          {layout.companion && second && (
-            <BentoTile col={layout.companion.col} row={layout.companion.row}>
-              <VerticalPostCard post={second} titleAs="h2" />
-            </BentoTile>
-          )}
-          {layout.bandTiles.map((tile, i) => {
-            const post = bandPosts[i];
-            const Variant = SHAPE_VARIANT[tile.shape];
-            return (
-              <BentoTile key={post.slug} col={tile.col} row={tile.row}>
-                <Variant post={post} titleAs="h2" />
-              </BentoTile>
-            );
-          })}
-        </BentoGrid>
-      </Box>
-
-      <Box
-        sx={{
-          display: { xs: 'grid', lg: 'none' },
-          gridTemplateColumns: { xs: '1fr', md: neuGrid.columns(2) },
-          gap: neuGrid.gap,
-          alignItems: 'stretch',
-        }}
+    <Box component="section" aria-labelledby="more-posts" sx={{ mt: { xs: 8, md: 12 } }}>
+      <Typography
+        id="more-posts"
+        component="h2"
+        sx={{ fontSize: { xs: '1.375rem', md: '1.625rem' }, fontWeight: 600, letterSpacing: '-0.015em', lineHeight: 1.25, color: soft.text, mb: { xs: 3, md: 4 } }}
       >
-        {posts.map((post) => (
-          <BlogCard key={post.slug} post={post} />
+        {heading}
+      </Typography>
+      <Box component="ul" role="list" sx={gridSx}>
+        {visible.map((post, i) => (
+          <Box component="li" key={post.slug}>
+            <AnimateOnScroll delay={(i % 3) * 60} stretch>
+              <PostCard
+                post={post}
+                linkRef={(el) => {
+                  linkRefs.current[i] = el;
+                }}
+              />
+            </AnimateOnScroll>
+          </Box>
         ))}
       </Box>
-    </>
+      {remaining > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 6, md: 8 } }}>
+          <NeuButton
+            tone="raised"
+            startIcon={<AddIcon aria-hidden />}
+            onClick={() => {
+              firstRevealed.current = shown;
+              setShown((n) => n + PAGE_SIZE);
+            }}
+          >
+            {t('blog.seeMore')}
+          </NeuButton>
+        </Box>
+      )}
+    </Box>
   );
 };
 
 /**
- * `/blog` and `/research` — the card grid of one section (`section`, default
- * `blog`): general articles and company news, or research notes.
+ * `/blog` and `/research` — one section's posts (`section`, default `blog`):
+ * general articles and company news, or research notes. Laid out like the
+ * home page: a left-aligned heading on the plain ground, the newest post
+ * across the page, then every other post as the home page's card, three to a
+ * row, with "See more" once there are more than three rows.
  *
  * Posts are Markdown files in `landing/content/blog/`, published as static JSON
  * under `blog/` on the CDN by `blog-publish.yml` (see `BLOG.md`); `section:` in
@@ -105,6 +116,7 @@ export const BlogPage = ({ section = DEFAULT_SECTION }: PostSectionProps) => {
   const index = useBlogIndex();
   const status = index.status;
   const posts = index.posts.filter((post) => post.section === section);
+  const [lead, ...rest] = posts;
   const ogImage = SECTION_OG_IMAGE[section];
 
   return (
@@ -129,45 +141,42 @@ export const BlogPage = ({ section = DEFAULT_SECTION }: PostSectionProps) => {
       <Header />
 
       <Box component="main" id="content">
-        {/* Hero */}
-        <Section tone="hero" size="sm" sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 8 } }}>
-          <SectionHeader
-            level="h1"
-            title={t(`${section}.hero.title`)}
-            description={t(`${section}.hero.subtitle`)}
-          />
-        </Section>
+        <Section size="lg" sx={{ minHeight: '60vh' }}>
+          <Box sx={{ maxWidth: HERO_MEASURE }}>
+            <SectionHeader
+              level="h1"
+              hero={false}
+              gutter={false}
+              align="left"
+              title={t(`${section}.hero.title`)}
+              description={t(`${section}.hero.subtitle`)}
+            />
+          </Box>
 
-        {/* Grid */}
-        <Section tone="ink" size="md" maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, minHeight: '40vh' }}>
-          {status === 'loading' && (
-            <Box role="status">
-              <Box sx={srOnly}>{t('blog.loading')}</Box>
-              <Box
-                aria-hidden="true"
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: neuGrid.columns(2) },
-                  gap: neuGrid.gap,
-                }}
-              >
-                {Array.from({ length: 6 }, (_, i) => (
-                  <BlogCardSkeleton key={i} />
-                ))}
+          <Box sx={{ mt: { xs: 6, md: 9 } }}>
+            {status === 'loading' && (
+              <Box role="status">
+                <Box sx={srOnly}>{t('blog.loading')}</Box>
+                <Box component="ul" role="list" aria-hidden sx={gridSx}>
+                  {Array.from({ length: 3 }, (_, i) => (
+                    <Box component="li" key={i}>
+                      <PostCardSkeleton />
+                    </Box>
+                  ))}
+                </Box>
               </Box>
-            </Box>
-          )}
+            )}
 
-          {status !== 'loading' && posts.length === 0 && <BlogEmptyState status={status} />}
+            {status !== 'loading' && posts.length === 0 && <BlogEmptyState status={status} />}
 
-          {/* A lone post would span the whole xl container, its cover ~780px
-              tall; capped, it reads as one article under the centred hero.
-              Today that is Research, which has a single note. */}
-          {posts.length > 0 && (
-            <Box sx={posts.length === 1 ? { maxWidth: 960, mx: 'auto' } : undefined}>
-              <BlogPuzzleGrid posts={posts} />
-            </Box>
-          )}
+            {lead && (
+              <AnimateOnScroll>
+                <LeadPost post={lead} />
+              </AnimateOnScroll>
+            )}
+
+            {rest.length > 0 && <PostGrid posts={rest} heading={t(`${section}.index.more`)} />}
+          </Box>
         </Section>
       </Box>
 

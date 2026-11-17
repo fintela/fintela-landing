@@ -1,18 +1,18 @@
 {
-  "tagline": "Create investment strategies across global markets, in a single, AI native, cloud, quant finance ecosystem.",
+  "tagline": "Quant research infrastructure your AI can operate: build, optimize and validate strategies in one cloud platform.",
   "columns": {
     "product": {
       "title": "Product",
       "links": {
-        "platform": "Platform",
-        "fintelagent": "Fintelligent",
+        "fintelagent": "Artificial Intelligence",
         "useCases": "Use cases",
         "pricing": "Pricing",
-        "capabilities": "Capabilities",
+        "capabilities": "Optimization engine",
         "funds": "For hedge funds",
         "teams": "For quant teams",
         "independents": "For independent quants",
-        "advisors": "For financial advisors"
+        "advisors": "For financial advisors",
+        "platform": "Platform"
       }
     },
     "resources": {
@@ -31,7 +31,9 @@
       "title": "Company",
       "links": {
         "contact": "Contact",
-        "faq": "FAQ"
+        "faq": "FAQ",
+        "methodology": "Methodology",
+        "security": "Security"
       }
     }
   },

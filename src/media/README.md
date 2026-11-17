@@ -20,9 +20,6 @@ and warns about files that are deployed but never played.
 
 | File | Where it plays | Encode (from `media-masters/`) |
 |---|---|---|
-| `hero-backdrop-1280.mp4` | Home hero backdrop on viewports ≥ 1024 px — the promo loop cropped to 1920×880 (36 s), scaled to 1280 | `hero-backdrop-1920.mp4` → H.264 crf 28, preset slow, 2.1 MB |
-| `hero-backdrop-960.mp4` | Home hero backdrop from 600 to 1023 px | same master → 960 wide, crf 30, 1.1 MB |
-| *(no file)* | Below 600 px, under reduced motion or on a 2g/3g/Save-Data connection the hero shows only its poster; the 1920 master (5.0 MB, once served to every visitor) is no longer deployed — a blurred backdrop behind copy never needed it | — |
 | `platform-home-loop.mp4` | Home platform band — the platform home scrolled once, top to bottom and back (1280×800, padded to 16/10 in the app's page colour, 7 s) | `platform-home-loop.mp4` (from `home.mp4`) → crf 26, 473 KB (was 1.3 MB) |
 | `platform-home.mp4` | Solutions "Platform tour" chapters — the portfolios dashboard, risk charts, the promote menu and the analysis report (1600×868, 36 s). **No chapter uses it today** (check-media warns); kept, untouched, for when one does | `portfolios.mp4`, as recorded (13 MB) |
 | `feature-walkthrough.mp4` | Home "Capabilities" bento — markets: pulse, ticker, groups, screener (1600×870, 21 s) | `feature-walkthrough.mp4` (from `markets.mp4`) → crf 27, 710 KB (was 3.4 MB) |
@@ -68,44 +65,44 @@ never upscales, so a rung wider than the file is clamped to it:
 
 | Still | Widths | Slot |
 |---|---|---|
-| `hero/backdrop-poster.jpg` | 828 · 1280 · 1920 | Home hero, 100vw — the LCP image, preloaded (AVIF) from `HeroVideoBackdrop` |
+| `hero/thesis-to-edge-poster.jpg` | 640 · 1280 | Home hero film's poster, 16/9: the frame at 6.3 s of `media-masters/thesis-to-edge.mp4`. The home page's largest image above the fold (`priority`), and all a visitor who prefers reduced motion sees until they press play |
 | `hero/platform-home-poster.jpg` | 768 · 1280 | Platform band plate, 16/10 |
 | `capabilities/walkthrough-poster.jpg` | 560 · 1120 | Capabilities bento player, 16/10 |
 | `capabilities/live-ops.jpg` | 260 · 520 | Capabilities bento tile, 3/2 |
 | `awards/hedgeweek-2026-ceremony.jpg` | 640 · 1280 | Home award band, 4/3 |
-| `fintelligent/agents-poster.jpg` | 640 · 1280 | Fintelligent band and solution chapter, 16/9 |
 | `audiences/*.jpg` | 560 · 1120 (→ 800) | Home audience dossier; 800×1000 portraits in a 16/9 well, framed with `objectPosition` |
-| `solutions/*-hero.jpg` | 800 · 1600 | Solution page hero, 16/10 — that page's LCP (`priority`) |
-| `solutions/chapters/*.jpg` | 660 · 1280 | Solution chapters, 16/9 |
+| `solutions/*-hero.jpg` | not in the pipeline | Read from disk by `scripts/og/render.mjs` as the four solution OG cards' backgrounds; no page renders them |
 | `tour/platform-home-poster.jpg` | 800 · 1600 | Poster of the unused platform tour |
 
 Encodes are cached in `node_modules/.cache/imagetools`; a cold build encodes
-all 48 outputs in a few seconds. Blog covers are not part of this pipeline
+every output in a few seconds. Blog covers are not part of this pipeline
 (they are copied by `vite-plugin-content.ts` and rendered as plain `<img>`).
 
 ## Photographs
 
 The stills that are not product frames, cropped from the originals under
 `finte_media_v2` to their slot's ratio (`src/media/registry.ts` says where each
-one is placed; a file is placed exactly once). The prominent slots — the home
-audience dossier and the three solution heroes — carry the black-and-white
-"featured" set; colour is reserved for the elements that had no photograph
-of their own (the Fintelligent poster, blog covers).
+one is placed; a file is placed exactly once). The home audience dossier carries
+the black-and-white "featured" set; colour is reserved for the elements that
+had no photograph of their own (blog covers).
+
+The solution pages carry no photographs and no frames from a real workspace.
+Their visuals are coded pieces or diagrams, each badged, until element-level
+captures from a fictional demo organisation exist; only those may enter this
+repo (docs/redesign/SOLUTIONS-PLAN.md, section 5).
 
 | File | Slot | Source |
 |---|---|---|
-| `solutions/funds-hero.jpg` | `/solutions/hedge-funds` hero, 16/10 | Unsplash, Xingchen Yan (`rGFNwdyCwHM`) |
-| `solutions/teams-hero.jpg` | `/solutions/quant-teams` hero, 16/10 | Unsplash, Hassan Pasha (`nEbMedmVwgw`) |
-| `solutions/independents-hero.jpg` | `/solutions/independent-quants` hero, 16/10 | Unsplash, Piotr Makowski (`27LH_0jXKYI`) |
+| `solutions/funds-hero.jpg` | `/solutions/hedge-funds` OG card background, 16/10 | Unsplash, Xingchen Yan (`rGFNwdyCwHM`) |
+| `solutions/teams-hero.jpg` | `/solutions/quant-teams` OG card background, 16/10 | Unsplash, Hassan Pasha (`nEbMedmVwgw`) |
+| `solutions/independents-hero.jpg` | `/solutions/independent-quants` OG card background, 16/10 | Unsplash, Piotr Makowski (`27LH_0jXKYI`) |
 | `solutions/advisors-hero.jpg` | `/solutions/financial-advisors` OG card background, 16/10 | Fintela asset library (`assets-fintela-landing-page/finance_adv.jpg`) |
-| `solutions/advisors-hero-consult.jpg` | `/solutions/financial-advisors` hero plate, 4/5 | Fintela asset library (`assets-fintela-landing-page/finance_advisor.jpeg`), different crop from the audience dossier photo below |
 | `audiences/funds.jpg` | Home audience dossier, funds seat — file is 4/5, slot is now 16/9 (see Stills) | Unsplash, Sebastian Schuster (`pfnB1BMq_rY`) |
 | `audiences/teams.jpg` | Home audience dossier, teams seat — file is 4/5, slot is now 16/9 (see Stills) | Unsplash, trianglemz (`iKi_u-febwU`) |
 | `audiences/independents.jpg` | Home audience dossier, independents seat — file is 4/5, slot is now 16/9 (see Stills) | Unsplash, Tai Bui (`dw4WegQZEYc`) |
 | `audiences/advisors.jpg` | Home audience dossier, advisors seat — file is 4/5, slot is now 16/9 (see Stills) | Fintela asset library (`assets-fintela-landing-page/finance_advisor.jpeg`) |
 | `capabilities/live-ops.jpg` | Home capabilities bento, live-trading tile, 3/2 | Pixabay, harryloya (`3033135`) |
 | `awards/hedgeweek-2026-ceremony.jpg` | Home award band, 4/3, in colour (an event photo, not one of the stock seats) | Hedgeweek US Awards 2026 press kit, photographer's `DSC05424.jpg`, cut 4/3 around both people; the award post's cover is the kit's other frame, `DSC05425.jpg` |
-| `fintelligent/agents-poster.jpg` | Fintelligent player poster until the recording exists, 16/9 | Unsplash, Alina Grubnyak (`ZiQkhI7417A`) |
 | `content/blog/covers/welcome-to-the-fintela-blog.jpg` | Blog cover and lead image | Unsplash, Lukas Blazek (`mcSDtbWXUZU`) |
 | `content/blog/authors/myrna-ortiz.png` | Author portrait for Myrna Ortiz's share-image badge and byline face (see BLOG.md, "Preview images") | Supplied by Fintela, background removed |
 | `content/blog/authors/ivan-buda.png` | Author portrait for Ivan Buda's share-image badge and byline face (see BLOG.md, "Preview images") | Supplied by Fintela, background removed, black and white |

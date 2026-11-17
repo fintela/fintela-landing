@@ -48,38 +48,41 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: fonts.sans,
+    // Two weights: 400 for text, 600 for headings and controls. The font
+    // faces in src/index.css only provide those two, so a heavier value
+    // anywhere else still renders as 600.
     h1: {
-      fontWeight: 800,
-      lineHeight: 1.05,
-      letterSpacing: '-0.035em',
+      fontWeight: 600,
+      lineHeight: 1.08,
+      letterSpacing: '-0.028em',
     },
     h2: {
-      fontWeight: 800,
-      lineHeight: 1.12,
-      letterSpacing: '-0.03em',
+      fontWeight: 600,
+      lineHeight: 1.15,
+      letterSpacing: '-0.022em',
     },
     h3: {
-      fontWeight: 800,
-      lineHeight: 1.18,
-      letterSpacing: '-0.025em',
-    },
-    h4: {
-      fontWeight: 700,
+      fontWeight: 600,
       lineHeight: 1.25,
-      letterSpacing: '-0.02em',
-    },
-    h5: {
-      fontWeight: 700,
-      lineHeight: 1.3,
       letterSpacing: '-0.015em',
     },
-    h6: {
-      fontWeight: 700,
+    h4: {
+      fontWeight: 600,
+      lineHeight: 1.3,
+      letterSpacing: '-0.012em',
+    },
+    h5: {
+      fontWeight: 600,
       lineHeight: 1.35,
       letterSpacing: '-0.01em',
     },
+    h6: {
+      fontWeight: 600,
+      lineHeight: 1.4,
+      letterSpacing: '-0.005em',
+    },
     subtitle1: {
-      fontWeight: 500,
+      fontWeight: 400,
       lineHeight: 1.5,
     },
     body1: {
@@ -95,7 +98,7 @@ export const theme = createTheme({
       letterSpacing: 0,
     },
     overline: {
-      fontWeight: 700,
+      fontWeight: 600,
       fontSize: '0.7rem',
       letterSpacing: '0.12em',
       textTransform: 'uppercase',

@@ -1,19 +1,17 @@
 {
   "nav": {
-    "product": "Solutions",
-    "samplers": "Optimizer",
-    "fintelagent": "AI",
-    "fintelaApi": "API",
+    "product": "Product",
+    "samplers": "Optimization Engine",
+    "fintelagent": "Artificial Intelligence",
+    "fintelaApi": "Fintela API",
     "useCases": "Use Cases",
     "pricing": "Pricing",
     "documentation": "Docs",
     "blog": "Blog",
     "research": "Research",
-    "solutions": "The Desk",
-    "mcp": "MCP"
-  },
-  "actions": {
-    "getStarted": "Get started"
+    "solutions": "Solutions",
+    "mcp": "Fintela MCP",
+    "platform": "Platform"
   },
   "aria": {
     "home": "Fintela home",
@@ -24,9 +22,9 @@
     "search": "Search"
   },
   "solutions": {
-    "funds": "Institutions",
-    "teams": "Quants",
-    "independents": "Traders",
+    "funds": "Hedge funds",
+    "teams": "Quant teams",
+    "independents": "Independent quants",
     "advisors": "Financial advisors"
   }
 }

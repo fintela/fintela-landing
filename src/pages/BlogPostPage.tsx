@@ -11,7 +11,7 @@ import { Groove } from '../components/primitives/Groove';
 import { ArticleSkeleton } from '../components/common/ArticleSkeleton';
 import { MarkdownContent } from '../blog/MarkdownContent';
 import { AuthorByline } from '../blog/AuthorByline';
-import { TextPostCard } from '../blog/BentoCards';
+import { PostCard } from '../blog/PostCard';
 import { formatContentDate } from '../content/format';
 import { useBlogIndex, useBlogPost } from '../blog/useBlog';
 import { blogAssetUrl, blogPostImageUrl } from '../blog/api';
@@ -273,15 +273,22 @@ const PostFooterNav = ({ post, posts }: { post: BlogPost; posts: BlogPostSummary
             {t('blog.related.title')}
           </Typography>
           <Box
+            component="ul"
+            role="list"
             sx={{
+              listStyle: 'none',
+              m: 0,
+              p: 0,
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: neuGrid.columns(Math.min(related.length, 3)) },
-              gap: neuGrid.gap,
-              alignItems: 'stretch',
+              columnGap: 4,
+              rowGap: 5,
             }}
           >
             {related.map((p) => (
-              <TextPostCard key={p.slug} post={p} titleAs="h3" />
+              <Box component="li" key={p.slug}>
+                <PostCard post={p} />
+              </Box>
             ))}
           </Box>
         </Box>

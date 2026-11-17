@@ -10,7 +10,9 @@ const initials = (name: string) => {
 };
 
 const SIZES = {
-  /** The cards: `/blog`, the home page's Insights band, related posts. */
+  /** The grid cards: `/blog`, `/research`, the home page's research band, related posts. */
+  xs: { avatar: 24, gap: 1, variant: 'body2', weight: 500 },
+  /** The lead post on `/blog` and `/research`, and the older bento cards. */
   sm: { avatar: 32, gap: 1, variant: 'body2', weight: 600 },
   /** The post's header. */
   md: { avatar: 44, gap: 1.25, variant: 'body1', weight: 700 },

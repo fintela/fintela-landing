@@ -1,18 +1,18 @@
 {
-  "tagline": "Diseña, optimiza y despliega estrategias de inversión en los mercados globales, en un único ecosistema de finanzas cuantitativas en la nube y nativo de IA.",
+  "tagline": "Infraestructura de investigación cuantitativa que tu IA puede operar: construye, optimiza y valida estrategias en una sola plataforma en la nube.",
   "columns": {
     "product": {
       "title": "Producto",
       "links": {
-        "platform": "Plataforma",
         "fintelagent": "Fintelligent",
         "useCases": "Casos de uso",
         "pricing": "Precios",
-        "capabilities": "Capacidades",
+        "capabilities": "Motor de optimización",
         "funds": "Para hedge funds",
         "teams": "Para equipos quant",
         "independents": "Para quants independientes",
-        "advisors": "Para asesores financieros"
+        "advisors": "Para asesores financieros",
+        "platform": "Plataforma"
       }
     },
     "resources": {
@@ -31,7 +31,9 @@
       "title": "Empresa",
       "links": {
         "contact": "Contacto",
-        "faq": "FAQ"
+        "faq": "FAQ",
+        "methodology": "Metodología",
+        "security": "Seguridad"
       }
     }
   },

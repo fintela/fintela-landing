@@ -30,7 +30,7 @@
         "toggle": "Book a walkthrough",
         "messageLabel": "Tell us about your desk",
         "messagePlaceholder": "The strategies you run, the markets you trade, and what you would like to see on the call.",
-        "submit": "Book the walkthrough"
+        "submit": "Book a walkthrough"
       }
     },
     "booking": {
@@ -44,7 +44,7 @@
     "hero": {
       "title": "Choose the plan that",
       "titleAccent": "fits your strategy",
-      "subtitle": "Every plan includes the full platform: connect any broker, register unlimited strategies and asset groups, and use our built-in fitness functions and risk managers. Move up when you need more tokens, storage, or AI power, and talk to our team directly for a custom Institutional plan."
+      "subtitle": "Every plan includes the full platform: connect your brokerage account, register unlimited strategies and asset groups, and use our built-in fitness functions and risk managers. Move up when you need more tokens, storage, or AI power, and talk to our team directly for a custom Institutional plan."
     },
     "individual": {
       "title": "Plans",
@@ -70,13 +70,12 @@
             "8,600 tokens/mo",
             "20 GB storage",
             "Standard AI access",
-            "Connect any broker",
+            "Connect your brokerage account",
             "Register unlimited strategies & asset groups",
             "Built-in asset groups, strategies, fitness functions, and risk managers"
           ],
           "overageRate": "$0.018/token",
-          "support": "Email support",
-          "cta": "Get started"
+          "support": "Email support"
         },
         "quant": {
           "name": "Quant",
@@ -97,8 +96,7 @@
             "Unlimited optimizations"
           ],
           "overageRate": "$0.015/token",
-          "support": "Email + chat support",
-          "cta": "Get started"
+          "support": "Email + chat support"
         },
         "institutional": {
           "name": "Institutional",
@@ -118,8 +116,7 @@
             "2-seat minimum, billed per seat"
           ],
           "overageRate": "$0.0125/token",
-          "support": "Dedicated CSM + SLA",
-          "cta": "Get started"
+          "support": "Dedicated CSM + SLA"
         },
         "custom": {
           "name": "Custom",
@@ -139,15 +136,14 @@
             "Custom seats & pricing"
           ],
           "overageRate": "Custom",
-          "support": "Dedicated CSM + SLA",
-          "cta": "Contact us"
+          "support": "Dedicated CSM + SLA"
         }
       }
     },
     "compare": {
       "title": "Compare",
       "titleAccent": "plans side by side",
-      "description": "Every plan connects any broker and includes unlimited strategies, asset groups, and the built-in fitness functions and risk managers. Higher tiers raise your token pool and storage, unlock deeper optimization and analysis tools, and Institutional adds organization-wide workspace, branding, and support.",
+      "description": "Every plan connects to your brokerage account and includes unlimited strategies, asset groups, and the built-in fitness functions and risk managers. Higher tiers raise your token pool and storage, unlock deeper optimization and analysis tools, and Institutional adds organization-wide workspace, branding, and support.",
       "caption": "What each plan includes",
       "featureColumn": "What's included",
       "included": "Included",
@@ -203,7 +199,7 @@
           "custom": "Dedicated CSM + SLA"
         },
         "connectBroker": {
-          "label": "Connect any broker"
+          "label": "Connect your brokerage account"
         },
         "unlimitedStrategies": {
           "label": "Register unlimited strategies and asset groups"
@@ -252,7 +248,6 @@
     "cta": {
       "title": "Not sure which plan fits?",
       "description": "Tell us what you're building and we'll point you to the right plan. We get back to you within 24 hours.",
-      "primary": "Talk to our team",
       "secondary": "Read the docs"
     }
   },
@@ -261,7 +256,11 @@
       "title": "Fintela Blog",
       "subtitle": "Articles, tutorials, practical guides and company news for quantitative finance and algorithmic trading."
     },
-    "readMore": "Read More",
+    "index": {
+      "more": "More articles"
+    },
+    "readMore": "Read more",
+    "seeMore": "See more",
     "readTime": "{{minutes}} min read",
     "backToBlog": "Back to Blog",
     "loading": "Loading articles…",
@@ -291,6 +290,9 @@
     "hero": {
       "title": "Fintela Research",
       "subtitle": "Research notes from the Fintela team: strategies built and tested on the platform, checked against the academic research behind them, caveats included."
+    },
+    "index": {
+      "more": "More research"
     },
     "backToResearch": "Back to Research"
   },
@@ -1265,12 +1267,12 @@
   },
   "seo": {
     "home": {
-      "title": "Fintela | AI-Native Quant Platform for Trading Strategies",
-      "description": "Build, backtest, optimize and deploy quantitative trading strategies in one cloud platform. Intelligent optimization and broker-connected execution."
+      "title": "Fintela | Quant research infrastructure your AI can operate",
+      "description": "Build a strategy, optimize it across thousands of trials and test it on held-out data, in one cloud platform. Use the built-in assistant or your own agent."
     },
     "pricing": {
       "title": "Pricing & Plans | Fintela",
-      "description": "Every plan includes the full platform: any broker, unlimited strategies, fitness functions and risk managers. Compare Trader, Quant and Institutional."
+      "description": "Every plan includes the full platform: a brokerage connection, unlimited strategies, fitness functions and risk managers. Compare Trader, Quant and Institutional."
     },
     "contactWalkthrough": {
       "title": "Book a Walkthrough | Fintela",
@@ -1318,7 +1320,6 @@
     "title": "Fintela speaks MCP.",
     "titleAccent": "So does your agent.",
     "description": "Fintela MCP is our server for the Model Context Protocol (MCP), the open standard AI agents use to connect to other tools. Through it, the agent your team already works with reads overfitting verdicts, tests your strategy server against our contract and proposes studies. Your strategy never leaves your servers, and nothing runs or costs a token until a person on your team confirms it.",
-    "ctaPrimary": "Get started",
     "ctaSecondary": "Read the setup guide",
     "pilotNote": "Open to every organization. Studies are charged in tokens, as they are in the app.",
     "steps": {
@@ -1513,5 +1514,157 @@
     },
     "closingLine": "Fintela doesn't replace the stack you built. It becomes the part of it that tells you whether a result is real.",
     "note": "Fintela MCP works for every organization. Sign in with your Fintela account, connect your agent and confirm its proposals in the app."
+  },
+  "platform": {
+    "seo": {
+      "title": "The Fintela Pipeline: universe to live execution | Fintela",
+      "description": "The five connected stages behind every Fintela study: asset groups, strategies, studies, candidates and live execution, each feeding the next in one cloud workspace."
+    },
+    "docsLink": "Read the end-to-end workflow in the docs",
+    "closing": {
+      "title": "Run your first study.",
+      "body": "Start with one universe and one strategy, and see what holds up on data the search never saw. You decide what goes live."
+    }
+  },
+  "methodology": {
+    "seo": {
+      "title": "Methodology: how results are recorded and judged | Fintela",
+      "description": "What Fintela saves, what the search is allowed to see, how a candidate gets its overfitting verdict, how trading costs are applied, and what the platform does not do."
+    },
+    "eyebrow": "Methodology",
+    "title": "How a result is recorded, held out and judged.",
+    "description": "A backtest is only worth what you can check about it. This page states what Fintela does at each step, with the documentation behind every statement.",
+    "sections": {
+      "recorded": {
+        "title": "Every trial on record",
+        "body": [
+          "Everything is saved as it is produced: every trial and its results, equity curves, holdings and transactions. There is no separate save step.",
+          "A study takes a frozen snapshot of its setup at launch. Promoting a trial takes a complete copy of the strategy’s code and parameters, its assets, its fitness and risk settings and its date ranges, and from that moment the copy does not change."
+        ],
+        "links": {
+          "architecture": "Docs: your work and data",
+          "promoted": "Docs: promoted portfolios"
+        }
+      },
+      "isolation": {
+        "title": "Out-of-sample isolation",
+        "body": [
+          "A study splits one window of history into three periods: train, validation and out-of-sample. The optimizer only ever sees train. Validation is reported but never influences the search.",
+          "The out-of-sample period is on by default. It holds back the last slice of the window and never optimizes on it, so there is one stretch the search has not seen. You judge it once, at the end."
+        ],
+        "links": {
+          "studies": "Docs: studies and date splits"
+        }
+      },
+      "verdict": {
+        "title": "What the overfitting verdict contains",
+        "body": [
+          "When a study finishes its robustness scoring, each candidate gets one of four verdicts: Well Trained, Borderline, Overfit Risk or Insufficient Data. The verdict is built from the deflated Sharpe ratio, the study’s probability of backtest overfitting (PBO) and how sharply performance degrades from training to out of sample.",
+          "The study as a whole gets a verdict too. A PBO above 50% marks the whole search as Overfit Risk, whatever the individual trials say: it means the selection process itself overfits the data.",
+          "The verdict helps identify potential overfitting. It does not predict live results."
+        ],
+        "links": {
+          "results": "Docs: judging whether a result is real",
+          "research": "Research: the deflated Sharpe ratio"
+        }
+      },
+      "costs": {
+        "title": "Trading costs",
+        "body": [
+          "Simulated trades pay a cost: 10 bps on US equities, 30 bps on crypto and 5 bps on FX, and a mixed universe pays the highest rate. A study can also be run without costs, to measure how much of a result depends on the cost model.",
+          "A track record reports the cost rate it was charged and marks itself frictionless when any stretch of it carried no costs."
+        ],
+        "links": {
+          "engine": "The simulation engine",
+          "baskets": "Docs: track records and trading costs"
+        }
+      },
+      "limits": {
+        "title": "What Fintela does not do",
+        "body": [
+          "There is no seed setting. TPE, CMA-ES, Random, QMC and NSGA-II explore a different sequence of trials on every run, so launching the same study again does not repeat it trial for trial. What is kept is the record of the trials that ran.",
+          "There is no walk-forward or rolling re-optimization. A study uses one train, validation and out-of-sample split of one contiguous window.",
+          "Index membership can be evaluated at a point in time when you build a universe. Once saved, a group is a snapshot: it does not keep tracking the index."
+        ],
+        "links": {
+          "samplers": "Docs: reproducibility and randomness",
+          "assetGroups": "Docs: point-in-time universes"
+        }
+      }
+    },
+    "closing": {
+      "title": "Check it on your own strategy.",
+      "body": "Run a study and read its verdict, or walk through the method with the team that built it."
+    }
+  },
+  "security": {
+    "seo": {
+      "title": "Security: where your code and data live | Fintela",
+      "description": "What runs inside Fintela and what can stay on your own servers, who can see your work, how credentials are stored and what the AI is allowed to do."
+    },
+    "eyebrow": "Security",
+    "title": "Where your code and data live.",
+    "description": "This page states what the product documentation states, in plain terms, and links to it. It makes no claim beyond that.",
+    "sections": {
+      "yourCode": {
+        "title": "Your code: in Fintela, or on your servers",
+        "body": [
+          "Strategies written in Fintela run in an isolated space with no access to Fintela’s internal systems or credentials. They see only the market data and inputs handed to them for that run.",
+          "In external mode your code and data stay on your own infrastructure. You point a strategy, fitness function or risk manager at an endpoint you run; Fintela stores its address and the limits you set, sends parameters and reads back the answer.",
+          "Use an https address for that endpoint. A plain http address is accepted with a warning, and what travels over it is not encrypted."
+        ],
+        "links": {
+          "architecture": "Docs: how your code runs",
+          "external": "Docs: external strategies"
+        }
+      },
+      "organization": {
+        "title": "Scoped to your organization",
+        "body": [
+          "Your data is scoped to your organization: what you can see, your team can see, narrowed by the roles your organization sets and the features your plan includes.",
+          "The Developer API is read-only and uses a personal access key. A resource that belongs to another organization answers as if it did not exist."
+        ],
+        "links": {
+          "architecture": "Docs: signing in and how data is shared",
+          "api": "Docs: API authentication"
+        }
+      },
+      "credentials": {
+        "title": "Credentials",
+        "body": [
+          "Broker credentials are encrypted before they are stored, and Fintela never shows them again once entered: not to you, and not to Fintela support.",
+          "A credential for your own strategy server is typed into the app, never passed through an AI agent. It is stored encrypted and sent only to your server."
+        ],
+        "links": {
+          "live": "Docs: broker connections",
+          "agent": "Docs: protecting your strategy server"
+        }
+      },
+      "ai": {
+        "title": "What the AI can and cannot do",
+        "body": [
+          "Fintelligent sees only what you can see in your organization. Nothing is saved, launched or spent until you confirm it. Fintela operates it using third-party AI providers such as DeepSeek and Anthropic, and you choose which one.",
+          "Through Fintela MCP, your own agent can read your studies and verdicts, check a strategy server you run and file proposals. It cannot create anything, spend tokens, trade or reach a broker; a person confirms each proposal in the app."
+        ],
+        "links": {
+          "fintelligent": "Docs: Fintelligent",
+          "agent": "Docs: connect your agent",
+          "privacy": "Privacy notice"
+        }
+      },
+      "more": {
+        "title": "For your security review",
+        "body": [
+          "This page covers what the product documentation states. If your review needs more than that, such as hosting, encryption or compliance details, ask us and we will answer in writing."
+        ],
+        "links": {
+          "contact": "Contact us"
+        }
+      }
+    },
+    "closing": {
+      "title": "Bring your security questions.",
+      "body": "A walkthrough with the team that built the platform is the fastest way to cover your review."
+    }
   }
 }
