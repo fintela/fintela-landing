@@ -1,38 +1,42 @@
-import { useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Section } from '../primitives/Section';
 import { MEASURE, SectionHeader } from '../primitives/SectionHeader';
-import { fonts, motion, soft } from '../../theme/tokens';
+import { fonts, soft } from '../../theme/tokens';
 import { quietLinkSx } from '../../theme/neu';
 import { HEADER_OFFSET } from '../../lib/scrollToSection';
 import { useMediaMatch } from '../../lib/useMediaMatch';
+import type { SceneTime } from '../isoKit/timeline';
 import { CreateInvestingStrategy } from '../createInvestingStrategy/CreateInvestingStrategy';
+import { TOTAL as BUILD_TOTAL } from '../createInvestingStrategy/beats';
 import { OptimizeStudy } from '../optimizeStudy/OptimizeStudy';
+import { TOTAL as OPTIMIZE_TOTAL } from '../optimizeStudy/beats';
 import { ValidateStudy } from '../validateStudy/ValidateStudy';
+import { TOTAL as VALIDATE_TOTAL } from '../validateStudy/beats';
 import { LaunchToLive } from '../launchToLive/LaunchToLive';
+import { TOTAL as DEPLOY_TOTAL } from '../launchToLive/beats';
+import { pinLength, useStepScrub } from './useStepScrub';
 
 const STEPS = ['build', 'optimize', 'validate', 'deploy'] as const;
 
+/** Each step's piece, in seconds of choreography, and so how long its frame stays pinned. */
+const TOTALS = [BUILD_TOTAL, OPTIMIZE_TOTAL, VALIDATE_TOTAL, DEPLOY_TOTAL] as const;
+
 /**
- * Where the canvas pins: wide and tall enough for the text and a visual side
- * by side under the header, on a screen, and only for visitors who have not
- * asked for less motion. Everywhere else — phones, short windows, print,
- * reduced motion — the three steps simply follow each other, each with its
- * visual under it.
+ * Where the steps pin: wide and tall enough for the text and a visual side by side
+ * under the header, on a screen, and only for visitors who have not asked for less
+ * motion. Everywhere else — phones, short windows, print, reduced motion — the steps
+ * simply follow each other, each with its visual under it, and each visual plays once
+ * as it comes into view.
  */
 const PIN_QUERY = 'screen and (min-width: 900px) and (min-height: 680px) and (prefers-reduced-motion: no-preference)';
 const PIN = `@media ${PIN_QUERY}`;
-/**
- * How tall each step's stretch of scroll is while the canvas is pinned, and so
- * how tall the canvas is: the two are the same height, so the canvas lines up
- * with the first step's text when it sticks and with the last step's text when
- * it lets go, and the last visual leaves the screen together with its text
- * instead of being cut off mid-step. Never shorter than the tallest visual.
- */
-const STEP_H = 'max(64vh, 580px)';
+/** A pinned frame fills the screen under the header, so its visual sits in the middle of it. */
+const FRAME_H = `calc(100vh - ${HEADER_OFFSET}px)`;
+/** The connector, as wide as the pen that draws it. */
+const LINE = { width: 2, tip: 8 };
 
 const H = 'how';
 
@@ -40,26 +44,24 @@ const MODELS = ['Claude', 'ChatGPT', 'Gemini', 'DeepSeek'];
 const BROKERS = ['Alpaca', 'Northgate', 'Meridian', 'Kestrel'];
 
 /** Build: the strategy being written, by whichever model is plugged in. */
-const BuildVisual = ({ pinned, on }: { pinned: boolean; on: boolean }) => {
+const BuildVisual = ({ time }: { time?: SceneTime }) => {
   const { t } = useTranslation('home');
-  if (pinned && !on) return null;
-  return <CreateInvestingStrategy names={MODELS} landOn={0} label={t(`${H}.anim.strategy`)} />;
+  return <CreateInvestingStrategy names={MODELS} landOn={0} label={t(`${H}.anim.strategy`)} time={time} />;
 };
 
 /** Optimize: the trials searching a heat map, closing on the best zone. */
-const OptimizeVisual = ({ pinned, on }: { pinned: boolean; on: boolean }) => {
+const OptimizeVisual = ({ time }: { time?: SceneTime }) => {
   const { t } = useTranslation('home');
-  if (pinned && !on) return null;
-  return <OptimizeStudy label={t(`${H}.anim.study`)} detail={t(`${H}.anim.detail`)} />;
+  return <OptimizeStudy label={t(`${H}.anim.study`)} detail={t(`${H}.anim.detail`)} time={time} />;
 };
 
 /** Validate: the held-out report, with its statistics and verdict. */
-const ValidateVisual = ({ pinned, on }: { pinned: boolean; on: boolean }) => {
+const ValidateVisual = ({ time }: { time?: SceneTime }) => {
   const { t } = useTranslation('home');
-  if (pinned && !on) return null;
   const k = (n: string) => t(`${H}.anim.validateStudy.${n}`);
   return (
     <ValidateStudy
+      time={time}
       title={k('title')}
       train={k('train')}
       validation={k('validation')}
@@ -78,11 +80,11 @@ const ValidateVisual = ({ pinned, on }: { pinned: boolean; on: boolean }) => {
 };
 
 /** Deploy: launched to a broker, live. */
-const DeployVisual = ({ pinned, on }: { pinned: boolean; on: boolean }) => {
+const DeployVisual = ({ time }: { time?: SceneTime }) => {
   const { t, i18n } = useTranslation('home');
-  if (pinned && !on) return null;
   return (
     <LaunchToLive
+      time={time}
       brokers={BROKERS}
       landOn={0}
       liveLabel={t(`${H}.anim.live`)}
@@ -93,39 +95,77 @@ const DeployVisual = ({ pinned, on }: { pinned: boolean; on: boolean }) => {
   );
 };
 
+const VISUALS = { build: BuildVisual, optimize: OptimizeVisual, validate: ValidateVisual, deploy: DeployVisual };
+
 /**
- * Section 3, how it works: Build, Optimize, Validate. Each step is one
- * sentence, one technical proof line and one visual; the full five-stage
- * pipeline is one click away on the Platform page.
+ * Half the line from one step's visual to the next: the tail runs from under a visual
+ * to the bottom of its frame, the head from the top of the next frame to its visual.
+ * Pinned frames are centred, so the two halves are the same length and meet where one
+ * track ends and the next begins. `useStepScrub` draws them; only pinned layouts have them.
+ */
+const Connector = ({ part, segmentRef }: { part: 'head' | 'tail'; segmentRef: (el: HTMLElement | null) => void }) => (
+  <Box
+    ref={segmentRef}
+    aria-hidden
+    sx={{
+      display: 'none',
+      [PIN]: {
+        display: 'block',
+        position: 'absolute',
+        left: '50%',
+        width: 0,
+        // The gap between the visual and its frame's edge: the visual's own height is `100%`.
+        height: `calc((${FRAME_H} - 100%) / 2)`,
+        ...(part === 'head' ? { bottom: '100%' } : { top: '100%' }),
+      },
+    }}
+  >
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: -LINE.width / 2,
+        width: LINE.width,
+        height: '100%',
+        background: soft.text,
+        transformOrigin: 'top',
+        transform: 'scaleY(0)',
+      }}
+    />
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: -LINE.tip / 2,
+        width: LINE.tip,
+        height: LINE.tip,
+        borderRadius: '50%',
+        background: soft.text,
+        transform: 'translateY(-50%)',
+        opacity: 0,
+      }}
+    />
+  </Box>
+);
+
+/**
+ * Section 3, how it works: Build, Optimize, Validate, Deploy. Each step is one
+ * sentence, one technical proof line and one visual; the full pipeline is one click
+ * away on the Platform page.
  *
- * Where there is room (PIN_QUERY) the visuals share one canvas pinned beside
- * the text: the three steps scroll past on the left and the canvas shows the
- * visual of whichever step is at the middle of the screen. It is plain
- * `position: sticky` over the page's own scroll — the wheel, keys, scrollbar
- * and touch all drive it and nothing is hijacked. The layout is CSS over one
- * DOM (text, visual, text, visual…), so the prerendered page carries all
- * three steps and their visuals in reading order whatever the screen.
+ * Where there is room (PIN_QUERY) each step pins as a frame filling the screen, text
+ * beside its visual, and the scroll plays that visual: forwards on the way down, back
+ * on the way up, holding the page until it has finished. As the frame lets go, a line
+ * draws down from its visual and lands on the next one just as that frame pins, so the
+ * steps read as one chain. It is plain `position: sticky` over the page's own scroll;
+ * nothing is hijacked. The layout is CSS over one DOM (text, visual, text, visual…), so
+ * the prerendered page carries every step and its visual in reading order whatever the
+ * screen.
  */
 export const HowItWorks = () => {
   const { t } = useTranslation('home');
   const pinned = useMediaMatch(PIN_QUERY);
-  const [active, setActive] = useState(0);
-  const textRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  // The step whose text crosses the middle of the screen is the one on the canvas.
-  useEffect(() => {
-    if (!pinned) return undefined;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) setActive(textRefs.current.indexOf(entry.target as HTMLDivElement));
-        }
-      },
-      { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
-    );
-    textRefs.current.forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
-  }, [pinned]);
+  const { times, trackRef, tailRef, headRef } = useStepScrub(TOTALS, pinned);
 
   return (
     <Section id="how-it-works" size="lg">
@@ -135,87 +175,61 @@ export const HowItWorks = () => {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: { xs: 3, md: 4 },
-          [PIN]: {
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 5fr) minmax(0, 6fr)',
-            gridTemplateRows: `repeat(${STEPS.length}, auto)`,
-            columnGap: 8,
-            rowGap: 0,
-            // The header above already ends with its own gutter; the first step is centred in its stretch of scroll.
-            mt: -6,
-          },
+          gap: { xs: 6, md: 8 },
+          // The header above already ends with its own gutter, and a pinned frame centres its content.
+          [PIN]: { gap: 0, mt: -6 },
         }}
       >
         {STEPS.map((key, i) => {
-          const on = i === active;
-          return [
-            <Box
-              key={`${key}-text`}
-              ref={(el: HTMLDivElement | null) => {
-                textRefs.current[i] = el;
-              }}
-              sx={{
-                mt: { xs: i ? 3 : 0, md: i ? 4 : 0 },
-                [PIN]: {
-                  mt: 0,
-                  gridColumn: 1,
-                  gridRow: i + 1,
-                  minHeight: STEP_H,
+          const Visual = VISUALS[key];
+          return (
+            <Box key={key} ref={trackRef(i)} sx={{ [PIN]: { height: `calc(${FRAME_H} + ${pinLength(TOTALS[i])}px)` } }}>
+              <Box
+                sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center',
-                  transition: `opacity ${motion.base}`,
-                  opacity: on ? 1 : 0.4,
-                },
-              }}
-            >
-              <Typography aria-hidden sx={{ fontFamily: fonts.mono, fontSize: '0.78rem', color: soft.textSecondary, mb: 1 }}>
-                {String(i + 1).padStart(2, '0')}
-              </Typography>
-              <Typography component="h3" sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: soft.text, mb: 1.5 }}>
-                {t(`${H}.steps.${key}.name`)}
-              </Typography>
-              <Typography sx={{ fontSize: { xs: '1rem', md: '1.125rem' }, lineHeight: 1.6, color: soft.textSecondary, maxWidth: MEASURE, mb: 2 }}>
-                {t(`${H}.steps.${key}.body`)}
-              </Typography>
-              <Typography sx={{ display: 'flex', alignItems: 'baseline', gap: 1, fontFamily: fonts.mono, fontSize: '0.82rem', lineHeight: 1.5, color: soft.text }}>
-                <Box component="span" aria-hidden sx={{ width: 16, height: 2, flexShrink: 0, borderRadius: '1px', background: soft.linkAccent, transform: 'translateY(-4px)' }} />
-                {t(`${H}.steps.${key}.proof`)}
-              </Typography>
-            </Box>,
-            <Box
-              key={`${key}-visual`}
-              // On the pinned canvas only the active visual is there to be used; the others are out of reach, not just invisible.
-              inert={pinned && !on}
-              sx={{
-                // In the flow a visual keeps a readable width instead of stretching across the page.
-                maxWidth: 680,
-                [PIN]: {
-                  maxWidth: 'none',
-                  gridColumn: 2,
-                  gridRow: '1 / -1',
-                  position: 'sticky',
-                  // Centred in what is left of the screen under the header.
-                  top: `calc(${HEADER_OFFSET}px + (100vh - ${HEADER_OFFSET}px - ${STEP_H}) / 2)`,
-                  height: STEP_H,
-                  alignSelf: 'start',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  transition: `opacity ${motion.base}`,
-                  opacity: on ? 1 : 0,
-                  pointerEvents: on ? 'auto' : 'none',
-                },
-              }}
-            >
-              {key === 'build' ? <BuildVisual pinned={pinned} on={on} /> : key === 'optimize' ? <OptimizeVisual pinned={pinned} on={on} /> : key === 'validate' ? <ValidateVisual pinned={pinned} on={on} /> : <DeployVisual pinned={pinned} on={on} />}
-            </Box>,
-          ];
+                  gap: { xs: 3, md: 4 },
+                  [PIN]: {
+                    position: 'sticky',
+                    top: HEADER_OFFSET,
+                    height: FRAME_H,
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0, 5fr) minmax(0, 6fr)',
+                    columnGap: 8,
+                    alignContent: 'center',
+                    alignItems: 'center',
+                  },
+                }}
+              >
+                <Box>
+                  <Typography aria-hidden sx={{ fontFamily: fonts.mono, fontSize: '0.78rem', color: soft.textSecondary, mb: 1 }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </Typography>
+                  <Typography component="h3" sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: soft.text, mb: 1.5 }}>
+                    {t(`${H}.steps.${key}.name`)}
+                  </Typography>
+                  <Typography sx={{ fontSize: { xs: '1rem', md: '1.125rem' }, lineHeight: 1.6, color: soft.textSecondary, maxWidth: MEASURE, mb: 2 }}>
+                    {t(`${H}.steps.${key}.body`)}
+                  </Typography>
+                  <Typography sx={{ display: 'flex', alignItems: 'baseline', gap: 1, fontFamily: fonts.mono, fontSize: '0.82rem', lineHeight: 1.5, color: soft.text }}>
+                    <Box component="span" aria-hidden sx={{ width: 16, height: 2, flexShrink: 0, borderRadius: '1px', background: soft.linkAccent, transform: 'translateY(-4px)' }} />
+                    {t(`${H}.steps.${key}.proof`)}
+                  </Typography>
+                </Box>
+
+                {/* In the flow a visual keeps a readable width instead of stretching across the page. */}
+                <Box sx={{ position: 'relative', maxWidth: 680, [PIN]: { maxWidth: 'none' } }}>
+                  {i > 0 && <Connector part="head" segmentRef={headRef(i)} />}
+                  <Visual time={pinned ? times[i] : undefined} />
+                  {i < STEPS.length - 1 && <Connector part="tail" segmentRef={tailRef(i)} />}
+                </Box>
+              </Box>
+            </Box>
+          );
         })}
       </Box>
 
-      <Box sx={{ mt: { xs: 4, md: 5 }, [PIN]: { mt: 0 } }}>
+      <Box sx={{ mt: { xs: 4, md: 5 }, [PIN]: { mt: -6 } }}>
         <Box
           component={RouterLink}
           to="/product/platform"

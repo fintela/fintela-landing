@@ -1,14 +1,16 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentProps } from 'react';
-import { domAnimation, LazyMotion, m, useMotionValue, useTransform } from 'motion/react';
+import { domAnimation, LazyMotion, m, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react';
 import type { MotionValue } from 'motion/react';
 import { fonts, palette, radii } from '../../theme/tokens';
 import { APP } from '../fintelligentDemo/appTheme';
-import { flatSelector, flatTransition, stageCentre, u } from '../isoKit/flat';
+import { flatSelector, stageCentre, u } from '../isoKit/flat';
 import { FlatSelector } from '../isoKit/FlatSelector';
 import { IsoKeyframes } from '../isoKit/IsoKeyframes';
-import { isoColor } from '../isoKit/tokens';
-import { BEAT, BEATS } from './beats';
+import { ease, span, useSceneTime } from '../isoKit/scrub';
+import type { SceneTime } from '../isoKit/timeline';
+import { isoColor, time as kitTime } from '../isoKit/tokens';
+import { AT, BEAT, BEATS } from './beats';
 
 /** Design units. The card is centred on the stage, as the selector is. */
 const PILL = flatSelector.window;
@@ -16,7 +18,17 @@ const CARD = { width: 352, height: 264 };
 const CHART = { left: 14, top: 52, width: 324, height: 188 };
 /** The figures sit in the chart's empty top left, which the rising line never reaches. */
 const STATS = { left: 18, top: 56, gap: 24 };
-const CHART_INDEX = BEAT.chart - 1;
+
+/** Seconds on the playhead. */
+const MORPH = AT[BEAT.morph];
+const CHARTED = AT[BEAT.chart];
+const SETTLED = AT[BEAT.settled];
+/** How long the card takes to grow out of the selector's window. */
+const GROW = 0.65;
+/** How long the pen takes to draw the line. */
+const DRAW = BEATS[BEAT.chart - 1] - 0.1;
+
+const lerp = (from: number, to: number, progress: number) => from + (to - from) * progress;
 
 /** Illustrative: an upward line with ordinary pullbacks. */
 const CURVE = [166, 158, 162, 147, 151, 134, 125, 131, 112, 104, 110, 87, 79, 63, 55, 32];
@@ -107,7 +119,6 @@ const Stat = ({
     </span>
     {/* A motion value as the child is written straight to the DOM, so counting never re-renders. */}
     <m.span
-      initial={false}
       style={{ fontSize: u(21), fontWeight: 800, lineHeight: 1, color, fontVariantNumeric: 'tabular-nums' }}
     >
       {value}
@@ -119,7 +130,7 @@ const Stat = ({
 const DateTick = ({ x, label, penX }: { x: number; label: string; penX: MotionValue<number> }) => {
   const opacity = useTransform(penX, [x - TICK_REVEAL, x], [0, 1]);
   return (
-    <m.g initial={false} style={{ opacity }}>
+    <m.g style={{ opacity }}>
       <line
         x1={x}
         y1={BASELINE}
@@ -144,7 +155,7 @@ const DateTick = ({ x, label, penX }: { x: number; label: string; penX: MotionVa
 
 const Art = memo(
   ({
-    phase,
+    time,
     still,
     live,
     brokers,
@@ -154,7 +165,7 @@ const Art = memo(
     sharpeLabel,
     locale,
   }: {
-    phase: number;
+    time: MotionValue<number>;
     still: boolean;
     live: boolean;
     brokers: readonly string[];
@@ -164,12 +175,29 @@ const Art = memo(
     sharpeLabel: string;
     locale: string;
   }) => {
-    const carded = phase >= BEAT.morph;
-    const charted = phase >= BEAT.chart;
-    const settled = phase > BEAT.chart;
     const name = brokers[landOn];
     const playState = live ? 'running' : 'paused';
-    const grow = { ...flatTransition.settle, duration: 0.65 };
+
+    // Only the ambient loops need React to know the piece has settled.
+    const [settled, setSettled] = useState(() => time.get() >= SETTLED);
+    useMotionValueEvent(time, 'change', (s) => setSettled(s >= SETTLED));
+
+    const grow = useTransform(time, (s) => span(s, MORPH, GROW, ease.settle));
+    const carded = useTransform(time, (s) => (s >= MORPH ? 1 : 0));
+    const cardWidth = useTransform(grow, (p) => u(lerp(PILL.width, CARD.width, p)));
+    const cardHeight = useTransform(grow, (p) => u(lerp(PILL.height, CARD.height, p)));
+    const cardRadius = useTransform(grow, (p) => u(lerp(PILL.radius, radii.neuCardSm, p)));
+    const nameX = useTransform(grow, (p) =>
+      u(lerp((PILL.width - name.length * flatSelector.charWidth) / 2, 34, p))
+    );
+    const nameSize = useTransform(grow, (p) => u(lerp(20, 17, p)));
+    const nameDot = useTransform(time, (s) => span(s, MORPH + 0.15, 0.15, ease.out));
+    const grid = useTransform(time, (s) => span(s, MORPH + 0.35, kitTime.plate, ease.settle));
+    const charted = useTransform(time, (s) => span(s, CHARTED, kitTime.plate, ease.settle));
+    // Washes in behind the finished line, rather than showing ahead of it.
+    const area = useTransform(time, (s) => span(s, CHARTED + DRAW - 0.15, 0.5, ease.out));
+    const lineOpacity = useTransform(time, (s) => span(s, CHARTED, 0.1, ease.out));
+    const endDot = useTransform(time, (s) => span(s, SETTLED, kitTime.cardOut));
 
     const formats = useMemo(
       () => ({
@@ -192,9 +220,8 @@ const Art = memo(
       );
     }, [locale]);
 
-    // The share of the line drawn, fed by the line's own animation, so the figures and
-    // the months follow the pen exactly. A remount into the settled state starts it full.
-    const drawn = useMotionValue(charted ? 1 : 0);
+    // The share of the line drawn, which the figures and the months follow exactly.
+    const drawn = useTransform(time, (s) => span(s, CHARTED, DRAW, ease.inOut));
     const sway = useMotionValue(0);
     const pen = useTransform(drawn, indexAt);
     const penX = useTransform(pen, (index) => CURVE_LEFT + index * CURVE_STEP);
@@ -211,8 +238,12 @@ const Art = memo(
         swayTicks.current += 1;
         sway.set(swayAt(swayTicks.current * SWAY_TICK));
       }, SWAY_TICK * 1000);
-      return () => window.clearInterval(timer);
-    }, [live, settled, sway]);
+      return () => {
+        window.clearInterval(timer);
+        // Scrubbed back before the end, the figure is the line's own again.
+        if (time.get() < SETTLED) sway.set(0);
+      };
+    }, [live, settled, sway, time]);
 
     return (
       <>
@@ -221,24 +252,19 @@ const Art = memo(
         <FlatSelector
           names={brokers}
           landOn={landOn}
-          spinning={phase >= BEAT.spin}
-          landed={phase >= BEAT.land}
-          gone={carded}
+          time={time}
+          at={{ spin: AT[BEAT.spin], land: AT[BEAT.land], gone: MORPH }}
         />
 
         {/* The selector's window grows into the card, so the name is never lost. Now a white card like
             the others, with the live line as its accent. */}
+        {/* Appears exactly over the selector's window and then grows, so there's no ghosted double. */}
         <m.div
-          initial={false}
-          animate={{
-            opacity: carded ? 1 : 0,
-            width: u(carded ? CARD.width : PILL.width),
-            height: u(carded ? CARD.height : PILL.height),
-            borderRadius: u(carded ? radii.neuCardSm : PILL.radius),
-          }}
-          // Appears exactly over the selector's window and then grows, so there's no ghosted double.
-          transition={{ ...grow, opacity: { duration: 0 } }}
           style={{
+            opacity: carded,
+            width: cardWidth,
+            height: cardHeight,
+            borderRadius: cardRadius,
             position: 'absolute',
             left: u(stageCentre.x),
             top: u(stageCentre.y),
@@ -263,24 +289,14 @@ const Art = memo(
               whiteSpace: 'nowrap',
             }}
           >
-            <m.span
-              initial={false}
-              animate={{
-                x: u(carded ? 34 : (PILL.width - name.length * flatSelector.charWidth) / 2),
-                fontSize: u(carded ? 17 : 20),
-              }}
-              transition={grow}
-              style={{ display: 'block' }}
-            >
+            <m.span style={{ display: 'block', x: nameX, fontSize: nameSize }}>
               {name}
             </m.span>
           </div>
 
           <m.span
-            initial={false}
-            animate={{ opacity: carded ? 1 : 0 }}
-            transition={{ duration: 0.15, delay: carded ? 0.15 : 0 }}
             style={{
+              opacity: nameDot,
               position: 'absolute',
               left: u(18),
               top: u((PILL.height - 8) / 2),
@@ -293,10 +309,8 @@ const Art = memo(
 
           {/* Spaced from the left at the card's final width, so the card's growth never moves it. */}
           <m.div
-            initial={false}
-            animate={{ opacity: charted ? 1 : 0 }}
-            transition={flatTransition.settle}
             style={{
+              opacity: charted,
               position: 'absolute',
               left: u(CARD.width - 16),
               top: u(11),
@@ -328,10 +342,8 @@ const Art = memo(
 
           {/* The figures count with the pen while the line draws. Illustrative, like the curve. */}
           <m.div
-            initial={false}
-            animate={{ opacity: charted ? 1 : 0 }}
-            transition={flatTransition.settle}
             style={{
+              opacity: charted,
               position: 'absolute',
               left: u(STATS.left),
               top: u(STATS.top),
@@ -361,11 +373,7 @@ const Art = memo(
                 <stop offset="100%" stopColor={isoColor.done} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <m.g
-              initial={false}
-              animate={{ opacity: carded ? 1 : 0 }}
-              transition={{ ...flatTransition.settle, delay: carded && !charted ? 0.35 : 0 }}
-            >
+            <m.g style={{ opacity: grid }}>
               {GRID.map((y) => (
                 <line
                   key={y}
@@ -392,14 +400,7 @@ const Art = memo(
             <m.path
               d={AREA}
               fill={`url(#${AREA_FILL})`}
-              initial={false}
-              animate={{ opacity: charted ? 1 : 0 }}
-              // Washes in behind the finished line, rather than showing ahead of it.
-              transition={{
-                duration: 0.5,
-                delay: charted ? BEATS[CHART_INDEX] - 0.25 : 0,
-                ease: 'easeOut',
-              }}
+              style={{ opacity: area }}
             />
             <m.path
               d={LINE}
@@ -408,15 +409,7 @@ const Art = memo(
               strokeWidth={2.5}
               strokeLinecap="round"
               strokeLinejoin="round"
-              initial={false}
-              animate={{ pathLength: charted ? 1 : 0, opacity: charted ? 1 : 0 }}
-              transition={{
-                pathLength: { duration: BEATS[CHART_INDEX] - 0.1, ease: 'easeInOut' },
-                opacity: { duration: 0.1 },
-              }}
-              onUpdate={(latest) => {
-                if (typeof latest.pathLength === 'number') drawn.set(latest.pathLength);
-              }}
+              style={{ pathLength: drawn, opacity: lineOpacity }}
             />
             {/* The end of the line is what is live. */}
             {settled && !still && (
@@ -438,9 +431,7 @@ const Art = memo(
               fill={isoColor.done}
               stroke={palette.surface}
               strokeWidth={2}
-              initial={false}
-              animate={{ opacity: settled ? 1 : 0 }}
-              transition={flatTransition.fade}
+              style={{ opacity: endDot }}
             />
           </svg>
         </m.div>
@@ -451,10 +442,15 @@ const Art = memo(
 Art.displayName = 'LaunchToLiveArt';
 
 /** Everything that needs the motion library, loaded only when the piece comes near the screen. */
-const LaunchToLiveScene = (props: ComponentProps<typeof Art>) => (
-  <LazyMotion features={domAnimation} strict>
-    <Art {...props} />
-  </LazyMotion>
-);
+type SceneProps = Omit<ComponentProps<typeof Art>, 'time'> & { time: SceneTime };
+
+const LaunchToLiveScene = ({ time, ...props }: SceneProps) => {
+  const playhead = useSceneTime(time);
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <Art time={playhead} {...props} />
+    </LazyMotion>
+  );
+};
 
 export default LaunchToLiveScene;
