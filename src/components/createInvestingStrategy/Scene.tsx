@@ -1,13 +1,16 @@
 import { memo } from 'react';
-import type { ComponentProps, CSSProperties } from 'react';
-import { Box } from '@mui/material';
-import { domAnimation, LazyMotion, m } from 'motion/react';
+import type { CSSProperties } from 'react';
+import { domAnimation, LazyMotion, m, useTransform } from 'motion/react';
+import type { MotionValue } from 'motion/react';
 import { APP } from '../../components/fintelligentDemo/appTheme';
 import { fonts, palette, radii, shadows, soft } from '../../theme/tokens';
-import { flatSelector, flatTransition, stageCentre, u } from '../isoKit/flat';
+import { flatSelector, stageCentre, u } from '../isoKit/flat';
 import { FlatSelector } from '../isoKit/FlatSelector';
-import { curve, isoColor } from '../isoKit/tokens';
-import { BEAT, BEATS } from './beats';
+import { ease, span, track, useSceneTime } from '../isoKit/scrub';
+import type { Move } from '../isoKit/scrub';
+import type { SceneTime } from '../isoKit/timeline';
+import { isoColor, time as kitTime } from '../isoKit/tokens';
+import { AT, BEAT, BEATS } from './beats';
 import { STRATEGY_CODE, STRATEGY_FILE } from './strategyCode';
 
 /** Design units. Everything from the editor on is centred on the stage, as the selector is. */
@@ -23,10 +26,23 @@ const BADGE_SHIFT = BADGE.inset + BADGE.side / 2 - FINAL.width / 2;
 
 const CODE = { fontSize: 12.5, lineHeight: 18, gutter: 18, top: 8, left: 10 };
 
-const WRITE_INDEX = BEAT.write - 1;
-const CONVERT_INDEX = BEAT.convert - 1;
+/** Seconds on the playhead. */
+const OPEN = AT[BEAT.open];
+const WRITE = AT[BEAT.write];
+const CONVERT = AT[BEAT.convert];
+const MORPH = AT[BEAT.morph];
 /** The finished code stays on screen for a moment before it is converted. */
-const WRITE_TIME = BEATS[WRITE_INDEX] - 0.25;
+const WRITE_TIME = BEATS[BEAT.write - 1] - 0.25;
+/** How long the shell takes to grow, squeeze and settle. */
+const GROW = 0.65;
+/** The squeeze passes through a tall narrow box this far through, then settles square. */
+const SQUEEZE = 0.6;
+/** The bar and the editor's labels show a moment after the editor opens. */
+const LABELS_IN = OPEN + 0.15;
+const LABEL_FADE = 0.15;
+/** The f(x) pops in once the code has gone. */
+const FORMULA_IN = CONVERT + 0.32;
+const CARD_TEXT_IN = MORPH + 0.3;
 
 const CHARS = STRATEGY_CODE.reduce(
   (sum, runs) => sum + runs.reduce((count, [text]) => count + text.length, 0),
@@ -35,7 +51,7 @@ const CHARS = STRATEGY_CODE.reduce(
 
 /** Each line takes its share of the writing time, by length, so typing keeps one speed. */
 const LINES = STRATEGY_CODE.reduce<
-  { runs: (typeof STRATEGY_CODE)[number]; length: number; delay: number; duration: number }[]
+  { runs: (typeof STRATEGY_CODE)[number]; length: number; start: number; duration: number }[]
 >((lines, runs) => {
   const previous = lines[lines.length - 1];
   const length = runs.reduce((count, [text]) => count + text.length, 0);
@@ -44,7 +60,7 @@ const LINES = STRATEGY_CODE.reduce<
     {
       runs,
       length,
-      delay: previous ? previous.delay + previous.duration : 0,
+      start: previous ? previous.start + previous.duration : WRITE,
       duration: (length / CHARS) * WRITE_TIME,
     },
   ];
@@ -53,199 +69,181 @@ const LINES = STRATEGY_CODE.reduce<
 const fill: CSSProperties = { position: 'absolute', inset: 0 };
 
 /**
- * One line of code, typed a character at a time. A cover the colour of the editor slides
- * off the line, with the caret on its edge, so the two can never drift apart. It is CSS,
- * not Framer, so it costs React no renders and pauses with the clock when the piece
- * leaves the screen. Monospace makes `steps()` land exactly on each character, and
- * `jump-start` makes the last one reliable: with the default, a progress of 0.99999...
- * from rounding can leave the cover a character short for good.
+ * The shell's size through the story, in design units: the selector's window opens into
+ * an editor, is squeezed through a tall narrow box into the f(x) box, and settles as the
+ * badge. `squeeze` is where it passes through on the way to the box.
  */
-const CodeLine = ({
-  index,
-  phase,
-  playState,
-}: {
-  index: number;
-  phase: number;
-  playState: string;
-}) => {
-  const { runs, length, delay, duration } = LINES[index];
-  const writing = phase === BEAT.write;
-  const written = phase > BEAT.write;
+const shellTrack = (pill: number, editor: number, squeeze: number, box: number, badge: number) =>
+  track(pill, [
+    { at: OPEN, to: editor, duration: kitTime.plate, ease: ease.settle },
+    { at: CONVERT, to: squeeze, duration: GROW * SQUEEZE, ease: ease.settle },
+    { at: CONVERT + GROW * SQUEEZE, to: box, duration: GROW * (1 - SQUEEZE), ease: ease.settle },
+    { at: MORPH, to: badge, duration: GROW, ease: ease.settle },
+  ]);
+
+const SHELL = {
+  width: shellTrack(PILL.width, EDITOR.width, 92, BOX.side, BADGE.side),
+  height: shellTrack(PILL.height, EDITOR.height, 150, BOX.side, BADGE.side),
+  // The bar starts at its own height and catches up with the shell halfway into the squeeze.
+  bar: shellTrack(PILL.height, EDITOR.header, 150, BOX.side, BADGE.side),
+  radius: track(PILL.radius, [
+    { at: OPEN, to: EDITOR.radius, duration: kitTime.plate, ease: ease.settle },
+    { at: CONVERT, to: BOX.radius, duration: GROW, ease: ease.settle },
+    { at: MORPH, to: BADGE.radius, duration: GROW, ease: ease.settle },
+  ]),
+};
+
+/** Shown while the editor is open: in a moment after it opens, out as the code converts. */
+const EDITING: Move[] = [
+  { at: LABELS_IN, to: 1, duration: LABEL_FADE, ease: ease.out },
+  { at: CONVERT, to: 0, duration: LABEL_FADE, ease: ease.out },
+];
+const editing = track(0, EDITING);
+
+/** One way through `[0, 1]`, as design units. */
+const lerp = (from: number, to: number, progress: number) => from + (to - from) * progress;
+
+/**
+ * One line of code, typed a character at a time. A cover the colour of the editor slides
+ * off the line a whole character at a time, with the caret on its edge, so the two can
+ * never drift apart. Only the last line's caret stays, at the end of the finished code.
+ */
+const CodeLine = ({ index, time }: { index: number; time: MotionValue<number> }) => {
+  const { runs, length, start, duration } = LINES[index];
   const last = index === LINES.length - 1;
+  const caretEnd = last ? CONVERT : start + duration;
+
+  const typed = useTransform(time, (s) =>
+    s < start ? 0 : Math.min(length, Math.floor(((s - start) / duration) * length) + 1)
+  );
+  const cover = useTransform(typed, (chars) => `${chars}ch`);
+  const number = useTransform(time, (s) => (s >= start ? 1 : 0));
+  const caret = useTransform(time, (s) => (s >= start && s < caretEnd ? 1 : 0));
 
   return (
     <div style={{ display: 'flex', height: u(CODE.lineHeight), alignItems: 'center' }}>
-      <span
-        style={{
-          width: u(CODE.gutter),
-          flexShrink: 0,
-          color: APP.textDisabled,
-          opacity: written ? 1 : 0,
-          animation: writing ? `strategyShow 0.01s linear ${delay}s both ${playState}` : undefined,
-        }}
-      >
+      <m.span style={{ width: u(CODE.gutter), flexShrink: 0, color: APP.textDisabled, opacity: number }}>
         {index + 1}
-      </span>
+      </m.span>
       <span style={{ position: 'relative', whiteSpace: 'pre' }}>
         {runs.map(([text, color], i) => (
           <span key={i} style={{ color }}>
             {text}
           </span>
         ))}
-        {!written && (
-          <span
-            style={
-              {
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: `${length + 1}ch`,
-                background: palette.surface,
-                '--strategy-line': `${length}ch`,
-                animation: writing
-                  ? `strategyCover ${duration}s steps(${length}, jump-start) ${delay}s both ${playState}`
-                  : undefined,
-              } as CSSProperties
-            }
-          >
-            {writing && (
-              <span
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: '8%',
-                  bottom: '8%',
-                  width: u(2),
-                  background: palette.navy,
-                  opacity: 0,
-                  // Only the last line's caret stays, at the end of the finished code.
-                  animation: `strategyCaret ${duration}s linear ${delay}s ${
-                    last ? 'forwards' : 'none'
-                  } ${playState}`,
-                }}
-              />
-            )}
-          </span>
-        )}
+        <m.span
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: `${length + 1}ch`,
+            background: palette.surface,
+            x: cover,
+          }}
+        >
+          <m.span
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: '8%',
+              bottom: '8%',
+              width: u(2),
+              background: palette.navy,
+              opacity: caret,
+            }}
+          />
+        </m.span>
       </span>
     </div>
   );
 };
 
-/**
- * One black-topped surface through the story: the selector's window opens into an editor,
- * the bar swallows the code as the whole thing is squeezed into the f(x) box, and the
- * box comes to rest as the badge on the strategy card.
- */
-const shellShape = (phase: number) => {
-  if (phase >= BEAT.morph) {
-    return {
-      animate: { width: u(BADGE.side), height: u(BADGE.side), borderRadius: u(BADGE.radius) },
-      bar: u(BADGE.side),
-      transition: { ...flatTransition.settle, duration: 0.65 },
-    };
-  }
-  if (phase >= BEAT.convert) {
-    const heights = [EDITOR.height, 150, BOX.side];
-    return {
-      animate: {
-        width: [u(EDITOR.width), u(92), u(BOX.side)],
-        height: heights.map(u),
-        borderRadius: u(BOX.radius),
-      },
-      // The bar starts at its own height and catches up with the shell halfway in.
-      bar: [u(EDITOR.header), u(heights[1]), u(BOX.side)],
-      transition: { duration: BEATS[CONVERT_INDEX], ease: curve.settle, times: [0, 0.6, 1] },
-    };
-  }
-  if (phase >= BEAT.open) {
-    return {
-      animate: { width: u(EDITOR.width), height: u(EDITOR.height), borderRadius: u(EDITOR.radius) },
-      bar: u(EDITOR.header),
-      transition: flatTransition.settle,
-    };
-  }
-  return {
-    animate: { width: u(PILL.width), height: u(PILL.height), borderRadius: u(PILL.radius) },
-    bar: u(PILL.height),
-    transition: { duration: 0 },
-  };
-};
-
 const Art = memo(
   ({
-    phase,
-    live,
+    time,
     names,
     landOn,
     formula,
     label,
   }: {
-    phase: number;
-    live: boolean;
+    time: MotionValue<number>;
     names: readonly string[];
     landOn: number;
     formula: string;
     label: string;
   }) => {
-    const opened = phase >= BEAT.open;
-    const converted = phase >= BEAT.convert;
-    const final = phase >= BEAT.morph;
-    const editing = opened && !converted;
-    const shell = shellShape(phase);
     const name = names[landOn];
-    const playState = live ? 'running' : 'paused';
+
+    const opened = useTransform(time, (s) => (s >= OPEN ? 1 : 0));
+    const carded = useTransform(time, (s) => (s >= MORPH ? 1 : 0));
+    const travel = useTransform(time, (s) => u(BADGE_SHIFT * span(s, MORPH, GROW, ease.settle)));
+
+    const cardWidth = useTransform(time, (s) =>
+      u(lerp(BOX.side, FINAL.width, span(s, MORPH, GROW, ease.settle)))
+    );
+    const cardHeight = useTransform(time, (s) =>
+      u(lerp(BOX.side, FINAL.height, span(s, MORPH, GROW, ease.settle)))
+    );
+    const cardText = useTransform(time, (s) => span(s, CARD_TEXT_IN, kitTime.plate, ease.settle));
+    const cardTextX = useTransform(cardText, (p) => u(lerp(-10, 0, p)));
+
+    const shellWidth = useTransform(time, (s) => u(SHELL.width(s)));
+    const shellHeight = useTransform(time, (s) => u(SHELL.height(s)));
+    const shellRadius = useTransform(time, (s) => u(SHELL.radius(s)));
+    const bar = useTransform(time, (s) => u(SHELL.bar(s)));
+
+    const squeeze = useTransform(time, (s) => span(s, CONVERT, 0.4, ease.settle));
+    const codeOpacity = useTransform(squeeze, (p) => 1 - p);
+    const codeScaleX = useTransform(squeeze, (p) => lerp(1, 0.45, p));
+    const codeScaleY = useTransform(squeeze, (p) => lerp(1, 0.08, p));
+
+    const named = useTransform(time, (s) => span(s, OPEN, 0.4, ease.settle));
+    const nameX = useTransform(named, (p) =>
+      u(lerp((PILL.width - name.length * flatSelector.charWidth) / 2, 28, p))
+    );
+    const nameY = useTransform(named, (p) => u(lerp(0, (EDITOR.header - PILL.height) / 2, p)));
+    const nameSize = useTransform(named, (p) => u(lerp(20, 13.5, p)));
+    const nameOpacity = useTransform(time, (s) => 1 - span(s, CONVERT, LABEL_FADE, ease.out));
+
+    const labels = useTransform(time, editing);
+    // Yellow while the work moves, green once the code is written.
+    const status = useTransform(
+      time,
+      [WRITE + WRITE_TIME, WRITE + WRITE_TIME + LABEL_FADE],
+      [isoColor.active, isoColor.done]
+    );
+
+    const formulaOpacity = useTransform(time, (s) => span(s, FORMULA_IN, kitTime.cardOut));
+    const formulaScale = useTransform(time, (s) => lerp(0.5, 1, span(s, FORMULA_IN, kitTime.packet, ease.pop)));
+    const formulaSize = useTransform(time, (s) => u(lerp(42, 24, span(s, MORPH, GROW, ease.settle))));
 
     return (
-      <Box
-        sx={{
-          ...fill,
-          '@keyframes strategyCover': {
-            from: { transform: 'translateX(0)' },
-            to: { transform: 'translateX(var(--strategy-line))' },
-          },
-          '@keyframes strategyShow': { from: { opacity: 0 }, to: { opacity: 1 } },
-          '@keyframes strategyCaret': { from: { opacity: 1 }, to: { opacity: 1 } },
-        }}
-      >
+      <div style={fill}>
         <FlatSelector
           names={names}
           landOn={landOn}
-          spinning={phase >= BEAT.spin}
-          landed={phase >= BEAT.land}
-          gone={opened}
+          time={time}
+          at={{ spin: AT[BEAT.spin], land: AT[BEAT.land], gone: OPEN }}
         />
 
         {/* The strategy card opens out from behind the f(x) box. */}
         <m.div
-          initial={false}
-          animate={{
-            opacity: final ? 1 : 0,
-            width: u(final ? FINAL.width : BOX.side),
-            height: u(final ? FINAL.height : BOX.side),
-          }}
-          transition={{
-            ...flatTransition.settle,
-            duration: 0.65,
-            opacity: { duration: 0 },
-          }}
           style={{
             position: 'absolute',
             left: u(CENTRE.x),
             top: u(CENTRE.y),
             x: '-50%',
             y: '-50%',
+            width: cardWidth,
+            height: cardHeight,
+            opacity: carded,
             borderRadius: u(radii.neuInner),
             background: palette.surface,
             boxShadow: shadows.neuRaisedMd,
           }}
         >
           <m.div
-            initial={false}
-            animate={{ opacity: final ? 1 : 0, x: u(final ? 0 : -10) }}
-            transition={{ ...flatTransition.settle, delay: final ? 0.3 : 0 }}
             style={{
               position: 'absolute',
               left: u(BADGE.inset + BADGE.side + 16),
@@ -257,11 +255,11 @@ const Art = memo(
               justifyContent: 'center',
               gap: u(7),
               fontFamily: fonts.sans,
+              opacity: cardText,
+              x: cardTextX,
             }}
           >
-            <div
-              style={{ fontSize: u(23), fontWeight: 700, lineHeight: 1.15, color: palette.text }}
-            >
+            <div style={{ fontSize: u(23), fontWeight: 700, lineHeight: 1.15, color: palette.text }}>
               {label}
             </div>
             <div
@@ -288,26 +286,25 @@ const Art = memo(
           </m.div>
         </m.div>
 
-        {/* Travels to its place on the card. The shell inside only changes size. */}
+        {/* Travels to its place on the card. The shell inside only changes size. It appears
+            exactly over the selector's window and then grows, so there's no ghosted double. */}
         <m.div
-          initial={false}
-          animate={{ x: u(final ? BADGE_SHIFT : 0), opacity: opened ? 1 : 0 }}
-          transition={{
-            ...flatTransition.settle,
-            duration: 0.65,
-            // Appears exactly over the selector's window and then grows, so there's no ghosted double.
-            opacity: { duration: 0 },
+          style={{
+            position: 'absolute',
+            left: u(CENTRE.x),
+            top: u(CENTRE.y),
+            x: travel,
+            opacity: opened,
           }}
-          style={{ position: 'absolute', left: u(CENTRE.x), top: u(CENTRE.y) }}
         >
           <m.div
-            initial={false}
-            animate={shell.animate}
-            transition={shell.transition}
             style={{
               position: 'absolute',
               x: '-50%',
               y: '-50%',
+              width: shellWidth,
+              height: shellHeight,
+              borderRadius: shellRadius,
               overflow: 'hidden',
               background: palette.surface,
               boxShadow: shadows.neuAccent,
@@ -315,13 +312,6 @@ const Art = memo(
           >
             {/* The code keeps its width while the shell moves around it, so it never reflows. */}
             <m.div
-              initial={false}
-              animate={
-                converted
-                  ? { opacity: 0, scaleX: 0.45, scaleY: 0.08 }
-                  : { opacity: 1, scaleX: 1, scaleY: 1 }
-              }
-              transition={{ ...flatTransition.settle, duration: 0.4 }}
               style={{
                 position: 'absolute',
                 left: 0,
@@ -333,22 +323,23 @@ const Art = memo(
                 fontFamily: fonts.mono,
                 fontSize: u(CODE.fontSize),
                 color: APP.text,
+                opacity: codeOpacity,
+                scaleX: codeScaleX,
+                scaleY: codeScaleY,
               }}
             >
               {LINES.map((_, index) => (
-                <CodeLine key={index} index={index} phase={phase} playState={playState} />
+                <CodeLine key={index} index={index} time={time} />
               ))}
             </m.div>
 
             <m.div
-              initial={false}
-              animate={{ height: shell.bar }}
-              transition={shell.transition}
               style={{
                 position: 'absolute',
                 left: 0,
                 top: 0,
                 width: '100%',
+                height: bar,
                 background: palette.navy,
               }}
             />
@@ -369,38 +360,13 @@ const Art = memo(
               }}
             >
               <m.span
-                initial={false}
-                animate={{
-                  x: u(opened ? 28 : (PILL.width - name.length * flatSelector.charWidth) / 2),
-                  y: u(opened ? (EDITOR.header - PILL.height) / 2 : 0),
-                  fontSize: u(opened ? 13.5 : 20),
-                  opacity: converted ? 0 : 1,
-                }}
-                transition={{
-                  ...flatTransition.settle,
-                  duration: 0.4,
-                  opacity: { duration: 0.15 },
-                }}
-                style={{ display: 'block' }}
+                style={{ display: 'block', x: nameX, y: nameY, fontSize: nameSize, opacity: nameOpacity }}
               >
                 {name}
               </m.span>
             </div>
 
-            {/* Yellow while the work moves, green once the code is written. */}
             <m.span
-              initial={false}
-              animate={{
-                opacity: editing ? 1 : 0,
-                backgroundColor: phase >= BEAT.write ? isoColor.done : isoColor.active,
-              }}
-              transition={{
-                opacity: { duration: 0.15, delay: phase === BEAT.open ? 0.15 : 0 },
-                backgroundColor: {
-                  duration: 0.15,
-                  delay: phase === BEAT.write ? WRITE_TIME : 0,
-                },
-              }}
               style={{
                 position: 'absolute',
                 left: u(12),
@@ -408,12 +374,11 @@ const Art = memo(
                 width: u(8),
                 height: u(8),
                 borderRadius: '50%',
+                opacity: labels,
+                backgroundColor: status,
               }}
             />
             <m.div
-              initial={false}
-              animate={{ opacity: editing ? 1 : 0 }}
-              transition={{ duration: 0.15, delay: phase === BEAT.open ? 0.15 : 0 }}
               style={{
                 position: 'absolute',
                 left: 0,
@@ -428,27 +393,13 @@ const Art = memo(
                 fontSize: u(11.5),
                 color: soft.onInk,
                 whiteSpace: 'nowrap',
+                opacity: labels,
               }}
             >
               {STRATEGY_FILE}
             </m.div>
 
             <m.div
-              initial={false}
-              animate={{
-                opacity: converted ? 1 : 0,
-                scale: converted ? 1 : 0.5,
-                fontSize: u(final ? 24 : 42),
-              }}
-              transition={
-                final
-                  ? { ...flatTransition.settle, duration: 0.65 }
-                  : {
-                      ...flatTransition.pop,
-                      delay: converted ? 0.32 : 0,
-                      opacity: { ...flatTransition.fade, delay: converted ? 0.32 : 0 },
-                    }
-              }
               style={{
                 ...fill,
                 display: 'grid',
@@ -456,23 +407,37 @@ const Art = memo(
                 color: palette.surface,
                 fontFamily: fonts.mono,
                 fontWeight: 700,
+                opacity: formulaOpacity,
+                scale: formulaScale,
+                fontSize: formulaSize,
               }}
             >
               {formula}
             </m.div>
           </m.div>
         </m.div>
-      </Box>
+      </div>
     );
   }
 );
 Art.displayName = 'CreateInvestingStrategyArt';
 
+interface SceneProps {
+  time: SceneTime;
+  names: readonly string[];
+  landOn: number;
+  formula: string;
+  label: string;
+}
+
 /** Everything that needs the motion library, loaded only when the piece comes near the screen. */
-const CreateInvestingStrategyScene = (props: ComponentProps<typeof Art>) => (
-  <LazyMotion features={domAnimation} strict>
-    <Art {...props} />
-  </LazyMotion>
-);
+const CreateInvestingStrategyScene = ({ time, ...props }: SceneProps) => {
+  const playhead = useSceneTime(time);
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <Art time={playhead} {...props} />
+    </LazyMotion>
+  );
+};
 
 export default CreateInvestingStrategyScene;

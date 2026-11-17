@@ -1,6 +1,7 @@
 import { FlatStage } from '../isoKit/FlatStage';
-import { usePlayOnce } from '../isoKit/usePlayOnce';
-import { BEATS } from './beats';
+import type { SceneTime } from '../isoKit/timeline';
+import { useFlatTimeline } from '../isoKit/useFlatTimeline';
+import { TOTAL } from './beats';
 
 const loadScene = () => import('./Scene');
 
@@ -17,6 +18,8 @@ interface LaunchToLiveProps {
   sharpeLabel: string;
   /** Formats the figures and names the months on the axis. `i18n.language` on the landing. */
   locale: string;
+  /** A playhead the page moves, such as the scroll. Without one it plays once in view. */
+  time?: SceneTime;
   /** False shows the finished card, without ambient motion, and never plays. */
   autoplay?: boolean;
   /** True forces the finished card. The visitor's own setting always applies as well. */
@@ -26,8 +29,9 @@ interface LaunchToLiveProps {
 /**
  * Step 4: the selector spins, slows and stops on a broker, and its window grows into a
  * portfolio card whose line draws upward, its return and Sharpe counting with the pen
- * and its months rolling out along the axis. Plays once when scrolled into view; the end
- * of the line then pulses and the Sharpe ticks while it is on screen.
+ * and its months rolling out along the axis. Follows `time` when given; otherwise plays
+ * once when scrolled into view. Settled, the end of the line pulses and the Sharpe ticks
+ * while it is on screen.
  */
 export const LaunchToLive = ({
   brokers,
@@ -36,11 +40,13 @@ export const LaunchToLive = ({
   returnLabel,
   sharpeLabel,
   locale,
+  time,
   autoplay,
   reducedMotion,
 }: LaunchToLiveProps) => {
-  const { ref, phase, still, live, Scene } = usePlayOnce({
-    beats: BEATS,
+  const { ref, Scene, time: playhead, still, live } = useFlatTimeline({
+    total: TOTAL,
+    time,
     autoplay,
     reducedMotion,
     load: loadScene,
@@ -48,11 +54,9 @@ export const LaunchToLive = ({
 
   return (
     <FlatStage ref={ref}>
-      {/* Remounting with `initial={false}` paints the settled state with no animation at all. */}
       {Scene && (
         <Scene
-          key={still ? 'still' : 'live'}
-          phase={phase}
+          time={playhead}
           still={still}
           live={live}
           brokers={brokers}

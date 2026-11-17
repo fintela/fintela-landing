@@ -1,12 +1,14 @@
 import { memo } from 'react';
-import type { ComponentProps, CSSProperties } from 'react';
-import { domAnimation, LazyMotion, m } from 'motion/react';
-import type { TargetAndTransition, Transition } from 'motion/react';
+import type { CSSProperties } from 'react';
+import { domAnimation, LazyMotion, m, useTransform } from 'motion/react';
+import type { MotionValue } from 'motion/react';
 import { APP } from '../../components/fintelligentDemo/appTheme';
 import { fonts, palette, radii, shadows } from '../../theme/tokens';
-import { flatTransition, stageCentre, u } from '../isoKit/flat';
-import { curve, isoColor, markHues, size } from '../isoKit/tokens';
-import { BEAT, BEATS } from './beats';
+import { stageCentre, u } from '../isoKit/flat';
+import { ease, keyframes, span, useSceneTime } from '../isoKit/scrub';
+import type { SceneTime } from '../isoKit/timeline';
+import { isoColor, markHues, size, time as kitTime } from '../isoKit/tokens';
+import { AT, BEAT, BEATS } from './beats';
 
 type Point = { x: number; y: number };
 
@@ -100,7 +102,13 @@ const TRIALS = SEEDS.map(([x, y, hue, endX, endY, bend1, bend2, hops]) => {
   };
 });
 
+const SEARCH = AT[BEAT.search];
 const SEARCH_TIME = BEATS[BEAT.search - 1];
+const FOUND = AT[BEAT.found];
+const FRAMED = AT[BEAT.frame];
+const MORPH = AT[BEAT.morph];
+/** How long the badge and its card take to settle. */
+const GROW = 0.65;
 /**
  * Seconds into the search. Every trial hops at the same three moments, each a little
  * later than the one before it, so they search together without moving in lockstep.
@@ -130,7 +138,57 @@ const searchFrames = ({ start, stops, hops }: (typeof TRIALS)[number], index: nu
   return frames;
 };
 
-const FRAMES = TRIALS.map(searchFrames);
+const lerp = (from: number, to: number, progress: number) => from + (to - from) * progress;
+
+interface TrialState {
+  x: number;
+  y: number;
+  opacity: number;
+  scale: number;
+}
+
+/**
+ * A trial's place on the map at any moment: it pops in, searches, and then either
+ * closes on the peak and merges into the best trial or stays faded where it was pruned.
+ */
+const trialAt = (index: number) => {
+  const { start, hops } = TRIALS[index];
+  const frames = searchFrames(TRIALS[index], index);
+  const search = (values: number[]) => keyframes(SEARCH, SEARCH_TIME, values, frames.times, ease.settle);
+  const searchX = search(frames.x);
+  const searchY = search(frames.y);
+  const searchOpacity = search(frames.opacity);
+  const searchScale = search(frames.scale);
+  const endX = frames.x[frames.x.length - 1];
+  const endY = frames.y[frames.y.length - 1];
+  const survivor = hops === HOPS;
+  const delay = AT[BEAT.scatter] + index * 0.03;
+  const close = FOUND + index * 0.015;
+
+  return (s: number): TrialState => {
+    if (s < SEARCH) {
+      return {
+        x: 0,
+        y: 0,
+        opacity: span(s, delay, kitTime.cardOut),
+        scale: lerp(0.4, 1, span(s, delay, kitTime.packet, ease.pop)),
+      };
+    }
+    if (s < FOUND) {
+      return { x: searchX(s), y: searchY(s), opacity: searchOpacity(s), scale: searchScale(s) };
+    }
+    if (!survivor) return { x: endX, y: endY, opacity: 0, scale: 0.4 };
+    const merge = span(s, close, 0.4, ease.settle);
+    return {
+      x: lerp(endX, PEAK.x - start.x, merge),
+      y: lerp(endY, PEAK.y - start.y, merge),
+      opacity: 1 - span(s, close + 0.2, 0.18, ease.out),
+      scale: lerp(1, 0.4, merge),
+    };
+  };
+};
+
+const TRIAL_AT = TRIALS.map((_, index) => trialAt(index));
 
 const square = (side: number): CSSProperties => ({
   position: 'absolute',
@@ -141,48 +199,16 @@ const square = (side: number): CSSProperties => ({
 });
 
 /** A trial on the map. Survivors close in on the peak and merge into the best trial. */
-const Trial = ({ index, phase }: { index: number; phase: number }) => {
-  const { start, hue, hops } = TRIALS[index];
-  const frames = FRAMES[index];
-  const survivor = hops === HOPS;
-  const delay = index * 0.03;
-
-  let animate: TargetAndTransition;
-  let transition: Transition = { duration: 0 };
-  if (phase >= BEAT.found) {
-    const end = survivor
-      ? { x: PEAK.x - start.x, y: PEAK.y - start.y }
-      : { x: frames.x[frames.x.length - 1], y: frames.y[frames.y.length - 1] };
-    animate = { x: u(end.x), y: u(end.y), opacity: 0, scale: 0.4 };
-    if (survivor) {
-      const close = index * 0.015;
-      transition = {
-        ...flatTransition.settle,
-        duration: 0.4,
-        delay: close,
-        opacity: { duration: 0.18, delay: close + 0.2 },
-      };
-    }
-  } else if (phase === BEAT.search) {
-    animate = {
-      x: frames.x.map(u),
-      y: frames.y.map(u),
-      opacity: frames.opacity,
-      scale: frames.scale,
-    };
-    transition = { duration: SEARCH_TIME, times: frames.times, ease: curve.settle };
-  } else if (phase === BEAT.scatter) {
-    animate = { x: u(0), y: u(0), opacity: 1, scale: 1 };
-    transition = { ...flatTransition.pop, delay, opacity: { ...flatTransition.fade, delay } };
-  } else {
-    animate = { x: u(0), y: u(0), opacity: 0, scale: 0.4 };
-  }
+const Trial = ({ index, time }: { index: number; time: MotionValue<number> }) => {
+  const { start, hue } = TRIALS[index];
+  const at = TRIAL_AT[index];
+  const x = useTransform(time, (s) => u(at(s).x));
+  const y = useTransform(time, (s) => u(at(s).y));
+  const opacity = useTransform(time, (s) => at(s).opacity);
+  const scale = useTransform(time, (s) => at(s).scale);
 
   return (
     <m.div
-      initial={false}
-      animate={animate}
-      transition={transition}
       style={{
         position: 'absolute',
         left: u(start.x - TRIAL.side / 2),
@@ -194,47 +220,57 @@ const Trial = ({ index, phase }: { index: number; phase: number }) => {
         background: markHues[hue],
         // White edge, so every hue reads on the darkest cells too.
         border: `${u(TRIAL.border)} solid ${palette.surface}`,
+        x,
+        y,
+        opacity,
+        scale,
       }}
     />
   );
 };
 
-const Art = memo(({ phase, label, detail }: { phase: number; label: string; detail: string }) => {
-  const found = phase >= BEAT.found;
-  const framed = phase >= BEAT.frame;
-  const morphed = phase >= BEAT.morph;
-  const marked = (delay: number) => ({
-    ...flatTransition.pop,
-    delay: found ? delay : 0,
-    opacity: { ...flatTransition.fade, delay: found ? delay : 0 },
-  });
+/** A mark on the found zone: it pops in `delay` seconds after the search ends. */
+const useMark = (time: MotionValue<number>, delay: number, from: number) => ({
+  opacity: useTransform(time, (s) => span(s, FOUND + delay, kitTime.cardOut)),
+  scale: useTransform(time, (s) => lerp(from, 1, span(s, FOUND + delay, kitTime.packet, ease.pop))),
+});
+
+const Art = memo(({ time, label, detail }: { time: MotionValue<number>; label: string; detail: string }) => {
+  const grow = useTransform(time, (s) => span(s, MORPH, GROW, ease.settle));
+  const carded = useTransform(time, (s) => (s >= MORPH ? 1 : 0));
+  const cardWidth = useTransform(grow, (p) => u(lerp(PLATE_SIDE, FINAL.width, p)));
+  const cardHeight = useTransform(grow, (p) => u(lerp(PLATE_SIDE, FINAL.height, p)));
+  const cardText = useTransform(time, (s) => span(s, MORPH + 0.3, kitTime.plate, ease.settle));
+  const cardTextX = useTransform(cardText, (p) => u(lerp(-10, 0, p)));
+  const badgeX = useTransform(grow, (p) => u(BADGE_SHIFT * p));
+  const badgeScale = useTransform(grow, (p) => lerp(1, BADGE_SCALE, p));
+  const plateShadow = useTransform(time, (s) => 1 - span(s, FRAMED, 0.3, ease.settle));
+  const framed = useTransform(time, (s) => (s >= FRAMED ? 1 : 0));
+  const frameScale = useTransform(time, (s) =>
+    lerp(PLATE_SIDE / FRAME_SIDE, 1, span(s, FRAMED, kitTime.plate, ease.settle))
+  );
+  const zone = useMark(time, 0.18, 0.5);
+  const best = useMark(time, 0.3, 0.3);
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       {/* The study's card opens out from behind the framed grid. */}
       <m.div
-        initial={false}
-        animate={{
-          opacity: morphed ? 1 : 0,
-          width: u(morphed ? FINAL.width : PLATE_SIDE),
-          height: u(morphed ? FINAL.height : PLATE_SIDE),
-        }}
-        transition={{ ...flatTransition.settle, duration: 0.65, opacity: { duration: 0 } }}
         style={{
           position: 'absolute',
           left: u(stageCentre.x),
           top: u(stageCentre.y),
           x: '-50%',
           y: '-50%',
+          width: cardWidth,
+          height: cardHeight,
+          opacity: carded,
           borderRadius: u(radii.neuInner),
           background: palette.surface,
           boxShadow: shadows.neuRaisedMd,
         }}
       >
         <m.div
-          initial={false}
-          animate={{ opacity: morphed ? 1 : 0, x: u(morphed ? 0 : -10) }}
-          transition={{ ...flatTransition.settle, delay: morphed ? 0.3 : 0 }}
           style={{
             position: 'absolute',
             left: u(CONTENT_LEFT),
@@ -246,6 +282,8 @@ const Art = memo(({ phase, label, detail }: { phase: number; label: string; deta
             justifyContent: 'center',
             gap: u(7),
             fontFamily: fonts.sans,
+            opacity: cardText,
+            x: cardTextX,
           }}
         >
           <div
@@ -286,40 +324,36 @@ const Art = memo(({ phase, label, detail }: { phase: number; label: string; deta
 
       {/* Everything that becomes the badge, scaled as one about the stage's middle. */}
       <m.div
-        initial={false}
-        animate={{ x: u(morphed ? BADGE_SHIFT : 0), scale: morphed ? BADGE_SCALE : 1 }}
-        transition={{ ...flatTransition.settle, duration: 0.65 }}
         style={{
           position: 'absolute',
           left: u(stageCentre.x),
           top: u(stageCentre.y),
           width: 0,
           height: 0,
+          x: badgeX,
+          scale: badgeScale,
         }}
       >
         {/* The plate's raised shadow. The frame takes over from it. */}
         <m.div
-          initial={false}
-          animate={{ opacity: framed ? 0 : 1 }}
-          transition={{ ...flatTransition.settle, duration: 0.3 }}
           style={{
             ...square(PLATE_SIDE),
             borderRadius: u(PLATE.radius),
             background: palette.surface,
             boxShadow: shadows.neuRaisedMd,
+            opacity: plateShadow,
           }}
         />
 
         {/* Starts hidden exactly behind the plate, then grows out around it. */}
         <m.div
-          initial={false}
-          animate={{ opacity: framed ? 1 : 0, scale: framed ? 1 : PLATE_SIDE / FRAME_SIDE }}
-          transition={{ ...flatTransition.settle, opacity: { duration: 0 } }}
           style={{
             ...square(FRAME_SIDE),
             borderRadius: u(FRAME_RADIUS),
             background: palette.navy,
             boxShadow: shadows.neuAccent,
+            opacity: framed,
+            scale: frameScale,
           }}
         />
 
@@ -368,9 +402,6 @@ const Art = memo(({ phase, label, detail }: { phase: number; label: string; deta
 
               {/* The optimal zone, ringed in green once the search has found it. */}
               <m.div
-                initial={false}
-                animate={{ opacity: found ? 1 : 0, scale: found ? 1 : 0.5 }}
-                transition={marked(0.18)}
                 style={{
                   position: 'absolute',
                   left: u(PEAK.x - ZONE.radius),
@@ -380,12 +411,10 @@ const Art = memo(({ phase, label, detail }: { phase: number; label: string; deta
                   boxSizing: 'border-box',
                   borderRadius: '50%',
                   border: `${u(ZONE.ring)} solid ${isoColor.done}`,
+                  ...zone,
                 }}
               />
               <m.div
-                initial={false}
-                animate={{ opacity: found ? 1 : 0, scale: found ? 1 : 0.3 }}
-                transition={marked(0.3)}
                 style={{
                   position: 'absolute',
                   left: u(PEAK.x - ZONE.best / 2),
@@ -396,11 +425,12 @@ const Art = memo(({ phase, label, detail }: { phase: number; label: string; deta
                   borderRadius: '50%',
                   background: isoColor.done,
                   border: `${u(TRIAL.border)} solid ${palette.surface}`,
+                  ...best,
                 }}
               />
 
               {TRIALS.map((_, index) => (
-                <Trial key={index} index={index} phase={phase} />
+                <Trial key={index} index={index} time={time} />
               ))}
             </div>
           </div>
@@ -412,10 +442,13 @@ const Art = memo(({ phase, label, detail }: { phase: number; label: string; deta
 Art.displayName = 'OptimizeStudyArt';
 
 /** Everything that needs the motion library, loaded only when the piece comes near the screen. */
-const OptimizeStudyScene = (props: ComponentProps<typeof Art>) => (
-  <LazyMotion features={domAnimation} strict>
-    <Art {...props} />
-  </LazyMotion>
-);
+const OptimizeStudyScene = ({ time, ...props }: { time: SceneTime; label: string; detail: string }) => {
+  const playhead = useSceneTime(time);
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <Art time={playhead} {...props} />
+    </LazyMotion>
+  );
+};
 
 export default OptimizeStudyScene;
