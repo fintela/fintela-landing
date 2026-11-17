@@ -4,7 +4,6 @@
     "change": "Change language"
   },
   "actions": {
-    "getStarted": "Get started",
     "learnMore": "Learn more",
     "contactUs": "Contact us"
   },
@@ -33,5 +32,10 @@
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit fullscreen",
     "seek": "Seek"
+  },
+  "cta": {
+    "primary": "Start free trial",
+    "secondary": "Book a walkthrough",
+    "login": "Log in"
   }
 }

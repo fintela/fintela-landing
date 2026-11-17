@@ -34,10 +34,16 @@ interface SectionProps {
   sx?: SxProps<Theme>;
 }
 
+/**
+ * Half the gap between two sections, in 8px units. `lg` puts about 120px
+ * between the content of two neighbours on desktop (60 + 60) and 80px on a
+ * phone; `md` and `sm` are for bands that should sit closer to their
+ * neighbours.
+ */
 const paddingY = {
-  sm: { xs: 6, md: 9 },
-  md: { xs: 8, md: 12 },
-  lg: { xs: 10, md: 16 },
+  sm: { xs: 3.5, md: 5 },
+  md: { xs: 4.5, md: 6.5 },
+  lg: { xs: 5, md: 7.5 },
 } as const;
 
 const backgrounds = {

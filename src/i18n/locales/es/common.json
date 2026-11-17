@@ -4,7 +4,6 @@
     "change": "Cambiar idioma"
   },
   "actions": {
-    "getStarted": "Comenzar",
     "learnMore": "Saber más",
     "contactUs": "Contáctanos"
   },
@@ -33,5 +32,9 @@
     "fullscreen": "Pantalla completa",
     "exitFullscreen": "Salir de pantalla completa",
     "seek": "Posición"
+  },
+  "cta": {
+    "primary": "Comenzar prueba gratuita",
+    "secondary": "Reservar una demostración"
   }
 }

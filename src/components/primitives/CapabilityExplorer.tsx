@@ -27,7 +27,10 @@ export interface CapabilityBullet {
   desc: string;
 }
 
-const renderBullet = (bullet: CapabilityBullet) => (
+const renderBullet = (bullet: CapabilityBullet | string) =>
+  typeof bullet === 'string' ? (
+    bullet
+  ) : (
   <>
     <Box component="strong" sx={{ fontWeight: 700, color: soft.text }}>
       {bullet.label}
@@ -35,7 +38,7 @@ const renderBullet = (bullet: CapabilityBullet) => (
     {': '}
     {bullet.desc}
   </>
-);
+  );
 
 const IndexRow = ({
   index,
@@ -110,7 +113,7 @@ export const CapabilityExplorer = ({ ns, baseKey, items }: CapabilityExplorerPro
   const { t } = useTranslation(ns);
   const [active, setActive] = useState(0);
   const item = items[active];
-  const bullets = t(`${baseKey}.${item.key}.bullets`, { returnObjects: true }) as CapabilityBullet[];
+  const bullets = t(`${baseKey}.${item.key}.bullets`, { returnObjects: true }) as (CapabilityBullet | string)[];
 
   return (
     <Box
@@ -147,7 +150,7 @@ export const CapabilityExplorer = ({ ns, baseKey, items }: CapabilityExplorerPro
           </Typography>
           <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
             {bullets.map((b) => (
-              <Box component="li" key={b.label} sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+              <Box component="li" key={typeof b === 'string' ? b : b.label} sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
                 <CheckRoundedIcon sx={{ fontSize: 16, color: soft.accent, mt: '3px', flexShrink: 0 }} />
                 <Typography sx={{ fontSize: '0.88rem', lineHeight: 1.6, color: soft.text }}>{renderBullet(b)}</Typography>
               </Box>

@@ -30,7 +30,7 @@
         "toggle": "Agendar uma demonstração",
         "messageLabel": "Conte-nos sobre a sua mesa",
         "messagePlaceholder": "As estratégias que você opera, os mercados em que atua e o que gostaria de ver na conversa.",
-        "submit": "Agendar a demonstração"
+        "submit": "Agendar uma demonstração"
       }
     },
     "booking": {
@@ -75,8 +75,7 @@
             "Grupos de ativos, estratégias, funções de fitness e gestores de risco integrados"
           ],
           "overageRate": "$0.018/token",
-          "support": "Suporte por email",
-          "cta": "Comece agora"
+          "support": "Suporte por email"
         },
         "quant": {
           "name": "Quant",
@@ -97,8 +96,7 @@
             "Otimizações ilimitadas"
           ],
           "overageRate": "$0.015/token",
-          "support": "Suporte por email + chat",
-          "cta": "Comece agora"
+          "support": "Suporte por email + chat"
         },
         "institutional": {
           "name": "Institutional",
@@ -118,8 +116,7 @@
             "Mínimo de 2 usuários, cobrado por usuário"
           ],
           "overageRate": "$0.0125/token",
-          "support": "CSM dedicado + SLA",
-          "cta": "Comece agora"
+          "support": "CSM dedicado + SLA"
         },
         "custom": {
           "name": "Custom",
@@ -139,8 +136,7 @@
             "Usuários e preço personalizados"
           ],
           "overageRate": "Personalizado",
-          "support": "CSM dedicado + SLA",
-          "cta": "Fale conosco"
+          "support": "CSM dedicado + SLA"
         }
       }
     },
@@ -252,7 +248,6 @@
     "cta": {
       "title": "Não sabe qual plano combina?",
       "description": "Conte o que você está construindo e indicamos o plano certo. Respondemos em até 24 horas.",
-      "primary": "Fale com nosso time",
       "secondary": "Ler a documentação"
     }
   },
@@ -1265,8 +1260,8 @@
   },
   "seo": {
     "home": {
-      "title": "Fintela | Plataforma quant com IA para estratégias",
-      "description": "Crie, teste, otimize e implante estratégias de trading quantitativo em uma única plataforma na nuvem. Otimização inteligente e execução pela sua corretora."
+      "title": "Fintela | Infraestrutura quant que a sua IA pode operar",
+      "description": "Construa uma estratégia, otimize-a em milhares de trials e teste-a com dados reservados, em uma única plataforma na nuvem. Com o assistente integrado ou seu próprio agente."
     },
     "pricing": {
       "title": "Preços e planos | Fintela",
@@ -1318,7 +1313,6 @@
     "title": "A Fintela fala MCP.",
     "titleAccent": "Seu agente também.",
     "description": "O Fintela MCP é o nosso servidor do Model Context Protocol (MCP), o padrão aberto com que agentes de IA se conectam a outras ferramentas. Por meio dele, o agente com que sua equipe já trabalha lê vereditos de sobreajuste, testa o servidor da sua estratégia contra o nosso contrato e propõe estudos. Sua estratégia nunca sai dos seus servidores, e nada roda nem custa um token até que uma pessoa da sua equipe confirme.",
-    "ctaPrimary": "Começar",
     "ctaSecondary": "Leia o guia de conexão",
     "pilotNote": "Aberto a todas as organizações. Os estudos são cobrados em tokens, como no app.",
     "steps": {
@@ -1513,5 +1507,157 @@
     },
     "closingLine": "A Fintela não substitui o que sua equipe construiu. Ela se torna a parte que diz se um resultado é real.",
     "note": "O Fintela MCP funciona para todas as organizações. Entre com sua conta da Fintela, conecte seu agente e confirme as propostas dele no app."
+  },
+  "platform": {
+    "seo": {
+      "title": "O pipeline da Fintela: do universo à execução ao vivo | Fintela",
+      "description": "As cinco etapas conectadas por trás de cada estudo da Fintela: grupos de ativos, estratégias, estudos, candidatos e execução ao vivo, cada uma alimentando a seguinte em um único espaço de trabalho na nuvem."
+    },
+    "docsLink": "Ler o fluxo completo na documentação",
+    "closing": {
+      "title": "Rode seu primeiro estudo.",
+      "body": "Comece com um universo e uma estratégia, e veja o que se sustenta com dados que a busca nunca viu. Você decide o que vai para operação ao vivo."
+    }
+  },
+  "methodology": {
+    "seo": {
+      "title": "Metodologia: como os resultados são registrados e avaliados | Fintela",
+      "description": "O que a Fintela salva, o que a busca pode ver, como um candidato recebe seu veredito de sobreajuste, como os custos de operação são aplicados e o que a plataforma não faz."
+    },
+    "eyebrow": "Metodologia",
+    "title": "Como um resultado é registrado, reservado e avaliado.",
+    "description": "Um backtest vale o que se pode verificar sobre ele. Esta página diz o que a Fintela faz em cada etapa, com a documentação que sustenta cada afirmação.",
+    "sections": {
+      "recorded": {
+        "title": "Cada trial fica registrado",
+        "body": [
+          "Tudo é salvo assim que é produzido: cada trial e seus resultados, curvas de equity, posições e transações. Não há uma etapa de salvamento à parte.",
+          "Um estudo tira uma cópia congelada da sua configuração ao ser lançado. Promover um trial tira uma cópia completa do código e dos parâmetros da estratégia, seus ativos, suas configurações de fitness e de risco e seus intervalos de datas, e a partir desse momento a cópia não muda."
+        ],
+        "links": {
+          "architecture": "Docs: seu trabalho e seus dados",
+          "promoted": "Docs: portfólios promovidos"
+        }
+      },
+      "isolation": {
+        "title": "Isolamento fora da amostra",
+        "body": [
+          "Um estudo divide uma janela de histórico em três períodos: treino, validação e fora da amostra. O otimizador só vê o treino. A validação é reportada, mas nunca influencia a busca.",
+          "O período fora da amostra vem ativado por padrão. Ele reserva o último trecho da janela e nunca otimiza sobre ele, então há um trecho que a busca não viu. Você o avalia uma vez, no fim."
+        ],
+        "links": {
+          "studies": "Docs: estudos e divisão de datas"
+        }
+      },
+      "verdict": {
+        "title": "O que o veredito de sobreajuste contém",
+        "body": [
+          "Quando um estudo termina sua avaliação de robustez, cada candidato recebe um de quatro vereditos: Well Trained, Borderline, Overfit Risk ou Insufficient Data. O veredito é construído com o índice de Sharpe deflacionado, a probabilidade de sobreajuste do backtest (PBO) do estudo e o quanto o desempenho se degrada do treino para o período fora da amostra.",
+          "O estudo como um todo também recebe um veredito. Um PBO acima de 50% marca toda a busca como Overfit Risk, independentemente do que digam os trials individuais: significa que o próprio processo de seleção sobreajusta os dados.",
+          "O veredito ajuda a identificar um possível sobreajuste. Não prevê resultados ao vivo."
+        ],
+        "links": {
+          "results": "Docs: como julgar se um resultado é real",
+          "research": "Pesquisa: o índice de Sharpe deflacionado"
+        }
+      },
+      "costs": {
+        "title": "Custos de operação",
+        "body": [
+          "As operações simuladas pagam um custo: 10 bps em ações dos EUA, 30 bps em cripto e 5 bps em FX, e um universo misto paga a taxa mais alta. Um estudo também pode ser rodado sem custos, para medir quanto do resultado depende do modelo de custos.",
+          "Um histórico reporta a taxa de custo aplicada e se marca como sem fricção quando algum trecho não teve custos."
+        ],
+        "links": {
+          "engine": "O motor de simulação",
+          "baskets": "Docs: históricos e custos de operação"
+        }
+      },
+      "limits": {
+        "title": "O que a Fintela não faz",
+        "body": [
+          "Não há configuração de semente. TPE, CMA-ES, Random, QMC e NSGA-II exploram uma sequência diferente de trials a cada execução, então lançar o mesmo estudo de novo não o repete trial por trial. O que fica é o registro dos trials executados.",
+          "Não há walk-forward nem reotimização móvel. Um estudo usa uma única divisão de treino, validação e fora da amostra sobre uma janela contínua.",
+          "A participação em um índice pode ser avaliada em um ponto no tempo ao construir um universo. Depois de salvo, um grupo é uma cópia: ele não continua acompanhando o índice."
+        ],
+        "links": {
+          "samplers": "Docs: reprodutibilidade e aleatoriedade",
+          "assetGroups": "Docs: universos em um ponto no tempo"
+        }
+      }
+    },
+    "closing": {
+      "title": "Verifique com a sua própria estratégia.",
+      "body": "Rode um estudo e leia o veredito, ou revise o método com a equipe que o construiu."
+    }
+  },
+  "security": {
+    "seo": {
+      "title": "Segurança: onde ficam seu código e seus dados | Fintela",
+      "description": "O que roda dentro da Fintela e o que pode ficar nos seus próprios servidores, quem pode ver seu trabalho, como as credenciais são guardadas e o que a IA pode fazer."
+    },
+    "eyebrow": "Segurança",
+    "title": "Onde ficam seu código e seus dados.",
+    "description": "Esta página diz o que a documentação do produto diz, em termos simples, e aponta para ela. Não afirma nada além disso.",
+    "sections": {
+      "yourCode": {
+        "title": "Seu código: na Fintela ou nos seus servidores",
+        "body": [
+          "As estratégias escritas na Fintela rodam em um espaço isolado, sem acesso aos sistemas internos nem às credenciais da Fintela. Elas só veem os dados de mercado e as entradas recebidas para aquela execução.",
+          "No modo externo, seu código e seus dados ficam na sua própria infraestrutura. Você aponta uma estratégia, uma função de fitness ou um gestor de risco para um endpoint que você opera; a Fintela guarda o endereço e os limites que você define, envia parâmetros e lê a resposta.",
+          "Use um endereço https para esse endpoint. Um endereço http é aceito com um aviso, e o que trafega por ele não é criptografado."
+        ],
+        "links": {
+          "architecture": "Docs: como seu código roda",
+          "external": "Docs: estratégias externas"
+        }
+      },
+      "organization": {
+        "title": "Restrito à sua organização",
+        "body": [
+          "Seus dados ficam restritos à sua organização: o que você pode ver, sua equipe pode ver, limitado pelos papéis que sua organização define e pelos recursos incluídos no seu plano.",
+          "A API para desenvolvedores é somente leitura e usa uma chave de acesso pessoal. Um recurso que pertence a outra organização responde como se não existisse."
+        ],
+        "links": {
+          "architecture": "Docs: login e como os dados são compartilhados",
+          "api": "Docs: autenticação da API"
+        }
+      },
+      "credentials": {
+        "title": "Credenciais",
+        "body": [
+          "As credenciais da corretora são criptografadas antes de serem guardadas, e a Fintela nunca mais as mostra depois de inseridas: nem a você, nem ao suporte da Fintela.",
+          "A credencial do seu próprio servidor de estratégias é digitada no app, nunca passa por um agente de IA. Ela é guardada criptografada e enviada apenas ao seu servidor."
+        ],
+        "links": {
+          "live": "Docs: conexões com a corretora",
+          "agent": "Docs: proteger seu servidor de estratégias"
+        }
+      },
+      "ai": {
+        "title": "O que a IA pode e não pode fazer",
+        "body": [
+          "O Fintelligent só vê o que você pode ver na sua organização. Nada é salvo, lançado ou gasto até você confirmar. A Fintela o opera com provedores de IA de terceiros, como DeepSeek e Anthropic, e você escolhe qual.",
+          "Com o Fintela MCP, seu próprio agente pode ler seus estudos e vereditos, verificar um servidor de estratégias que você opera e registrar propostas. Ele não pode criar nada, gastar tokens, operar nem chegar a uma corretora; uma pessoa confirma cada proposta no app."
+        ],
+        "links": {
+          "fintelligent": "Docs: Fintelligent",
+          "agent": "Docs: conecte seu agente",
+          "privacy": "Aviso de privacidade"
+        }
+      },
+      "more": {
+        "title": "Para a sua revisão de segurança",
+        "body": [
+          "Esta página cobre o que a documentação do produto diz. Se a sua revisão precisar de mais, como detalhes de hospedagem, criptografia ou conformidade, pergunte e responderemos por escrito."
+        ],
+        "links": {
+          "contact": "Fale conosco"
+        }
+      }
+    },
+    "closing": {
+      "title": "Traga suas perguntas de segurança.",
+      "body": "Uma demonstração com a equipe que construiu a plataforma é a forma mais rápida de cobrir a sua revisão."
+    }
   }
 }

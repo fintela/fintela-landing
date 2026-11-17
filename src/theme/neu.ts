@@ -17,7 +17,7 @@
  * .tsx module that exports both components and objects.
  */
 import type { SxProps, Theme } from '@mui/material';
-import { gradients, motion, palette, radii, shadows, soft } from './tokens';
+import { gradients, lightRaised, motion, palette, radii, shadows, soft } from './tokens';
 
 export const APP_URL = 'https://app.fintela.io';
 /**
@@ -44,7 +44,8 @@ export const lightTextResetSx = {
   '--fi-text': palette.text,
   '--fi-text-secondary': palette.textMuted,
   '--fi-text-subtle': palette.textSubtle,
-  '--fi-link-accent': palette.navy,
+  '--fi-link-accent': palette.redDeep,
+  '--fi-accent-gradient': gradients.goldTextLight,
 } as const;
 
 /**
@@ -62,12 +63,12 @@ export const lightTextResetSx = {
  */
 export const lightShadowResetSx = {
   '& *': {
-    '--fi-shadow-raised-xs': '2px 2px 5px rgba(0,0,0,0.14), -2px -2px 4px rgba(255,255,255,0.95)',
-    '--fi-shadow-raised-sm': '4px 4px 10px rgba(0,0,0,0.12), -4px -4px 9px rgba(255,255,255,0.95)',
-    '--fi-shadow-raised-md': '7px 7px 16px rgba(0,0,0,0.14), -7px -7px 14px rgba(255,255,255,0.96)',
-    '--fi-shadow-raised': '10px 10px 24px rgba(0,0,0,0.12), -10px -10px 22px rgba(255,255,255,0.96)',
-    '--fi-shadow-raised-lg': '14px 14px 32px rgba(0,0,0,0.16), -12px -12px 26px rgba(255,255,255,0.97)',
-    '--fi-shadow-raised-xl': '18px 18px 40px rgba(0,0,0,0.18), -14px -14px 34px rgba(255,255,255,0.98)',
+    '--fi-shadow-raised-xs': lightRaised.xs,
+    '--fi-shadow-raised-sm': lightRaised.sm,
+    '--fi-shadow-raised-md': lightRaised.md,
+    '--fi-shadow-raised': lightRaised.base,
+    '--fi-shadow-raised-lg': lightRaised.lg,
+    '--fi-shadow-raised-xl': lightRaised.xl,
   },
 } as const;
 export type WellTier = 'xs' | 'sm' | 'md';
@@ -153,7 +154,7 @@ export const neuButtonSx = (tone: NeuTone, size: NeuSize = 'md'): SxProps<Theme>
   py: BUTTON_SIZE[size].py,
   borderRadius: `${radii.neuInner}px`,
   fontSize: BUTTON_SIZE[size].fontSize,
-  fontWeight: 700,
+  fontWeight: 600,
   letterSpacing: 0,
   textTransform: 'none',
   whiteSpace: 'nowrap',
@@ -204,7 +205,7 @@ export const neuButtonSx = (tone: NeuTone, size: NeuSize = 'md'): SxProps<Theme>
         '@media (hover: hover)': {
           '&:hover': {
             backgroundColor: soft.surfaceRaised,
-            boxShadow: shadows.neuRaisedMd,
+            boxShadow: shadows.neuRaisedLg,
             transform: 'translateY(-1px)',
           },
         },

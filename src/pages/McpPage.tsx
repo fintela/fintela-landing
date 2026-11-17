@@ -20,6 +20,7 @@ import { Section } from '../components/primitives/Section';
 import { SectionHeader } from '../components/primitives/SectionHeader';
 import { NeuPanel } from '../components/primitives/NeuPanel';
 import { NeuButton } from '../components/primitives/NeuButton';
+import { CtaButton } from '../components/primitives/CtaButton';
 import { IconWell } from '../components/primitives/IconWell';
 import { CapabilityExplorer } from '../components/primitives/CapabilityExplorer';
 import { BlockHeading } from '../components/primitives/BlockHeading';
@@ -154,9 +155,7 @@ export const McpPage = () => {
           />
 
           <Box sx={{ mt: { xs: 3, md: 4 }, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-            <NeuButton tone="accent" endIcon={<ArrowForwardIcon />}>
-              {t('mcp.ctaPrimary')}
-            </NeuButton>
+            <CtaButton kind="trial" placement="mcp_hero" endIcon={<ArrowForwardIcon />} />
             <NeuButton tone="raised" to={SETUP_GUIDE}>
               {t('mcp.ctaSecondary')}
             </NeuButton>

@@ -57,6 +57,10 @@ async function loadTokens() {
   return {
     navyDeep: read('navyDeep'),
     gold: read('gold'),
+    yellow: read('yellow'),
+    red: read('red'),
+    markPlum: read('markPlum'),
+    markBlue: read('markBlue'),
     goldDeep: read('goldDeep'),
     text: read('text'),
     textMuted: read('textMuted'),
@@ -90,8 +94,8 @@ async function loadCards() {
     {
       name: 'default',
       kind: 'light',
-      title: 'The AI-native quant platform',
-      subtitle: 'Build, backtest, optimize and live-trade quantitative portfolios in one workspace.',
+      title: 'Quant research infrastructure your AI can operate',
+      subtitle: 'Build a strategy, optimize it across thousands of trials and test it on data it has never seen.',
     },
     { name: 'blog', kind: 'light', title: 'Blog', subtitle: pages.blog.hero.subtitle },
     { name: 'research', kind: 'light', title: 'Research', subtitle: pages.research.hero.subtitle },
@@ -125,8 +129,8 @@ const escapeHtml = (s) =>
 
 /**
  * One HTML document per card. Both variants share the frame: wordmark or mark
- * top-left, a gold rule, the title, the domain bottom-left. Light cards sit on the
- * soft-UI ground so they read like the site; photo cards put a navy gradient over
+ * top-left, an accent rule, the title, the domain bottom-left. Light cards sit on the
+ * site's canvas so they read like the site; photo cards put an ink gradient over
  * the hero still so white type stays legible on any crop.
  */
 function cardHtml(card, t, assets) {
@@ -157,7 +161,7 @@ function cardHtml(card, t, assets) {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 <style>
   * { box-sizing: border-box; margin: 0; }
   html, body { width: ${WIDTH}px; height: ${HEIGHT}px; overflow: hidden; }
@@ -165,27 +169,29 @@ function cardHtml(card, t, assets) {
     position: relative;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: ${light ? t.text : '#ffffff'};
-    background: ${light ? `linear-gradient(180deg, #f6f8fb 0%, ${t.ground} 100%)` : t.navyDeep};
+    background: ${light ? t.ground : t.navyDeep};
     -webkit-font-smoothing: antialiased;
   }
   .still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .scrim {
     position: absolute; inset: 0;
     background:
-      linear-gradient(90deg, rgba(11,26,51,0.94) 0%, rgba(11,26,51,0.82) 55%, rgba(11,26,51,0.45) 100%),
-      linear-gradient(180deg, rgba(11,26,51,0.2) 0%, rgba(11,26,51,0.6) 100%);
+      linear-gradient(90deg, rgba(16,18,22,0.94) 0%, rgba(16,18,22,0.82) 55%, rgba(16,18,22,0.45) 100%),
+      linear-gradient(180deg, rgba(16,18,22,0.2) 0%, rgba(16,18,22,0.6) 100%);
   }
   .wordmark { position: absolute; top: 64px; left: 80px; height: 56px; width: auto; }
   .brand { position: absolute; top: 64px; left: 80px; display: flex; align-items: center; gap: 14px;
-    font-weight: 700; font-size: 30px; letter-spacing: 0.02em; text-transform: uppercase; }
+    font-weight: 600; font-size: 30px; letter-spacing: 0.02em; text-transform: uppercase; }
   .brand .mark { height: 44px; width: 44px; }
   .stack { position: absolute; left: 80px; right: 80px; top: 50%; transform: translateY(-50%); padding-top: 28px; }
   .eyebrow { font-weight: 600; font-size: 24px; letter-spacing: 0.08em; text-transform: uppercase;
     color: ${light ? t.goldDeep : t.gold}; margin-bottom: 18px; }
-  h1 { font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; max-width: 1000px; }
+  h1 { font-weight: 600; line-height: 1.08; letter-spacing: -0.025em; max-width: 1000px; }
   .rule { width: 96px; height: 6px; border-radius: 3px; margin: 28px 0;
-    background: linear-gradient(135deg, ${t.gold} 0%, ${t.goldDeep} 100%); }
-  .sub { font-weight: 500; font-size: 30px; line-height: 1.35; max-width: 900px; color: ${t.textMuted}; }
+    /* gradients.gold: the mark in miniature. Solid yellow, a hard edge, then
+       red through plum to blue. Yellow never blends into red. */
+    background: linear-gradient(90deg, ${t.yellow} 0%, ${t.yellow} 24%, ${t.red} 24%, ${t.markPlum} 65%, ${t.markBlue} 100%); }
+  .sub { font-weight: 400; font-size: 30px; line-height: 1.35; max-width: 900px; color: ${t.textMuted}; }
   .domain { position: absolute; left: 80px; bottom: 56px; font-weight: 600; font-size: 26px;
     letter-spacing: 0.02em; color: ${light ? t.textMuted : 'rgba(255,255,255,0.72)'}; }
   .mark-faint { position: absolute; right: -40px; bottom: -60px; width: 420px; height: 420px; opacity: 0.08; }

@@ -17,6 +17,7 @@
  * The rest of what happens — the row, the staff notification — is the
  * backend's, and the page only needs "received" or "not received, and why".
  */
+import { track } from '../lib/track';
 
 export type ContactKind = 'walkthrough' | 'support';
 
@@ -112,5 +113,7 @@ export async function submitContactRequest(body: ContactRequest): Promise<{ id: 
   if (typeof id !== 'string') {
     throw new ContactApiError('unavailable', 'the backend answered without an id', res.status);
   }
+  // Both forms (the contact page and the floating widget) come through here.
+  track('contact_submit', { contact_kind: body.kind });
   return { id };
 }

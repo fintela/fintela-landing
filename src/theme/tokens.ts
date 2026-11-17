@@ -1,6 +1,13 @@
 /**
  * Fintela design tokens — single source of truth for color, gradient,
  * radius, shadow and motion. Import from here, not from raw hex values.
+ *
+ * The look is minimalist and content-first: a cool near-white canvas, a cool
+ * near-black ink, one type family in two weights and flat surfaces with
+ * hairline edges. Colour comes from the mark and nowhere else: its red is the
+ * one solid accent, and its red-to-blue ramp (`gradients`, below) is used in
+ * small doses — rules, accent words, one halo. Nothing on the page is warm:
+ * no cream ground, no orange, no terracotta.
  */
 
 /**
@@ -18,56 +25,58 @@ export const fonts = {
 } as const;
 
 export const palette = {
-  // Brand: black carries every control, link and accent word. Was navy; the
-  // whole blue family (navy included) has been retired in favor of a
-  // black/graphite scale.
-  navy: '#1a1a1a',
+  // Ink: a cool near-black that carries every control, heading and body line.
+  // The names are the ones every call site already imports (`navy` dates from
+  // the first palette); none of them is blue any more.
+  navy: '#12141a',
   navyDeep: '#000000',
-  navyMid: '#141414',
+  navyMid: '#1a1c23',
 
-  // The mark's yellow/red stay; the former "blue" leg of the tri-color
-  // accent is now a graphite/black step instead. `gold`/`goldDeep`/`goldSoft`
-  // are kept as the names every call site already imports, but `goldDeep`
-  // now points at black rather than blue.
+  // The mark's hues. The red is the site's one solid accent. Yellow is only
+  // ever a small solid (it never blends into the red: that blend is orange,
+  // and the mark keeps the two apart with a hard edge). Blue and the plum the
+  // mark passes through on its way from red to blue appear only inside
+  // `gradients` and the category cycle.
   yellow: '#e8b923',
   yellowDeep: '#8a6607',
   yellowSoft: 'rgba(232, 185, 35, 0.14)',
   red: '#f1353c',
   redDeep: '#c62828',
-  redSoft: 'rgba(241, 53, 60, 0.12)',
-  blue: '#3a3a3a',
-  blueDeep: '#1a1a1a',
-  blueSoft: 'rgba(26, 26, 26, 0.10)',
-  // The mark's actual blue leg (bottom of the "A"), used only for the page
-  // background wash below — not the retired `blue`/`blueDeep` graphite
-  // aliases every other call site already imports.
+  redSoft: 'rgba(241, 53, 60, 0.10)',
+  blue: '#373a42',
+  blueDeep: '#12141a',
+  blueSoft: 'rgba(18, 20, 26, 0.08)',
   markBlue: '#1f6fb0',
+  // Where the mark's lower stroke turns from red to blue.
+  markPlum: '#8a4a86',
+  // Text-safe steps of the same ramp: 4.9:1, 7.1:1 and 6.2:1 on the canvas.
+  markRedDeep: '#d02a38',
+  markPlumDeep: '#7a3b80',
+  markBlueDeep: '#1a5f9c',
 
-  // 3.95:1 on white — display spans, SVG fills, dots; never small body text.
-  // Aliases the mark's red.
+  // The accent, for marks only: rules, dots, large display. 3.75:1 on the
+  // canvas, so never body-size text — that is `redDeep` (5.3:1).
   gold: '#f1353c',
-  // 17.4:1 on white: eyebrows, small accents, category marks. Aliases black
-  // so accessible text-sized accents read as ink, not a hue.
-  goldDeep: '#1a1a1a',
-  // Chip and tile wash behind accent-marked labels. Aliases the mark's yellow.
-  goldSoft: 'rgba(232, 185, 35, 0.14)',
+  // Text-size accents read as ink, not a hue. Aliases the ink.
+  goldDeep: '#12141a',
+  // Chip and tile wash behind accent-marked labels: the ramp's midpoint.
+  goldSoft: 'rgba(138, 74, 134, 0.09)',
 
-  // Neutral grays (no blue tint), so nothing on the page reads as blue.
-  // `textMuted` is 7.8:1 on white; `textSubtle` (5.3:1) is for disabled and
-  // placeholder text only.
-  ink: '#000000',
-  text: '#000000',
-  textMuted: '#525252',
-  textSubtle: '#6b6b6b',
+  // Cool neutrals. `textMuted` is about 7.5:1 on the canvas; `textSubtle`
+  // (about 5:1) is for disabled and placeholder text only.
+  ink: '#12141a',
+  text: '#12141a',
+  textMuted: '#4d515b',
+  textSubtle: '#676b76',
 
   surface: '#ffffff',
-  surfaceMuted: '#f7f7f7',
-  border: '#e5e5e5',
-  borderStrong: '#cccccc',
+  surfaceMuted: '#f2f3f6',
+  border: '#e3e5ea',
+  borderStrong: '#c9ccd3',
 
   // Semantic — meaning, not brand. These are their own hex values (not the
   // brand red above) so a status color never drifts if the brand accent
-  // changes, and P&L red/green stay unambiguous even though brand red is now
+  // changes, and P&L red/green stay unambiguous even though brand red is
   // in circulation elsewhere on the page.
   success: '#10b981',
   warning: '#f59e0b',
@@ -75,36 +84,28 @@ export const palette = {
   info: '#06b6d4',
 } as const;
 
-// Shared six-way accent cycle for category badges/icons (feature cards, blog
-// tags) — navy plus all three mark hues, so a category mark can draw on the
-// full brand trio without ever repeating the same color twice in a row.
-// These are painted as small chip text, so every step clears 4.5:1 on white.
+// The accent cycle for category badges/icons (feature cards, blog tags): ink
+// and the three text-safe steps of the mark's ramp. Every step clears 4.5:1
+// on white and on the canvas, since these are painted as small chip text.
 export const accents = [
   palette.navy,
   palette.redDeep,
-  palette.yellowDeep,
-  palette.navyMid,
-  palette.blueDeep,
-  palette.navyDeep,
+  palette.markBlueDeep,
+  palette.navy,
+  palette.markPlumDeep,
+  palette.markBlueDeep,
 ] as const;
 
 /**
- * Soft-UI (neumorphic) surfaces — the pricing page. Text and controls are the
- * brand palette above; only the ground, wells and highlights are specific to
- * the style. The effect is a paired shadow in the ground's own hue, so the
- * ground is a pale neutral tint rather than #ffffff: on pure white the
- * top-left highlight is invisible and a card collapses into an ordinary drop
- * shadow. Raised surfaces are white, so the page still reads as white.
+ * Page surfaces. The canvas is a cool near-white, raised surfaces are white
+ * with a hairline edge, and wells are one step darker than the canvas. There
+ * are no paired shadows: depth is a hairline or, for things that float, one
+ * soft drop.
  *
- * Measured contrast (WCAG): textSecondary ~7:1 on ground/groundSunken, 7.8:1
- * on white; goldDeep (now black) 17.4:1 on white; textSubtle ~5:1; accent
- * (black) ~18:1; white on accent ~18:1; onHighlight on the yellow chip 9.4:1;
- * goldText's lightest (yellow) stop 2.2:1 on white. So on ground and
- * groundSunken the ONLY text colours are text and textSecondary;
- * goldDeep/textSubtle survive only inside a white raised panel; gold is never
- * small text; goldText is display-only (≥32px hero/section accents on the
- * ground, ≥19px-bold numerals on white) and NEVER on ink, where display
- * accents are solid gold.
+ * Contrast (WCAG, computed): text about 17:1 on the canvas; textSecondary
+ * about 7.5:1 on the canvas and 7.9:1 on white; textSubtle about 5:1; white on
+ * the accent control about 18:1; the red accent 3.7:1 (marks and display
+ * only); redDeep 5.3:1 (accent-coloured text and links).
  */
 export const soft = {
   white: '#ffffff',
@@ -129,19 +130,19 @@ export const soft = {
   // this is the one accent role that needs to react to `tone="ink"` too.
   linkAccent: 'var(--fi-link-accent)',
 
-  ground: '#eeeeee',
-  groundSunken: '#e2e2e2',
+  ground: '#f7f8fa',
+  groundSunken: '#eef0f3',
   surfaceRaised: '#ffffff',
 
   // Controls. White on black is ~18:1; deep black is the pressed state.
   accent: palette.navy,
   accentActive: palette.navyDeep,
-  // The featured tier is where the accent lands: its chip, its ring and its
-  // column wash. Uses the mark's yellow — black text on the chip is 9.4:1.
-  highlight: palette.yellow,
-  onHighlight: palette.navyDeep,
-  wash: 'rgba(232, 185, 35, 0.09)',
-  ring: 'rgba(232, 185, 35, 0.6)',
+  // The featured tier: an ink chip with white text, a ring and a faint wash
+  // down its column, both in the ramp's midpoint.
+  highlight: palette.navy,
+  onHighlight: '#ffffff',
+  wash: 'rgba(138, 74, 134, 0.045)',
+  ring: 'rgba(138, 74, 134, 0.6)',
   // Shadow hue and print borders.
   deep: palette.navyDeep,
   // Text on the ink surface (code blocks, dormant ink panels). Never on light
@@ -152,61 +153,87 @@ export const soft = {
   // Hover fill for a control that sits on ink.
   onInkWash: 'rgba(255,255,255,0.08)',
   // The modal scrim (DocsSearch) and the docs sidebar's hover scrollbar thumb.
-  scrim: 'rgba(0,0,0,0.55)',
-  scrollbar: 'rgba(0,0,0,0.18)',
+  scrim: 'rgba(18,20,26,0.55)',
+  scrollbar: 'rgba(18,20,26,0.18)',
+} as const;
+
+/**
+ * The dark product preview: the frame the home page's schematic visuals
+ * (code, trial curves, verdicts) are drawn in. Light marketing canvas, dark
+ * previews. These are diagrams of what the product does, not screenshots of
+ * it, so they have their own small palette rather than the app's.
+ *
+ * Contrast on `ground` (computed): text about 15:1, textMuted about 7:1,
+ * good about 9:1, bad about 6:1, warn about 10:1.
+ */
+export const preview = {
+  ground: '#101216',
+  surface: '#181b21',
+  line: 'rgba(255,255,255,0.1)',
+  text: '#eceef2',
+  textMuted: 'rgba(236,238,242,0.64)',
+  faint: 'rgba(236,238,242,0.2)',
+  /** Held up on data the search never saw. */
+  good: '#3ecf8e',
+  /** Overfit risk. The brand red, lifted for a dark ground. */
+  bad: '#ff5a61',
+  // The mark's yellow, not an amber: nothing here leans orange.
+  warn: '#e8b923',
 } as const;
 
 /** Semantic washes the docs Callout layers over a well (never text). */
 export const calloutTints = {
-  info: 'rgba(0,0,0,0.06)',
+  info: 'rgba(18,20,26,0.05)',
   warning: 'rgba(245,158,11,0.08)',
-  tip: 'rgba(232,185,35,0.10)',
+  tip: 'rgba(31,111,176,0.07)',
   danger: 'rgba(239,68,68,0.08)',
   success: 'rgba(16,185,129,0.08)',
 } as const;
 
+/**
+ * The Fintela gradient, as the mark draws it: a solid yellow, then red running
+ * through plum into blue. Two rules keep it quiet.
+ *
+ * 1. Yellow never blends into red. The midpoint of that blend is orange, which
+ *    is not a Fintela colour; the mark separates the two with a hard edge and
+ *    so does every gradient here.
+ * 2. It is used small: a 3px rule, a few accent words, a ring on hover, one
+ *    blurred halo. Never a band, a button or a card fill.
+ *
+ * The names are the ones every call site already imports (`gold*` dates from
+ * the first palette).
+ */
+const RAMP = `${palette.red} 0%, ${palette.markPlum} 54%, ${palette.markBlue} 100%`;
+const flat = (color: string) => `linear-gradient(0deg, ${color}, ${color})`;
+
 export const gradients = {
-  // The brand ramp: black into deep black. One hue, so it reads as depth
-  // rather than as a rainbow, and clipped display text never passes through
-  // mud.
-  brand: 'linear-gradient(135deg, #1a1a1a 0%, #000000 100%)',
-  // Accent marks: rules, dots, underlines, the featured chip. Runs yellow →
-  // red → black, so small filled surfaces read as the Fintela gradient in
-  // miniature (the blue leg retired in favor of black). Small filled
-  // surfaces only — never a fill that has to carry text.
-  gold: 'linear-gradient(135deg, #e8b923 0%, #f1353c 55%, #1a1a1a 100%)',
-  // Accent display text: headline accents and large numerals. The lightest
-  // (yellow) stop is 2.2:1 on white, so this is for text ≥24px (or ≥19px
-  // bold) only — small accent text uses solid `palette.goldDeep`.
-  goldText: 'linear-gradient(135deg, #c9970c 0%, #e0323a 50%, #1a1a1a 100%)',
-  brandSoft:
-    'linear-gradient(135deg, rgba(0,0,0,0.07) 0%, rgba(232,185,35,0.07) 100%)',
-  brandFaint:
-    'linear-gradient(135deg, rgba(0,0,0,0.04) 0%, rgba(232,185,35,0.04) 100%)',
-  // The full mark palette, for the scroll-progress bar and the App shell's
-  // divider — the most visible single spot for the tri-color gradient.
-  brandHorizontal:
-    'linear-gradient(90deg, transparent, #e8b923 20%, #f1353c 50%, #1a1a1a 80%, transparent)',
-  ink: 'linear-gradient(180deg, #000000 0%, #141414 100%)',
-  surfaceFade:
-    'linear-gradient(180deg, rgba(0,0,0,0.03) 0%, rgba(232,185,35,0.02) 50%, rgba(255,255,255,0) 100%)',
-  // Soft-UI hero band. Ends on `soft.ground` so the seam into the section
-  // below it is invisible. Never put it behind neumorphic cards: a paired
-  // shadow on a graded ground desynchronizes from its background.
-  groundFade: 'linear-gradient(180deg, #f7f7f7 0%, #eeeeee 100%)',
-  // The top-of-page brand wash: gold → red → the mark's blue, top to bottom,
-  // fading out to fully transparent by the last stop. Painted at a fixed
-  // height (not `background-attachment: fixed`), so it scrolls away with the
-  // page — vivid over the hero, diffusing to nothing as the visitor scrolls
-  // down onto the plain `soft.ground` fill beneath it. Used only as the
-  // `body` background-image layer in theme.ts, over a `soft.ground`
-  // background-color.
-  pageGround:
-    'linear-gradient(180deg, ' +
-    'rgba(232,185,35,0.80) 0%, ' +
-    'rgba(241,53,60,0.75) 30%, ' +
-    'rgba(31,111,176,0.70) 60%, ' +
-    'rgba(31,111,176,0) 100%)',
+  // Ink: depth, not colour.
+  brand: 'linear-gradient(135deg, #12141a 0%, #000000 100%)',
+  // The ramp alone, on the diagonal: rings, halos, anything larger than a rule.
+  mark: `linear-gradient(135deg, ${RAMP})`,
+  // The mark in miniature, for rules and progress bars: a short solid yellow
+  // segment, a hard edge, then the ramp.
+  gold: 'var(--fi-accent-gradient)',
+  // Accent display text (headline accents, large numerals). A CSS custom
+  // property, like `soft.text`: on the canvas and on white it is the ramp's
+  // text-safe steps (`goldTextLight`, every part of a clipped word clears
+  // 4.5:1); inside a `Section tone="ink"` band it is the same ramp lifted
+  // (`goldTextInk`, every part clears 6:1 on ink). `src/index.css` declares
+  // both, and `lightTextResetSx` (theme/neu.ts) pins the light one back inside
+  // an opaque light surface. No yellow in either: it is 1.8:1 on the canvas.
+  goldText: 'var(--fi-accent-gradient)',
+  goldTextLight: 'linear-gradient(95deg, #8f6d18 0%, #c42d3a 55%, #1a1c23 100%)',
+  goldTextInk: 'linear-gradient(95deg, #d9b45a 0%, #ff6b72 55%, #c9ccd6 100%)',
+  // Faint tints of the ramp, for a featured column or row.
+  brandSoft: 'linear-gradient(135deg, rgba(241,53,60,0.07) 0%, rgba(31,111,176,0.07) 100%)',
+  brandFaint: 'linear-gradient(135deg, rgba(241,53,60,0.04) 0%, rgba(31,111,176,0.05) 100%)',
+  // The scroll-progress bar and the route-loading bar.
+  brandHorizontal: 'var(--fi-accent-gradient)',
+  // Dark bands and product previews.
+  ink: flat('#101216'),
+  surfaceFade: 'linear-gradient(180deg, rgba(18,20,26,0.03) 0%, rgba(18,20,26,0) 100%)',
+  // The first band of a page: the canvas, flat.
+  groundFade: flat('#f7f8fa'),
 } as const;
 
 export const radii = {
@@ -216,82 +243,89 @@ export const radii = {
   lg: 10,
   xl: 14,
   pill: 999,
-  // Soft-UI radii, named by role. Soft shadows need a generous arc to read as
-  // a pillow rather than a drop shadow, so these sit above the scale above.
+  // Surface radii, named by role (the `neu` prefix dates from the soft-UI
+  // style and is what every call site imports).
   // In `sx` these are px numbers, not spacing units — write `${radii.neuCard}px`.
-  neuCard: 24,
-  neuCardSm: 20,
-  neuInner: 14,
-  neuWell: 10,
+  neuCard: 16,
+  neuCardSm: 14,
+  neuInner: 10,
+  neuWell: 8,
+} as const;
+
+/** The hairline every raised surface is drawn with, on light and on ink. */
+const HAIRLINE = '0 0 0 1px rgba(18,20,26,0.11)';
+const HAIRLINE_INK = '0 0 0 1px rgba(255,255,255,0.14)';
+
+/**
+ * The raised tiers on a light ground, as literal values. `src/index.css`
+ * declares the same strings on `:root` (keep the two in sync), and
+ * `lightShadowResetSx` (theme/neu.ts) re-declares them inside opaque surfaces
+ * that sit in an ink band.
+ */
+export const lightRaised = {
+  xs: HAIRLINE,
+  sm: HAIRLINE,
+  md: HAIRLINE,
+  base: HAIRLINE,
+  lg: '0 0 0 1px rgba(18,20,26,0.2), 0 6px 20px rgba(18,20,26,0.07)',
+  xl: '0 0 0 1px rgba(18,20,26,0.24), 0 10px 28px rgba(18,20,26,0.1)',
+} as const;
+
+/** The same tiers on an ink band (`[data-tone='ink']` in src/index.css). */
+export const inkRaised = {
+  xs: HAIRLINE_INK,
+  sm: HAIRLINE_INK,
+  md: HAIRLINE_INK,
+  base: HAIRLINE_INK,
+  lg: '0 0 0 1px rgba(255,255,255,0.26)',
+  xl: '0 0 0 1px rgba(255,255,255,0.32)',
 } as const;
 
 export const shadows = {
-  xs: '0 1px 2px rgba(0,0,0, 0.04)',
-  sm: '0 1px 3px rgba(0,0,0, 0.05)',
-  md: '0 2px 8px rgba(0,0,0, 0.06)',
-  lg: '0 4px 16px rgba(0,0,0, 0.07)',
-  brand: '0 6px 16px rgba(0,0,0, 0.18)',
-  brandStrong: '0 8px 20px rgba(0,0,0, 0.26)',
+  xs: '0 1px 2px rgba(18,20,26, 0.04)',
+  sm: '0 1px 3px rgba(18,20,26, 0.05)',
+  md: '0 2px 8px rgba(18,20,26, 0.06)',
+  lg: '0 4px 16px rgba(18,20,26, 0.07)',
+  brand: '0 6px 16px rgba(18,20,26, 0.16)',
+  brandStrong: '0 8px 20px rgba(18,20,26, 0.22)',
 
-  // Soft-UI pairs: a near-black shadow bottom-right and a highlight top-left,
-  // so the light source stays top-left at every nesting depth. CSS custom
-  // properties, not raw strings: their light-mode pairing (a white highlight)
-  // only reads as a highlight against `soft.ground`; against a `Section
-  // tone="ink"` band that same white would show up as a stray glow, so the
-  // ink override (src/index.css) recolours the highlight to a mid-gray lifted
-  // off the ink gradient instead. A card with its own opaque background (a
-  // white NeuPanel, a raised button, `MuiAlert`) resets these back to their
-  // light values for its descendants — `darkSurfaceResetSx` in this file,
-  // spread into every such recipe — so a control nested inside one (e.g. the
-  // ToggleButtonGroup inside ContactPage's form panel) keeps the light pair
-  // regardless of the section it is ultimately sitting in.
-  // tier <-> min sibling gap: Xs 8px, Sm 16px (24px if it lifts to Md on hover),
-  // Md 24px, Raised/Lg 32px, Xl focus-only.
+  // Raised surfaces: a hairline at rest, a darker hairline and one soft drop
+  // from `Lg` up (featured cards, hover). CSS custom properties, not raw
+  // strings, so a `Section tone="ink"` band can swap the dark hairline for a
+  // light one (src/index.css); an opaque surface inside such a band resets
+  // them for its descendants (`lightShadowResetSx`, theme/neu.ts).
   neuRaisedXs: 'var(--fi-shadow-raised-xs)',
   neuRaisedSm: 'var(--fi-shadow-raised-sm)',
   neuRaisedMd: 'var(--fi-shadow-raised-md)',
   neuRaised: 'var(--fi-shadow-raised)',
   neuRaisedLg: 'var(--fi-shadow-raised-lg)',
   neuRaisedXl: 'var(--fi-shadow-raised-xl)',
-  // Inverted pairs: a permanently sunken well, and a raised control being
-  // pressed. Kept apart so the two can diverge later.
-  neuInset:
-    'inset 6px 6px 12px rgba(0,0,0,0.14), inset -6px -6px 12px rgba(255,255,255,0.95)',
-  neuInsetSm:
-    'inset 3px 3px 6px rgba(0,0,0,0.14), inset -3px -3px 6px rgba(255,255,255,0.96)',
-  neuPressed:
-    'inset 5px 5px 10px rgba(0,0,0,0.17), inset -5px -5px 10px rgba(255,255,255,0.95)',
-  // The accent surface is the one thing not tinted like the ground, so it
-  // drops the pairing: a white highlight on black reads as an artifact.
-  neuAccent: '6px 6px 16px rgba(0,0,0,0.30)',
-  neuAccentHover: '8px 10px 22px rgba(0,0,0,0.38)',
-  neuAccentPressed: 'inset 4px 4px 10px rgba(0,0,0,0.30)',
-  // A groove instead of a 1px rule — soft UI has no hard borders.
-  neuDivider:
-    'inset 0 1px 1px rgba(0,0,0,0.22), inset 0 -1px 0 rgba(255,255,255,0.95)',
-  // Blur-free groove for abutting cells and rows (a blurred inset bleeds at
-  // the cell's side edges and draws a seam between columns).
-  neuGroove: 'inset 0 1px 0 rgba(0,0,0,0.22), inset 0 2px 0 rgba(255,255,255,0.95)',
-  // The same groove on the ink surface: dark line, then a faint light line.
-  neuGrooveInk: 'inset 0 -1px 0 rgba(255,255,255,0.07), inset 0 -2px 0 rgba(0,0,0,0.45)',
-  // Inline code and 16-18px wells: the Sm pair swallows a glyph box.
-  neuInsetXs:
-    'inset 1px 1px 2px rgba(0,0,0,0.12), inset -1px -1px 2px rgba(255,255,255,0.9)',
-  // Chrome that floats over arbitrary content has no ground to pair a white
-  // highlight against, so these are unpaired black drops.
+  // Wells and pressed controls: an inner hairline on the sunken fill.
+  neuInset: 'inset 0 0 0 1px rgba(18,20,26,0.07)',
+  neuInsetSm: 'inset 0 0 0 1px rgba(18,20,26,0.07)',
+  neuPressed: 'inset 0 0 0 1px rgba(18,20,26,0.16)',
+  // The filled control casts nothing at rest and one soft drop on hover.
+  neuAccent: 'none',
+  neuAccentHover: '0 4px 14px rgba(18,20,26,0.2)',
+  neuAccentPressed: 'none',
+  // Rules between rows and cells: one hairline.
+  neuDivider: 'inset 0 1px 0 rgba(18,20,26,0.1)',
+  neuGroove: 'inset 0 1px 0 rgba(18,20,26,0.1)',
+  neuGrooveInk: 'inset 0 -1px 0 rgba(255,255,255,0.1)',
+  neuInsetXs: 'inset 0 0 0 1px rgba(18,20,26,0.06)',
+  // Chrome that floats over arbitrary content.
   // Sticky bars once content scrolls under them (bottom-only).
-  neuBar: '0 6px 16px rgba(0,0,0,0.10)',
+  neuBar: '0 1px 0 rgba(18,20,26,0.09)',
   // Menus, dialogs, the FAB.
-  neuFloat: '0 12px 36px rgba(0,0,0,0.22)',
+  neuFloat: '0 0 0 1px rgba(18,20,26,0.08), 0 12px 32px rgba(18,20,26,0.14)',
   // Drawers: the shadow falls away from the scrim edge.
-  neuFloatLeft: '-10px 0 28px rgba(0,0,0,0.22)',
-  neuFloatRight: '10px 0 28px rgba(0,0,0,0.22)',
-  // Footer step-down: the ground drops one level; only the top edge shows it.
-  neuFloor: 'inset 0 12px 20px -12px rgba(0,0,0,0.18)',
-  // The ink surface (code) is saturated like the accent button, so it drops
-  // the pairing too; lighter than neuAccent because the surface is large.
-  neuInk: '8px 8px 22px rgba(0,0,0,0.22)',
-  neuPressedInk: 'inset 2px 2px 4px rgba(0,0,0,0.45)',
+  neuFloatLeft: '-8px 0 24px rgba(18,20,26,0.14)',
+  neuFloatRight: '8px 0 24px rgba(18,20,26,0.14)',
+  // Footer step-down: one hairline along the top edge.
+  neuFloor: 'inset 0 1px 0 rgba(18,20,26,0.1)',
+  // The ink surface (code).
+  neuInk: 'none',
+  neuPressedInk: 'inset 0 0 0 1px rgba(255,255,255,0.14)',
 } as const;
 
 export const motion = {
@@ -304,6 +338,6 @@ export const motion = {
 
 export const layout = {
   maxWidth: 1200,
-  sectionPaddingY: { xs: 8, md: 14 },
+  sectionPaddingY: { xs: 4.5, md: 7.5 },
   containerPaddingX: { xs: 3, md: 4 },
 } as const;

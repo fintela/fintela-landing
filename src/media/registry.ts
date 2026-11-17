@@ -28,7 +28,7 @@
 import { LNG_LABELS, SUPPORTED_LNGS } from '../i18n/config';
 import { registerPicture } from './picture';
 import type { Picture, PictureFraming } from './picture';
-import heroBackdropPoster from '../assets/media/hero/backdrop-poster.jpg?w=828;1280;1920&format=avif;webp;jpeg&as=picture';
+import thesisToEdgePoster from '../assets/media/hero/thesis-to-edge-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
 import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
@@ -69,7 +69,7 @@ const MEDIA_BASE = (
 
 export const mediaUrl = (file: string): string => `${MEDIA_BASE}${file}`;
 
-export type VideoId = 'platformHome' | 'agents' | 'walkthrough';
+export type VideoId = 'thesisToEdge' | 'platformHome' | 'agents' | 'walkthrough';
 
 /** The app's page colour, which the recordings sit on (and the hero loop is padded with). */
 const APP_GROUND = '#f8fbfd';
@@ -120,6 +120,22 @@ export const TOUR_CHAPTERS = [
 ] as const;
 
 export const VIDEOS: Record<VideoId, VideoAsset> = {
+  /**
+   * "From thesis to edge", the home hero's film: an AI is plugged in, a market
+   * universe is snapshotted, a thesis becomes a strategy, the optimizer
+   * searches, portfolio candidates are ranked, one is tested out of sample and
+   * deployed live (30 s, 1280×720, 60 fps). The hero loops it muted, so the
+   * encode is silent (the master has music). Its captions are drawn into the
+   * picture, in English only. The poster is the frame at 6.3 s.
+   */
+  thesisToEdge: {
+    // No `av1`: SVT-AV1 came out only 21 % smaller than x264 crf 26 on this cut
+    // (scripts/encode-media.sh drops an AV1 that is not >30 % smaller).
+    src: { mp4: mediaUrl('thesis-to-edge.mp4') },
+    poster: still(thesisToEdgePoster),
+    posterAltKey: 'hero.filmAlt',
+    silent: true,
+  },
   /** Portfolios dashboard → risk charts → promote → the analysis report (36 s, silent). */
   platformHome: {
     src: { mp4: mediaUrl('platform-home.mp4') },
@@ -160,31 +176,6 @@ export const captionTracks = (video: VideoAsset) => {
   if (!captions) return [];
   return SUPPORTED_LNGS.map((lang) => ({ lang, label: LNG_LABELS[lang], src: captions[lang] }));
 };
-
-/** One width of the hero loop; HeroVideoBackdrop takes the first rung the viewport meets. */
-export interface HeroBackdropRung {
-  /** CSS px; matched with `(min-width: …)` when the video attaches. */
-  minWidth: number;
-  src: string;
-}
-
-/**
- * The full-bleed loop behind the hero copy (36 s, silent). The source promo
- * carries burnt-in captions in its bottom 200 px, so the master is cropped to
- * 1920×880; the hero's own fade covers what remains. That master is never
- * served: the loop sits blurred behind copy, so a 1280 rung for desktops and
- * a 960 rung for tablets are all the pixels anyone can see, and below 600 px
- * the poster stands in (scripts/encode-media.sh, audit IMG-01). The poster is
- * the LCP image of the home page — the `Picture` itself, not its URL, because
- * HeroVideoBackdrop also preloads its AVIF rungs.
- */
-export const HERO_BACKDROP = {
-  poster: heroBackdropPoster,
-  rungs: [
-    { minWidth: 1024, src: mediaUrl('hero-backdrop-1280.mp4') },
-    { minWidth: 600, src: mediaUrl('hero-backdrop-960.mp4') },
-  ] as readonly HeroBackdropRung[],
-} as const;
 
 export const STILLS = {
   liveOps: still(liveOps),

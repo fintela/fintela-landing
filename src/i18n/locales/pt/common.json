@@ -4,7 +4,6 @@
     "change": "Alterar idioma"
   },
   "actions": {
-    "getStarted": "Começar",
     "learnMore": "Saiba mais",
     "contactUs": "Fale conosco"
   },
@@ -33,5 +32,9 @@
     "fullscreen": "Tela cheia",
     "exitFullscreen": "Sair da tela cheia",
     "seek": "Posição"
+  },
+  "cta": {
+    "primary": "Começar teste grátis",
+    "secondary": "Agendar uma demonstração"
   }
 }

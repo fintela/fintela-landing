@@ -75,7 +75,7 @@ export function webSite(): JsonLdNode {
     url: `${SITE_URL}/`,
     name: ORG.name,
     publisher: ref(ORGANIZATION_ID),
-    inLanguage: ['en', 'es', 'pt'],
+    inLanguage: 'en',
   };
 }
 

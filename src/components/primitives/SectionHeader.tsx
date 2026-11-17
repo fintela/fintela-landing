@@ -30,7 +30,10 @@ interface SectionHeaderProps {
  */
 export const HERO_MEASURE = 820;
 
-/** The short gold rule that flanks an eyebrow — the site's section marker. */
+/** The reading measure for a paragraph of body copy: about 60 characters a line. */
+export const MEASURE = '60ch';
+
+/** The short accent rule that flanks an eyebrow — the site's section marker. */
 const Rule = ({ width = 28 }: { width?: number }) => (
   <Box
     aria-hidden
@@ -81,10 +84,10 @@ export const SectionHeader = ({
               component="span"
               sx={{
                 fontSize: '0.72rem',
-                fontWeight: 700,
+                fontWeight: 600,
                 letterSpacing: '0.14em',
                 textTransform: 'uppercase',
-                color: soft.textSecondary,
+                ...clippedGradientSx(gradients.goldText),
               }}
             >
               {eyebrow}
@@ -106,8 +109,8 @@ export const SectionHeader = ({
           sx={{
             fontSize:
               level === 'h1'
-                ? { xs: '2.25rem', sm: '3rem', md: '3.9rem' }
-                : { xs: '2rem', sm: '2.5rem', md: '3.25rem' },
+                ? { xs: '2.25rem', sm: '2.75rem', md: '3.5rem' }
+                : { xs: '1.75rem', sm: '2.125rem', md: '2.5rem' },
             color: soft.text,
             mb: description ? 2.5 : 0,
             // Even line lengths on the 2-3 line wraps a phone forces, so a
@@ -133,7 +136,8 @@ export const SectionHeader = ({
               fontSize: { xs: '1rem', md: '1.125rem' },
               lineHeight: 1.65,
               color: soft.textSecondary,
-              maxWidth: centered ? 640 : '100%',
+              // About 60 characters a line, whichever way the block is aligned.
+              maxWidth: MEASURE,
               mx: centered ? 'auto' : 0,
             }}
           >

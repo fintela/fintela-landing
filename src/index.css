@@ -9,22 +9,52 @@
    those blocks. The stacks that consume these live in src/theme/tokens.ts.
    --------------------------------------------------------------------------- */
 
-/* inter-latin */
+/* Two weights, and only two: regular (400) and semibold (600). Each subset's
+   one variable file is declared twice, once per weight, so the browser has
+   exactly those two faces to choose from. CSS font matching then does the
+   rest for the whole site: a rule asking for 500 gets the 400 face, and
+   anything from 600 up (the 700s and 800s scattered through older `sx`) gets
+   the 600 face. One file per subset is still all that downloads. */
+
+/* inter-latin, 400 */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400;
   font-display: swap;
   src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
     U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* inter-latin-ext */
+/* inter-latin, 600 */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 600;
+  font-display: swap;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* inter-latin-ext, 400 */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* inter-latin-ext, 600 */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
   font-display: swap;
   src: url('@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
@@ -65,17 +95,16 @@
    has hhea ascender 1984 and descender -494 = 96.88% / 24.12% of the em, so
    each face's overrides are those two numbers divided by its size-adjust.
 
-   One face per weight bucket: Inter widens with weight (800 is 4.7% wider
-   than 400) while a local face has one regular and one bold, so a single
-   size-adjust that fits body text leaves headlines 4-5% narrow. The
-   size-adjust values were measured in Chromium against the site's own copy
-   (scratchpad measure-weights.mjs); 107.12% for regular is also next/font's
-   published Inter->Arial pair. Liberation Sans is metric-compatible with
-   Arial and Helvetica is within 0.1%, so the same numbers hold for them. */
+   One face per weight the site renders (see the two Inter faces above): the
+   regular bucket takes every request up to 500, the semibold bucket the rest.
+   The size-adjust values were measured in Chromium against the site's own
+   copy; 107.12% for regular is also next/font's published Inter->Arial pair.
+   Liberation Sans is metric-compatible with Arial and Helvetica is within
+   0.1%, so the same numbers hold for them. */
 /* Inter 400 over Arial (next/font's published pair) */
 @font-face {
   font-family: 'Inter Fallback';
-  font-weight: 100 450;
+  font-weight: 100 500;
   src: local('Arial'), local('Liberation Sans'), local('Helvetica');
   size-adjust: 107.12%;
   ascent-override: 90.44%;
@@ -83,58 +112,14 @@
   line-gap-override: 0%;
 }
 
-/* Inter 500 is 1.1% wider than 400; Arial has no medium */
-@font-face {
-  font-family: 'Inter Fallback';
-  font-weight: 451 550;
-  src: local('Arial'), local('Liberation Sans'), local('Helvetica');
-  size-adjust: 108.34%;
-  ascent-override: 89.42%;
-  descent-override: 22.26%;
-  line-gap-override: 0%;
-}
-
 /* Inter 600 over Arial Bold */
 @font-face {
   font-family: 'Inter Fallback';
-  font-weight: 551 650;
+  font-weight: 501 900;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
   size-adjust: 101.13%;
   ascent-override: 95.79%;
   descent-override: 23.85%;
-  line-gap-override: 0%;
-}
-
-/* Inter 700 over Arial Bold */
-@font-face {
-  font-family: 'Inter Fallback';
-  font-weight: 651 750;
-  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
-  size-adjust: 102.23%;
-  ascent-override: 94.76%;
-  descent-override: 23.59%;
-  line-gap-override: 0%;
-}
-
-/* Inter 800 over Arial Bold (the display headings) */
-@font-face {
-  font-family: 'Inter Fallback';
-  font-weight: 751 850;
-  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
-  size-adjust: 103.58%;
-  ascent-override: 93.53%;
-  descent-override: 23.29%;
-  line-gap-override: 0%;
-}
-
-/* Inter 900 over Arial Bold */
-@font-face {
-  font-family: 'Inter Fallback';
-  font-weight: 851 900;
-  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Helvetica-Bold');
-  size-adjust: 105.05%;
-  ascent-override: 92.22%;
-  descent-override: 22.96%;
   line-gap-override: 0%;
 }
 
@@ -154,53 +139,50 @@
 }
 
 /* `soft.text` / `soft.textSecondary` / `soft.textSubtle` / `soft.linkAccent`
-   (src/theme/tokens.ts) resolve to these four custom properties, not raw hex,
+   (src/theme/tokens.ts) resolve to these custom properties, not raw hex,
    so a `<Section tone="ink">` band can override them on itself (see
    Section.tsx) and every consumer that reads those tokens repaints
    automatically inside it — no per-component dark-mode branching. Values
-   mirror palette.text/textMuted/textSubtle/navy exactly; keep the two in
+   mirror palette.text/textMuted/textSubtle/redDeep exactly; keep the two in
    sync if either changes. */
 :root {
-  --fi-text: #000000;
-  --fi-text-secondary: #525252;
-  --fi-text-subtle: #6b6b6b;
-  --fi-link-accent: #1a1a1a;
+  --fi-text: #12141a;
+  --fi-text-secondary: #4d515b;
+  --fi-text-subtle: #676b76;
+  --fi-link-accent: #c62828;
+  /* gradients.goldTextLight (theme/tokens.ts): the mark's red-to-blue ramp in
+     its text-safe steps, for clipped accent words. */
+  --fi-accent-gradient: linear-gradient(95deg, #8f6d18 0%, #c42d3a 55%, #1a1c23 100%);
 
-  /* shadows.neuRaisedXs/Sm/Md/(neuRaised)/Lg/Xl (theme/tokens.ts) — the
-     paired near-black-shadow + white-highlight look, byte-identical to the
-     values that used to be hardcoded there. */
-  --fi-shadow-raised-xs: 2px 2px 5px rgba(0, 0, 0, 0.14), -2px -2px 4px rgba(255, 255, 255, 0.95);
-  --fi-shadow-raised-sm: 4px 4px 10px rgba(0, 0, 0, 0.12), -4px -4px 9px rgba(255, 255, 255, 0.95);
-  --fi-shadow-raised-md: 7px 7px 16px rgba(0, 0, 0, 0.14), -7px -7px 14px rgba(255, 255, 255, 0.96);
-  --fi-shadow-raised: 10px 10px 24px rgba(0, 0, 0, 0.12), -10px -10px 22px rgba(255, 255, 255, 0.96);
-  --fi-shadow-raised-lg: 14px 14px 32px rgba(0, 0, 0, 0.16), -12px -12px 26px rgba(255, 255, 255, 0.97);
-  --fi-shadow-raised-xl: 18px 18px 40px rgba(0, 0, 0, 0.18), -14px -14px 34px rgba(255, 255, 255, 0.98);
+  /* shadows.neuRaisedXs/Sm/Md/(neuRaised)/Lg/Xl — `lightRaised` in
+     theme/tokens.ts, byte for byte: a hairline at rest, a darker hairline and
+     one soft drop from Lg up. */
+  --fi-shadow-raised-xs: 0 0 0 1px rgba(18,20,26,0.11);
+  --fi-shadow-raised-sm: 0 0 0 1px rgba(18,20,26,0.11);
+  --fi-shadow-raised-md: 0 0 0 1px rgba(18,20,26,0.11);
+  --fi-shadow-raised: 0 0 0 1px rgba(18,20,26,0.11);
+  --fi-shadow-raised-lg: 0 0 0 1px rgba(18,20,26,0.2), 0 6px 20px rgba(18,20,26,0.07);
+  --fi-shadow-raised-xl: 0 0 0 1px rgba(18,20,26,0.24), 0 10px 28px rgba(18,20,26,0.1);
 }
 
-/* The ink band's own values — soft.white / soft.onInk / soft.onInkMuted,
-   kept in sync with theme/tokens.ts by hand. `--fi-link-accent` becomes the
-   mark's red (palette.gold) rather than staying near-black: a link painted
-   straight on ink needs a hue, not a shade of the ground it is invisible
-   against.
-
-   The raised-shadow pairs keep the same offsets/blur as light mode but trade
-   the white highlight for a mid-gray one lifted off the ink gradient
-   (`gradients.ink`, #000 to #141414) instead of off `soft.ground` — a white
-   highlight this size reads as a glow against black, not a pillow edge. The
-   shadow side goes slightly more opaque so a card still separates from the
-   near-black ground it is now sitting on. */
+/* The ink band's own values — soft.white / soft.onInk / soft.onInkMuted and
+   `inkRaised` in theme/tokens.ts, kept in sync by hand. A link painted
+   straight on ink takes the accent red itself (about 5:1 there) rather than
+   the deep red it uses on the canvas, which would sink into the dark ground. */
 [data-tone='ink'] {
   --fi-text: #ffffff;
   --fi-text-secondary: rgba(255, 255, 255, 0.72);
   --fi-text-subtle: rgba(255, 255, 255, 0.45);
   --fi-link-accent: #f1353c;
+  /* gradients.goldTextInk: the same ramp lifted, every stop above 6:1 on ink. */
+  --fi-accent-gradient: linear-gradient(95deg, #d9b45a 0%, #ff6b72 55%, #c9ccd6 100%);
 
-  --fi-shadow-raised-xs: 2px 2px 5px rgba(0, 0, 0, 0.5), -2px -2px 4px rgba(90, 90, 90, 0.35);
-  --fi-shadow-raised-sm: 4px 4px 10px rgba(0, 0, 0, 0.5), -4px -4px 9px rgba(90, 90, 90, 0.35);
-  --fi-shadow-raised-md: 7px 7px 16px rgba(0, 0, 0, 0.55), -7px -7px 14px rgba(90, 90, 90, 0.35);
-  --fi-shadow-raised: 10px 10px 24px rgba(0, 0, 0, 0.55), -10px -10px 22px rgba(90, 90, 90, 0.35);
-  --fi-shadow-raised-lg: 14px 14px 32px rgba(0, 0, 0, 0.6), -12px -12px 26px rgba(100, 100, 100, 0.4);
-  --fi-shadow-raised-xl: 18px 18px 40px rgba(0, 0, 0, 0.6), -14px -14px 34px rgba(100, 100, 100, 0.42);
+  --fi-shadow-raised-xs: 0 0 0 1px rgba(255,255,255,0.14);
+  --fi-shadow-raised-sm: 0 0 0 1px rgba(255,255,255,0.14);
+  --fi-shadow-raised-md: 0 0 0 1px rgba(255,255,255,0.14);
+  --fi-shadow-raised: 0 0 0 1px rgba(255,255,255,0.14);
+  --fi-shadow-raised-lg: 0 0 0 1px rgba(255,255,255,0.26);
+  --fi-shadow-raised-xl: 0 0 0 1px rgba(255,255,255,0.32);
 }
 
 *,
@@ -218,8 +200,11 @@ body {
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  /* Pins light for the whole tree, portals included: an auto-darkened ground
-     inverts every soft-UI white highlight into a smear. Mirrors theme.ts. */
+  /* The two Inter faces are the only weights there are: never fake a bolder one. */
+  font-synthesis-weight: none;
+  /* Pins light for the whole tree, portals included: the palette is written
+     for a light canvas, and an auto-darkened one would put ink on ink.
+     Mirrors theme.ts. */
   color-scheme: light;
 }
 
@@ -231,8 +216,8 @@ body {
   text-rendering: optimizeLegibility;
   /* soft.ground — the first paint before Emotion injects; theme.ts
      (MuiCssBaseline) is the owner from then on. Keep the two in sync. */
-  background-color: #edf0f5;
-  color: #0b1a33;
+  background-color: #f7f8fa;
+  color: #12141a;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
@@ -247,9 +232,10 @@ svg {
   max-width: 100%;
 }
 
+/* The accent as a wash, ink on top. */
 ::selection {
-  background: rgba(201, 162, 39, 0.35);
-  color: #0b1a33;
+  background: rgba(241, 53, 60, 0.18);
+  color: #12141a;
 }
 
 a {
@@ -260,7 +246,7 @@ a {
 /* soft.accent. No border-radius here: it rewrote the focused element's own
    radius and squared every pill on focus. Offset 3 matches neuButtonSx. */
 :focus-visible {
-  outline: 2px solid #16325c;
+  outline: 2px solid #12141a;
   outline-offset: 3px;
 }
 

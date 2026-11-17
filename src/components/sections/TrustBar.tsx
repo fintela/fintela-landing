@@ -2,8 +2,6 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { motion, soft } from '../../theme/tokens';
 import { eyebrowSx, quietLinkSx } from '../../theme/neu';
-import { Section } from '../primitives/Section';
-import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import momentoCapitalLogo from '../../assets/clients/momento_capital_logo.png';
 import edgebridgeCapitalLogo from '../../assets/clients/edgebridge_capital_logo.jpeg';
 
@@ -13,156 +11,75 @@ const partners = [
 ];
 
 /**
- * How many times the partner list repeats along one lap of the belt. Wide
- * enough that two logos still read as a running strip rather than a lonely
- * pair drifting across an empty band, on any screen up to an ultra-wide
- * monitor.
+ * The teams building with Fintela: each logo once, in a still row. No belt and
+ * no repeats — two logos looping read as padding, and moving content with no
+ * way to stop it fails touch and keyboard visitors.
+ *
+ * Just the row; the section it sits in (and the spacing around it) belongs to
+ * the caller.
  */
-const LAPS = 6;
-const lap = Array.from({ length: LAPS }, (_, i) => partners[i % partners.length]);
-/** The belt: the lap, back to back with an exact copy of itself, so a
- *  -50% translateX always hands off to pixel-identical content — the loop
- *  point is invisible regardless of how wide the lap ends up being. */
-const belt = [...lap, ...lap];
-
-/**
- * A continuous, repeating strip of partner logos. Only the belt's first
- * pass through the real partner list (one tile per partner) is an
- * accessible, focusable link; every other tile — the repeats that fill the
- * belt, and the whole second lap that makes the loop seamless — is the same
- * logo again, `aria-hidden` and pulled out of the tab order so a keyboard or
- * screen-reader visitor never has to step through a dozen copies of the same
- * two destinations. The belt pauses on hover and on focus, so the one real
- * link is never a moving target.
- */
-export const TrustBar = () => {
+export const PartnerLogos = () => {
   const { t } = useTranslation('home');
   return (
-    <Section size="sm" sx={{ py: { xs: 5, md: 6 } }}>
-      <AnimateOnScroll>
-        <Typography
-          sx={{ ...eyebrowSx, fontSize: '0.72rem', letterSpacing: '0.14em', textAlign: 'center', mb: 3 }}
-        >
-          {t('trustBar.title')}
-        </Typography>
-        <Box
-          sx={{
-            overflow: 'hidden',
-            // A mask-image starts a new stacking context, which isolates
-            // blend modes for everything painted inside it — see the belt
-            // track below, which needs the same fix for the same reason.
-            backgroundColor: soft.ground,
-            maskImage: 'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
-            WebkitMaskImage: 'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              width: 'max-content',
-              gap: { xs: 3, md: 4 },
-              // Every non-`none` `transform` — including this belt's, mid-
-              // animation, on every frame but the one where it's exactly
-              // translateX(0) — starts a stacking context exactly like the
-              // mask above, and isolates blending the same way: the logos'
-              // `mix-blend-mode: multiply` two levels down would see only
-              // THIS box's own background, not the mask wrapper's a level
-              // out, let alone the Section's ground several parents further.
-              // Both isolating boxes need the ground painted on them, or a
-              // multiply blend anywhere inside has nothing real to multiply
-              // against and quietly does nothing — which is exactly what
-              // happened before this line existed.
-              backgroundColor: soft.ground,
-              animation: 'trustBarBelt 34s linear infinite',
-              '@keyframes trustBarBelt': {
-                from: { transform: 'translateX(0)' },
-                to: { transform: 'translateX(-50%)' },
-              },
-              // Paused, not stopped: a visitor reaching for a logo gets a
-              // steady target, and letting go picks the motion back up.
-              '@media (hover: hover)': { '&:hover': { animationPlayState: 'paused' } },
-              '&:focus-within': { animationPlayState: 'paused' },
-              // No motion: the belt collapses back to the one real lap,
-              // wrapped like an ordinary row — every decorative repeat
-              // below is `display: none` for the same query.
-              '@media (prefers-reduced-motion: reduce)': {
-                animation: 'none',
-                width: 'auto',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-              },
-            }}
-          >
-            {belt.map((partner, i) => {
-              const real = i < partners.length;
-              return (
-                <Box
-                  key={i}
-                  component="a"
-                  href={partner.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={partner.name}
-                  aria-hidden={real ? undefined : true}
-                  tabIndex={real ? undefined : -1}
-                  sx={[
-                    quietLinkSx,
-                    {
-                      // No card: just the logo, floating on the section's own
-                      // ground. The link is still the full slot (quietLinkSx's
-                      // focus ring included), so hover/focus/hit area match the
-                      // image rather than hugging its non-transparent pixels.
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      height: { xs: 64, md: 80 },
-                      px: 2.5,
-                      py: 1.5,
-                      '@media (hover: hover)': {
-                        '&:hover .partner-logo': { opacity: 1, filter: 'grayscale(0)' },
-                      },
-                      '&:focus-visible .partner-logo': { opacity: 1, filter: 'grayscale(0)' },
-                      '@media (prefers-reduced-motion: reduce)': { display: real ? 'flex' : 'none' },
-                    },
-                  ]}
-                >
-                  <Box
-                    component="img"
-                    className="partner-logo"
-                    src={partner.logo}
-                    alt={partner.name}
-                    loading={real ? undefined : 'lazy'}
-                    sx={{
-                      maxHeight: '100%',
-                      maxWidth: 180,
-                      objectFit: 'contain',
-                      opacity: 0.85,
-                      filter: 'grayscale(0.4)',
-                      // Every partner logo file is a flat opaque rectangle — a
-                      // pure-white fill behind the mark, no real alpha (checked
-                      // pixel by pixel; the .jpeg can't even carry one). Multiply
-                      // is the standard fix for that: on the section's own flat,
-                      // light ground, white multiplies away to the ground colour
-                      // and only the ink stays visible, edges antialiased along
-                      // with it — no cutout, no fringe, and it still tracks the
-                      // ground if a future edit changes it.
-                      mixBlendMode: 'multiply',
-                      transition: `opacity ${motion.base}, filter ${motion.base}`,
-                      // A filter (or a blend mode) is invisible to forced-colors'
-                      // own repaint, and multiply against an unpredictable
-                      // high-contrast ground can turn the mark illegible — both
-                      // are reset with it, back to a plain opaque logo.
-                      '@media (forced-colors: active)': { opacity: 1, filter: 'none', mixBlendMode: 'normal' },
-                    }}
-                  />
-                </Box>
-              );
-            })}
+    // The ground is painted here, not only on the page: the section's content
+    // sits in its own stacking context, and a multiply blend (the logos, below)
+    // only sees what is painted inside that context.
+    <Box sx={{ backgroundColor: soft.ground }}>
+      <Typography sx={{ ...eyebrowSx, fontSize: '0.72rem', letterSpacing: '0.14em', textAlign: 'center', mb: 2.5 }}>
+        {t('proof.logosLabel')}
+      </Typography>
+      <Box
+        component="ul"
+        role="list"
+        sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', columnGap: { xs: 3, md: 7 }, rowGap: 2 }}
+      >
+        {partners.map((partner) => (
+          <Box component="li" key={partner.name}>
+            <Box
+              component="a"
+              href={partner.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={partner.name}
+              sx={[
+                quietLinkSx,
+                {
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: { xs: 56, md: 68 },
+                  px: 2,
+                  py: 1,
+                  '@media (hover: hover)': { '&:hover .partner-logo': { opacity: 1, filter: 'grayscale(0)' } },
+                  '&:focus-visible .partner-logo': { opacity: 1, filter: 'grayscale(0)' },
+                },
+              ]}
+            >
+              <Box
+                component="img"
+                className="partner-logo"
+                src={partner.logo}
+                alt={partner.name}
+                loading="lazy"
+                decoding="async"
+                sx={{
+                  maxHeight: '100%',
+                  maxWidth: 180,
+                  objectFit: 'contain',
+                  opacity: 0.85,
+                  filter: 'grayscale(0.4)',
+                  // The logo files are flat opaque rectangles with a white fill
+                  // behind the mark. Multiply drops the white into whatever
+                  // light ground the row sits on, edges antialiased with it.
+                  mixBlendMode: 'multiply',
+                  transition: `opacity ${motion.base}, filter ${motion.base}`,
+                  '@media (forced-colors: active)': { opacity: 1, filter: 'none', mixBlendMode: 'normal' },
+                }}
+              />
+            </Box>
           </Box>
-        </Box>
-      </AnimateOnScroll>
-    </Section>
+        ))}
+      </Box>
+    </Box>
   );
 };

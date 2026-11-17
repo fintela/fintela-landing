@@ -11,7 +11,7 @@ import { GroundTexture } from '../components/primitives/GroundTexture';
 import { ComparisonPanel, SeatPanel } from '../components/solutions/AdvantagePanels';
 import { SolutionChapters } from '../components/solutions/SolutionChapters';
 import { ClosingSection } from '../components/sections/ClosingSection';
-import { NeuButton } from '../components/primitives/NeuButton';
+import { CtaButton } from '../components/primitives/CtaButton';
 import { MediaWell } from '../components/primitives/MediaWell';
 import { NotFoundPage } from './NotFoundPage';
 import { bandClipSx, clippedGradientSx, ctaRowSx } from '../theme/neu';
@@ -42,10 +42,9 @@ export const SolutionPage = () => {
 
   const badge = t(`solutions:${audience}.badge`);
   const badgeAccent = t(`solutions:${audience}.badgeAccent`);
-  // Seats sold through a walkthrough lead with it; the self-serve seat signs up
-  // straight away. Either way the page ends at the app, not only at the docs.
-  const primaryToApp = audience === 'independents';
-  const primaryCta = primaryToApp ? {} : { to: '/contact' };
+  // Seats sold through a walkthrough lead with it; the self-serve seat leads
+  // with the trial. Both buttons are always there, in that order.
+  const lead = audience === 'independents' ? 'trial' : 'walkthrough';
   const badgeLead = badgeAccent && badge.endsWith(badgeAccent) ? badge.slice(0, -badgeAccent.length) : badge;
 
   return (
@@ -110,10 +109,8 @@ export const SolutionPage = () => {
               </AnimateOnScroll>
               <AnimateOnScroll delay={220}>
                 <Box sx={[ctaRowSx, { mt: 3.5, justifyContent: 'flex-start' }]}>
-                  <NeuButton tone="accent" {...primaryCta}>
-                    {t(`solutions:${audience}.ctaPrimary`)}
-                  </NeuButton>
-                  {!primaryToApp && <NeuButton tone="raised">{t('common:actions.getStarted')}</NeuButton>}
+                  <CtaButton kind={lead} placement="solution_hero" emphasis="primary" />
+                  <CtaButton kind={lead === 'trial' ? 'walkthrough' : 'trial'} placement="solution_hero" emphasis="secondary" />
                 </Box>
               </AnimateOnScroll>
             </Box>
@@ -156,8 +153,8 @@ export const SolutionPage = () => {
           title={t(`solutions:${audience}.closing.title`)}
           titleAccent={t(`solutions:${audience}.closing.titleAccent`)}
           body={t(`solutions:${audience}.closing.body`)}
-          primary={{ label: primaryToApp ? t('common:actions.getStarted') : t(`solutions:${audience}.ctaPrimary`), ...primaryCta }}
-          secondary={{ label: t('solutions:common.closing.ctaSecondary'), to: '/pricing' }}
+          lead={lead}
+          placement="solution_closing"
         />
       </Box>
 

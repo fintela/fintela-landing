@@ -6,7 +6,7 @@ import { AnimateOnScroll } from '../common/AnimateOnScroll';
 import { GradientText } from '../primitives/GradientText';
 import { RotatingWord } from '../primitives/RotatingWord';
 import { Section } from '../primitives/Section';
-import { NeuButton } from '../primitives/NeuButton';
+import { CtaButton } from '../primitives/CtaButton';
 import { bandClipSx } from '../../theme/neu';
 import { soft } from '../../theme/tokens';
 import { AWARD_POST } from '../../lib/award';
@@ -127,13 +127,8 @@ export const HeroDiorama = () => {
                 '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } },
               }}
             >
-              {/* No `to`: NeuButton then links to the app's sign-up page, where the trial starts. */}
-              <NeuButton tone="accent">
-                {t('hero.ctaPrimary')}
-              </NeuButton>
-              <NeuButton tone="raised" to="/contact">
-                {t('hero.ctaContact')}
-              </NeuButton>
+              <CtaButton kind="trial" placement="home_demo_hero" />
+              <CtaButton kind="walkthrough" placement="home_demo_hero" />
             </Box>
           </AnimateOnScroll>
 

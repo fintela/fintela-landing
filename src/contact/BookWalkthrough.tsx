@@ -3,6 +3,7 @@ import { Box, Link, Typography } from '@mui/material';
 import { InlineWidget, useCalendlyEventListener } from 'react-calendly';
 import { useTranslation } from 'react-i18next';
 import { soft } from '../theme/tokens';
+import { track } from '../lib/track';
 
 /**
  * The public Calendly booking page, from `VITE_CALENDLY_URL` (see .env.example).
@@ -11,13 +12,6 @@ import { soft } from '../theme/tokens';
 export const CALENDLY_URL = (import.meta.env.VITE_CALENDLY_URL ?? '').trim();
 
 const UTM = { utmSource: 'website', utmCampaign: 'contact-section' };
-
-declare global {
-  interface Window {
-    /** Microsoft Clarity's queue stub from `index.html`; events queue until consent loads the tag. */
-    clarity?: (...args: unknown[]) => void;
-  }
-}
 
 const noopSubscribe = () => () => {};
 
@@ -33,10 +27,7 @@ export const BookWalkthrough = () => {
 
   useCalendlyEventListener({
     onEventScheduled: () => {
-      // The site's only analytics is Clarity; the stub is always defined on
-      // fintela.io and the call is only delivered once the visitor has consented.
-      // TODO: forward to a conversion/analytics pipeline if one is added.
-      window.clarity?.('event', 'calendly_event_scheduled');
+      track('calendly_event_scheduled');
     },
   });
 

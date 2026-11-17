@@ -2,7 +2,7 @@
 // config but with landing-appropriate preloaded namespaces. Kept free of
 // i18next imports so it can be consumed from anywhere.
 
-export const SUPPORTED_LNGS = ['en', 'es', 'pt'] as const;
+export const SUPPORTED_LNGS = ['en'] as const;
 export type SupportedLng = (typeof SUPPORTED_LNGS)[number];
 
 export const FALLBACK_LNG: SupportedLng = 'en';

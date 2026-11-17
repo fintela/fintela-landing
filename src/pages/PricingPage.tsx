@@ -13,12 +13,13 @@ import { Footer } from '../components/Footer/Footer';
 import { Section } from '../components/primitives/Section';
 import { SectionHeader } from '../components/primitives/SectionHeader';
 import { NeuButton } from '../components/primitives/NeuButton';
+import { CtaButton } from '../components/primitives/CtaButton';
 import { CheckWell } from '../components/primitives/CheckWell';
 import { TierBadge } from '../components/primitives/TierBadge';
 import { IconWell } from '../components/primitives/IconWell';
 import { Groove } from '../components/primitives/Groove';
 import { AnimateOnScroll } from '../components/common/AnimateOnScroll';
-import { cellGrooveSx, clippedGradientSx, quietLinkSx, raisedPanelSx, srOnly } from '../theme/neu';
+import { cellGrooveSx, quietLinkSx, raisedPanelSx, srOnly } from '../theme/neu';
 import type { NeuTone } from '../theme/neu';
 import { gradients, motion, palette, radii, shadows, soft } from '../theme/tokens';
 import { Seo } from '../seo/Seo';
@@ -212,13 +213,13 @@ const PlanCard = ({
         // 1.5px ring reads the gradient and the card face stays white.
         '@media (hover: hover)': {
           '&:hover': {
-            backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+            backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.mark}`,
             backgroundOrigin: 'border-box',
             backgroundClip: 'padding-box, border-box',
           },
         },
         '&:focus-within': {
-          backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.gold}`,
+          backgroundImage: `linear-gradient(${soft.surfaceRaised}, ${soft.surfaceRaised}), ${gradients.mark}`,
           backgroundOrigin: 'border-box',
           backgroundClip: 'padding-box, border-box',
           boxShadow: shadows.neuRaisedXl,
@@ -258,8 +259,7 @@ const PlanCard = ({
         </Typography>
       </Box>
 
-      {/* The reference's "≥19px-bold numerals on white" case — the one place
-          on this card the gold display ramp is allowed on text. */}
+      {/* The price is ink: the accent is for marks, and a red price reads as a sale. */}
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: priceNote ? 0.5 : 1 }}>
         <Typography
           component="span"
@@ -268,7 +268,7 @@ const PlanCard = ({
             fontWeight: 800,
             lineHeight: 1,
             letterSpacing: '-0.02em',
-            ...clippedGradientSx(gradients.goldText),
+            color: soft.text,
           }}
         >
           {price}
@@ -758,7 +758,7 @@ export const PricingPage = () => {
                   overageRate={t(`pricing.individual.plans.${tier.key}.overageRate`)}
                   tokenHelp={t('pricing.individual.tokenHelp')}
                   support={t(`pricing.individual.plans.${tier.key}.support`)}
-                  cta={t(`pricing.individual.plans.${tier.key}.cta`)}
+                  cta={t(tier.key === 'custom' ? 'common:cta.secondary' : 'common:cta.primary')}
                   ctaTo={tier.key === 'custom' ? '/contact' : undefined}
                   ctaHref={tier.key === 'custom' ? undefined : planSignupUrl(tier.key, billing)}
                   ctaTone={tier.ctaTone}
@@ -836,9 +836,7 @@ export const PricingPage = () => {
                   '& > *': { flex: { xs: '1 1 100%', sm: '0 1 auto' } },
                 }}
               >
-                <NeuButton tone="accent" to="/contact">
-                  {t('pricing.cta.primary')}
-                </NeuButton>
+                <CtaButton kind="walkthrough" placement="pricing_closing" emphasis="primary" />
                 <NeuButton tone="raised" to={DOCS_HOME}>
                   {t('pricing.cta.secondary')}
                 </NeuButton>

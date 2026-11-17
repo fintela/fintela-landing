@@ -2,14 +2,16 @@
   "hero": {
     "titleLine1": "El futuro de la",
     "titleAccent": "inversión inteligente",
-    "marketWords": ["Acciones de EE. UU.", "Forex", "Mercados globales"],
+    "marketWords": [
+      "Acciones de EE. UU.",
+      "Forex",
+      "Mercados globales"
+    ],
     "subtitlePrefix": "estrategias de inversión en",
     "subtitleSuffix": "en un único ecosistema de quant finance, nativo de IA y en la nube",
     "ctaSecondary": "Mira cómo funciona",
-    "ctaContact": "Reserve una demostración",
     "headline": "Encuentre su",
     "headlineAccent": "ventaja.",
-    "ctaPrimary": "Comience su prueba gratuita",
     "awardAlt": "Ganador: New Solution Product of the Year, Hedgeweek US Awards 2026",
     "plateCaption": "Inicio de la plataforma · exposición por activo, carteras desplegadas y estrategias en uso",
     "liveBadge": "En vivo",
@@ -20,18 +22,25 @@
       "value": "312",
       "unit": "/ 500 trials",
       "sub": "train / val / OOS · 70 / 15 / 15"
+    },
+    "eyebrow": "Ganador, New Solution Product of the Year, Hedgeweek US Awards 2026, por votación de los lectores de Hedgeweek",
+    "title": "Infraestructura de investigación cuantitativa que tu IA puede operar.",
+    "titleMark": "tu IA puede operar.",
+    "filmAlt": "Animación del flujo de trabajo de Fintela: un modelo de IA se conecta a la plataforma, se guarda un universo de mercado, una tesis de mercado se convierte en estrategia, el optimizador explora sus parámetros en 1.000 pruebas, los portafolios candidatos se ordenan, uno se prueba con datos fuera de muestra y luego se despliega en vivo. Datos ilustrativos.",
+    "subtitle": "Construye una estrategia, optimízala en miles de trials y pruébala con datos que nunca ha visto, todo en una sola plataforma en la nube. Usa el asistente integrado o conecta tu propio agente. Tú decides qué pasa a operar en vivo.",
+    "loop": {
+      "label": "Ilustración animada: una hipótesis de una línea se convierte en una función de Python, la función se despliega en 1.000 curvas de trials y quedan dos candidatos. El mejor trial en muestra se marca como riesgo de sobreajuste porque cae al llegar a los datos reservados; otro más estable se califica como bien entrenado y se envía a una persona para su revisión.",
+      "frame": "estudio · momentum sectorial",
+      "play": "Reproducir la ilustración",
+      "pause": "Pausar la ilustración",
+      "stepJump": "Mostrar paso: {{step}}",
+      "steps": {
+        "hypothesis": "Hipótesis",
+        "code": "Código",
+        "trials": "Trials",
+        "verdict": "Veredicto"
+      }
     }
-  },
-  "award": {
-    "eyebrow": "Ganador · Hedgeweek US Awards 2026",
-    "title": "New Solution Product",
-    "titleAccent": "of the Year.",
-    "about": "Fintela ganó esta categoría en los Hedgeweek US Awards 2026. Los premios reconocen el desempeño de los fondos y la excelencia de los proveedores de servicios en la industria de hedge funds de EE. UU., y los ganadores se deciden por votación de los lectores de Hedgeweek.",
-    "recognizes": "Este premio reconoce la infraestructura de research que Fintela da a los hedge funds y a los equipos quant desde el primer día: pipelines de datos, backtesting y validación fuera de muestra en un solo entorno en la nube, en lugar de meses de ingeniería propia.",
-    "exit": "Leer el anuncio",
-    "photoAlt": "Dos miembros del equipo de Fintela, el cofundador y CEO Manuel Padrón a la derecha, con el trofeo de los Hedgeweek US Awards 2026 frente al fondo de Hedgeweek.",
-    "photoCaption": "Recogiendo el premio en Convene 237 Park Avenue, Nueva York, el 8 de octubre de 2026.",
-    "badgeAlt": "Insignia de ganador de los Hedgeweek US Awards 2026: New Solution Product of the Year."
   },
   "trustBar": {
     "title": "Equipos que construyen con Fintela"
@@ -40,11 +49,11 @@
     "eyebrow": "De la idea a producción",
     "title": "Un único pipeline.",
     "titleAccent": "Cada paso conectado.",
-    "description": "Cada idea recorre el mismo pipeline, desde los grupos de activos y el código de la estrategia hasta la ejecución en vivo, con cada etapa alimentando a la siguiente dentro del navegador. Sin exportar archivos, sin scripts locales, sin herramientas improvisadas, y con cada resultado reproducible.",
+    "description": "Cada idea recorre el mismo pipeline, desde los grupos de activos y el código de la estrategia hasta la ejecución en vivo, con cada etapa alimentando a la siguiente dentro del navegador. Sin exportar archivos, sin scripts locales, sin herramientas improvisadas, y con cada trial registrado.",
     "pipelineHighlights": [
       "Investiga ideas en paralelo",
-      "Valida con pruebas estadísticas",
-      "Despliega a trading en vivo",
+      "Comprueba los resultados con datos reservados",
+      "Opera en vivo cuando tú decidas",
       "Monitorea el riesgo y las noticias del mercado"
     ],
     "centerName": "FINTELA",
@@ -53,7 +62,7 @@
       "dataClusters": {
         "label": "Asset Groups",
         "sub": "Universo de mercado",
-        "desc": "Define tu universo invertible. Snapshots reutilizables de datos de mercado en acciones, ETFs, forex e índices globales, con cada backtest reproducible."
+        "desc": "Define tu universo de inversión una vez: un snapshot guardado de instrumentos de acciones, ETFs, forex e índices globales que cada estudio puede reutilizar."
       },
       "strategies": {
         "label": "Estrategias",
@@ -68,12 +77,12 @@
       "studies": {
         "label": "Estudios",
         "sub": "Búsqueda bayesiana",
-        "desc": "Lanza miles de trials en paralelo. La optimización inteligente enfoca la búsqueda en las regiones prometedoras; los resultados se validan en ventanas de train, val y out of sample."
+        "desc": "Lanza miles de trials en paralelo. La búsqueda se concentra en las regiones prometedoras, y cada trial se evalúa en periodos de entrenamiento, validación y fuera de muestra."
       },
       "portfolios": {
         "label": "Portafolios",
         "sub": "Analiza resultados",
-        "desc": "Explora portafolios rankeados, curvas de equity completas, importancia de parámetros y desglose a nivel de operación. Exporta informes en PDF cuando quieras."
+        "desc": "Compara los candidatos con datos reservados y un veredicto de sobreajuste para cada uno, y luego revisa curvas de equity, importancia de parámetros y operaciones. Exporta informes en PDF cuando quieras."
       },
       "riskManagers": {
         "label": "Gestores de riesgo",
@@ -83,7 +92,7 @@
       "connectBroker": {
         "label": "Conecta tu bróker",
         "sub": "Sal en vivo",
-        "desc": "Vincula tu cuenta de bróker y promueve cualquier cartera validada a ejecución en vivo, con registro de órdenes en tiempo real y pausa con un clic."
+        "desc": "Conecta tu cuenta de bróker y promueve el portafolio que elijas a ejecución en vivo, con logs de órdenes en tiempo real y pausa en un clic."
       }
     },
     "line": {
@@ -93,14 +102,14 @@
         "dataClusters": "11 ETF",
         "strategies": "sector_momentum",
         "studies": "1.000 trials",
-        "portfolios": "Portafolio líder",
+        "portfolios": "Veredictos",
         "connectBroker": "En vivo"
       },
       "handoff": {
         "dataClusters": "Entrega: Sector ETFs (US), 11 tickers, en un snapshot",
         "strategies": "Entrega: sector_momentum, con 2 parámetros por optimizar",
-        "studies": "Entrega: 1.000 trials, cada uno validado fuera de muestra",
-        "portfolios": "Entrega: el portafolio líder y su curva de equity",
+        "studies": "Entrega: 1.000 trials, cada uno evaluado con datos reservados",
+        "portfolios": "Entrega: los candidatos que se sostuvieron fuera de muestra",
         "connectBroker": "En vivo: órdenes enviadas a tu bróker, con pausa en un clic"
       },
       "surface": {
@@ -112,18 +121,30 @@
         "running": "En ejecución",
         "sampler": "Sampler",
         "trials": "Trials",
-        "bestSharpe": "Mejor Sharpe",
         "train": "Entrenamiento",
         "validation": "Validación",
         "oos": "Fuera de muestra",
-        "ranked": "Portafolios ordenados",
+        "ranked": "Candidatos",
         "exportPdf": "Exportar PDF",
         "connected": "Cuenta de bróker · Conectada",
         "pause": "Pausar",
         "buy": "COMPRA",
         "sell": "VENTA",
         "atMarket": "{{qty}} a mercado",
-        "filled": "Ejecutada"
+        "filled": "Ejecutada",
+        "overfitCheck": "Chequeo de sobreajuste",
+        "pending": "Pendiente",
+        "ready": "Listo",
+        "illustrative": "Datos ilustrativos",
+        "ofTrials": "Ratio de Sharpe · {{n}} trials",
+        "inSample": "En muestra",
+        "outOfSample": "Reservado",
+        "verdict": "Veredicto",
+        "verdicts": {
+          "overfitRisk": "Riesgo de sobreajuste",
+          "wellTrained": "Bien entrenado",
+          "borderline": "Límite"
+        }
       }
     },
     "stats": {
@@ -189,7 +210,7 @@
       },
       "bayesian": {
         "title": "Optimización inteligente",
-        "description": "Siete samplers, con TPE por defecto, buscan entre miles de pruebas y validan cada resultado en splits de entrenamiento, validación y fuera de muestra de forma automática."
+        "description": "Siete algoritmos de búsqueda, bayesiano por defecto, ejecutan miles de trials y evalúan cada uno en periodos de entrenamiento, validación y fuera de muestra."
       },
       "strategyClustering": {
         "title": "Descubre tus estrategias distintas",
@@ -501,7 +522,7 @@
       "researchDesks": {
         "badge": "Para mesas de research",
         "title": "Equipos de research quant",
-        "description": "Biblioteca de estrategias compartida, Asset Groups compartidos, resultados de optimización compartidos, todo dentro de un único espacio de trabajo organizacional con procedencia criptográfica integrada.",
+        "description": "Biblioteca de estrategias compartida, grupos de activos compartidos y resultados de optimización compartidos, todo en un único espacio de trabajo de la organización.",
         "outcomes": [
           "Una única fuente de verdad para todo el equipo",
           "Historial de estrategias hasheado criptográficamente y con marca de tiempo",
@@ -531,12 +552,12 @@
         "a": "Divisas, acciones de EE. UU., índices S&P, ETFs, forex y mercados globales, todo a través del mismo motor de estrategias unificado. Construye una estrategia una vez y pruébala en cualquier cluster que definas."
       },
       "vsBacktesting": {
-        "q": "¿En qué se diferencia Fintela de una librería de backtesting estándar?",
-        "a": "Fintela combina el backtesting con Asset Groups, código de estrategia, optimización inteligente de parámetros, evaluación train/validación/OOS, analítica de portafolios y despliegue en vivo vía tu bróker conectado en un único pipeline. Sin exportaciones, sin scripts, sin código de pegamento entre herramientas."
+        "q": "¿En qué se diferencia Fintela de una librería de backtesting?",
+        "a": "Una librería ejecuta un backtest. Fintela ejecuta todo el ciclo de investigación en un solo lugar: el universo, la estrategia, una búsqueda entre miles de combinaciones de parámetros, la evaluación con datos reservados y un informe de sobreajuste. Nada se exporta ni se une a mano entre pasos."
       },
       "python": {
         "q": "¿Necesito saber Python?",
-        "a": "Sí, las estrategias son funciones de Python, pero Fintelligent puede generarlas por ti. Describe lo que quieres en lenguaje natural y el agente escribe el código, configura los parámetros y prepara el formulario para tu revisión."
+        "a": "No para empezar. Las estrategias son funciones de Python, y el asistente las escribe a partir de una descripción en lenguaje natural para que las revises."
       },
       "optimization": {
         "q": "¿Cómo funciona la optimización?",
@@ -551,25 +572,29 @@
         "a": "Los portafolios validados pueden promoverse a operaciones en vivo que ejecutan a través de tu bróker conectado. Ves logs de órdenes en tiempo real, P&L y una pausa con un clic. Varias operaciones pueden ejecutarse en paralelo sobre distintos baskets."
       },
       "security": {
-        "q": "¿Es seguro el código de mi estrategia?",
-        "a": "Sí. Las estrategias y configuraciones se hashean y marcan con fecha de forma criptográfica, lo que respalda la verificación de autoría y la auditabilidad. La plataforma está totalmente alojada en la nube."
+        "q": "¿Dónde se ejecuta el código de mi estrategia?",
+        "a": "Tú eliges. Las estrategias escritas en Fintela se ejecutan en un entorno aislado, sin acceso a los sistemas internos de Fintela, y tus datos están limitados a tu organización. En modo externo, tu código y tus datos se quedan en tus propios servidores: Fintela envía parámetros y lee las posiciones."
       },
       "poweredBy": {
-        "q": "¿En qué se basa Fintelligent y es seguro?",
-        "a": "Puedes elegir qué proveedor de IA impulsa a Fintelligent, entre varias opciones como DeepSeek y Anthropic, con acceso gestionado por Fintela y sin claves de API que aportar. Cada llamada a herramienta es visible en el chat, y cada acción irreversible (crear/detener un estudio, desplegar una operación) requiere tu confirmación explícita antes de ejecutarse."
+        "q": "¿Qué IA impulsa a Fintelligent y qué puede hacer por su cuenta?",
+        "a": "Tú eliges el proveedor de IA entre las opciones que Fintela ofrece, como DeepSeek y Anthropic, sin aportar claves de API. Fintelligent solo ve lo que tú puedes ver en tu organización. Cada llamada a herramienta es visible, y nada se guarda, se lanza ni se gasta hasta que confirmas."
       },
       "speed": {
         "q": "¿Qué tan rápido puedo pasar de la idea al capital en vivo?",
         "a": "Cuánto tarda depende de tu idea y de cuánto optimices, no de montar infraestructura. No hay entorno que construir, ni pipeline de datos que conectar, ni transferencias entre herramientas."
+      },
+      "overfitting": {
+        "q": "¿Cómo ayuda Fintela con el sobreajuste?",
+        "a": "Cada estudio divide sus datos en periodos de entrenamiento, validación y fuera de muestra. La búsqueda solo ve el periodo de entrenamiento, y el periodo fuera de muestra se reserva hasta el final. Cuando un estudio termina, cada candidato recibe un veredicto basado en el Sharpe deflactado, la probabilidad de sobreajuste del backtest y cuánto cae el rendimiento fuera de muestra. Esto ayuda a identificar un posible sobreajuste. No predice resultados en vivo."
       }
     },
     "aside": {
       "title": "¿Aún tiene preguntas?",
       "body": "Una demostración de 30 minutos sobre sus propias estrategias, con el equipo que construyó la plataforma.",
-      "cta": "Hable con nosotros",
       "docs": "Leer la documentación",
       "pricing": "Comparar planes"
-    }
+    },
+    "heading": "Preguntas"
   },
   "audiences": {
     "eyebrow": "Para quién es",
@@ -601,8 +626,8 @@
         "desc": "Miles de trials en paralelo y sin cola para la única máquina de optimización."
       },
       "provenance": {
-        "title": "Procedencia criptográfica",
-        "desc": "Cada estrategia y configuración con hash y marca de tiempo para auditoría."
+        "title": "Cada trial registrado",
+        "desc": "Cada trial, sus parámetros y sus resultados se guardan para revisarlos después."
       },
       "reports": {
         "title": "Reportes listos para el comité",
@@ -1157,24 +1182,169 @@
       "outlook": "NVDA y MSFT aportaron la mayor parte de la ganancia. La exposición es del 96 %, así que la cartera seguirá de cerca al mercado en un día a la baja."
     }
   },
-  "yourAgent": {
-    "eyebrow": "Nuevo · Fintela MCP",
-    "title": "Trae tu propio agente.",
-    "titleAccent": "Conserva tu ventaja.",
-    "description": "Tu equipo ya construye con IA. Conecta tu agente a Fintela por MCP, el estándar abierto para herramientas de IA, y podrá leer veredictos de sobreajuste, validar el servidor de tu estrategia y proponer estudios, mientras tu estrategia se queda en tus servidores y una persona aprueba cada token.",
-    "exit": "Conoce Fintela MCP",
-    "tiles": {
-      "verdict": {
-        "title": "Lee el veredicto",
-        "desc": "Real o sobreajustado, directo en tu agente."
+  "proof": {
+    "logosLabel": "Equipos que construyen con Fintela",
+    "award": {
+      "sentence": "Fintela ganó New Solution Product of the Year en los Hedgeweek US Awards 2026, por votación de los lectores de Hedgeweek.",
+      "link": "Leer el anuncio",
+      "photoAlt": "Dos miembros del equipo de Fintela, el cofundador y CEO Manuel Padrón a la derecha, con el trofeo de los Hedgeweek US Awards 2026 frente al fondo de Hedgeweek.",
+      "badgeAlt": "Insignia de ganador de los Hedgeweek US Awards 2026: New Solution Product of the Year."
+    },
+    "trust": {
+      "title": "Hecha para que los resultados se puedan comprobar.",
+      "items": {
+        "recorded": {
+          "title": "Cada trial queda registrado",
+          "body": "Cada trial, sus parámetros y sus resultados se guardan, y un portafolio promovido es una copia congelada.",
+          "link": "Cómo se registra la investigación"
+        },
+        "isolation": {
+          "title": "Aislamiento fuera de muestra",
+          "body": "La búsqueda solo ve los datos de entrenamiento. La validación nunca la dirige, y el periodo fuera de muestra se reserva hasta el final.",
+          "link": "Cómo funciona la validación"
+        },
+        "ip": {
+          "title": "Mantén tu código en tus servidores",
+          "body": "En modo externo, tu estrategia corre en tu infraestructura. Fintela envía parámetros y lee las posiciones.",
+          "link": "Cómo funciona el modo externo"
+        }
+      }
+    }
+  },
+  "research": {
+    "title": "De nuestra investigación",
+    "link": "Toda la investigación"
+  },
+  "closing": {
+    "title": "Empieza con una estrategia.",
+    "body": "Constrúyela, optimízala y mira cómo se comporta con datos que nunca ha visto. Tú decides qué pasa a operar en vivo."
+  },
+  "visuals": {
+    "illustrative": "Datos ilustrativos. No es asesoría de inversión.",
+    "prompt": "Cada mes, mantén los sectores de EE. UU. con los mejores rendimientos recientes.",
+    "trials": "{{n}} trials",
+    "trialOf": "Trial {{n}} de {{total}}",
+    "inSample": "Sharpe, en muestra",
+    "heldOut": "Sharpe, datos reservados",
+    "deflated": "Sharpe deflactado",
+    "review": "Enviado para tu revisión. Tú decides qué pasa a operar en vivo.",
+    "periods": {
+      "train": "Entrenamiento",
+      "validation": "Validación",
+      "oos": "Fuera de muestra"
+    },
+    "verdicts": {
+      "overfitRisk": "Riesgo de sobreajuste",
+      "wellTrained": "Bien entrenado"
+    }
+  },
+  "how": {
+    "eyebrow": "Cómo funciona",
+    "title": "Construye, optimiza, valida.",
+    "steps": {
+      "build": {
+        "name": "Construye",
+        "body": "Describe una hipótesis o escríbela tú mismo. La IA redacta el código y los parámetros, y tú los revisas.",
+        "proof": "Las estrategias son funciones de Python."
+      },
+      "optimize": {
+        "name": "Optimiza",
+        "body": "Fintela ejecuta miles de variaciones en paralelo y registra cada trial.",
+        "proof": "Siete algoritmos de búsqueda, bayesiano por defecto."
       },
       "validate": {
-        "title": "Valida gratis",
-        "desc": "Tu agente itera hasta que tu servidor pasa."
+        "name": "Valida",
+        "body": "Cada candidato se prueba con datos reservados fuera de la optimización, con pruebas estadísticas y gráficos que muestran cuánto del resultado puede ser sobreajuste.",
+        "proof": "Sharpe deflactado, probabilidad de sobreajuste, intervalos de confianza bootstrap."
       },
-      "confirm": {
-        "title": "Tú confirmas",
-        "desc": "Nada corre ni cuesta un token sin una persona."
+      "deploy": {
+        "name": "Despliega",
+        "body": "Envía la estrategia validada a un broker conectado y síguela en vivo, desde un solo lugar.",
+        "proof": "Paper o en vivo, con el mismo código que validaste."
+      }
+    },
+    "link": "Ver el pipeline completo de cinco etapas",
+    "visual": {
+      "build": {
+        "frame": "estrategia · sector_momentum",
+        "params": "2 parámetros por buscar",
+        "label": "Ilustración: una hipótesis de una línea y la función de Python redactada a partir de ella, con sus dos parámetros de búsqueda, lookback y top_n, marcados."
+      },
+      "optimize": {
+        "frame": "estudio · cada trial registrado",
+        "label": "Ilustración: las curvas de equity de los trials de un estudio, abriéndose desde un inicio común, junto a un recuento de 1.000 trials."
+      }
+    },
+    "compare": {
+      "frame": "estudio · comprobación con datos reservados",
+      "label": "Candidato a mostrar",
+      "best": "Mejor trial en muestra",
+      "robust": "Candidato robusto",
+      "chart": {
+        "best": "Curva de equity del mejor trial en muestra: sube con fuerza durante el entrenamiento, se aplana en la validación y cae cuando empieza el periodo fuera de muestra.",
+        "robust": "Curva de equity del candidato robusto: sube con menos fuerza que el mejor trial en muestra y sigue subiendo después de que empieza el periodo fuera de muestra."
+      }
+    },
+    "anim": {
+      "strategy": "Mi estrategia de inversión",
+      "study": "Mi estudio",
+      "detail": "1.000 trials",
+      "live": "En vivo",
+      "ret": "Rentabilidad acumulada",
+      "sharpe": "Ratio de Sharpe",
+      "validateStudy": {
+        "title": "Informe del estudio · prueba fuera de muestra",
+        "train": "Entrenamiento",
+        "validation": "Validación",
+        "oos": "Fuera de muestra",
+        "best": "Mejor en muestra",
+        "robust": "Candidato robusto",
+        "interval": "Sombreado: IC bootstrap 95%",
+        "s1": "Sharpe deflactado",
+        "s2": "Prob. de sobreajuste",
+        "s3": "Degradación OOS",
+        "v1": "1,42",
+        "v2": "8%",
+        "v3": "-11%",
+        "verdict": "Veredicto: robusto, bajo riesgo de sobreajuste"
+      }
+    }
+  },
+  "ai": {
+    "title": "Dos formas de trabajar con IA",
+    "fintelligent": {
+      "label": "Integrado",
+      "name": "Fintelligent",
+      "body": "El asistente dentro de Fintela. Redacta estrategias, configura estudios y explica resultados. Nada se guarda ni se lanza hasta que confirmas.",
+      "where": "Funciona dentro de Fintela, gestionado por nosotros, con el proveedor de IA que elijas.",
+      "link": "Conoce Fintelligent"
+    },
+    "mcp": {
+      "label": "Trae tu propio agente",
+      "name": "Fintela MCP",
+      "body": "Conecta Claude Code o claude.ai. Tu agente lee veredictos de sobreajuste, comprueba el servidor de tu estrategia y propone estudios. Una persona aprueba cada ejecución.",
+      "where": "El código de tu estrategia se queda en tus servidores.",
+      "link": "Conoce Fintela MCP"
+    }
+  },
+  "who": {
+    "title": "Para quién es",
+    "items": {
+      "funds": {
+        "title": "Hedge funds",
+        "body": "Investigación a escala de fondo sin construir la infraestructura."
+      },
+      "teams": {
+        "title": "Equipos quant",
+        "body": "Una biblioteca compartida de estrategias, universos y resultados para toda la mesa."
+      },
+      "independents": {
+        "title": "Quants independientes",
+        "body": "Optimiza y haz backtesting sin mantener infraestructura."
+      },
+      "advisors": {
+        "title": "Asesores financieros",
+        "body": "Convierte el mandato de un cliente en una estrategia con backtest y un informe que puedes compartir."
       }
     }
   }

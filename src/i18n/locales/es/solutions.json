@@ -20,8 +20,7 @@
       "eyebrow": "Capacidades"
     },
     "closing": {
-      "eyebrow": "Listos cuando su mesa lo esté",
-      "ctaSecondary": "Comparar planes"
+      "eyebrow": "Listos cuando su mesa lo esté"
     }
   },
   "funds": {
@@ -34,7 +33,6 @@
     "title": "Investigación a escala de fondo,",
     "titleAccent": "sin la infraestructura.",
     "lead": "Estudios concurrentes, procedencia criptográfica y ejecución conectada al bróker, en un espacio de trabajo en la nube que su mesa no tiene que operar.",
-    "ctaPrimary": "Reservar una demostración",
     "heroCaption": "Diseñado para instituciones · investigación, gobernanza y ejecución en un mismo espacio de trabajo",
     "heroAlt": "Dos torres de cristal vistas desde la calle, curvándose hacia un cielo nublado",
     "heroImageAlt": "Un directivo reunido con colegas alrededor de una mesa de juntas, en blanco y negro",
@@ -171,7 +169,6 @@
     "title": "Una biblioteca, un espacio de trabajo,",
     "titleAccent": "una única fuente de verdad.",
     "lead": "Registros compartidos, historial con hash y reportes listos para el comité, para que una mesa de investigación deje de reconciliar notebooks y empiece a comparar resultados.",
-    "ctaPrimary": "Reservar una demostración",
     "heroCaption": "Todas las piezas en juego · una biblioteca compartida de estrategias, grupos de activos y resultados",
     "heroAlt": "Una fila de peones de ajedrez sobre el tablero, uno enfocado delante del rey",
     "heroImageAlt": "Dos investigadores comparando trabajo en portátiles sobre una mesa, una mano en pleno gesto, en blanco y negro",
@@ -308,7 +305,6 @@
     "title": "Del notebook al en vivo,",
     "titleAccent": "sin un proyecto de devops.",
     "lead": "Estrategias en Python, optimización inteligente y ejecución conectada al bróker en el navegador, sin nada que instalar ni nada que mantener corriendo.",
-    "ctaPrimary": "Empezar gratis",
     "heroCaption": "Una sola pieza, todo el tablero · del notebook al despliegue en vivo, sin un proyecto de devops",
     "heroAlt": "Un caballo negro solo sobre el tablero de ajedrez, con un peón y el rey desenfocados detrás",
     "heroImageAlt": "Un trader solo frente a un escritorio con varios monitores, leyendo gráficos en vivo, en blanco y negro",
@@ -434,7 +430,6 @@
     "title": "Estrategias sistemáticas,",
     "titleAccent": "sin una mesa de investigación.",
     "lead": "Estrategias optimizadas y probadas históricamente, con un historial de auditoría completo y reportes listos para el cliente, en un espacio de trabajo en la nube que su práctica no tiene que instalar ni mantener.",
-    "ctaPrimary": "Reservar una demostración",
     "heroCaption": "Cada cliente, un mismo proceso · de una idea probada históricamente a un reporte que puede presentar en la mesa",
     "heroAlt": "Un apretón de manos sobre una mesa de juntas pulida, con el perfil de una ciudad desenfocado al fondo, tras la ventana",
     "heroImageAlt": "Un asesor financiero revisando un reporte de cartera con un cliente en un escritorio, en blanco y negro",

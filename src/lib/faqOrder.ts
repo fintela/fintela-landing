@@ -10,6 +10,7 @@ export const FAQ_KEYS = [
   'security',
   'poweredBy',
   'speed',
+  'overfitting',
 ] as const;
 
 export type FaqKey = (typeof FAQ_KEYS)[number];
@@ -26,3 +27,11 @@ export const orderFaq = (audience: Audience): FaqKey[] => {
   const lead = LEAD_BY_AUDIENCE[audience];
   return [...lead, ...FAQ_KEYS.filter((k) => !lead.includes(k))];
 };
+
+/**
+ * The five questions the home page asks, in order. A fixed list, not a
+ * reordering of the catalogue: the rest (asset classes, signal export, live
+ * trading, speed) are answered on the solution pages, which pick their own
+ * from `FAQ_KEYS`.
+ */
+export const HOME_FAQ_KEYS: readonly FaqKey[] = ['python', 'vsBacktesting', 'overfitting', 'security', 'poweredBy'];

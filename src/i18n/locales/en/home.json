@@ -2,14 +2,16 @@
   "hero": {
     "titleLine1": "The Future of",
     "titleAccent": "Intelligent Investing",
-    "marketWords": ["US Stocks", "Forex", "Global Markets"],
+    "marketWords": [
+      "US Stocks",
+      "Forex",
+      "Global Markets"
+    ],
     "subtitlePrefix": "Discover your edge across",
     "subtitleSuffix": "in a single AI native quantitative ecosystem.",
     "ctaSecondary": "See how it works",
-    "ctaContact": "Book a Walkthrough",
     "headline": "Find Your",
     "headlineAccent": "Edge.",
-    "ctaPrimary": "Start Free Trial",
     "awardAlt": "Winner: New Solution Product of the Year, Hedgeweek US Awards 2026",
     "plateCaption": "Platform home · asset exposure, deployed portfolios and the strategies in use",
     "liveBadge": "Live",
@@ -20,18 +22,25 @@
       "value": "312",
       "unit": "/ 500 trials",
       "sub": "train / val / OOS · 70 / 15 / 15"
+    },
+    "eyebrow": "Winner, New Solution Product of the Year, Hedgeweek US Awards 2026",
+    "title": "Quant research infrastructure your AI can operate.",
+    "titleMark": "your AI can operate.",
+    "filmAlt": "Animation of the Fintela workflow: an AI model is plugged into the platform, a market universe is saved, a market thesis becomes a strategy, the optimizer searches its parameters over 1,000 trials, the portfolio candidates are ranked, one is tested on out-of-sample data and then deployed live. Illustrative data.",
+    "subtitle": "Build a strategy, optimize it across thousands of trials, and test it on data it has never seen, all in one cloud platform. Use the built-in assistant or connect your own agent. You decide what goes live.",
+    "loop": {
+      "label": "Animated illustration: a one-line hypothesis becomes a Python function, the function fans into 1,000 trial curves, and two candidates remain. The best trial in sample is flagged as overfit risk because it falls once it reaches held-out data; a steadier one is rated well trained and sent to a person for review.",
+      "frame": "study · sector momentum",
+      "play": "Play the illustration",
+      "pause": "Pause the illustration",
+      "stepJump": "Show step: {{step}}",
+      "steps": {
+        "hypothesis": "Hypothesis",
+        "code": "Code",
+        "trials": "Trials",
+        "verdict": "Verdict"
+      }
     }
-  },
-  "award": {
-    "eyebrow": "Winner · Hedgeweek US Awards 2026",
-    "title": "New Solution Product",
-    "titleAccent": "of the Year.",
-    "about": "Fintela won this category at the Hedgeweek US Awards 2026. The awards recognize fund performance and service provider excellence across the U.S. hedge fund industry, and the winners are decided by a vote of Hedgeweek’s readers.",
-    "recognizes": "The win recognizes the research infrastructure Fintela gives hedge funds and quant teams from day one: data pipelines, backtesting and out-of-sample validation in one cloud environment, instead of months of in-house engineering.",
-    "exit": "Read the announcement",
-    "photoAlt": "Two members of the Fintela team, co-founder and CEO Manuel Padrón on the right, with the Hedgeweek US Awards 2026 trophy in front of the Hedgeweek backdrop.",
-    "photoCaption": "Collecting the award at Convene 237 Park Avenue, New York, on October 8, 2026.",
-    "badgeAlt": "Hedgeweek US Awards 2026 winner badge: New Solution Product of the Year."
   },
   "trustBar": {
     "title": "Teams building with Fintela"
@@ -40,11 +49,11 @@
     "eyebrow": "From idea to production",
     "title": "One pipeline.",
     "titleAccent": "Every step connected.",
-    "description": "Every idea moves through the same pipeline, from asset groups and strategy code to live execution, each stage feeding the next inside the browser. No file exports, no local scripts, no stitching tools together, and every result reproducible.",
+    "description": "Every idea moves through the same pipeline, from asset groups and strategy code to live execution, each stage feeding the next inside the browser. No file exports, no local scripts, no stitching tools together, and every trial on record.",
     "pipelineHighlights": [
       "Research ideas in parallel",
-      "Validate with statistical tests",
-      "Deploy to live trading",
+      "Check results on held-out data",
+      "Go live when you decide",
       "Monitor risk and market news"
     ],
     "centerName": "FINTELA",
@@ -53,7 +62,7 @@
       "dataClusters": {
         "label": "Asset Groups",
         "sub": "Market universe",
-        "desc": "Define your investable universe. Reusable snapshots of market data across equities, ETFs, forex and global indices, with every backtest reproducible."
+        "desc": "Define your investable universe once: a saved snapshot of instruments across equities, ETFs, forex and global indices that every study can reuse."
       },
       "strategies": {
         "label": "Strategies",
@@ -68,12 +77,12 @@
       "studies": {
         "label": "Studies",
         "sub": "Bayesian search",
-        "desc": "Launch thousands of trials in parallel. Intelligent optimization focuses search on promising regions; results validated on train, val, and out of sample windows."
+        "desc": "Launch thousands of trials in parallel. The search focuses on promising regions, and every trial is evaluated on train, validation and out-of-sample periods."
       },
       "portfolios": {
         "label": "Portfolios",
         "sub": "Analyze results",
-        "desc": "Browse ranked portfolios, full equity curves, parameter importance, and trade level drill down. Export PDF reports on demand."
+        "desc": "Compare candidates on held-out data with an overfitting verdict for each, then drill into equity curves, parameter importance and trades. Export PDF reports on demand."
       },
       "riskManagers": {
         "label": "Risk Managers",
@@ -83,7 +92,7 @@
       "connectBroker": {
         "label": "Connect Broker",
         "sub": "Go live",
-        "desc": "Link your brokerage account and promote any validated portfolio to live execution, with real time order logs and a one click pause."
+        "desc": "Link your brokerage account and promote the portfolio you choose to live execution, with real time order logs and a one click pause."
       }
     },
     "line": {
@@ -93,14 +102,14 @@
         "dataClusters": "11 ETFs",
         "strategies": "sector_momentum",
         "studies": "1,000 trials",
-        "portfolios": "Top portfolio",
+        "portfolios": "Verdicts",
         "connectBroker": "Live"
       },
       "handoff": {
         "dataClusters": "Hands on: Sector ETFs (US), 11 tickers, snapshotted",
         "strategies": "Hands on: sector_momentum, with 2 parameters to search",
-        "studies": "Hands on: 1,000 trials, each validated out of sample",
-        "portfolios": "Hands on: the leading portfolio and its equity curve",
+        "studies": "Hands on: 1,000 trials, each scored on held-out data",
+        "portfolios": "Hands on: the candidates that held up out of sample",
         "connectBroker": "Live: orders routed to your brokerage, one click to pause"
       },
       "surface": {
@@ -112,18 +121,30 @@
         "running": "Running",
         "sampler": "Sampler",
         "trials": "Trials",
-        "bestSharpe": "Best Sharpe",
         "train": "Train",
         "validation": "Validation",
         "oos": "Out-of-sample",
-        "ranked": "Ranked portfolios",
+        "ranked": "Candidates",
         "exportPdf": "Export PDF",
         "connected": "Brokerage account · Connected",
         "pause": "Pause",
         "buy": "BUY",
         "sell": "SELL",
         "atMarket": "{{qty}} @ market",
-        "filled": "Filled"
+        "filled": "Filled",
+        "overfitCheck": "Overfit check",
+        "pending": "Pending",
+        "ready": "Ready",
+        "illustrative": "Illustrative data",
+        "ofTrials": "Sharpe ratio · {{n}} trials",
+        "inSample": "In sample",
+        "outOfSample": "Held out",
+        "verdict": "Verdict",
+        "verdicts": {
+          "overfitRisk": "Overfit Risk",
+          "wellTrained": "Well Trained",
+          "borderline": "Borderline"
+        }
       }
     },
     "stats": {
@@ -181,7 +202,7 @@
       },
       "bayesian": {
         "title": "Intelligent optimization",
-        "description": "Seven samplers, TPE by default, search thousands of trials and validate every result on train, validation, and out-of-sample splits automatically."
+        "description": "Seven search algorithms, Bayesian by default, run thousands of trials and evaluate each one on train, validation and out-of-sample periods."
       },
       "strategyClustering": {
         "title": "See your distinct strategies",
@@ -501,7 +522,7 @@
       "researchDesks": {
         "badge": "For research desks",
         "title": "Quant research teams",
-        "description": "Shared strategy library, shared asset groups, shared optimization results, all inside a single organizational workspace with cryptographic provenance built in.",
+        "description": "Shared strategy library, shared asset groups and shared optimization results, all inside a single organizational workspace.",
         "outcomes": [
           "One source of truth across the team",
           "Cryptographically hashed, timestamped strategy history",
@@ -531,12 +552,12 @@
         "a": "Currencies, U.S. equities, S&P indices, ETFs, forex, and global markets, all through the same unified strategy engine. Build a strategy once, test it across any cluster you define."
       },
       "vsBacktesting": {
-        "q": "How is Fintela different from a standard backtesting library?",
-        "a": "Fintela combines backtesting with asset groups, strategy code, Bayesian parameter optimization, train/validation/OOS evaluation, portfolio analytics, and live deployment via your connected brokerage into a single pipeline. No exports, no scripts, no glue code between tools."
+        "q": "How is Fintela different from a backtesting library?",
+        "a": "A library runs one backtest. Fintela runs the whole research loop in one place: the universe, the strategy, a search across thousands of parameter combinations, evaluation on held-out data and an overfitting report. Nothing is exported or stitched together between steps."
       },
       "python": {
         "q": "Do I need to know Python?",
-        "a": "Yes, strategies are Python functions, but Fintelligent can generate them for you. Describe what you want in plain English and the agent writes the code, configures the parameters, and stages the form for your review."
+        "a": "Not to get started. Strategies are Python functions, and the assistant writes them from a plain-English description for you to review."
       },
       "optimization": {
         "q": "How does optimization work?",
@@ -551,25 +572,29 @@
         "a": "Validated portfolios can be promoted to live operations that execute through your connected brokerage. You see real time order logs, P&L, and a one click pause. Multiple operations can run in parallel against different baskets."
       },
       "security": {
-        "q": "Is my strategy code secure?",
-        "a": "Yes. Strategies and configurations are cryptographically hashed and time stamped, supporting authorship verification and auditability. The platform is fully cloud hosted."
+        "q": "Where does my strategy code run?",
+        "a": "You choose. Strategies written in Fintela run in an isolated environment with no access to Fintela’s internal systems, and your data is scoped to your organization. In external mode, your code and data stay on your own servers: Fintela sends parameters and reads back positions."
       },
       "poweredBy": {
-        "q": "Who is Fintelligent powered by, and is it safe?",
-        "a": "You can choose which AI provider powers Fintelligent, from a variety of options such as DeepSeek and Anthropic, with Fintela managed access and no API key to bring. Every tool call is visible in the chat, and every irreversible action (creating/stopping a study, deploying an operation) requires your explicit confirmation before execution."
+        "q": "Which AI powers Fintelligent, and what can it do on its own?",
+        "a": "You choose the AI provider from the options Fintela supports, such as DeepSeek and Anthropic, with no API key to bring. Fintelligent sees only what you can see in your organization. Every tool call is visible, and nothing is saved, launched or spent until you confirm."
       },
       "speed": {
         "q": "How fast can I go from idea to live capital?",
         "a": "How long it takes depends on your idea and how much you optimize, not on setting up infrastructure. There is no environment to build, no data pipeline to wire up, and no handoff between tools."
+      },
+      "overfitting": {
+        "q": "How does Fintela help with overfitting?",
+        "a": "Every study splits its data into train, validation and out-of-sample periods. The search only sees the training period, and the out-of-sample period is held back until the end. When a study finishes, each candidate gets a verdict based on deflated Sharpe, the probability of backtest overfitting and how much performance drops out of sample. This helps identify potential overfitting. It does not predict live results."
       }
     },
     "aside": {
       "title": "Still have questions?",
       "body": "A 30-minute walkthrough on your own strategies, with the team that built the platform.",
-      "cta": "Talk to us",
       "docs": "Read the docs",
       "pricing": "Compare plans"
-    }
+    },
+    "heading": "Questions"
   },
   "audiences": {
     "eyebrow": "Who it's for",
@@ -601,8 +626,8 @@
         "desc": "Thousands of trials in parallel and no queue for the one optimizer box."
       },
       "provenance": {
-        "title": "Cryptographic provenance",
-        "desc": "Every strategy and configuration hashed and time-stamped for audit."
+        "title": "Every trial on record",
+        "desc": "Each trial, its parameters and its results are saved for later review."
       },
       "reports": {
         "title": "IC-ready reports",
@@ -1157,24 +1182,169 @@
       "outlook": "NVDA and MSFT contributed most of the gain. Exposure is 96%, so the book will track the market closely on a down day."
     }
   },
-  "yourAgent": {
-    "eyebrow": "New · Fintela MCP",
-    "title": "Bring your own agent.",
-    "titleAccent": "Keep your edge.",
-    "description": "Your team already builds with AI. Connect your agent to Fintela through MCP, the open standard for AI tools, and it reads overfitting verdicts, validates your strategy server and proposes studies, while your strategy stays on your servers and a person approves every token.",
-    "exit": "Explore Fintela MCP",
-    "tiles": {
-      "verdict": {
-        "title": "Read the verdict",
-        "desc": "Real or overfit, straight into your agent."
+  "proof": {
+    "logosLabel": "Teams building with Fintela",
+    "award": {
+      "sentence": "Fintela won New Solution Product of the Year at the Hedgeweek US Awards 2026, decided by a vote of Hedgeweek’s readers.",
+      "link": "Read the announcement",
+      "photoAlt": "Two members of the Fintela team, co-founder and CEO Manuel Padrón on the right, with the Hedgeweek US Awards 2026 trophy in front of the Hedgeweek backdrop.",
+      "badgeAlt": "Hedgeweek US Awards 2026 winner badge: New Solution Product of the Year."
+    },
+    "trust": {
+      "title": "Built so results can be checked.",
+      "items": {
+        "ai": {
+          "title": "Connect any AI",
+          "body": "Bring your own AI, like Claude, ChatGPT or any MCP-compatible agent, or use ours, with access to a wide variety of leading LLMs. Either way, you decide what goes live.",
+          "link": "Explore the AI"
+        },
+        "science": {
+          "title": "Scientific-grade analysis",
+          "body": "Every trial is on record, the search never sees held-out data, and every result is judged with science-backed methodologies.",
+          "link": "How validation works"
+        },
+        "cloud": {
+          "title": "One cloud platform",
+          "body": "Fintela runs entirely in the cloud. Your data, trials, strategies and results are stored there, ready from any device with nothing to install or maintain.",
+          "link": "See the platform"
+        }
+      }
+    }
+  },
+  "research": {
+    "title": "From our research",
+    "link": "All research"
+  },
+  "closing": {
+    "title": "Start with one strategy.",
+    "body": "Build it, optimize it and see how it performs on data it has never seen. You decide what goes live."
+  },
+  "visuals": {
+    "illustrative": "Illustrative data. Not investment advice.",
+    "prompt": "Each month, hold the US sectors with the strongest recent returns.",
+    "trials": "{{n}} trials",
+    "trialOf": "Trial {{n}} of {{total}}",
+    "inSample": "Sharpe, in sample",
+    "heldOut": "Sharpe, held out",
+    "deflated": "Deflated Sharpe",
+    "review": "Sent for your review. You decide what goes live.",
+    "periods": {
+      "train": "Train",
+      "validation": "Validation",
+      "oos": "Out-of-sample"
+    },
+    "verdicts": {
+      "overfitRisk": "Overfit Risk",
+      "wellTrained": "Well Trained"
+    }
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "title": "Build, optimize, validate, deploy.",
+    "steps": {
+      "build": {
+        "name": "Build",
+        "body": "Describe a hypothesis or write it yourself. AI drafts the code and parameters, and you review them.",
+        "proof": "Strategies are plain Python functions."
+      },
+      "optimize": {
+        "name": "Optimize",
+        "body": "Fintela runs thousands of variations in parallel and records every trial.",
+        "proof": "Seven search algorithms, Bayesian by default."
       },
       "validate": {
-        "title": "Validate for free",
-        "desc": "Your agent iterates until your server passes."
+        "name": "Validate",
+        "body": "Every candidate is tested on data held out from optimization, with statistical tests and plots that show how much of the result may be overfitting.",
+        "proof": "Deflated Sharpe, overfitting probability, bootstrap confidence intervals."
       },
-      "confirm": {
-        "title": "You confirm",
-        "desc": "Nothing runs or costs a token without a person."
+      "deploy": {
+        "name": "Deploy",
+        "body": "Send the validated strategy to a connected broker and follow it live, from one place.",
+        "proof": "Paper or live, with the same code you validated."
+      }
+    },
+    "link": "See the full five-stage pipeline",
+    "visual": {
+      "build": {
+        "frame": "strategy · sector_momentum",
+        "params": "2 parameters to search",
+        "label": "Illustration: a one-line hypothesis and the Python function drafted from it, with its two searchable parameters, lookback and top_n, marked."
+      },
+      "optimize": {
+        "frame": "study · every trial recorded",
+        "label": "Illustration: the equity curves of the trials in one study, fanning out from a common start, beside a count of 1,000 trials."
+      }
+    },
+    "compare": {
+      "frame": "study · held-out check",
+      "label": "Candidate to show",
+      "best": "Best in-sample trial",
+      "robust": "Robust candidate",
+      "chart": {
+        "best": "Equity curve of the best in-sample trial: it rises steeply through the training period, flattens in validation and falls once the out-of-sample period starts.",
+        "robust": "Equity curve of the robust candidate: it rises less steeply than the best in-sample trial and keeps rising after the out-of-sample period starts."
+      }
+    },
+    "anim": {
+      "strategy": "My Investing Strategy",
+      "study": "My Study",
+      "detail": "1,000 trials",
+      "live": "Live",
+      "ret": "Accumulated return",
+      "sharpe": "Sharpe ratio",
+      "validateStudy": {
+        "title": "Study report · held-out check",
+        "train": "Train",
+        "validation": "Validation",
+        "oos": "Out of sample",
+        "best": "Best in-sample",
+        "robust": "Robust candidate",
+        "interval": "Shaded: bootstrap 95% CI",
+        "s1": "Deflated Sharpe",
+        "s2": "Overfit probability",
+        "s3": "OOS degradation",
+        "v1": "1.42",
+        "v2": "8%",
+        "v3": "-11%",
+        "verdict": "Verdict: robust, low overfit risk"
+      }
+    }
+  },
+  "ai": {
+    "title": "Two ways to work with AI",
+    "fintelligent": {
+      "label": "Built in",
+      "name": "Fintelligent",
+      "body": "The assistant inside Fintela. It drafts strategies, sets up studies and explains results. Nothing is saved or launched until you confirm.",
+      "where": "Runs inside Fintela, managed for you, with the AI provider you choose.",
+      "link": "Meet Fintelligent"
+    },
+    "mcp": {
+      "label": "Bring your own agent",
+      "name": "Fintela MCP",
+      "body": "Connect Claude Code or claude.ai. Your agent reads overfitting verdicts, checks your strategy server and proposes studies. A person approves every run.",
+      "where": "Your strategy code stays on your servers.",
+      "link": "Explore Fintela MCP"
+    }
+  },
+  "who": {
+    "title": "Who it’s for",
+    "items": {
+      "funds": {
+        "title": "Hedge funds",
+        "body": "Research at fund scale without building the infrastructure."
+      },
+      "teams": {
+        "title": "Quant teams",
+        "body": "One shared library of strategies, universes and results for the whole desk."
+      },
+      "independents": {
+        "title": "Independent quants",
+        "body": "Optimize and backtest without maintaining any infrastructure."
+      },
+      "advisors": {
+        "title": "Financial advisors",
+        "body": "Turn a client mandate into a backtested strategy with a report you can share."
       }
     }
   }

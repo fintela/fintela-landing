@@ -20,8 +20,7 @@
       "eyebrow": "Capabilities"
     },
     "closing": {
-      "eyebrow": "Ready when your desk is",
-      "ctaSecondary": "Compare plans"
+      "eyebrow": "Ready when your desk is"
     }
   },
   "funds": {
@@ -34,7 +33,6 @@
     "title": "Research at fund scale,",
     "titleAccent": "without the infrastructure.",
     "lead": "Concurrent studies, cryptographic provenance and broker-connected execution, in one cloud workspace your desk does not have to run.",
-    "ctaPrimary": "Book a walkthrough",
     "heroCaption": "Institutional by design · research, governance and execution in one workspace",
     "heroAlt": "Two glass towers seen from the street, curving up into a clouded sky",
     "heroImageAlt": "An executive briefing colleagues across a boardroom table, black and white",
@@ -171,7 +169,6 @@
     "title": "One library, one workspace,",
     "titleAccent": "one source of truth.",
     "lead": "Shared registries, hashed history and committee-ready reports, so a research desk stops reconciling notebooks and starts comparing results.",
-    "ctaPrimary": "Book a walkthrough",
     "heroCaption": "Every seat in play · one shared library of strategies, asset groups and results",
     "heroAlt": "A row of chess pawns on a board, one in sharp focus in front of the king",
     "heroImageAlt": "Two researchers comparing work on laptops across a table, a hand mid-gesture, black and white",
@@ -308,7 +305,6 @@
     "title": "From notebook to live,",
     "titleAccent": "without a devops project.",
     "lead": "Python strategies, intelligent optimization and broker-connected execution in the browser, with nothing to install and nothing to keep running.",
-    "ctaPrimary": "Start free",
     "heroCaption": "One seat, the whole board · from notebook to live deployment, without a devops project",
     "heroAlt": "A black knight standing alone on a chessboard, a pawn and the king out of focus behind it",
     "heroImageAlt": "A trader alone at a multi-monitor desk, reading live charts, black and white",
@@ -434,7 +430,6 @@
     "title": "Systematic strategies,",
     "titleAccent": "without a research desk.",
     "lead": "Backtested, optimized strategies with a full audit trail and client-ready reports, in one cloud workspace your practice doesn't have to install or maintain.",
-    "ctaPrimary": "Book a walkthrough",
     "heroCaption": "Every client, one process · from a backtested idea to a report you can hand across the table",
     "heroAlt": "A handshake across a polished conference table, a city skyline blurred through the window behind",
     "heroImageAlt": "A financial advisor reviewing a portfolio report with a client across a desk, black and white",

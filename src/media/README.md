@@ -20,9 +20,6 @@ and warns about files that are deployed but never played.
 
 | File | Where it plays | Encode (from `media-masters/`) |
 |---|---|---|
-| `hero-backdrop-1280.mp4` | Home hero backdrop on viewports ≥ 1024 px — the promo loop cropped to 1920×880 (36 s), scaled to 1280 | `hero-backdrop-1920.mp4` → H.264 crf 28, preset slow, 2.1 MB |
-| `hero-backdrop-960.mp4` | Home hero backdrop from 600 to 1023 px | same master → 960 wide, crf 30, 1.1 MB |
-| *(no file)* | Below 600 px, under reduced motion or on a 2g/3g/Save-Data connection the hero shows only its poster; the 1920 master (5.0 MB, once served to every visitor) is no longer deployed — a blurred backdrop behind copy never needed it | — |
 | `platform-home-loop.mp4` | Home platform band — the platform home scrolled once, top to bottom and back (1280×800, padded to 16/10 in the app's page colour, 7 s) | `platform-home-loop.mp4` (from `home.mp4`) → crf 26, 473 KB (was 1.3 MB) |
 | `platform-home.mp4` | Solutions "Platform tour" chapters — the portfolios dashboard, risk charts, the promote menu and the analysis report (1600×868, 36 s). **No chapter uses it today** (check-media warns); kept, untouched, for when one does | `portfolios.mp4`, as recorded (13 MB) |
 | `feature-walkthrough.mp4` | Home "Capabilities" bento — markets: pulse, ticker, groups, screener (1600×870, 21 s) | `feature-walkthrough.mp4` (from `markets.mp4`) → crf 27, 710 KB (was 3.4 MB) |
@@ -68,7 +65,7 @@ never upscales, so a rung wider than the file is clamped to it:
 
 | Still | Widths | Slot |
 |---|---|---|
-| `hero/backdrop-poster.jpg` | 828 · 1280 · 1920 | Home hero, 100vw — the LCP image, preloaded (AVIF) from `HeroVideoBackdrop` |
+| `hero/thesis-to-edge-poster.jpg` | 640 · 1280 | Home hero film's poster, 16/9: the frame at 6.3 s of `media-masters/thesis-to-edge.mp4`. The home page's largest image above the fold (`priority`), and all a visitor who prefers reduced motion sees until they press play |
 | `hero/platform-home-poster.jpg` | 768 · 1280 | Platform band plate, 16/10 |
 | `capabilities/walkthrough-poster.jpg` | 560 · 1120 | Capabilities bento player, 16/10 |
 | `capabilities/live-ops.jpg` | 260 · 520 | Capabilities bento tile, 3/2 |
