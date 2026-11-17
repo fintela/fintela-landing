@@ -1,6 +1,6 @@
 ---
 title: How the Tree-structured Parzen Estimator actually searches
-author: Myrna Ortiz
+author: Sergio Montes
 date: 2026-09-03
 excerpt: TPE is the default optimizer behind most of Fintela's studies. Here's the math it actually runs, and why splitting parameters into "good" and "bad" densities turns out to be a shortcut for something much more familiar.
 tags: Engineering
