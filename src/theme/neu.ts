@@ -453,7 +453,7 @@ export const neuFabSx = {
 } as const;
 
 /**
- * Large card that IS a link (BlogCard). Rest Md/Raised, hover Lg and -2px,
+ * Large card that IS a link (a NeuPanel with `to`). Rest Md/Raised, hover Lg and -2px,
  * press settles back to Sm, keyboard focus Xl. Geometry is the caller's.
  */
 export const neuLinkCardSx = {

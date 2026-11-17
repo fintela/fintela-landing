@@ -1,51 +1,57 @@
 import { Box, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { ScrollTop } from '../components/common/ScrollTop';
 import { AnimateOnScroll } from '../components/common/AnimateOnScroll';
 import { Section } from '../components/primitives/Section';
-import { SectionHeader } from '../components/primitives/SectionHeader';
-import { GroundTexture } from '../components/primitives/GroundTexture';
-import { ComparisonPanel, SeatPanel } from '../components/solutions/AdvantagePanels';
+import { HERO_MEASURE, SectionHeader } from '../components/primitives/SectionHeader';
+import { ComparisonPanel } from '../components/solutions/AdvantagePanels';
 import { SolutionChapters } from '../components/solutions/SolutionChapters';
 import { ClosingSection } from '../components/sections/ClosingSection';
+import { FAQList } from '../components/sections/FAQList';
+import type { FAQItem } from '../components/sections/FAQList';
 import { CtaButton } from '../components/primitives/CtaButton';
-import { MediaWell } from '../components/primitives/MediaWell';
 import { NotFoundPage } from './NotFoundPage';
-import { bandClipSx, clippedGradientSx, ctaRowSx } from '../theme/neu';
-import { gradients, soft } from '../theme/tokens';
-import { STILLS } from '../media/registry';
+import { ctaRowSx, eyebrowSx, quietLinkSx } from '../theme/neu';
+import { fonts, soft } from '../theme/tokens';
 import { SOLUTIONS, SOLUTION_PATHS, audienceFromSlug } from '../solutions/registry';
 import { Seo } from '../seo/Seo';
-import { breadcrumbList, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
+import { breadcrumbList, faqPage, homeCrumb, organization, webPage, webSite } from '../seo/jsonld';
 import { absoluteUrl } from '../seo/site';
 
 /**
- * `/solutions/:slug` — one template for the three seats. What differs is in
- * `src/solutions/registry.ts` and the `solutions` namespace; the layout
- * grammar is the home page's, so the deep page reads as a continuation.
+ * `/solutions/:slug` — one template for the four seats. What differs is in
+ * `src/solutions/registry.ts` and the `solutions` namespace.
+ *
+ * The page is one promise, three or four proofs, and the objections answered
+ * (docs/redesign/SOLUTIONS-PLAN.md): the value headline as the H1 with the
+ * audience as its eyebrow; "What changes", whose rows link to the chapters
+ * that prove them; the chapters; the FAQ and one research link; the closing
+ * offer. The hero carries no picture until a real capture of the seat's core
+ * screen exists — a text-only hero beats a stock photo.
  */
 export const SolutionPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const audience = audienceFromSlug(slug);
-  const { t } = useTranslation(['solutions', 'home', 'common']);
+  const { t } = useTranslation(['solutions', 'common']);
 
   if (!audience) return <NotFoundPage />;
   const config = SOLUTIONS[audience];
+  const k = (key: string) => `solutions:${audience}.${key}`;
 
-  const seoTitle = t(`solutions:${audience}.seo.title`);
-  const seoDescription = t(`solutions:${audience}.seo.description`);
-  // JPEG, not PNG: the three cards sit on photo backgrounds (see scripts/og/render.mjs).
+  const seoTitle = t(k('seo.title'));
+  const seoDescription = t(k('seo.description'));
+  // JPEG, not PNG: the four cards sit on photo backgrounds (see scripts/og/render.mjs).
   const ogImage = `/og/solutions-${config.slug}.jpg`;
 
-  const badge = t(`solutions:${audience}.badge`);
-  const badgeAccent = t(`solutions:${audience}.badgeAccent`);
-  // Seats sold through a walkthrough lead with it; the self-serve seat leads
-  // with the trial. Both buttons are always there, in that order.
-  const lead = audience === 'independents' ? 'trial' : 'walkthrough';
-  const badgeLead = badgeAccent && badge.endsWith(badgeAccent) ? badge.slice(0, -badgeAccent.length) : badge;
+  const faq: FAQItem[] = config.faq.map((key) => ({ key, q: t(k(`faq.${key}.q`)), a: t(k(`faq.${key}.a`)) }));
+  const heroProofLabel = t(k('heroProof.label'), { defaultValue: '' });
+  const heroProofTo = t(k('heroProof.to'), { defaultValue: '' });
+  const lead = config.lead;
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -63,96 +69,80 @@ export const SolutionPage = () => {
             image: absoluteUrl(ogImage),
           }),
           // Two levels: `/solutions` itself redirects, so it cannot be a crumb.
-          breadcrumbList([homeCrumb(), { name: t(`solutions:${audience}.badge`) }]),
+          breadcrumbList([homeCrumb(), { name: t(k('badge')) }]),
+          faqPage(faq.map(({ q, a }) => ({ q, a }))),
         ]}
       />
       <Header />
 
       <Box component="main" id="content">
-        {/* Hero: badge and lead, plus a right-hand plate — one photo per seat. */}
-        <Section tone="ink" size="lg" sx={[bandClipSx, { pt: { xs: 5, md: 8 }, pb: { xs: 8, md: 11 } }]}>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
-              gap: { xs: 4, md: 5 },
-              alignItems: 'center',
-            }}
-          >
-            <Box sx={{ position: 'relative', maxWidth: 640 }}>
-              <GroundTexture side="left" sx={{ display: { xs: 'none', md: 'block' } }} />
-              <AnimateOnScroll delay={40}>
-                <Typography
-                  component="h1"
-                  sx={{
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3.25rem' },
-                    fontWeight: 800,
-                    lineHeight: 1.15,
-                    letterSpacing: '-0.02em',
-                    color: soft.text,
-                    textWrap: 'balance',
-                    mb: 2.5,
-                  }}
-                >
-                  {badgeLead}
-                  {badgeAccent && (
-                    <Box component="span" sx={clippedGradientSx(gradients.goldText)}>
-                      {badgeAccent}
-                    </Box>
-                  )}
-                </Typography>
-              </AnimateOnScroll>
-              <AnimateOnScroll delay={160}>
-                <Typography sx={{ color: soft.textSecondary, fontSize: { xs: '1.1rem', md: '1.2rem' }, lineHeight: 1.6 }}>
-                  {t(`solutions:${audience}.lead`)}
-                </Typography>
-              </AnimateOnScroll>
-              <AnimateOnScroll delay={220}>
-                <Box sx={[ctaRowSx, { mt: 3.5, justifyContent: 'flex-start' }]}>
-                  <CtaButton kind={lead} placement="solution_hero" emphasis="primary" />
-                  <CtaButton kind={lead === 'trial' ? 'walkthrough' : 'trial'} placement="solution_hero" emphasis="secondary" />
+        {/* Hero: who it is for as the eyebrow, the promise as the H1, one lead, two calls to action. */}
+        <Section size="lg" sx={{ pt: { xs: 5, md: 9 }, pb: { xs: 4, md: 6 } }}>
+          <Box sx={{ maxWidth: HERO_MEASURE }}>
+            <SectionHeader
+              level="h1"
+              align="left"
+              eyebrow={t(k('badge'))}
+              title={t(k('title'))}
+              titleAccent={t(k('titleAccent'))}
+              description={t(k('lead'))}
+            />
+            <AnimateOnScroll delay={160}>
+              <Box sx={[ctaRowSx, { mt: 4, justifyContent: 'flex-start' }]}>
+                <CtaButton kind={lead} placement="solution_hero" emphasis="primary" />
+                <CtaButton kind={lead === 'trial' ? 'walkthrough' : 'trial'} placement="solution_hero" emphasis="secondary" />
+              </Box>
+              {heroProofLabel && (
+                <Box sx={{ mt: 2.5 }}>
+                  <Box
+                    {...(heroProofTo ? { component: RouterLink, to: heroProofTo } : { component: 'p' as const })}
+                    sx={[
+                      heroProofTo ? quietLinkSx : {},
+                      { display: 'inline-block', m: 0, fontFamily: fonts.mono, fontSize: '0.8rem', lineHeight: 1.5, color: soft.textSecondary },
+                    ]}
+                  >
+                    {heroProofLabel}
+                  </Box>
                 </Box>
-              </AnimateOnScroll>
-            </Box>
-            <AnimateOnScroll delay={100} direction="right">
-              <MediaWell
-                ratio="4/5"
-                src={STILLS.heroPlate[audience]}
-                alt={t(`solutions:${audience}.heroImageAlt`)}
-                sizes="(min-width: 900px) 420px, (min-width: 600px) 420px, 80vw"
-                priority
-                sx={{ maxWidth: 420, mx: { xs: 'auto', md: 0 } }}
-              />
+              )}
             </AnimateOnScroll>
           </Box>
         </Section>
 
-        {/* Why they switch: the comparison table left, the seat's summary panel right. */}
-        <Section id="why" size="lg">
-          <SectionHeader
-            align="left"
-            eyebrow={t('solutions:common.why.eyebrow')}
-            title={t('solutions:common.why.title')}
-            titleAccent={t('solutions:common.why.titleAccent')}
-            description={t('solutions:common.why.description')}
-          />
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' }, gap: { xs: 3, md: 4 }, alignItems: 'stretch' }}>
-            <AnimateOnScroll direction="left" stretch>
-              <ComparisonPanel audience={audience} />
-            </AnimateOnScroll>
-            <AnimateOnScroll delay={100} direction="right" stretch>
-              <SeatPanel audience={audience} />
-            </AnimateOnScroll>
-          </Box>
+        {/* What changes: the seat's pains and the outcome each chapter below proves. */}
+        <Section id="why" size="lg" sx={{ pt: { xs: 3, md: 4 } }}>
+          <SectionHeader align="left" title={t(k('why.title'))} />
+          <AnimateOnScroll>
+            <ComparisonPanel audience={audience} />
+          </AnimateOnScroll>
         </Section>
 
         <SolutionChapters chapters={config.chapters} audience={audience} />
 
+        {/* The objections, answered where the buyer meets them, then the research behind the pitch. */}
+        <Section id="faq" size="lg">
+          <SectionHeader align="left" title={t(k('faqTitle'))} />
+          <Box sx={{ maxWidth: 880 }}>
+            <FAQList items={faq} />
+          </Box>
+          <Box sx={{ mt: { xs: 5, md: 6 } }}>
+            <Typography sx={{ ...eyebrowSx, mb: 1 }}>{t('solutions:common.research.label')}</Typography>
+            <Box
+              component={RouterLink}
+              to={config.research}
+              sx={[quietLinkSx, { display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: { xs: '1rem', md: '1.08rem' }, fontWeight: 600, color: soft.text }]}
+            >
+              {t(k('research.label'))}
+              <ArrowForwardIcon sx={{ fontSize: 17 }} />
+            </Box>
+          </Box>
+        </Section>
+
         <ClosingSection
-          eyebrow={t('solutions:common.closing.eyebrow')}
-          title={t(`solutions:${audience}.closing.title`)}
-          titleAccent={t(`solutions:${audience}.closing.titleAccent`)}
-          body={t(`solutions:${audience}.closing.body`)}
+          eyebrow={t(k('closing.eyebrow'))}
+          title={t(k('closing.title'))}
+          titleAccent={t(k('closing.titleAccent'))}
+          body={t(k('closing.body'))}
           lead={lead}
           placement="solution_closing"
         />

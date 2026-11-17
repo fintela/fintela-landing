@@ -44,7 +44,7 @@
     "hero": {
       "title": "Choose the plan that",
       "titleAccent": "fits your strategy",
-      "subtitle": "Every plan includes the full platform: connect any broker, register unlimited strategies and asset groups, and use our built-in fitness functions and risk managers. Move up when you need more tokens, storage, or AI power, and talk to our team directly for a custom Institutional plan."
+      "subtitle": "Every plan includes the full platform: connect your brokerage account, register unlimited strategies and asset groups, and use our built-in fitness functions and risk managers. Move up when you need more tokens, storage, or AI power, and talk to our team directly for a custom Institutional plan."
     },
     "individual": {
       "title": "Plans",
@@ -70,7 +70,7 @@
             "8,600 tokens/mo",
             "20 GB storage",
             "Standard AI access",
-            "Connect any broker",
+            "Connect your brokerage account",
             "Register unlimited strategies & asset groups",
             "Built-in asset groups, strategies, fitness functions, and risk managers"
           ],
@@ -143,7 +143,7 @@
     "compare": {
       "title": "Compare",
       "titleAccent": "plans side by side",
-      "description": "Every plan connects any broker and includes unlimited strategies, asset groups, and the built-in fitness functions and risk managers. Higher tiers raise your token pool and storage, unlock deeper optimization and analysis tools, and Institutional adds organization-wide workspace, branding, and support.",
+      "description": "Every plan connects to your brokerage account and includes unlimited strategies, asset groups, and the built-in fitness functions and risk managers. Higher tiers raise your token pool and storage, unlock deeper optimization and analysis tools, and Institutional adds organization-wide workspace, branding, and support.",
       "caption": "What each plan includes",
       "featureColumn": "What's included",
       "included": "Included",
@@ -199,7 +199,7 @@
           "custom": "Dedicated CSM + SLA"
         },
         "connectBroker": {
-          "label": "Connect any broker"
+          "label": "Connect your brokerage account"
         },
         "unlimitedStrategies": {
           "label": "Register unlimited strategies and asset groups"
@@ -256,7 +256,11 @@
       "title": "Fintela Blog",
       "subtitle": "Articles, tutorials, practical guides and company news for quantitative finance and algorithmic trading."
     },
-    "readMore": "Read More",
+    "index": {
+      "more": "More articles"
+    },
+    "readMore": "Read more",
+    "seeMore": "See more",
     "readTime": "{{minutes}} min read",
     "backToBlog": "Back to Blog",
     "loading": "Loading articles…",
@@ -286,6 +290,9 @@
     "hero": {
       "title": "Fintela Research",
       "subtitle": "Research notes from the Fintela team: strategies built and tested on the platform, checked against the academic research behind them, caveats included."
+    },
+    "index": {
+      "more": "More research"
     },
     "backToResearch": "Back to Research"
   },
@@ -1265,7 +1272,7 @@
     },
     "pricing": {
       "title": "Pricing & Plans | Fintela",
-      "description": "Every plan includes the full platform: any broker, unlimited strategies, fitness functions and risk managers. Compare Trader, Quant and Institutional."
+      "description": "Every plan includes the full platform: a brokerage connection, unlimited strategies, fitness functions and risk managers. Compare Trader, Quant and Institutional."
     },
     "contactWalkthrough": {
       "title": "Book a Walkthrough | Fintela",

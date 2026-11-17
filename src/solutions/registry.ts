@@ -1,12 +1,17 @@
 /**
- * The three `/solutions/*` pages, as data. One template (`SolutionPage`)
- * renders all three; what differs — the still, the stat, which chapters run,
- * which FAQ questions lead — is declared here, and the copy lives in the
- * `solutions` i18n namespace under the same keys.
+ * The four `/solutions/*` pages, as data. One template (`SolutionPage`)
+ * renders all four; what differs — which chapters run, what each one shows,
+ * which FAQ questions lead, the research link — is declared here, and the
+ * copy lives in the `solutions` i18n namespace under the same keys.
+ *
+ * The rules the pages follow (docs/redesign/SOLUTIONS-PLAN.md):
+ * - one idea per chapter: an H3, one sentence, a mono proof line, at most one
+ *   visual, and a docs link;
+ * - a visual shows the noun in its sentence, or the chapter is text-only;
+ * - no image appears on two pages, and every visual carries a badge saying
+ *   what it is (an app capture, an illustration, or a diagram).
  */
 import type { Audience } from '../lib/audience';
-import { STILLS } from '../media/registry';
-import type { VideoId } from '../media/registry';
 
 export const SOLUTION_SLUGS: Record<Audience, string> = {
   funds: 'hedge-funds',
@@ -33,103 +38,94 @@ export const USE_CASE_KEY: Record<Audience, 'institutions' | 'independents' | 'r
   advisors: 'advisors',
 };
 
-export type ChapterMedia =
-  // Chapter media sits in a 7-column cell, so stills are landscape. Product
-  // frames are 'plain' (no duotone wash) at 16/9, the recordings' own shape.
-  | { kind: 'image'; src: string; ratio: '16/10' | '16/9' | '3/2'; tone?: 'plain' | 'duotone' }
-  | { kind: 'video'; video: VideoId; chapter?: string };
+/** What a badge under a visual says it is. */
+export type MediaBadge = 'app' | 'illustrative' | 'diagram';
 
-/** A frame of the product, set in plain. */
-const frame = (src: string): ChapterMedia => ({ kind: 'image', src, ratio: '16/9', tone: 'plain' });
+/** Coded pieces a chapter can mount (see components/solutions/ChapterVisuals.tsx). */
+export type ChapterComponentId = 'confirmCard' | 'validationCompare' | 'riskProfilesDiagram' | 'versionsDiagram';
+
+export type ChapterMedia =
+  /** Text-only: the H3, the sentence and the proof line carry the chapter. */
+  | { kind: 'none' }
+  /**
+   * An app-faithful coded piece. Its caption and alt text live under
+   * `solutions.<audience>.chapters.<key>.caption|mediaAlt`.
+   */
+  | { kind: 'component'; id: ChapterComponentId; badge: MediaBadge };
 
 export interface SolutionChapter {
-  /** Key under `solutions.<audience>.chapters.*`. */
+  /** Key under `solutions.<audience>.chapters.*`; the anchor is `#chapter-<key>`. */
   key: string;
   media: ChapterMedia;
-  /** Where "Read the docs" lands. */
+  /** Where the chapter's docs link lands. */
   docs: string;
 }
 
 export interface SolutionConfig {
   slug: string;
-  hero: { still: string };
+  /** Three or four chapters; never five. */
   chapters: SolutionChapter[];
-  /** `home:faq.items.*` keys, in the order this seat asks them. */
+  /** Keys under `solutions.<audience>.faq.*`, in the order this seat asks them. */
   faq: string[];
-  /** Extra questions under `solutions.<audience>.faq.*`. */
-  extraFaq: string[];
-  /** Primary CTA: a walkthrough for desks, the app for individuals. */
-  primaryCta: 'walkthrough' | 'app';
+  /** Primary CTA: a walkthrough for desks, the trial for individuals. */
+  lead: 'walkthrough' | 'trial';
   /**
-   * The blog post that backs this seat's pitch — slug under `/blog/`, label
-   * under `solutions.<audience>.research.label`. One research link per page,
-   * so the blog's authority flows into the landing pages and back.
+   * The post that backs this seat's pitch, as a path (`/blog/…` or
+   * `/research/…`), with its label under `solutions.<audience>.research.label`.
+   * One research link per page, so the blog's authority flows into the
+   * landing pages and back.
    */
   research: string;
 }
 
+const none: ChapterMedia = { kind: 'none' };
+
 export const SOLUTIONS: Record<Audience, SolutionConfig> = {
   funds: {
     slug: SOLUTION_SLUGS.funds,
-    hero: { still: STILLS.solutions.funds },
     chapters: [
-      { key: 'research', media: frame(STILLS.chapters.funds.research), docs: '/docs/studies' },
-      { key: 'governance', media: frame(STILLS.chapters.funds.governance), docs: '/docs/strategies' },
-      { key: 'execution', media: frame(STILLS.chapters.funds.execution), docs: '/docs/live-trading' },
-      { key: 'workspace', media: frame(STILLS.chapters.funds.workspace), docs: '/docs/registries' },
-      { key: 'security', media: { kind: 'video', video: 'agents' }, docs: '/docs/fintelligent-drafts-and-runs' },
+      { key: 'luck', media: none, docs: '/docs/optimization-dashboard#robustness' },
+      { key: 'provenance', media: none, docs: '/docs/registries#version-history' },
+      { key: 'trading', media: none, docs: '/docs/live-trading' },
+      { key: 'safeguards', media: none, docs: '/docs/live-trading#safety-limits' },
     ],
-    faq: ['security', 'poweredBy', 'liveTrading', 'seedExport'],
-    extraFaq: ['onboarding', 'data'],
-    primaryCta: 'walkthrough',
-    research: 'quants-moving-away-from-legacy-tools',
+    faq: ['code', 'trading', 'data', 'assistant', 'cost'],
+    lead: 'walkthrough',
+    research: '/blog/quants-moving-away-from-legacy-tools',
   },
   teams: {
     slug: SOLUTION_SLUGS.teams,
-    hero: { still: STILLS.solutions.teams },
     chapters: [
-      { key: 'workspace', media: frame(STILLS.chapters.teams.workspace), docs: '/docs/registries' },
-      { key: 'research', media: frame(STILLS.chapters.teams.research), docs: '/docs/studies' },
-      { key: 'provenance', media: frame(STILLS.chapters.teams.provenance), docs: '/docs/strategies' },
-      { key: 'reports', media: frame(STILLS.chapters.teams.reports), docs: '/docs/portfolio-detail' },
-      { key: 'agents', media: { kind: 'video', video: 'agents' }, docs: '/docs/fintelligent' },
+      { key: 'library', media: none, docs: '/docs/registries' },
+      { key: 'ranking', media: none, docs: '/docs/portfolios-dashboard' },
+      { key: 'versions', media: { kind: 'component', id: 'versionsDiagram', badge: 'diagram' }, docs: '/docs/registries#version-history' },
+      { key: 'report', media: none, docs: '/docs/portfolio-detail#profile' },
     ],
-    faq: ['security', 'seedExport', 'vsBacktesting', 'poweredBy'],
-    extraFaq: ['sharing', 'committee'],
-    primaryCta: 'walkthrough',
-    research: 'momentum-research',
+    faq: ['access', 'ownCode', 'data', 'assistant', 'pricing'],
+    lead: 'walkthrough',
+    research: '/blog/momentum-research',
   },
   independents: {
     slug: SOLUTION_SLUGS.independents,
-    hero: { still: STILLS.solutions.independents },
     chapters: [
-      { key: 'noDevops', media: frame(STILLS.chapters.independents.noDevops), docs: '/docs/quickstart' },
-      { key: 'optimization', media: frame(STILLS.chapters.independents.optimization), docs: '/docs/sampler-selection' },
-      { key: 'live', media: frame(STILLS.chapters.independents.live), docs: '/docs/live-trading' },
-      { key: 'agent', media: { kind: 'video', video: 'agents' }, docs: '/docs/fintelligent' },
+      { key: 'heldOut', media: none, docs: '/docs/analyzing-results' },
+      { key: 'luck', media: none, docs: '/docs/optimization-dashboard#robustness' },
+      { key: 'trading', media: none, docs: '/docs/live-trading#safety-limits' },
     ],
-    faq: ['python', 'optimization', 'speed', 'liveTrading'],
-    extraFaq: ['cost', 'ownership'],
-    primaryCta: 'app',
-    research: 'deflated-sharpe',
+    faq: ['cost', 'code', 'data', 'ownership', 'trading'],
+    lead: 'trial',
+    research: '/blog/deflated-sharpe',
   },
   advisors: {
     slug: SOLUTION_SLUGS.advisors,
-    hero: { still: STILLS.solutions.advisors },
-    // Product frames reused from the seat each chapter is closest to in kind
-    // (no bespoke advisor screenshots exist yet): the Fintelligent-drafted
-    // strategy screen, the optimization metrics table, the risk/drawdown
-    // charts, and the results-only report.
     chapters: [
-      { key: 'research', media: frame(STILLS.chapters.independents.noDevops), docs: '/docs/quickstart' },
-      { key: 'validation', media: frame(STILLS.chapters.independents.optimization), docs: '/docs/sampler-selection' },
-      { key: 'riskProfiles', media: frame(STILLS.chapters.funds.execution), docs: '/docs/live-trading' },
-      { key: 'reporting', media: frame(STILLS.chapters.teams.reports), docs: '/docs/portfolio-detail' },
-      { key: 'security', media: { kind: 'video', video: 'agents' }, docs: '/docs/fintelligent-drafts-and-runs' },
+      { key: 'draft', media: { kind: 'component', id: 'confirmCard', badge: 'illustrative' }, docs: '/docs/fintelligent-drafts-and-runs' },
+      { key: 'validation', media: { kind: 'component', id: 'validationCompare', badge: 'illustrative' }, docs: '/docs/portfolio-detail#robustness-overfitting' },
+      { key: 'riskProfiles', media: { kind: 'component', id: 'riskProfilesDiagram', badge: 'diagram' }, docs: '/docs/risk-managers' },
+      { key: 'reporting', media: none, docs: '/docs/portfolio-detail#profile' },
     ],
-    faq: ['python', 'poweredBy', 'security', 'liveTrading'],
-    extraFaq: ['clientRisk', 'compliance'],
-    primaryCta: 'walkthrough',
-    research: 'climate-analysis',
+    faq: ['backtests', 'coding', 'accountable', 'clientAccounts', 'record'],
+    lead: 'walkthrough',
+    research: '/research/climate-analysis',
   },
 };

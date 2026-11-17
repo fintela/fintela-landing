@@ -793,7 +793,7 @@
         }
       },
       "confirm": {
-        "title": "Confirm before Fintelligent saves",
+        "title": "Review and confirm",
         "subtitle_one": "Fintelligent prepared {{count}} change. Nothing is saved until you confirm.",
         "subtitle_other": "Fintelligent prepared {{count}} changes. Nothing is saved until you confirm.",
         "row": "{{verb}} {{entity}} “{{name}}”",

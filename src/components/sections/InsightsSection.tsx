@@ -5,11 +5,11 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { AnimateOnScroll } from '../common/AnimateOnScroll';
-import { neuGrid, quietLinkSx } from '../../theme/neu';
+import { quietLinkSx } from '../../theme/neu';
 import { soft } from '../../theme/tokens';
 import { useBlogIndex } from '../../blog/useBlog';
 import { BlogEmptyState } from '../../blog/BlogEmptyState';
-import { VerticalPostCard } from '../../blog/BentoCards';
+import { PostCard } from '../../blog/PostCard';
 import type { BlogPostSummary } from '../../blog/types';
 
 /**
@@ -32,7 +32,7 @@ const pickResearch = (posts: BlogPostSummary[]): BlogPostSummary[] => {
   return [...chosen, ...standIns].slice(0, SHOWN);
 };
 
-/** Section 6, first part: three research pieces, each linking to its own page. */
+/** Section 6, first part: three research pieces, as the same ruled cards as /blog and /research. */
 export const InsightsSection = () => {
   const { t } = useTranslation('home');
   const { status, posts } = useBlogIndex();
@@ -61,11 +61,17 @@ export const InsightsSection = () => {
       {status !== 'loading' && research.length === 0 && <BlogEmptyState status={status} />}
 
       {research.length > 0 && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: neuGrid.columns(SHOWN) }, gap: neuGrid.gap, alignItems: 'stretch' }}>
+        <Box
+          component="ul"
+          role="list"
+          sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: { xs: '1fr', md: `repeat(${SHOWN}, minmax(0, 1fr))` }, columnGap: { md: 5 }, rowGap: 5 }}
+        >
           {research.map((post, idx) => (
-            <AnimateOnScroll key={post.slug} delay={idx * 80} stretch>
-              <VerticalPostCard post={post} />
-            </AnimateOnScroll>
+            <Box component="li" key={post.slug}>
+              <AnimateOnScroll delay={idx * 70} stretch>
+                <PostCard post={post} />
+              </AnimateOnScroll>
+            </Box>
           ))}
         </Box>
       )}

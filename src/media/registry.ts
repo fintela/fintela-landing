@@ -30,7 +30,6 @@ import { registerPicture } from './picture';
 import type { Picture, PictureFraming } from './picture';
 import thesisToEdgePoster from '../assets/media/hero/thesis-to-edge-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import tourPlatformHome from '../assets/media/tour/platform-home-poster.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
-import agentsPoster from '../assets/media/fintelligent/agents-poster.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
 import walkthroughPoster from '../assets/media/capabilities/walkthrough-poster.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import liveOps from '../assets/media/capabilities/live-ops.jpg?w=260;520&format=avif;webp;jpeg&as=picture';
 import awardCeremony from '../assets/media/awards/hedgeweek-2026-ceremony.jpg?w=640;1280&format=avif;webp;jpeg&as=picture';
@@ -38,25 +37,6 @@ import audienceFunds from '../assets/media/audiences/funds.jpg?w=560;1120&format
 import audienceTeams from '../assets/media/audiences/teams.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceIndependents from '../assets/media/audiences/independents.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceAdvisors from '../assets/media/audiences/advisors.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
-import solutionFunds from '../assets/media/solutions/funds-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
-import fundsHeroMeeting from '../assets/media/solutions/funds-hero-meeting.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
-import teamsHeroCollab from '../assets/media/solutions/teams-hero-collab.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
-import independentsHeroDesk from '../assets/media/solutions/independents-hero-desk.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
-import advisorsHeroConsult from '../assets/media/solutions/advisors-hero-consult.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
-import solutionTeams from '../assets/media/solutions/teams-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
-import solutionIndependents from '../assets/media/solutions/independents-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
-import solutionAdvisors from '../assets/media/solutions/advisors-hero.jpg?w=800;1600&format=avif;webp;jpeg&as=picture';
-import fundsResearch from '../assets/media/solutions/chapters/funds-research.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import fundsGovernance from '../assets/media/solutions/chapters/funds-governance.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import fundsExecution from '../assets/media/solutions/chapters/funds-execution.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import fundsWorkspace from '../assets/media/solutions/chapters/funds-workspace.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import teamsWorkspace from '../assets/media/solutions/chapters/teams-workspace.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import teamsResearch from '../assets/media/solutions/chapters/teams-research.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import teamsProvenance from '../assets/media/solutions/chapters/teams-provenance.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import teamsReports from '../assets/media/solutions/chapters/teams-reports.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import independentsNoDevops from '../assets/media/solutions/chapters/independents-no-devops.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import independentsOptimization from '../assets/media/solutions/chapters/independents-optimization.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
-import independentsLive from '../assets/media/solutions/chapters/independents-live.jpg?w=660;1280&format=avif;webp;jpeg&as=picture';
 
 /** A still's URL for the slots typed against a string; MediaWell recovers the picture. */
 const still = (picture: Picture, framing?: PictureFraming): string =>
@@ -69,7 +49,7 @@ const MEDIA_BASE = (
 
 export const mediaUrl = (file: string): string => `${MEDIA_BASE}${file}`;
 
-export type VideoId = 'thesisToEdge' | 'platformHome' | 'agents' | 'walkthrough';
+export type VideoId = 'thesisToEdge' | 'platformHome' | 'walkthrough';
 
 /** The app's page colour, which the recordings sit on (and the hero loop is padded with). */
 const APP_GROUND = '#f8fbfd';
@@ -146,18 +126,6 @@ export const VIDEOS: Record<VideoId, VideoAsset> = {
     silent: true,
     ground: APP_GROUND,
   },
-  /**
-   * The multi-agent conversation — not recorded yet, so no `src` and no
-   * `captions`: the band shows the poster. To enable it once the files are in
-   * public/media (agents-conversation.mp4, optionally .av1.mp4/.webm, and
-   * captions/agents-conversation.<en|es|pt>.vtt), add
-   *   src: { mp4: mediaUrl(…) }  and  captions: { en: mediaUrl(…), … }
-   * here; scripts/check-media.mjs then confirms every file exists.
-   */
-  agents: {
-    poster: still(agentsPoster),
-    posterAltKey: 'fintelligent.posterAlt',
-  },
   /** Markets: pulse → ticker → groups → screener (21 s, silent). */
   walkthrough: {
     // No `av1`: at crf 38 SVT-AV1 came out larger than x264 crf 27 on this
@@ -199,38 +167,5 @@ export const STILLS = {
     teams: still(audienceTeams, { objectPosition: 'center 28%' }),
     independents: still(audienceIndependents, { objectPosition: 'center 20%' }),
     advisors: still(audienceAdvisors, { objectPosition: 'center 30%' }),
-  },
-  solutions: {
-    funds: still(solutionFunds),
-    teams: still(solutionTeams),
-    independents: still(solutionIndependents),
-    advisors: still(solutionAdvisors),
-  },
-  /** Each solution hero's right-hand plate, 4/5 — one photo per seat. */
-  heroPlate: {
-    funds: still(fundsHeroMeeting),
-    teams: still(teamsHeroCollab),
-    independents: still(independentsHeroDesk),
-    advisors: still(advisorsHeroConsult),
-  },
-  /** Product frames for the solution chapters, one per chapter. */
-  chapters: {
-    funds: {
-      research: still(fundsResearch),
-      governance: still(fundsGovernance),
-      execution: still(fundsExecution),
-      workspace: still(fundsWorkspace),
-    },
-    teams: {
-      workspace: still(teamsWorkspace),
-      research: still(teamsResearch),
-      provenance: still(teamsProvenance),
-      reports: still(teamsReports),
-    },
-    independents: {
-      noDevops: still(independentsNoDevops),
-      optimization: still(independentsOptimization),
-      live: still(independentsLive),
-    },
   },
 } as const;

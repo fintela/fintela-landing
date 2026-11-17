@@ -32,7 +32,15 @@ const V = 'visuals';
  * score never appears alone. It opens on the best in-sample trial, because
  * the failure is the point.
  */
-export const ValidationCompare = () => {
+export const ValidationCompare = ({
+  deflated = true,
+  illustrativeNote = true,
+}: {
+  /** Show the deflated Sharpe beside the in-sample and held-out figures. */
+  deflated?: boolean;
+  /** The "Illustrative data" note under the frame; off where a plate badge already says it. */
+  illustrativeNote?: boolean;
+} = {}) => {
   const { t } = useTranslation('home');
   const [selected, setSelected] = useState<CandidateKey>('best');
   /** The in-between curve while one candidate turns into the other; null at rest. */
@@ -84,7 +92,7 @@ export const ValidationCompare = () => {
   const tone = selected === 'robust' ? 'good' : 'bad';
 
   return (
-    <PreviewFrame label={t(`${C}.frame`)} footer={<IllustrativeNote>{t(`${V}.illustrative`)}</IllustrativeNote>}>
+    <PreviewFrame label={t(`${C}.frame`)} footer={illustrativeNote ? <IllustrativeNote>{t(`${V}.illustrative`)}</IllustrativeNote> : undefined}>
       <Box
         role="radiogroup"
         aria-label={t(`${C}.label`)}
@@ -144,7 +152,7 @@ export const ValidationCompare = () => {
 
       {/* Announced when the choice changes, so the result is not only a colour and a curve. */}
       <Box aria-live="polite">
-        <CandidateRow candidate={selected} deflated note={selected === 'robust'} />
+        <CandidateRow candidate={selected} deflated={deflated} note={selected === 'robust'} />
       </Box>
     </PreviewFrame>
   );
