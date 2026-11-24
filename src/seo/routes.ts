@@ -13,6 +13,7 @@ export const STATIC_ROUTES = [
   '/',
   '/pricing',
   '/community',
+  '/get-funding',
   '/contact',
   '/methodology',
   '/security',

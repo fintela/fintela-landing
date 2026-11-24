@@ -20,7 +20,9 @@ export type TrackEvent =
   | 'section_view'
   | 'hero_loop_step'
   | 'validation_toggle'
-  | 'strategies_cta_click';
+  | 'strategies_cta_click'
+  | 'funding_cta_click'
+  | 'funding_request_submit';
 
 /**
  * Sends a named event to the site's only analytics, Microsoft Clarity. The stub

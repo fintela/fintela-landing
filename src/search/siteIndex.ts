@@ -1,5 +1,6 @@
 import { DOCS_HOME } from '../seo/routes';
 import { SOLUTION_PATHS } from '../solutions/registry';
+import { FUNDING_PATH } from '../funding/config';
 
 /**
  * The marketing pages, as search results. There is no JSON for these — a
@@ -23,6 +24,13 @@ export const STATIC_PAGE_ENTRIES: StaticPageEntry[] = [
     excerptKey: 'pages:seo.home.description',
     keywords: ['platform', 'overview', 'agentic'],
     url: '/',
+  },
+  {
+    id: 'get-funding',
+    titleKey: 'pages:search.pages.getFunding',
+    excerptKey: 'pages:getFunding.seo.description',
+    keywords: ['funding', 'funded', 'capital', 'prop firm'],
+    url: FUNDING_PATH,
   },
   {
     id: 'pricing',
