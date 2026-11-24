@@ -94,6 +94,12 @@ const FintelaApiPage = lazy(() =>
 // reading verdicts and proposing, a person confirming in the app.
 const McpPage = lazy(() => import('./pages/McpPage').then((m) => ({ default: m.McpPage })));
 
+// The public strategies board and Fintela Funding. A preview on sample data:
+// see the note on its route below.
+const StrategiesPage = lazy(() =>
+  import('./pages/StrategiesPage').then((m) => ({ default: m.StrategiesPage })),
+);
+
 // Product menu's "Platform" item: the five-stage pipeline, moved off the home page so the home page can stay on outcomes.
 const PlatformPage = lazy(() =>
   import('./pages/PlatformPage').then((m) => ({ default: m.PlatformPage })),
@@ -311,6 +317,7 @@ export interface Pages {
   SamplersPage: ComponentType;
   FintelaApiPage: ComponentType;
   McpPage: ComponentType;
+  StrategiesPage: ComponentType;
   SecurityPage: ComponentType;
   MethodologyPage: ComponentType;
   PlatformPage: ComponentType;
@@ -333,6 +340,7 @@ const lazyPages: Pages = {
   SamplersPage,
   FintelaApiPage,
   McpPage,
+  StrategiesPage,
   PlatformPage,
   MethodologyPage,
   SecurityPage,
@@ -382,6 +390,7 @@ export function AppRoutes({ pages }: { pages: Pages }) {
           <Route path="/product/samplers" element={<pages.SamplersPage />} />
           <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
           <Route path="/product/mcp" element={<pages.McpPage />} />
+          <Route path="/strategies" element={<pages.StrategiesPage />} />
           <Route path="/product/platform" element={<pages.PlatformPage />} />
           <Route path="/methodology" element={<pages.MethodologyPage />} />
           <Route path="/security" element={<pages.SecurityPage />} />

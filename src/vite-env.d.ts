@@ -25,7 +25,7 @@ declare module '*&format=webp' {
  * documents the one that matters.
  */
 interface ImportMetaEnv {
-  /** Where the contact form posts. See src/contact/api.ts and .env.example. */
+  /** The backend the contact form posts to and the strategies board reads. See src/contact/api.ts and .env.example. */
   readonly VITE_FINTELA_API?: string;
   /**
    * The site's public origin, no trailing slash (default https://fintela.io).

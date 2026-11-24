@@ -43,6 +43,7 @@ const DATA_SCRIPT_ID = '__fintela_data'
 /** The source module behind each lazy route, for the modulepreload hint. */
 const PAGE_MODULES = [
   [/^\/pricing$/, 'src/pages/PricingPage.tsx'],
+  [/^\/strategies$/, 'src/pages/StrategiesPage.tsx'],
   [/^\/contact$/, 'src/pages/ContactPage.tsx'],
   [/^\/blog$/, 'src/pages/BlogPage.tsx'],
   [/^\/blog\//, 'src/pages/BlogPostPage.tsx'],

@@ -100,6 +100,12 @@ const columns: FooterColumn[] = [
         type: 'route',
       },
       {
+        id: 'strategies',
+        labelKey: 'footer:columns.product.links.strategies',
+        href: '/strategies',
+        type: 'route',
+      },
+      {
         id: 'pricing',
         labelKey: 'footer:columns.product.links.pricing',
         href: '/pricing',

@@ -15,6 +15,8 @@ import { ClosingSection } from '../components/sections/ClosingSection';
 import { FAQList } from '../components/sections/FAQList';
 import type { FAQItem } from '../components/sections/FAQList';
 import { CtaButton } from '../components/primitives/CtaButton';
+import { MediaWell } from '../components/primitives/MediaWell';
+import { STILLS } from '../media/registry';
 import { NotFoundPage } from './NotFoundPage';
 import { ctaRowSx, eyebrowSx, quietLinkSx } from '../theme/neu';
 import { fonts, soft } from '../theme/tokens';
@@ -31,8 +33,8 @@ import { absoluteUrl } from '../seo/site';
  * (docs/redesign/SOLUTIONS-PLAN.md): the value headline as the H1 with the
  * audience as its eyebrow; "What changes", whose rows link to the chapters
  * that prove them; the chapters; the FAQ and one research link; the closing
- * offer. The hero carries no picture until a real capture of the seat's core
- * screen exists — a text-only hero beats a stock photo.
+ * offer. The hero pairs the H1 with one black-and-white photograph of the seat at
+ * work, beside the title; the proof stays in the chapters.
  */
 export const SolutionPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -78,6 +80,15 @@ export const SolutionPage = () => {
       <Box component="main" id="content">
         {/* Hero: who it is for as the eyebrow, the promise as the H1, one lead, two calls to action. */}
         <Section size="lg" sx={{ pt: { xs: 5, md: 9 }, pb: { xs: 4, md: 6 } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 4fr)' },
+              columnGap: { md: 8, lg: 10 },
+              rowGap: 5,
+              alignItems: 'center',
+            }}
+          >
           <Box sx={{ maxWidth: HERO_MEASURE }}>
             <SectionHeader
               level="h1"
@@ -106,6 +117,23 @@ export const SolutionPage = () => {
                 </Box>
               )}
             </AnimateOnScroll>
+          </Box>
+          <AnimateOnScroll delay={120} direction="right">
+            <MediaWell
+              ratio="4/5"
+              src={STILLS.heroPlate[audience]}
+              alt={t(k('heroImageAlt'))}
+              sizes="(min-width: 900px) 360px, 70vw"
+              priority
+              sx={{
+                maxWidth: 360,
+                mx: { xs: 'auto', md: 0 },
+                ml: { md: 'auto' },
+                borderRadius: '20px',
+                boxShadow: '0 24px 60px -28px rgba(20, 24, 40, 0.45)',
+              }}
+            />
+          </AnimateOnScroll>
           </Box>
         </Section>
 
