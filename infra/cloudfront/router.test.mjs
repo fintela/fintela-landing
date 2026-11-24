@@ -157,6 +157,13 @@ test('/docs and /solutions redirect to their landing pages', () => {
   expectRedirect('/solutions/', '/solutions/hedge-funds');
 });
 
+test('/strategies, renamed /community, redirects in one hop', () => {
+  expectRedirect('/strategies', '/community');
+  expectRedirect('/strategies/', '/community');
+  expectRedirect('/Strategies', '/community');
+  expectRewrite('/community', '/community/index.html');
+});
+
 // ── 6. Rewrites ────────────────────────────────────────────────────────────
 
 test('extensionless routes rewrite to their prerendered index.html', () => {

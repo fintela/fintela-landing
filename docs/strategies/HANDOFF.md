@@ -1,6 +1,8 @@
-# Strategies page: what is built and what is left to connect
+# Community page: what is built and what is left to connect
 
-`/strategies` shows the public strategies board and the Fintela Funding
+`/community` (renamed from Strategies; `/strategies` redirects to it, in
+`src/App.tsx` and with a 301 in `infra/cloudfront/router.js`) shows the public
+strategies board as cards (equity curve, return, Sharpe, author) and the Fintela Funding
 invitation, on live data from the backend. The proposal and research behind
 it are in the artifact https://claude.ai/artifact/VRYaWBq9ne7sPc89KEwncU.
 
@@ -10,7 +12,7 @@ it are in the artifact https://claude.ai/artifact/VRYaWBq9ne7sPc89KEwncU.
 - It always reads the backend's public board (see connection 1); there is no
   sample data and no switch. The backend route is deployed.
 - It is public: indexable, in `STATIC_ROUTES` (prerendered, in the sitemap) and
-  linked from the header ("Strategies", before Pricing) and the footer. The
+  linked from the header ("Community", before Pricing) and the footer. The
   prerendered page carries the shell and the loading line; the rows arrive in
   the browser.
 
@@ -21,12 +23,12 @@ it are in the artifact https://claude.ai/artifact/VRYaWBq9ne7sPc89KEwncU.
 | `src/strategies/types.ts` | The board's view model: `PublishedStrategy`, `StrategiesSnapshot`, `StrategiesState`. |
 | `src/strategies/api.ts` | The backend's wire contract and the adapter from it to the view model. |
 | `src/strategies/source.ts` | `usePublishedStrategies()`, the only place data enters. |
-| `src/strategies/ranking.ts` | Days live, CAGR, Fintela Score, sort, filter, leaders, activity. Pure functions. |
+| `src/strategies/ranking.ts` | Days live, CAGR, Fintela Score, sort, activity. Pure functions. |
 | `src/strategies/links.ts` | Call-to-action destinations and the funding anchor. |
-| `src/components/sections/StrategiesSection.tsx` | Header, activity strip, leaders strip, board. |
+| `src/components/sections/CommunitySection.tsx` | Header (Publish, Request funding), activity strip, card grid. |
 | `src/components/sections/FundingSection.tsx` | Fintela Funding band. |
-| `src/components/strategies/` | Board, sparkline, highlights, CTA components. |
-| `src/pages/StrategiesPage.tsx` | The page. |
+| `src/components/strategies/` | Card board, sparkline, activity strip, CTA components. |
+| `src/pages/CommunityPage.tsx` | The page. |
 | `src/i18n/locales/en/pages.json` | All copy, under `strategies`. |
 
 ## Connections to make
@@ -86,7 +88,7 @@ opens `/contact` because the app has no funding application step.
 
 - To put the rows in the prerendered HTML, fetch the board in
   `scripts/prerender.mjs` and seed it under the URL `source.ts` reads.
-- To embed the board on the homepage, render `<StrategiesSection state={…} />`
+- To embed the board on the homepage, render `<CommunitySection state={…} />`
   and `<FundingSection />` in `HomePage.tsx`; both are self-contained.
 
 ## Decisions still open

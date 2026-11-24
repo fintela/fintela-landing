@@ -94,10 +94,9 @@ const FintelaApiPage = lazy(() =>
 // reading verdicts and proposing, a person confirming in the app.
 const McpPage = lazy(() => import('./pages/McpPage').then((m) => ({ default: m.McpPage })));
 
-// The public strategies board and Fintela Funding. A preview on sample data:
-// see the note on its route below.
-const StrategiesPage = lazy(() =>
-  import('./pages/StrategiesPage').then((m) => ({ default: m.StrategiesPage })),
+// Community: the public board of strategies Fintela users publish, and Fintela Funding.
+const CommunityPage = lazy(() =>
+  import('./pages/CommunityPage').then((m) => ({ default: m.CommunityPage })),
 );
 
 // Product menu's "Platform" item: the five-stage pipeline, moved off the home page so the home page can stay on outcomes.
@@ -178,6 +177,12 @@ function LegacyDocsRedirect() {
   const tail = pathname.replace(/^\/documentation\/?/, '').replace(/\/+$/, '');
   const slug = LEGACY_DOC_PATHS[tail];
   return <Navigate to={`/docs/${slug ?? 'overview'}${hash}`} replace />;
+}
+
+/** A route that moved: same query and hash, new path, one replace. */
+function RenamedRouteRedirect({ to }: { to: string }) {
+  const { search, hash } = useLocation();
+  return <Navigate to={`${to}${search}${hash}`} replace />;
 }
 
 /**
@@ -317,7 +322,7 @@ export interface Pages {
   SamplersPage: ComponentType;
   FintelaApiPage: ComponentType;
   McpPage: ComponentType;
-  StrategiesPage: ComponentType;
+  CommunityPage: ComponentType;
   SecurityPage: ComponentType;
   MethodologyPage: ComponentType;
   PlatformPage: ComponentType;
@@ -340,7 +345,7 @@ const lazyPages: Pages = {
   SamplersPage,
   FintelaApiPage,
   McpPage,
-  StrategiesPage,
+  CommunityPage,
   PlatformPage,
   MethodologyPage,
   SecurityPage,
@@ -390,7 +395,10 @@ export function AppRoutes({ pages }: { pages: Pages }) {
           <Route path="/product/samplers" element={<pages.SamplersPage />} />
           <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
           <Route path="/product/mcp" element={<pages.McpPage />} />
-          <Route path="/strategies" element={<pages.StrategiesPage />} />
+          <Route path="/community" element={<pages.CommunityPage />} />
+          {/* Renamed from /strategies. infra/cloudfront/router.js answers the old
+              path with a 301 at the edge; this covers client-side navigation. */}
+          <Route path="/strategies" element={<RenamedRouteRedirect to="/community" />} />
           <Route path="/product/platform" element={<pages.PlatformPage />} />
           <Route path="/methodology" element={<pages.MethodologyPage />} />
           <Route path="/security" element={<pages.SecurityPage />} />

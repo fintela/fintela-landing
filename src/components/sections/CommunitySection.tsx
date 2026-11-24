@@ -4,28 +4,27 @@ import { useTranslation } from 'react-i18next';
 import { Section } from '../primitives/Section';
 import { SectionHeader } from '../primitives/SectionHeader';
 import { StrategyBoard } from '../strategies/StrategyBoard';
-import { ActivityStrip, LeadersStrip } from '../strategies/StrategyHighlights';
-import { StrategyArrowLink, StrategyButton } from '../strategies/StrategyCta';
+import { ActivityStrip } from '../strategies/StrategyHighlights';
+import { StrategyButton } from '../strategies/StrategyCta';
 import { soft } from '../../theme/tokens';
-import { FUNDING_ANCHOR, STRATEGY_LINKS } from '../../strategies/links';
-import { pickLeaders, rankStrategies, summarizeActivity } from '../../strategies/ranking';
+import { STRATEGY_LINKS } from '../../strategies/links';
+import { rankStrategies, summarizeActivity } from '../../strategies/ranking';
 import type { StrategiesState } from '../../strategies/types';
 
 /**
- * The public strategies board as one landing-page section: header with the
- * first call to action, the activity strip, the leaders strip, then the
- * sortable board. Self-contained, so it can head `/strategies` (`level="h1"`)
+ * The Community section: header with its two calls to action (publish a
+ * strategy, request funding for one), the activity strip, then the grid of
+ * strategy cards. Self-contained, so it can head `/community` (`level="h1"`)
  * or sit on another page as an ordinary `h2` section.
  */
-export const StrategiesSection = ({ state, level = 'h2' }: { state: StrategiesState; level?: 'h1' | 'h2' }) => {
+export const CommunitySection = ({ state, level = 'h2' }: { state: StrategiesState; level?: 'h1' | 'h2' }) => {
   const { t } = useTranslation('pages');
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const ranked = useMemo(() => (snapshot ? rankStrategies(snapshot) : []), [snapshot]);
-  const leaders = useMemo(() => pickLeaders(ranked), [ranked]);
   const activity = useMemo(() => (snapshot ? summarizeActivity(snapshot) : null), [snapshot]);
 
   return (
-    <Section id="strategies" size="lg">
+    <Section id="community" size="lg">
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', columnGap: 4, rowGap: 3, mb: { xs: 4, md: 5 } }}>
         <Box sx={{ maxWidth: 820, minWidth: 0 }}>
           <SectionHeader
@@ -39,12 +38,12 @@ export const StrategiesSection = ({ state, level = 'h2' }: { state: StrategiesSt
           />
         </Box>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 2.5, rowGap: 1 }}>
-          <StrategyButton tone="accent" target={STRATEGY_LINKS.create} placement="strategies_header_publish">
+          <StrategyButton tone="accent" target={STRATEGY_LINKS.create} placement="community_header_publish">
             {t('strategies.cta.publish')}
           </StrategyButton>
-          <StrategyArrowLink target={{ href: `#${FUNDING_ANCHOR}` }} placement="strategies_header_funding">
-            {t('strategies.cta.funded')}
-          </StrategyArrowLink>
+          <StrategyButton tone="raised" target={STRATEGY_LINKS.requestFunding} placement="community_header_request_funding">
+            {t('strategies.cta.requestFunding')}
+          </StrategyButton>
         </Box>
       </Box>
 
@@ -66,7 +65,6 @@ export const StrategiesSection = ({ state, level = 'h2' }: { state: StrategiesSt
       {snapshot && snapshot.strategies.length > 0 && activity && (
         <Box sx={{ display: 'grid', gap: { xs: 3.5, md: 4.5 } }}>
           <ActivityStrip activity={activity} />
-          <LeadersStrip leaders={leaders} />
           <StrategyBoard strategies={ranked} asOf={snapshot.asOf} />
         </Box>
       )}

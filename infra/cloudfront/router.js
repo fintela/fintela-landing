@@ -75,10 +75,12 @@ var MOVED_POSTS = {
   'climate-analysis': 'research'
 };
 
-// src/App.tsx: <Route path="/docs"> and <Route path="/solutions"> are <Navigate replace>.
+// src/App.tsx: <Route path="/docs"> and <Route path="/solutions"> are <Navigate replace>,
+// and /strategies, renamed /community, is a <RenamedRouteRedirect>.
 var INDEX_REDIRECTS = {
   '/docs': '/docs/overview',
-  '/solutions': '/solutions/hedge-funds'
+  '/solutions': '/solutions/hedge-funds',
+  '/strategies': '/community'
 };
 
 var APEX = 'https://fintela.io';
