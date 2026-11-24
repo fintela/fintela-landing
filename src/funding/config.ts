@@ -25,10 +25,11 @@ export const FUNDING_PATH = '/get-funding';
 export const FUNDING_SELECTION_CRITERIA: readonly [string, string, string] = [
   // PLACEHOLDER (value given, wording to confirm).
   'Adjusted Sharpe above 1.2',
-  // TBD: criterion 2 not decided yet. Do not ship with this text.
-  '[Criterion 2: TBD]',
-  // TBD: criterion 3 not decided yet. Do not ship with this text.
-  '[Criterion 3: TBD]',
+  // Statistical robustness: the overfitting check's "Well Trained" verdict
+  // (content/docs/workflows/analyzing-results.md). Avoid "validated": it reads as approved.
+  'Statistically robust: a Well Trained verdict on the overfitting check',
+  // Track record: no minimum length or threshold, per the note above.
+  'A sustained track record of good performance and controlled risk',
 ];
 
 /**
