@@ -44,6 +44,7 @@ const DATA_SCRIPT_ID = '__fintela_data'
 const PAGE_MODULES = [
   [/^\/pricing$/, 'src/pages/PricingPage.tsx'],
   [/^\/strategies$/, 'src/pages/StrategiesPage.tsx'],
+  [/^\/get-funding$/, 'src/pages/GetFundingPage.tsx'],
   [/^\/contact$/, 'src/pages/ContactPage.tsx'],
   [/^\/blog$/, 'src/pages/BlogPage.tsx'],
   [/^\/blog\//, 'src/pages/BlogPostPage.tsx'],

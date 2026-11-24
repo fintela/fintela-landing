@@ -14,6 +14,7 @@ import { theme } from './theme/theme';
 import { gradients } from './theme/tokens';
 import { HomePage } from './pages/HomePage';
 import { SOLUTION_PATHS } from './solutions/registry';
+import { FUNDING_PATH } from './funding/config';
 import type { PostSectionProps } from './blog/sections';
 import { ScrollProgressBar } from './components/common/ScrollProgressBar';
 import { FloatingContactButton } from './components/common/FloatingContactButton';
@@ -98,6 +99,11 @@ const McpPage = lazy(() => import('./pages/McpPage').then((m) => ({ default: m.M
 // see the note on its route below.
 const StrategiesPage = lazy(() =>
   import('./pages/StrategiesPage').then((m) => ({ default: m.StrategiesPage })),
+);
+
+// Get Funding: the funding program's own page, linked from the main nav.
+const GetFundingPage = lazy(() =>
+  import('./pages/GetFundingPage').then((m) => ({ default: m.GetFundingPage })),
 );
 
 // Product menu's "Platform" item: the five-stage pipeline, moved off the home page so the home page can stay on outcomes.
@@ -318,6 +324,7 @@ export interface Pages {
   FintelaApiPage: ComponentType;
   McpPage: ComponentType;
   StrategiesPage: ComponentType;
+  GetFundingPage: ComponentType;
   SecurityPage: ComponentType;
   MethodologyPage: ComponentType;
   PlatformPage: ComponentType;
@@ -341,6 +348,7 @@ const lazyPages: Pages = {
   FintelaApiPage,
   McpPage,
   StrategiesPage,
+  GetFundingPage,
   PlatformPage,
   MethodologyPage,
   SecurityPage,
@@ -391,6 +399,7 @@ export function AppRoutes({ pages }: { pages: Pages }) {
           <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
           <Route path="/product/mcp" element={<pages.McpPage />} />
           <Route path="/strategies" element={<pages.StrategiesPage />} />
+          <Route path={FUNDING_PATH} element={<pages.GetFundingPage />} />
           <Route path="/product/platform" element={<pages.PlatformPage />} />
           <Route path="/methodology" element={<pages.MethodologyPage />} />
           <Route path="/security" element={<pages.SecurityPage />} />
