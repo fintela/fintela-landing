@@ -33,6 +33,7 @@ import { Groove } from '../primitives/Groove';
 import { AUDIENCES } from '../../lib/audience';
 import { SOLUTION_PATHS } from '../../solutions/registry';
 import { DOCS_HOME } from '../../seo/routes';
+import { FUNDING_PATH } from '../../funding/config';
 import { useSearchPalette } from '../../search/searchContext';
 
 interface HeaderProps {
@@ -72,7 +73,8 @@ const PRODUCT_ITEMS: NavItem[] = [
 ];
 
 const navItems: NavItem[] = [
-  { id: 'strategies', labelKey: 'nav.strategies', href: '/strategies', type: 'route' },
+  { id: 'funding', labelKey: 'nav.funding', href: FUNDING_PATH, type: 'route' },
+  { id: 'community', labelKey: 'nav.community', href: '/community', type: 'route' },
   { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
   { id: 'documentation', labelKey: 'nav.documentation', href: DOCS_HOME, type: 'route', activePrefix: '/docs' },
 ];
@@ -90,7 +92,8 @@ const BLOG_ITEMS: NavItem[] = [
  * than a second copy.
  */
 const PREFETCH: Record<string, () => Promise<unknown>> = {
-  strategies: () => import('../../pages/StrategiesPage'),
+  funding: () => import('../../pages/GetFundingPage'),
+  community: () => import('../../pages/CommunityPage'),
   pricing: () => import('../../pages/PricingPage'),
   documentation: () => import('../../pages/DocPage'),
   blog: () => import('../../pages/BlogPage'),

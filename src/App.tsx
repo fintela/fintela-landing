@@ -14,6 +14,7 @@ import { theme } from './theme/theme';
 import { gradients } from './theme/tokens';
 import { HomePage } from './pages/HomePage';
 import { SOLUTION_PATHS } from './solutions/registry';
+import { FUNDING_PATH } from './funding/config';
 import type { PostSectionProps } from './blog/sections';
 import { ScrollProgressBar } from './components/common/ScrollProgressBar';
 import { FloatingContactButton } from './components/common/FloatingContactButton';
@@ -94,10 +95,14 @@ const FintelaApiPage = lazy(() =>
 // reading verdicts and proposing, a person confirming in the app.
 const McpPage = lazy(() => import('./pages/McpPage').then((m) => ({ default: m.McpPage })));
 
-// The public strategies board and Fintela Funding. A preview on sample data:
-// see the note on its route below.
-const StrategiesPage = lazy(() =>
-  import('./pages/StrategiesPage').then((m) => ({ default: m.StrategiesPage })),
+// Community: the public board of strategies Fintela users publish, and Fintela Funding.
+const CommunityPage = lazy(() =>
+  import('./pages/CommunityPage').then((m) => ({ default: m.CommunityPage })),
+);
+
+// Get Funding: the funding program's own page, linked from the main nav.
+const GetFundingPage = lazy(() =>
+  import('./pages/GetFundingPage').then((m) => ({ default: m.GetFundingPage })),
 );
 
 // Product menu's "Platform" item: the five-stage pipeline, moved off the home page so the home page can stay on outcomes.
@@ -180,6 +185,12 @@ function LegacyDocsRedirect() {
   return <Navigate to={`/docs/${slug ?? 'overview'}${hash}`} replace />;
 }
 
+/** A route that moved: same query and hash, new path, one replace. */
+function RenamedRouteRedirect({ to }: { to: string }) {
+  const { search, hash } = useLocation();
+  return <Navigate to={`${to}${search}${hash}`} replace />;
+}
+
 /**
  * Where a RENAMED doc page went.
  *
@@ -246,7 +257,27 @@ function DocPageOrRedirect({ page: Page }: { page: ComponentType }) {
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    if (hash) return; // anchor links handle their own scroll
+    if (hash) {
+      // An anchor on arrival from another page (e.g. Community's "Request
+      // funding" to /get-funding#request): the target may sit in a lazy chunk
+      // that has not rendered yet, so look for it for up to two seconds. An
+      // in-page link has already scrolled, and scrolling again is a no-op.
+      let id: string;
+      try {
+        id = decodeURIComponent(hash.slice(1));
+      } catch {
+        return;
+      }
+      let frame = 0;
+      const deadline = performance.now() + 2000;
+      const seek = () => {
+        const target = document.getElementById(id);
+        if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+        else if (performance.now() < deadline) frame = requestAnimationFrame(seek);
+      };
+      seek();
+      return () => cancelAnimationFrame(frame);
+    }
     // `instant`, not the html's `scroll-behavior: smooth`: a route change is
     // a new page, and a new page must not slide in from where the last one
     // was scrolled to. In-page navigation (src/lib/scrollToSection.ts) is
@@ -317,7 +348,8 @@ export interface Pages {
   SamplersPage: ComponentType;
   FintelaApiPage: ComponentType;
   McpPage: ComponentType;
-  StrategiesPage: ComponentType;
+  CommunityPage: ComponentType;
+  GetFundingPage: ComponentType;
   SecurityPage: ComponentType;
   MethodologyPage: ComponentType;
   PlatformPage: ComponentType;
@@ -340,7 +372,8 @@ const lazyPages: Pages = {
   SamplersPage,
   FintelaApiPage,
   McpPage,
-  StrategiesPage,
+  CommunityPage,
+  GetFundingPage,
   PlatformPage,
   MethodologyPage,
   SecurityPage,
@@ -390,7 +423,11 @@ export function AppRoutes({ pages }: { pages: Pages }) {
           <Route path="/product/samplers" element={<pages.SamplersPage />} />
           <Route path="/product/fintela-api" element={<pages.FintelaApiPage />} />
           <Route path="/product/mcp" element={<pages.McpPage />} />
-          <Route path="/strategies" element={<pages.StrategiesPage />} />
+          <Route path="/community" element={<pages.CommunityPage />} />
+          {/* Renamed from /strategies. infra/cloudfront/router.js answers the old
+              path with a 301 at the edge; this covers client-side navigation. */}
+          <Route path="/strategies" element={<RenamedRouteRedirect to="/community" />} />
+          <Route path={FUNDING_PATH} element={<pages.GetFundingPage />} />
           <Route path="/product/platform" element={<pages.PlatformPage />} />
           <Route path="/methodology" element={<pages.MethodologyPage />} />
           <Route path="/security" element={<pages.SecurityPage />} />

@@ -1,11 +1,9 @@
-import type { AssetClass, PublishedStrategy, StrategiesSnapshot, StrategyStage } from './types';
+import type { PublishedStrategy, StrategiesSnapshot } from './types';
 
 /** A strategy enters the ranking after this many days; before that it is listed as New. */
 export const MIN_RANK_DAYS = 30;
 /** CAGR and the score are hidden before this many days: annualizing a few weeks misleads. */
 export const MIN_ANNUAL_DAYS = 90;
-/** A ranked strategy younger than this counts as a newcomer. */
-export const NEWCOMER_DAYS = 183;
 
 /**
  * Fintela Score weights, each applied to the input's percentile among scored
@@ -75,24 +73,6 @@ export const rankStrategies = (snapshot: StrategiesSnapshot): RankedStrategy[] =
   });
 };
 
-export interface BoardFilters {
-  stage: StrategyStage | 'all';
-  minDays: number;
-  assetClass: AssetClass | 'all';
-  query: string;
-}
-
-export const filterStrategies = (rows: RankedStrategy[], filters: BoardFilters): RankedStrategy[] => {
-  const query = filters.query.trim().toLowerCase();
-  return rows.filter(
-    (s) =>
-      (filters.stage === 'all' || s.stage === filters.stage) &&
-      s.daysLive >= filters.minDays &&
-      (filters.assetClass === 'all' || s.assetClass === filters.assetClass) &&
-      (!query || s.name.toLowerCase().includes(query) || s.author.toLowerCase().includes(query)),
-  );
-};
-
 /** New strategies always sort last; a missing value sorts after every present one. */
 export const sortStrategies = (rows: RankedStrategy[], key: SortKey, dir: SortDir): RankedStrategy[] => {
   const sign = dir === 'desc' ? -1 : 1;
@@ -106,32 +86,6 @@ export const sortStrategies = (rows: RankedStrategy[], key: SortKey, dir: SortDi
     }
     return (av - bv) * sign || b.totalReturn - a.totalReturn;
   });
-};
-
-const best = (rows: RankedStrategy[], pick: (s: RankedStrategy) => number): RankedStrategy | undefined =>
-  rows.reduce<RankedStrategy | undefined>((top, s) => (!top || pick(s) > pick(top) ? s : top), undefined);
-
-export interface Leaders {
-  topReturn?: RankedStrategy;
-  bestSharpe?: RankedStrategy;
-  bestNewcomer?: RankedStrategy;
-  longestLive?: RankedStrategy;
-}
-
-export const pickLeaders = (rows: RankedStrategy[]): Leaders => {
-  const ranked = rows.filter((s) => !s.isNew);
-  return {
-    topReturn: best(ranked, (s) => s.totalReturn),
-    bestSharpe: best(ranked, (s) => s.sharpe),
-    bestNewcomer: best(
-      ranked.filter((s) => s.daysLive < NEWCOMER_DAYS),
-      (s) => s.totalReturn,
-    ),
-    longestLive: best(
-      ranked.filter((s) => s.stage === 'live'),
-      (s) => s.daysLive,
-    ),
-  };
 };
 
 export interface Activity {

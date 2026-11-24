@@ -14,6 +14,7 @@ import { Groove } from '../primitives/Groove';
 import { scrollToSection } from '../../lib/scrollToSection';
 import { SOLUTION_PATHS } from '../../solutions/registry';
 import { DOCS_HOME } from '../../seo/routes';
+import { FUNDING_PATH } from '../../funding/config';
 import { ORG, SOCIAL_PROFILES } from '../../seo/site';
 import { useTranslation } from 'react-i18next';
 
@@ -100,9 +101,15 @@ const columns: FooterColumn[] = [
         type: 'route',
       },
       {
-        id: 'strategies',
-        labelKey: 'footer:columns.product.links.strategies',
-        href: '/strategies',
+        id: 'funding',
+        labelKey: 'footer:columns.product.links.funding',
+        href: FUNDING_PATH,
+        type: 'route',
+      },
+      {
+        id: 'community',
+        labelKey: 'footer:columns.product.links.community',
+        href: '/community',
         type: 'route',
       },
       {

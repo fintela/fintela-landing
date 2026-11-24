@@ -358,7 +358,8 @@
       "contact": "Contact",
       "blog": "Blog",
       "research": "Research",
-      "docs": "Documentation"
+      "docs": "Documentation",
+      "getFunding": "Get Funding"
     }
   },
   "productTrain": {
@@ -1669,26 +1670,20 @@
   },
   "strategies": {
     "seo": {
-      "title": "Community strategies and Fintela Funding | Fintela",
-      "description": "Strategies published by Fintela users, ranked on their record since they were deployed, and how a published strategy can be evaluated for financing through Fintela Funding."
+      "title": "Community: published strategies and Fintela Funding | Fintela",
+      "description": "Strategies published by the Fintela community, each with its equity curve, return and Sharpe since deployment, and how to request funding for one through Fintela Funding."
     },
-    "eyebrow": "Community strategies",
+    "eyebrow": "Community",
     "title": "Strategies published by Fintela users,",
     "titleAccent": "ranked on what they did next.",
     "description": "Every figure is measured from the day the strategy was deployed. Nothing here is backtested.",
     "cta": {
       "publish": "Publish a strategy",
-      "funded": "Get it funded"
+      "requestFunding": "Request funding"
     },
     "loading": "Loading published strategies.",
     "error": "The strategies could not be loaded. Reload the page to try again.",
     "empty": "No strategy is public yet. Deploy a portfolio in Fintela, set its share link to Anyone with the link, and it is listed here.",
-    "age": {
-      "days": "{{days}}d",
-      "months": "{{months}}m",
-      "years": "{{years}}y",
-      "yearsMonths": "{{years}}y {{months}}m"
-    },
     "activity": {
       "label": "On Fintela now",
       "published": "strategies published",
@@ -1696,80 +1691,18 @@
       "live": "trading live",
       "funded": "funded, {{review}} in review"
     },
-    "leaders": {
-      "topReturn": {
-        "label": "Top return",
-        "sub": "over {{age}}"
-      },
-      "bestSharpe": {
-        "label": "Best Sharpe",
-        "sub": "max drawdown {{value}}"
-      },
-      "bestNewcomer": {
-        "label": "Best newcomer",
-        "sub": "deployed {{age}} ago"
-      },
-      "longestLive": {
-        "label": "Longest live",
-        "sub": "{{value}} since deployment"
-      }
-    },
     "board": {
-      "caption": "Published strategies, ranked",
-      "rankBy": "Rank by",
-      "sortBy": "Sort by {{column}}",
+      "caption": "Published strategies",
+      "sortLabel": "Sort by",
       "columns": {
-        "rank": "#",
-        "strategy": "Strategy",
-        "curve": "Since deployment",
         "totalReturn": "Return",
-        "cagr": "CAGR",
-        "sharpe": "Sharpe",
-        "alpha": "Alpha",
-        "beta": "Beta",
-        "maxDrawdown": "Max DD",
-        "daysLive": "Time live",
-        "score": "Score"
+        "sharpe": "Sharpe"
       },
-      "rankOptions": {
-        "totalReturn": "Return",
-        "cagr": "CAGR",
-        "sharpe": "Sharpe",
-        "alpha": "Alpha",
-        "daysLive": "Time live",
-        "score": "Fintela Score"
-      },
-      "filters": {
-        "trackRecord": "Track record",
-        "all": "All",
-        "live": "Live",
-        "paper": "Paper",
-        "publishedFor": "Deployed for",
-        "anyLength": "Any length",
-        "months3": "3 months or more",
-        "months6": "6 months or more",
-        "year1": "1 year or more",
-        "assetClass": "Asset class",
-        "search": "Search",
-        "searchPlaceholder": "Strategy or author"
-      },
-      "assets": {
-        "us_equities": "US equities",
-        "multi_asset": "Multi-asset",
-        "crypto": "Crypto"
-      },
-      "chips": {
-        "live": "Live",
-        "paper": "Paper",
-        "holdout": "Holdout passed",
-        "funded": "Funded",
-        "review": "Funding review",
-        "new": "New"
-      },
+      "cardLabel": "Strategy by {{author}}",
+      "by": "by {{author}}",
       "curveLabel": "Equity curve, {{value}} since deployment",
-      "empty": "No strategies match these filters. Clear the search or widen the filters.",
-      "count": "{{shown}} of {{total}} published strategies. Metrics as of {{date}}.",
-      "footnote": "Every figure comes from the strategy's model portfolio, not from a brokerage statement. Alpha and beta are measured against the default benchmark for the strategy's asset class, and are blank where there is none. CAGR and Score appear after 90 days. Strategies deployed for under 30 days are listed as New and are not ranked. The Fintela Score weights each strategy's percentile on CAGR (40%), Sharpe (25%), max drawdown (20%) and alpha (15%), plus up to 3 points for track record. Past performance does not guarantee future results. Rankings are information, not investment advice."
+      "count": "{{total}} published strategies. Metrics as of {{date}}.",
+      "footnote": "Every figure comes from the strategy's model portfolio, not from a brokerage statement, and is measured from the day the strategy was deployed. Strategies deployed for under 30 days are listed last. Past performance does not guarantee future results. This list is information, not investment advice."
     },
     "funding": {
       "eyebrow": "Fintela Funding",
@@ -1811,7 +1744,91 @@
           "body": "Financing comes from third-party investment funds that work with the platform. Fintela connects creators and funds; it does not supply the capital."
         }
       },
-      "fine": "Publishing a strategy does not guarantee funding. A Funded badge on the board means a fund is financing that portfolio; amounts and terms are private."
+      "fine": "Publishing a strategy does not guarantee funding. Amounts and terms of any financing are private."
     }
+  },
+  "getFunding": {
+    "seo": {
+      "title": "Get Funding: not the prop firm you know | Fintela",
+      "description": "Build, optimize and run your strategy on professional infrastructure, publish it, and request funding. Every request is reviewed case by case."
+    },
+    "eyebrow": "Fintela Funding",
+    "title": "Not the prop firm",
+    "titleAccent": "you know.",
+    "description": "No challenge to buy, no clock to beat. Build your strategy on professional infrastructure, prove it after deployment, and request funding.",
+    "cta": "Request funding",
+    "benefits": {
+      "eyebrow": "Why Fintela",
+      "title": "Technology first.",
+      "items": {
+        "infrastructure": {
+          "title": "Professional infrastructure",
+          "body": "Strategy creation, optimization, portfolio management and live execution, in one platform."
+        },
+        "cost": {
+          "title": "Low cost",
+          "body": "You pay for platform usage. No challenge fees, no resets.",
+          "bodyPrice": "You pay for platform usage, {{price}} a month. No challenge fees, no resets."
+        },
+        "record": {
+          "title": "Judged on what it does next",
+          "body": "Strategies are reviewed on how they perform after deployment, not on a timed challenge."
+        }
+      }
+    },
+    "steps": {
+      "eyebrow": "How it works",
+      "title": "Two steps.",
+      "items": {
+        "publish": {
+          "title": "Publish a strategy",
+          "body": "Build it in Fintela, deploy it and publish it. Its track record starts the day it goes live."
+        },
+        "funded": {
+          "title": "Get it funded",
+          "body": "Request funding. Our team reviews your strategy and contacts you if it qualifies."
+        }
+      },
+      "note": "Funding is not automatic. Every strategy is reviewed case by case, and publishing one does not guarantee funding."
+    },
+    "criteria": {
+      "eyebrow": "Selection criteria",
+      "title": "What we look for.",
+      "note": "Meeting these makes a strategy eligible for review. It does not guarantee funding."
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Questions.",
+      "items": {
+        "automatic": {
+          "q": "Is funding automatic?",
+          "a": "No. Every strategy is reviewed case by case."
+        },
+        "free": {
+          "q": "Is there a free plan?",
+          "a": "No."
+        },
+        "activationFee": {
+          "q": "When is the activation fee charged?",
+          "a": "Only once your strategy is accepted."
+        }
+      }
+    },
+    "request": {
+      "title": "Request funding",
+      "description": "Tell us about your strategy. We review every request and reply by email.",
+      "form": {
+        "name": "Name",
+        "email": "Email",
+        "company": "Company (optional)",
+        "strategy": "Strategy name (optional)",
+        "message": "About your strategy",
+        "messagePlaceholder": "What it trades, how long it has been live, and anything we should know.",
+        "submit": "Request funding",
+        "sending": "Sending..."
+      },
+      "success": "Request received. We review every request case by case and will reply by email."
+    },
+    "fine": "Past performance does not guarantee future results. Nothing on this page is investment advice or an offer of financing."
   }
 }

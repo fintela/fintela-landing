@@ -21,7 +21,8 @@ import { AgenticAiPage } from './pages/AgenticAiPage';
 import { SamplersPage } from './pages/SamplersPage';
 import { FintelaApiPage } from './pages/FintelaApiPage';
 import { McpPage } from './pages/McpPage';
-import { StrategiesPage } from './pages/StrategiesPage';
+import { CommunityPage } from './pages/CommunityPage';
+import { GetFundingPage } from './pages/GetFundingPage';
 import { SecurityPage } from './pages/SecurityPage';
 import { MethodologyPage } from './pages/MethodologyPage';
 import { PlatformPage } from './pages/PlatformPage';
@@ -76,7 +77,8 @@ const eagerPages: Pages = {
   SamplersPage,
   FintelaApiPage,
   McpPage,
-  StrategiesPage,
+  CommunityPage,
+  GetFundingPage,
   PlatformPage,
   MethodologyPage,
   SecurityPage,
