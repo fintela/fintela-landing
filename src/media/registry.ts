@@ -37,6 +37,10 @@ import audienceFunds from '../assets/media/audiences/funds.jpg?w=560;1120&format
 import audienceTeams from '../assets/media/audiences/teams.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceIndependents from '../assets/media/audiences/independents.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
 import audienceAdvisors from '../assets/media/audiences/advisors.jpg?w=560;1120&format=avif;webp;jpeg&as=picture';
+import fundsHeroMeeting from '../assets/media/solutions/funds-hero-meeting.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
+import teamsHeroCollab from '../assets/media/solutions/teams-hero-collab.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
+import independentsHeroDesk from '../assets/media/solutions/independents-hero-desk.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
+import advisorsHeroConsult from '../assets/media/solutions/advisors-hero-consult.jpg?w=480;960&format=avif;webp;jpeg&as=picture';
 
 /** A still's URL for the slots typed against a string; MediaWell recovers the picture. */
 const still = (picture: Picture, framing?: PictureFraming): string =>
@@ -167,5 +171,16 @@ export const STILLS = {
     teams: still(audienceTeams, { objectPosition: 'center 28%' }),
     independents: still(audienceIndependents, { objectPosition: 'center 20%' }),
     advisors: still(audienceAdvisors, { objectPosition: 'center 30%' }),
+  },
+  /**
+   * Each solution hero's plate beside the H1, 4/5 — one photograph per seat,
+   * each used on its own page only. They are atmosphere, not evidence: the
+   * chapters below carry the proof.
+   */
+  heroPlate: {
+    funds: still(fundsHeroMeeting, { objectPosition: 'center 38%' }),
+    teams: still(teamsHeroCollab, { objectPosition: 'center 45%' }),
+    independents: still(independentsHeroDesk, { objectPosition: 'center 35%' }),
+    advisors: still(advisorsHeroConsult, { objectPosition: 'center 40%' }),
   },
 } as const;

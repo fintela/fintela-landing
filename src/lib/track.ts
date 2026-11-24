@@ -19,7 +19,8 @@ export type TrackEvent =
   | 'scroll_90'
   | 'section_view'
   | 'hero_loop_step'
-  | 'validation_toggle';
+  | 'validation_toggle'
+  | 'strategies_cta_click';
 
 /**
  * Sends a named event to the site's only analytics, Microsoft Clarity. The stub

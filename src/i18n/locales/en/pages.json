@@ -1666,5 +1666,152 @@
       "title": "Bring your security questions.",
       "body": "A walkthrough with the team that built the platform is the fastest way to cover your review."
     }
+  },
+  "strategies": {
+    "seo": {
+      "title": "Community strategies and Fintela Funding | Fintela",
+      "description": "Strategies published by Fintela users, ranked on their record since they were deployed, and how a published strategy can be evaluated for financing through Fintela Funding."
+    },
+    "eyebrow": "Community strategies",
+    "title": "Strategies published by Fintela users,",
+    "titleAccent": "ranked on what they did next.",
+    "description": "Every figure is measured from the day the strategy was deployed. Nothing here is backtested.",
+    "cta": {
+      "publish": "Publish a strategy",
+      "funded": "Get it funded"
+    },
+    "loading": "Loading published strategies.",
+    "error": "The strategies could not be loaded. Reload the page to try again.",
+    "empty": "No strategy is public yet. Deploy a portfolio in Fintela, set its share link to Anyone with the link, and it is listed here.",
+    "age": {
+      "days": "{{days}}d",
+      "months": "{{months}}m",
+      "years": "{{years}}y",
+      "yearsMonths": "{{years}}y {{months}}m"
+    },
+    "activity": {
+      "label": "On Fintela now",
+      "published": "strategies published",
+      "thisYear": "published in {{year}}",
+      "live": "trading live",
+      "funded": "funded, {{review}} in review"
+    },
+    "leaders": {
+      "topReturn": {
+        "label": "Top return",
+        "sub": "over {{age}}"
+      },
+      "bestSharpe": {
+        "label": "Best Sharpe",
+        "sub": "max drawdown {{value}}"
+      },
+      "bestNewcomer": {
+        "label": "Best newcomer",
+        "sub": "deployed {{age}} ago"
+      },
+      "longestLive": {
+        "label": "Longest live",
+        "sub": "{{value}} since deployment"
+      }
+    },
+    "board": {
+      "caption": "Published strategies, ranked",
+      "rankBy": "Rank by",
+      "sortBy": "Sort by {{column}}",
+      "columns": {
+        "rank": "#",
+        "strategy": "Strategy",
+        "curve": "Since deployment",
+        "totalReturn": "Return",
+        "cagr": "CAGR",
+        "sharpe": "Sharpe",
+        "alpha": "Alpha",
+        "beta": "Beta",
+        "maxDrawdown": "Max DD",
+        "daysLive": "Time live",
+        "score": "Score"
+      },
+      "rankOptions": {
+        "totalReturn": "Return",
+        "cagr": "CAGR",
+        "sharpe": "Sharpe",
+        "alpha": "Alpha",
+        "daysLive": "Time live",
+        "score": "Fintela Score"
+      },
+      "filters": {
+        "trackRecord": "Track record",
+        "all": "All",
+        "live": "Live",
+        "paper": "Paper",
+        "publishedFor": "Deployed for",
+        "anyLength": "Any length",
+        "months3": "3 months or more",
+        "months6": "6 months or more",
+        "year1": "1 year or more",
+        "assetClass": "Asset class",
+        "search": "Search",
+        "searchPlaceholder": "Strategy or author"
+      },
+      "assets": {
+        "us_equities": "US equities",
+        "multi_asset": "Multi-asset",
+        "crypto": "Crypto"
+      },
+      "chips": {
+        "live": "Live",
+        "paper": "Paper",
+        "holdout": "Holdout passed",
+        "funded": "Funded",
+        "review": "Funding review",
+        "new": "New"
+      },
+      "curveLabel": "Equity curve, {{value}} since deployment",
+      "empty": "No strategies match these filters. Clear the search or widen the filters.",
+      "count": "{{shown}} of {{total}} published strategies. Metrics as of {{date}}.",
+      "footnote": "Every figure comes from the strategy's model portfolio, not from a brokerage statement. Alpha and beta are measured against the default benchmark for the strategy's asset class, and are blank where there is none. CAGR and Score appear after 90 days. Strategies deployed for under 30 days are listed as New and are not ranked. The Fintela Score weights each strategy's percentile on CAGR (40%), Sharpe (25%), max drawdown (20%) and alpha (15%), plus up to 3 points for track record. Past performance does not guarantee future results. Rankings are information, not investment advice."
+    },
+    "funding": {
+      "eyebrow": "Fintela Funding",
+      "title": "Have a strategy idea? Build it or import it into Fintela,",
+      "titleAccent": "and get it funded.",
+      "description": "Publish a strategy here and it can be evaluated for financing by third-party investment funds. The fund trades your signals. Your code stays with you.",
+      "cta": {
+        "create": "Create a strategy",
+        "import": "Import your strategy",
+        "apply": "Apply for funding"
+      },
+      "steps": {
+        "items": {
+          "publish": {
+            "title": "Publish",
+            "body": "Publish your strategy or portfolio on Fintela. It joins the board and starts building a public track record."
+          },
+          "evaluation": {
+            "title": "Evaluation",
+            "body": "The strategy is reviewed for viability, performance and risk to decide whether it qualifies for funding."
+          },
+          "allocation": {
+            "title": "Fund allocation",
+            "body": "If it is approved, a dedicated fund is set up to finance your portfolio, trading on the strategy's signals."
+          }
+        }
+      },
+      "facts": {
+        "code": {
+          "title": "You keep your code",
+          "body": "The fund receives trading signals only. Your source code and intellectual property are never shared with the fund or with Fintela."
+        },
+        "terms": {
+          "title": "Terms are negotiated",
+          "body": "A share of the profits, a one-time payment, or another structure. Each agreement is settled case by case between you and the fund."
+        },
+        "capital": {
+          "title": "Capital from partner funds",
+          "body": "Financing comes from third-party investment funds that work with the platform. Fintela connects creators and funds; it does not supply the capital."
+        }
+      },
+      "fine": "Publishing a strategy does not guarantee funding. A Funded badge on the board means a fund is financing that portfolio; amounts and terms are private."
+    }
   }
 }

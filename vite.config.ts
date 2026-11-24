@@ -222,6 +222,9 @@ const vendorChunk = (eager: ReadonlySet<string>) => (id: string): string | undef
 }
 
 // https://vite.dev/config/
+/** Dev-only same-origin prefix for the strategies board. Mirrored in src/strategies/api.ts. */
+const BOARD_DEV_PROXY = '/__fintela_api'
+
 export default defineConfig(({ mode, isSsrBuild }) => {
   // Dev-server ports. `setup_worktree.sh` writes WEB_PORT / WEB_PREVIEW_PORT into
   // .env.local so each worktree gets its own; 5173 / 4173 (Vite's defaults) remain
@@ -282,6 +285,18 @@ export default defineConfig(({ mode, isSsrBuild }) => {
       // that silently takes port+1 is how two worktrees end up sharing one, and
       // the collision only shows up as a page that is not the branch you think.
       strictPort: true,
+      // The strategies board in development: the production backend's CORS
+      // admits only the site's own origin, so the one public, read-only route
+      // the board needs is proxied same-origin (see src/strategies/api.ts).
+      // Nothing else is forwarded — the contact form still has nowhere to
+      // post unless VITE_FINTELA_API says so.
+      proxy: {
+        [`${BOARD_DEV_PROXY}/public/strategy-board`]: {
+          target: 'https://backend.fintela.io',
+          changeOrigin: true,
+          rewrite: (p) => p.slice(BOARD_DEV_PROXY.length),
+        },
+      },
     },
     preview: { port: previewPort, strictPort: true },
   }

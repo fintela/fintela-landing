@@ -51,10 +51,25 @@
       "legacyHeader": "Legacy stack",
       "withHeader": "With Fintela",
       "rows": [
-        { "without": "Studies queued behind a shared optimizer box", "with": "Studies side by side" },
-        { "without": "A best backtest nobody can tell from luck", "with": "A luck test on every study", "to": "#chapter-luck" },
-        { "without": "Provenance rebuilt from notebooks and chat logs", "with": "Every study locked at launch", "to": "#chapter-provenance" },
-        { "without": "Backtest and live on different code paths", "with": "Risk limits carried into trading", "to": "#chapter-trading" }
+        {
+          "without": "Studies queued behind a shared optimizer box",
+          "with": "Studies side by side"
+        },
+        {
+          "without": "A best backtest nobody can tell from luck",
+          "with": "A luck test on every study",
+          "to": "#chapter-luck"
+        },
+        {
+          "without": "Provenance rebuilt from notebooks and chat logs",
+          "with": "Every study locked at launch",
+          "to": "#chapter-provenance"
+        },
+        {
+          "without": "Backtest and live on different code paths",
+          "with": "Risk limits carried into trading",
+          "to": "#chapter-trading"
+        }
       ]
     },
     "chapters": {
@@ -80,10 +95,22 @@
         "title": "Safeguards on the trading path",
         "sentence": "The controls a due-diligence review asks about, set per connection and per account.",
         "points": [
-          { "title": "Limits on every connection", "body": "A cap per order, a cap per batch, and a kill switch." },
-          { "title": "Stop all trading", "body": "Halts new orders on every account within about a minute." },
-          { "title": "Two-step login to move money", "body": "Never needed to Pause or Stop an operation." },
-          { "title": "Owner-only real money", "body": "Only the Owner trades a real-money account, and broker credentials are stored encrypted." }
+          {
+            "title": "Limits on every connection",
+            "body": "A cap per order, a cap per batch, and a kill switch."
+          },
+          {
+            "title": "Stop all trading",
+            "body": "Halts new orders on every account within about a minute."
+          },
+          {
+            "title": "Two-step login to move money",
+            "body": "Never needed to Pause or Stop an operation."
+          },
+          {
+            "title": "Owner-only real money",
+            "body": "Only the Owner trades a real-money account, and broker credentials are stored encrypted."
+          }
         ],
         "docsLabel": "Trading safeguards"
       }
@@ -119,7 +146,8 @@
       "title": "See it on your own",
       "titleAccent": "strategies.",
       "body": "Thirty minutes with the team that built the platform, on the strategies your desk actually runs."
-    }
+    },
+    "heroImageAlt": "An executive briefing colleagues across a boardroom table, black and white"
   },
   "teams": {
     "seo": {
@@ -135,10 +163,26 @@
       "legacyHeader": "Today",
       "withHeader": "With Fintela",
       "rows": [
-        { "without": "Strategies scattered across personal notebooks", "with": "One shared library", "to": "#chapter-library" },
-        { "without": "Results reconciled across machines before every meeting", "with": "One ranking across every study", "to": "#chapter-ranking" },
-        { "without": "Authorship and versions reconstructed by hand", "with": "Versions kept, results locked", "to": "#chapter-versions" },
-        { "without": "Committee decks assembled by hand", "with": "A report in one click", "to": "#chapter-report" }
+        {
+          "without": "Strategies scattered across personal notebooks",
+          "with": "One shared library",
+          "to": "#chapter-library"
+        },
+        {
+          "without": "Results reconciled across machines before every meeting",
+          "with": "One ranking across every study",
+          "to": "#chapter-ranking"
+        },
+        {
+          "without": "Authorship and versions reconstructed by hand",
+          "with": "Versions kept, results locked",
+          "to": "#chapter-versions"
+        },
+        {
+          "without": "Committee decks assembled by hand",
+          "with": "A report in one click",
+          "to": "#chapter-report"
+        }
       ]
     },
     "chapters": {
@@ -200,7 +244,8 @@
       "title": "See it with your",
       "titleAccent": "team's strategies.",
       "body": "Thirty minutes with the team that built the platform, on the research your desk is running now."
-    }
+    },
+    "heroImageAlt": "Two researchers comparing work on laptops across a table, a hand mid-gesture, black and white"
   },
   "independents": {
     "seo": {
@@ -220,10 +265,26 @@
       "legacyHeader": "On your own",
       "withHeader": "With Fintela",
       "rows": [
-        { "without": "A local Python environment to build and maintain", "with": "Python in your browser", "to": "/docs/quickstart-python" },
-        { "without": "Optimization loops and validation windows set up by hand", "with": "Held-out scoring, built in", "to": "#chapter-heldOut" },
-        { "without": "A great backtest you can't tell from luck", "with": "A luck check on every study", "to": "#chapter-luck" },
-        { "without": "A server running your broker script", "with": "Trading with a way out", "to": "#chapter-trading" }
+        {
+          "without": "A local Python environment to build and maintain",
+          "with": "Python in your browser",
+          "to": "/docs/quickstart-python"
+        },
+        {
+          "without": "Optimization loops and validation windows set up by hand",
+          "with": "Held-out scoring, built in",
+          "to": "#chapter-heldOut"
+        },
+        {
+          "without": "A great backtest you can't tell from luck",
+          "with": "A luck check on every study",
+          "to": "#chapter-luck"
+        },
+        {
+          "without": "A server running your broker script",
+          "with": "Trading with a way out",
+          "to": "#chapter-trading"
+        }
       ]
     },
     "chapters": {
@@ -277,7 +338,8 @@
       "title": "Bring a strategy,",
       "titleAccent": "leave with a study.",
       "body": "Start free, write your strategy in Python or let Fintelligent, the built-in assistant, draft it, and run your first study today."
-    }
+    },
+    "heroImageAlt": "A trader alone at a multi-monitor desk, reading live charts, black and white"
   },
   "advisors": {
     "seo": {
@@ -293,10 +355,26 @@
       "legacyHeader": "Today",
       "withHeader": "With Fintela",
       "rows": [
-        { "without": "An idea that needs a developer to test it", "with": "Drafted from your own words", "to": "#chapter-draft" },
-        { "without": "A backtest you can't defend to a client", "with": "Checked against luck first", "to": "#chapter-validation" },
-        { "without": "One risk approach stretched across every client", "with": "One strategy, several risk profiles", "to": "#chapter-riskProfiles" },
-        { "without": "Performance summaries rebuilt by hand before every review", "with": "A report in one click", "to": "#chapter-reporting" }
+        {
+          "without": "An idea that needs a developer to test it",
+          "with": "Drafted from your own words",
+          "to": "#chapter-draft"
+        },
+        {
+          "without": "A backtest you can't defend to a client",
+          "with": "Checked against luck first",
+          "to": "#chapter-validation"
+        },
+        {
+          "without": "One risk approach stretched across every client",
+          "with": "One strategy, several risk profiles",
+          "to": "#chapter-riskProfiles"
+        },
+        {
+          "without": "Performance summaries rebuilt by hand before every review",
+          "with": "A report in one click",
+          "to": "#chapter-reporting"
+        }
       ]
     },
     "chapters": {
@@ -361,6 +439,7 @@
       "title": "See it with your",
       "titleAccent": "own clients in mind.",
       "body": "Thirty minutes with the team that built the platform, on the mandates your practice manages."
-    }
+    },
+    "heroImageAlt": "A financial advisor reviewing a portfolio report with a client across a desk, black and white"
   }
 }
