@@ -1708,7 +1708,7 @@
       "eyebrow": "Fintela Funding",
       "title": "Have a strategy idea? Build it or import it into Fintela,",
       "titleAccent": "and get it funded.",
-      "description": "Publish a strategy here and it can be evaluated for financing by third-party investment funds. The fund trades your signals. Your code stays with you.",
+      "description": "Publish a strategy here and it can be evaluated for financing by third-party investment funds. The fund trades your signals.",
       "cta": {
         "create": "Create a strategy",
         "import": "Import your strategy",
@@ -1731,10 +1731,6 @@
         }
       },
       "facts": {
-        "code": {
-          "title": "You keep your code",
-          "body": "The fund receives trading signals only. Your source code and intellectual property are never shared with the fund or with Fintela."
-        },
         "terms": {
           "title": "Terms are negotiated",
           "body": "A share of the profits, a one-time payment, or another structure. Each agreement is settled case by case between you and the fund."
