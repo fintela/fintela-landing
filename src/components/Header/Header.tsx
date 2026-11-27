@@ -73,17 +73,19 @@ const PRODUCT_ITEMS: NavItem[] = [
 ];
 
 const navItems: NavItem[] = [
+  { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
   { id: 'funding', labelKey: 'nav.funding', href: FUNDING_PATH, type: 'route' },
   { id: 'community', labelKey: 'nav.community', href: '/community', type: 'route' },
-  { id: 'pricing', labelKey: 'nav.pricing', href: '/pricing', type: 'route' },
+  { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
   { id: 'documentation', labelKey: 'nav.documentation', href: DOCS_HOME, type: 'route', activePrefix: '/docs' },
 ];
 
-/** The Blog menu: the blog and the research section live under one trigger. */
-const BLOG_ITEMS: NavItem[] = [
-  { id: 'blog', labelKey: 'nav.blog', href: '/blog', type: 'route' },
-  { id: 'research', labelKey: 'nav.research', href: '/research', type: 'route' },
-];
+/**
+ * The items that sit in the right-hand cluster on desktop, beside search and
+ * log in; the rest follow the Product and Solutions menus on the left. The
+ * drawer lists every item in `navItems` order.
+ */
+const RIGHT_NAV_IDS = new Set(['community', 'blog', 'documentation']);
 
 /**
  * Warms a route's chunk when its nav item is hovered or focused, so the click
@@ -97,7 +99,6 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   pricing: () => import('../../pages/PricingPage'),
   documentation: () => import('../../pages/DocPage'),
   blog: () => import('../../pages/BlogPage'),
-  research: () => import('../../pages/BlogPage'),
   solutions: () => import('../../pages/SolutionPage'),
   fintelligent: () => import('../../pages/AgenticAiPage'),
   samplers: () => import('../../pages/SamplersPage'),
@@ -208,8 +209,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
-  const [blogOpen, setBlogOpen] = useState(false);
-  const [blogButton, setBlogButton] = useState<HTMLButtonElement | null>(null);
   // The trigger element, held in state (a callback ref) rather than a ref so
   // it can be read during render as the Popper's anchor.
   const [solutionsButton, setSolutionsButton] = useState<HTMLButtonElement | null>(null);
@@ -224,7 +223,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     return location.pathname === '/' && activeSection === bandId(item);
   };
   const onProduct = PRODUCT_ITEMS.some((item) => isActive(item));
-  const onBlog = BLOG_ITEMS.some((item) => isActive(item));
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -240,12 +238,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     if (wasSolutionsOpen.current && !solutionsOpen) solutionsButton?.focus();
     wasSolutionsOpen.current = solutionsOpen;
   }, [solutionsOpen, solutionsButton]);
-
-  const wasBlogOpen = useRef(blogOpen);
-  useEffect(() => {
-    if (wasBlogOpen.current && !blogOpen) blogButton?.focus();
-    wasBlogOpen.current = blogOpen;
-  }, [blogOpen, blogButton]);
 
   const wasProductOpen = useRef(productOpen);
   useEffect(() => {
@@ -304,25 +296,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
     }
   };
 
-  const closeBlog = (event?: Event | SyntheticEvent) => {
-    if (event && blogButton?.contains(event.target as Node)) return;
-    setBlogOpen(false);
-  };
-
-  const onBlogKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      setBlogOpen(false);
-    } else if (e.key === 'Escape') {
-      setBlogOpen(false);
-    }
-  };
-
-  const handleBlogItemClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
-    setBlogOpen(false);
-    handleNavClick(e, item);
-  };
-
   const handleProductItemClick = (e: MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     setProductOpen(false);
     handleNavClick(e, item);
@@ -374,7 +347,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             // NAV_UP+: a 3-column grid with the logo in the middle track. The
             // outer tracks are equal 1fr's (never narrower than their content),
             // so the logo sits at the bar's true center: primary nav on the
-            // left, Blog menu and actions on the right.
+            // left; Community, Blog, Docs and actions on the right.
             display: 'flex',
             justifyContent: 'space-between',
             [NAV_UP]: { display: 'grid', gridTemplateColumns: 'minmax(max-content, 1fr) auto minmax(max-content, 1fr)' },
@@ -436,7 +409,7 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
             >
               {t('nav.solutions')}
             </Button>
-            {navItems.filter((item) => item.id !== 'documentation').map((item) => (
+            {navItems.filter((item) => !RIGHT_NAV_IDS.has(item.id)).map((item) => (
               <Button
                 key={item.id}
                 component={RouterLink}
@@ -582,78 +555,9 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
           </Box>
 
           <Box sx={{ display: 'flex', gap: { xs: 0.75, md: 1, lg: 1.5 }, alignItems: 'center', justifySelf: 'end' }}>
-            <Box sx={{ display: 'none', [NAV_UP]: { display: 'flex' }, position: 'relative' }}>
-            <Button
-              id="blog-menu-button"
-              ref={setBlogButton}
-              onClick={() => setBlogOpen((open) => !open)}
-              onMouseEnter={() => prefetch('blog')}
-              onFocus={() => prefetch('blog')}
-              disableRipple
-              aria-haspopup="menu"
-              aria-controls={blogOpen ? 'blog-menu' : undefined}
-              aria-expanded={blogOpen || undefined}
-              aria-current={onBlog ? 'page' : undefined}
-              className={blogOpen ? 'is-active' : undefined}
-              endIcon={<ExpandMoreIcon sx={{ fontSize: '18px !important', ml: -0.5 }} />}
-              sx={[navPillSx, navPillButtonSx, { pr: 1.25 }, navMenuTriggerSx]}
-            >
-              {t('nav.blog')}
-            </Button>
-            <Popper
-              open={blogOpen}
-              anchorEl={blogButton}
-              placement="bottom-end"
-              role={undefined}
-              transition
-              keepMounted
-              disablePortal
-            >
-              {({ TransitionProps }) => (
-                <Grow {...TransitionProps} style={{ transformOrigin: 'right top' }}>
-                  <Paper sx={menuPaperSx}>
-                    <ClickAwayListener onClickAway={closeBlog}>
-                      <MenuList
-                        id="blog-menu"
-                        aria-labelledby="blog-menu-button"
-                        autoFocusItem={blogOpen}
-                        onKeyDown={onBlogKeyDown}
-                        sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}
-                      >
-                        {BLOG_ITEMS.map((item) => (
-                          <MenuItem
-                            key={item.id}
-                            component={RouterLink}
-                            to={item.href}
-                            onClick={(e: MouseEvent<HTMLAnchorElement>) => handleBlogItemClick(e, item)}
-                            selected={isActive(item)}
-                            aria-current={isActive(item) ? 'page' : undefined}
-                            sx={[
-                              navPillSx,
-                              {
-                                px: 1.75,
-                                py: 1,
-                                fontSize: '0.92rem',
-                                minWidth: 200,
-                                justifyContent: 'flex-start',
-                                textAlign: 'left',
-                                '&::after': { display: 'none' },
-                              },
-                            ]}
-                          >
-                            {t(item.labelKey)}
-                          </MenuItem>
-                        ))}
-                      </MenuList>
-                    </ClickAwayListener>
-                  </Paper>
-                </Grow>
-              )}
-            </Popper>
-            </Box>
-            {/* Docs sits with the right-hand cluster on desktop; the drawer
-                still lists it with the other items. */}
-            {navItems.filter((item) => item.id === 'documentation').map((item) => (
+            {/* Community, Blog and Docs sit with the right-hand cluster on
+                desktop; the drawer lists them with the other items. */}
+            {navItems.filter((item) => RIGHT_NAV_IDS.has(item.id)).map((item) => (
               <Button
                 key={item.id}
                 component={RouterLink}
@@ -766,28 +670,6 @@ export const Header = ({ activeSection, onNavigate }: HeaderProps) => {
                 >
                   <ListItemText
                     primary={t(`solutions.${a}`)}
-                    slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-            <Groove sx={{ my: 1, mx: 3 }} />
-
-            <ListSubheader disableSticky sx={{ ...eyebrowSx, bgcolor: 'transparent', lineHeight: 1, px: 3.5, pt: 1, pb: 1 }}>
-              {t('nav.blog')}
-            </ListSubheader>
-            {BLOG_ITEMS.map((item) => (
-              <ListItem key={item.id} disablePadding>
-                <ListItemButton
-                  component={RouterLink}
-                  to={item.href}
-                  onClick={(e: MouseEvent<HTMLAnchorElement>) => handleNavClick(e, item)}
-                  selected={isActive(item)}
-                  aria-current={isActive(item) ? 'page' : undefined}
-                  sx={[navPillSx, navPillMobileSx, { mx: 1.5, my: 0.25, px: 2, py: 1 }]}
-                >
-                  <ListItemText
-                    primary={t(item.labelKey)}
                     slotProps={{ primary: { sx: { fontWeight: 'inherit', fontSize: '0.95rem' } } }}
                   />
                 </ListItemButton>

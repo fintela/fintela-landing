@@ -10,11 +10,11 @@ import { FUNDING_ANCHOR, STRATEGY_LINKS } from '../../strategies/links';
 
 /** Publish, evaluation, fund allocation: a real sequence, so it is numbered. */
 const STEP_KEYS = ['publish', 'evaluation', 'allocation'] as const;
-const FACT_KEYS = ['code', 'terms', 'capital'] as const;
+const FACT_KEYS = ['terms', 'capital'] as const;
 
 /**
  * Fintela Funding: the invitation that follows the board. Three steps, the
- * three conditions (signals only, negotiated terms, third-party capital) and
+ * two conditions (negotiated terms, third-party capital) and
  * the calls to action. The copy promises no funding, names no fund and quotes
  * no amount.
  */
@@ -85,7 +85,7 @@ export const FundingSection = () => {
           p: 0,
           mt: { xs: 5, md: 7 },
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
           columnGap: 5,
           rowGap: 3.5,
         }}
